@@ -1,6 +1,7 @@
 package com.patson.model
 
 import com.patson.data.CountrySource
+import com.patson.model.AirportAssetType.TransitModifier
 import com.patson.model.airplane.Model
 
 import scala.collection.mutable.ListBuffer
@@ -18,11 +19,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var airlineBasesLoaded = false
   private[this] val baseFeatures = ListBuffer[AirportFeature]()
   private[this] var featuresLoaded = false
-  private[this] var projectsLoaded = false
+  private[this] var assetsLoaded = false
   private[this] val loungesByAirline = scala.collection.mutable.Map[Int, Lounge]()
   private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
   private[this] var assets = List[AirportAsset]()
-
+  lazy val transitModifiers = getTransitModifiers()
 
 
   private[this] var runways = List.empty[Runway]
@@ -57,7 +58,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
 
   lazy val features : List[AirportFeature] = computeFeatures()
-
 
 //  def availableSlots : Int = {
 //    if (slotAssignmentsLoaded) {
@@ -285,9 +285,27 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   def initAssets(assets : List[AirportAsset]) = {
     this.assets = assets
-    projectsLoaded = true
+    assetsLoaded = true
     assetBoosts = assets.flatMap(_.boosts).groupBy(_.boostType)
   }
+
+  private[this] def getTransitModifiers() : List[TransitModifier] = {
+    if (!assetsLoaded) {
+      println("Cannot get airline transit modifiers w/o assets loaded")
+      List.empty
+    } else {
+      assets.filter(asset => asset.isInstanceOf[TransitModifier] && asset.level > 0).groupBy(_.assetType).map {
+        case (_, assetsByType) => assetsByType.maxBy(_.level).asInstanceOf[TransitModifier] //only count the top one for now...
+      }.toList
+    }
+  }
+
+  //positive indicates extra cost, negative indicates discount. Should be >= -1. The new cost will be sum of all modifier values. Then transitCost * (1 + x)
+  //hence -0.5 indicates 50% off
+  def computeTransitModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxlinkClass : LinkClass): Double = {
+    Math.max(-1, transitModifiers.map(_.computeModifierValue(fromLinkFreq, toLinkFreq, paxlinkClass)).sum)
+  }
+
 
   def addFeature(feature : AirportFeature) = {
     this.baseFeatures += feature

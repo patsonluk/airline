@@ -1,6 +1,7 @@
 package com.patson.model
 
-import com.patson.data.{AirportAssetSource, CycleSource, AirportSource}
+import com.patson.data.{AirportAssetSource, AirportSource, CycleSource}
+import com.patson.model.AirportAssetType.TransitModifier
 
 import scala.math.BigDecimal.RoundingMode
 import scala.util.Random
@@ -350,6 +351,12 @@ object AirportAssetType extends Enumeration {
 
     }
 
+    trait TransitModifier {
+        //positive indicates extra cost, negative indicates discount. Should be >= -1. The new cost will be sum of all modifier values. Then transitCost * (1 + x)
+        //hence -0.5 indicates 50% off
+        def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, linkClass : LinkClass): Double
+    }
+
 
     implicit def valueToAirportAssetType(x : Value) = x.asInstanceOf[AirportAssetType]
 
@@ -616,8 +623,25 @@ case class OfficeBuilding4Asset(override val blueprint : AirportAssetBlueprint, 
     override val spacePerLease = 10000
     override val leasePerLevel = 50
 }
-case class AirportHotelAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
+case class AirportHotelAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset with TransitModifier {
     override val initialCapacity = 500
+
+    override def computeModifierValue(arrivalLinkFreq : Int, departureLinkFreq : Int, linkClass : LinkClass) : Double = {
+        val minFrequency = Math.min(arrivalLinkFreq,departureLinkFreq)
+        var discount = {
+          if (minFrequency <= 7) { //very helpful
+            0.2 + (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.2
+          } else if (minFrequency <= 14) {
+            0.1 + (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.1
+          } else {
+            level * 1.0 / AirportAsset.MAX_LEVEL * 0.1
+          }
+        }
+        if (linkClass.level >= BUSINESS.level) {
+           discount +=  (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.2
+        }
+        discount * -1
+    }
 }
 case class CityTransitAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset {
     override def costModifier : Double = super.costModifier +

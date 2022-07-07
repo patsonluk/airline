@@ -704,6 +704,10 @@ object PassengerSimulation {
               if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
                 connectionCost += 75
               }
+              connectionCost *= 1 + linkConsideration.from.computeTransitModifierValue(
+                predecessorLink.frequencyByClass(predecessorLinkConsideration.linkClass),
+                linkConsideration.link.frequencyByClass(linkConsideration.linkClass),
+                passengerGroup.preference.preferredLinkClass)
             }
             connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
           }
