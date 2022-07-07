@@ -199,7 +199,7 @@ object AirportAssetType extends Enumeration {
     }
 
     case class SolarPowerPlantAssetType() extends AirportAssetType {
-        override val label = "Solr Power Plant"
+        override val label = "Solar Power Plant"
         override val constructionDuration : Int = 8 * 52
         override val baseBoosts : List[AirportBoost] = List(AirportBoost(POPULATION, 20000), AirportBoost(INCOME, 2))
         override val baseCost : Long = 500000000
