@@ -30,6 +30,7 @@ $( document ).ready(function() {
 		getAirports();
 //		printConsole("Please log in")
         showAbout();
+        refreshWallpaper()
 	}
 
     registerEscape()
@@ -38,7 +39,6 @@ $( document ).ready(function() {
 
 	populateTooltips()
 	checkAutoplaySettings()
-	refreshWallpaper()
 
 	
 	if ($("#floatMessage").val()) {
@@ -159,10 +159,9 @@ function loadUser(isLogin) {
 	var ajaxCall = {
 	  type: "POST",
 	  url: "login",
-	  async: false,
 	  success: function(user) {
 		  if (user) {
-		    closeAbout()
+            closeAbout()
 		      activeUser = user
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
@@ -202,7 +201,7 @@ function loadUser(isLogin) {
 	    		showFloatMessage("Incorrect username or password")
 	    	} else if (jqXHR.status == 400) {
 	    		showFloatMessage("Session expired. Please log in again")
-		} else if (jqXHR.status == 403) {
+		    } else if (jqXHR.status == 403) {
 	    		showFloatMessage("You have been banned for violating the game rules. Please contact admins on Discord for assistance.")
 	    	} else {
 	    	    showFloatMessage("Error logging in, error code " + jqXHR.status + ". Please try again. Contact admins on Discord if the issue persists.")
@@ -220,7 +219,7 @@ function loadUser(isLogin) {
 
 	}
 	
-	$.ajax(ajaxCall);
+	return $.ajax(ajaxCall);
 }
 
 function passwordLogin(e) {
@@ -230,7 +229,8 @@ function passwordLogin(e) {
 }
 
 function login()  {
-	loadUser(true)
+    $('.button.login').addClass('loading')
+    loadUser(true)
 }
 
 function onGoogleLogin(googleUser) {
