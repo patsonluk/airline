@@ -161,17 +161,17 @@ function loadUser(isLogin) {
 	  url: "login",
 	  success: function(user) {
 		  if (user) {
-            closeAbout()
+		      closeAbout()
 		      activeUser = user
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
 			  $("#loginPassword").val("")
 
 			  if (isLogin) {
-			      refreshWallpaper()
-				  showFloatMessage("Successfully logged in")
+			  	  showFloatMessage("Successfully logged in")
 				  showAnnoucement()
 			  }
+              refreshWallpaper()
     		  refreshLoginBar()
 //			  printConsole('') //clear console
 			  getAirports()
