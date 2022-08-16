@@ -135,7 +135,12 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   val BASE_DELEGATE_COUNT = 5
   val DELEGATE_PER_LEVEL = 3
   lazy val delegateCount = BASE_DELEGATE_COUNT + airlineGrade.value * DELEGATE_PER_LEVEL +
-    AirlineSource.loadAirlineModifierByAirlineId(id).find(_.modifierType == AirlineModifierType.DELEGATE_BOOST).map(_ => DelegateBoostAirlineModifier.AMOUNT).getOrElse(0) +
+    AirlineSource.loadAirlineModifierByAirlineId(id).map { modifier =>
+      modifier match {
+        case DelegateBoostAirlineModifier(amount, duration, creationCycle) => amount
+        case _ => 0
+      }
+    }.sum +
     AirlineSource.loadAirlineBasesByAirline(id).flatMap(_.specializations).filter(_.isInstanceOf[DelegateSpecialization]).map(_.asInstanceOf[DelegateSpecialization].delegateBoost).sum
 
 }
@@ -286,10 +291,18 @@ object Airline {
         }
         //remove all facilities
         AirlineSource.deleteLoungeByCriteria(List(("airline", airlineId)))
-        AirlineSource.deleteShuttleServiceByCriteria(List(("airline", airlineId)))
+        //AirlineSource.deleteShuttleServiceByCriteria(List(("airline", airlineId)))
 
         //remove all oil contract
         OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
+
+        airline.getAllianceId().foreach { allianceId =>
+          AllianceSource.loadAllianceById(allianceId).foreach { alliance =>
+            alliance.members.find(_.airline.id == airline.id).foreach { member =>
+              alliance.removeMember(member, true)
+            }
+          }
+        }
 
         AllianceSource.loadAllianceMemberByAirline(airline).foreach { allianceMember =>
           AllianceSource.deleteAllianceMember(airlineId)
@@ -297,6 +310,7 @@ object Airline {
             AllianceSource.deleteAlliance(allianceMember.allianceId)
           }
         }
+
 
         AirlineSource.deleteReputationBreakdowns(airline.id)
 
@@ -381,16 +395,25 @@ object AirlineGrade {
 }
 
 object AirlineModifier {
-  def fromValues(modifierType : AirlineModifierType.Value, creationCycle : Int, expiryCycle : Option[Int]) : AirlineModifier = {
+  def fromValues(modifierType : AirlineModifierType.Value, creationCycle : Int, expiryCycle : Option[Int], properties : Map[AirlineModifierPropertyType.Value, Long]) : AirlineModifier = {
     import AirlineModifierType._
-    modifierType match {
+    val modifier = modifierType match {
       case NERFED => NerfedAirlineModifier(creationCycle)
-      case DELEGATE_BOOST => DelegateBoostAirlineModifier(creationCycle)
+      case DELEGATE_BOOST => DelegateBoostAirlineModifier(
+        properties(AirlineModifierPropertyType.STRENGTH).toInt,
+        properties(AirlineModifierPropertyType.DURATION).toInt,
+        creationCycle)
     }
+
+    modifier
   }
 }
 
-abstract class AirlineModifier(val modifierType : AirlineModifierType.Value, val creationCycle : Int, val expiryCycle : Option[Int])
+
+
+abstract class AirlineModifier(val modifierType : AirlineModifierType.Value, val creationCycle : Int, val expiryCycle : Option[Int], var id : Int = 0) extends IdObject {
+  def properties : Map[AirlineModifierPropertyType.Value, Long]
+}
 
 case class NerfedAirlineModifier(override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.NERFED, creationCycle, None) {
   val FULL_EFFECT_DURATION = 300 //completely kicks in after 100 cycles
@@ -405,14 +428,13 @@ case class NerfedAirlineModifier(override val creationCycle : Int) extends Airli
       1
     }
   }
+
+  override def properties : Map[AirlineModifierPropertyType.Value, Long] = Map.empty
 }
 
-case class DelegateBoostAirlineModifier(override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.DELEGATE_BOOST, creationCycle, Some(creationCycle + DelegateBoostAirlineModifier.DURATION)) {
-}
-
-object DelegateBoostAirlineModifier {
-  val DURATION = 52
-  val AMOUNT = 3
+case class DelegateBoostAirlineModifier(amount : Int, duration : Int, override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.DELEGATE_BOOST, creationCycle, Some(creationCycle + duration)) {
+  lazy val internalProperties = Map[AirlineModifierPropertyType.Value, Long](AirlineModifierPropertyType.STRENGTH -> amount , AirlineModifierPropertyType.DURATION -> duration)
+  override def properties : Map[AirlineModifierPropertyType.Value, Long] = internalProperties
 }
 
 
@@ -420,4 +442,9 @@ object DelegateBoostAirlineModifier {
 object AirlineModifierType extends Enumeration {
   type AirlineModifierType = Value
   val NERFED, DELEGATE_BOOST = Value
+}
+
+object AirlineModifierPropertyType extends Enumeration {
+  type AirlineModifierPropertyType = Value
+  val STRENGTH, DURATION = Value
 }

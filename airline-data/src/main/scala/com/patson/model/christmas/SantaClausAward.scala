@@ -91,10 +91,12 @@ class ReputationAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(sa
 class DelegateAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.DELEGATE
   override def applyAward(): Unit = {
-    AirlineSource.saveAirlineModifier(santaClausInfo.airline.id, DelegateBoostAirlineModifier(CycleSource.loadCycle()))
+    AirlineSource.saveAirlineModifier(santaClausInfo.airline.id, DelegateBoostAirlineModifier(amount, duration, CycleSource.loadCycle()))
   }
+  val amount = 3
+  val duration = 52
 
-  override val description: String = s"Santa Claus dispatches his elves to help you! ${DelegateBoostAirlineModifier.AMOUNT} extra delegates for ${DelegateBoostAirlineModifier.DURATION} weeks"
+  override val description: String = s"Santa Claus dispatches his elves to help you! $amount extra delegates for $duration weeks"
 }
 
 

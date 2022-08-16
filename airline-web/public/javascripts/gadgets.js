@@ -213,6 +213,23 @@ function getAirlineLogoImg(airlineId) {
 	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo' style='vertical-align:middle;'/>"
 }
 
+
+function getAirlineLabelSpan(airlineId, airlineName) {
+    var $airlineLabelSpan = $('<span>' + airlineName + '</span>')
+	if (airlineLabelColors[airlineId]) {
+	    $airlineLabelSpan.css('color', '#' + airlineLabelColors[airlineId])
+	}
+	return $airlineLabelSpan[0].outerHTML
+}
+
+function getAirlineSpan(airlineId, airlineName) {
+    var $airlineSpan = $('<span></span>')
+	$airlineSpan.append(getAirlineLogoImg(airlineId))
+	$airlineSpan.append(getAirlineLabelSpan(airlineId, airlineName))
+
+	return $airlineSpan[0].outerHTML
+}
+
 function getUserLevelImg(level) {
 	if (level <= 0) {
 		return ""

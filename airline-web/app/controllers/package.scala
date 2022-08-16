@@ -284,7 +284,7 @@ package object controllers {
   
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {
-      val airport = AirportCache.getAirport((json \ "airportId").as[Int]).get
+      val airport = AirportCache.getAirport((json \ "airportId").as[Int], true).get
       val airline = AirlineCache.getAirline((json \ "airlineId").as[Int]).get
       val scale = (json \ "scale").as[Int]
       val headquarter = (json \ "headquarter").as[Boolean]
@@ -359,22 +359,6 @@ package object controllers {
     }
   }
 
-  implicit object ShuttleServiceWrites extends Writes[ShuttleService] {
-    def writes(shuttleService: ShuttleService): JsValue = {
-      var jsObject = JsObject(List(
-        "airportId" -> JsNumber(shuttleService.airport.id),
-        "airportName" -> JsString(shuttleService.airport.name),
-        "airlineId" -> JsNumber(shuttleService.airline.id),
-        "airlineName" -> JsString(shuttleService.airline.name),
-        "name" ->  JsString(shuttleService.name),
-        "level" -> JsNumber(shuttleService.level),
-        "upkeep" -> JsNumber(shuttleService.basicUpkeep),
-        "type" -> JsString(FacilityType.SHUTTLE.toString()),
-        "capacity" -> JsNumber(shuttleService.getCapacity),
-        "foundedCycle" -> JsNumber(shuttleService.foundedCycle)))
-      jsObject
-    }
-  }
   
   implicit object LoungeConsumptionDetailsWrites extends Writes[LoungeConsumptionDetails] {
     def writes(details: LoungeConsumptionDetails): JsValue = {

@@ -102,14 +102,14 @@ object ChampionUtil {
     boost * reputationBoostTop10(ranking)
   }
 
-  def updateAirportChampionInfo(loyalists: List[Loyalist]) = {
-    val result = computeAirportChampionInfo(loyalists)
-    AirportSource.updateChampionInfo(result)
-    result
-  }
+//  def updateAirportChampionInfo(loyalists: List[Loyalist]) = {
+//    val result = computeAirportChampionInfo(loyalists)
+//    AirportSource.updateChampionInfo(result)
+//    result
+//  }
 
 
-  private[this] def computeAirportChampionInfo(loyalists: List[Loyalist]) = {
+  def computeAirportChampionInfo(loyalists: List[Loyalist]) = {
     val result = ListBuffer[AirportChampionInfo]()
 
 //    val loyalists = airportIdFilter match {

@@ -66,6 +66,8 @@ object Constants {
   val AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE = "airline_base_specialization_last_update"
   val AIRLINE_REPUTATION_BREAKDOWN = "airline_reputation_breakdown"
   val AIRLINE_MODIFIER_TABLE = "airline_modifier"
+  val AIRLINE_MODIFIER_INDEX_PREFIX = "airline_modifier_index_"
+  val AIRLINE_MODIFIER_PROPERTY_TABLE = "airline_modifier_property"
 
   
   val INCOME_TABLE = "income"
@@ -116,6 +118,7 @@ object Constants {
   val OIL_INVENTORY_POLICY_TABLE = "oil_inventory_policy"
   val LOAN_INTEREST_RATE_TABLE = "loan_interest_rate"
   val LOG_TABLE = "log"
+  val LOG_PROPERTY_TABLE = "log_property"
   val LAST_CHAT_ID_TABLE = "last_chat_id"
   val CHAT_MESSAGE_TABLE = "chat_message"
   val LOG_INDEX_1 = "log_index_1"
@@ -151,6 +154,9 @@ object Constants {
 
   val LINK_NEGOTIATION_DISCOUNT_TABLE = "link_negotiation_discount"
 
+  val ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE = "alliance_label_color_by_alliance"
+  val ALLIANCE_LABEL_COLOR_BY_AIRLINE_TABLE = "alliance_label_color_by_airline"
+
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"
   val SANTA_CLAUS_GUESS_TABLE = "santa_claus_guess"
@@ -159,12 +165,15 @@ object Constants {
 //  val DB_DRIVER = "org.sqlite.JDBC"
   val configFactory = ConfigFactory.load()
   val DB_HOST = if (configFactory.hasPath("mysqldb.host")) configFactory.getString("mysqldb.host") else "localhost:3306"
+  val dbParams = if (configFactory.hasPath("mysqldb.dbParams")) configFactory.getString("mysqldb.dbParams") else ""
   println("!!!!!!!!!!!!!!!DB HOST IS " + DB_HOST)
   
   //val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
-  val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline_v2?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
+  val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline_v2?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8" + dbParams
   val DB_DRIVER = "com.mysql.jdbc.Driver"
-  val DATABASE_USER = "sa" 
-  val DATABASE_PASSWORD = "admin"
+  val DATABASE_USER = if (configFactory.hasPath("mysqldb.user")) configFactory.getString("mysqldb.user") else "sa"
+  val DATABASE_PASSWORD = if (configFactory.hasPath("mysqldb.password")) configFactory.getString("mysqldb.password") else "admin"
+
+  println(s"!!!!!!!!!!!!!!!FINAL DB str $DATABASE_CONNECTION with user $DATABASE_USER")
   
 }

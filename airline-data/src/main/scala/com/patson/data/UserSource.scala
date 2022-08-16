@@ -1,6 +1,6 @@
 package com.patson.data
 
-import com.patson.model._
+import com.patson.model.{UserModifier, _}
 import com.patson.data.Constants._
 
 import scala.collection.mutable.ListBuffer
@@ -9,6 +9,8 @@ import java.text.SimpleDateFormat
 import java.sql.Statement
 import java.util.Date
 import com.patson.util.{AirlineCache, UserCache}
+
+import scala.collection.mutable
 
 object UserSource {
   val dateFormat = new ThreadLocal[SimpleDateFormat]() {
@@ -81,7 +83,10 @@ object UserSource {
       val resultSet = preparedStatement.executeQuery()
       
       val userList = scala.collection.mutable.Map[Int, (User, ListBuffer[Int])]() //Map[UserId, (User, List[AirlineId])]
-      
+
+      val modifiersByUserId : Map[Int, List[UserModifier.Value]] = UserSource.loadUserModifiers()
+
+
       while (resultSet.next()) {
         val userId = resultSet.getInt("u.id")
         val (user, userAirlines) = userList.getOrElseUpdate(userId, {
@@ -94,7 +99,7 @@ object UserSource {
           val adminStatusObject = resultSet.getObject("u.admin_status")
           val adminStatus = if (adminStatusObject == null) None else Some(AdminStatus.withName(adminStatusObject.asInstanceOf[String]))
 
-          val modifiers = UserSource.loadUserModifierByUserId(userId) //this could be slow if we load all users
+          val modifiers = modifiersByUserId.getOrElse(userId, List.empty)
           (User(userName, resultSet.getString("u.email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"),  adminStatus = adminStatus, modifiers = modifiers, id = userId), ListBuffer[Int]())
         })
         
@@ -316,22 +321,23 @@ object UserSource {
   }
 
 
-  def loadUserModifiers() : List[(Int, UserModifier.Value)] = { //_1 is user Id
+  def loadUserModifiers() : Map[Int, List[UserModifier.Value]] = { //_1 is user Id
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement("SELECT * FROM " + USER_MODIFIER_TABLE)
 
       val resultSet = preparedStatement.executeQuery()
-      val result : ListBuffer[(Int, UserModifier.Value)] = ListBuffer[(Int, UserModifier.Value)]()
+      val result = mutable.HashMap[Int, ListBuffer[UserModifier.Value]]()
       while (resultSet.next()) {
         val userModifier = UserModifier.withName(resultSet.getString("modifier_name"))
-        result.append((resultSet.getInt("user"), userModifier))
+        val modifiers = result.getOrElseUpdate(resultSet.getInt("user"), ListBuffer())
+        modifiers.append(userModifier)
       }
 
       resultSet.close()
       preparedStatement.close()
 
-      result.toList
+      result.view.mapValues(_.toList).toMap
     } finally {
       connection.close()
     }

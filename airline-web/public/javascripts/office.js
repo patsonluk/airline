@@ -359,7 +359,7 @@ function updateIncomeSheet(airlineIncome) {
         $("#othersLoungeUpkeep").text('$' + commaSeparateNumber(airlineIncome.othersLoungeUpkeep))
         $("#othersLoungeCost").text('$' + commaSeparateNumber(airlineIncome.othersLoungeCost))
         $("#othersLoungeIncome").text('$' + commaSeparateNumber(airlineIncome.othersLoungeIncome))
-        $("#othersShuttleCost").text('$' + commaSeparateNumber(airlineIncome.othersShuttleCost))
+        //$("#othersShuttleCost").text('$' + commaSeparateNumber(airlineIncome.othersShuttleCost))
         $("#othersServiceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersServiceInvestment))
         $("#othersMaintenanceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersMaintenanceInvestment))
         $("#othersAdvertisement").text('$' + commaSeparateNumber(airlineIncome.othersAdvertisement))

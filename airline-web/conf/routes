@@ -28,8 +28,9 @@ GET		 /airports/:fromAirportId/to/:toAirportId				controllers.Application.getAir
 GET		 /airports/:airportId/link-consumptions	controllers.Application.getLinkConsumptionsByAirport(airportId : Int)
 GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportProjects(airportId : Int)
 PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
-GET	 	 /airports/:airportId/champions	      controllers.Application.getAirportChampions(airportId : Int)
+GET	 	 /airports/:airportId/champions	      controllers.Application.getAirportChampions(airportId : Int, airlineId: Option[Int])
 GET		 /airports/base/scale-details			  controllers.Application.getScaleDetails()
+GET      /airports/:airportId/generic-transits     controllers.GenericTransitApplication.getGenericTransits(airportId: Int)
 
 GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
 
@@ -110,7 +111,8 @@ GET		 /airlines/:airlineId/evaluate-alliance/:allianceId  controllers.AllianceAp
 GET		 /airlines/:airlineId/apply-for-alliance/:allianceId  controllers.AllianceApplication.applyForAlliance(airlineId : Int, allianceId : Int)
 GET		 /airlines/:airlineId/remove-alliance-member/:targetAirlineId  controllers.AllianceApplication.removeFromAlliance(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/accept-alliance-member/:targetAirlineId  controllers.AllianceApplication.addToAlliance(airlineId : Int, targetAirlineId : Int)
-GET		 /airlines/:airlineId/promote-alliance-member/:targetAirlineId  controllers.AllianceApplication.promoteToAllianceLeader(airlineId : Int, targetAirlineId : Int)
+GET		 /airlines/:airlineId/promote-alliance-member/:targetAirlineId  controllers.AllianceApplication.promoteMember(airlineId : Int, targetAirlineId : Int)
+GET		 /airlines/:airlineId/demote-alliance-member/:targetAirlineId  controllers.AllianceApplication.demoteMember(airlineId : Int, targetAirlineId : Int)
 GET		 /airlines/:airlineId/used-airplanes/models/:modelId	controllers.AirplaneApplication.getUsedAirplanes(airlineId : Int, modelId : Int)
 PUT		 /airlines/:airlineId/used-airplanes/airplanes/:airplaneId	controllers.AirplaneApplication.buyUsedAirplane(airlineId : Int, airplaneId : Int, homeAirportId : Int, configurationId : Int)
 PUT		 /airlines/:airlineId/airplanes/:airplaneId/home/:airportId  controllers.AirplaneApplication.updateAirplaneHome(airlineId : Int, airplaneId : Int, airportId: Int)
@@ -136,16 +138,18 @@ POST 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.sa
 DELETE 	 /airlines/:airlineId/campaigns/:campaignId         controllers.CampaignApplication.deleteCampaign(airlineId: Int, campaignId : Int)
 GET 	 /airlines/:airlineId/campaign-airports/:airportId         controllers.CampaignApplication.getCampaignAirports(airlineId: Int, airportId: Int, radius : Int)
 
+GET      /airlines/:airlineId/alliance-label-color         controllers.ColorApplication.getAllianceLabelColor(airlineId: Int, allianceId : Int)
+GET      /airlines/:airlineId/airline-label-colors         controllers.ColorApplication.getAirlineLabelColors(airlineId: Int)
+GET      /airlines/:airlineId/set-alliance-label-color-as-airline         controllers.ColorApplication.setAllianceLabelColorAsAirline(airlineId: Int, targetAllianceId : Int, color : String)
+GET      /airlines/:airlineId/set-alliance-label-color-as-alliance         controllers.ColorApplication.setAllianceLabelColorAsAlliance(airlineId: Int, targetAllianceId : Int, color : String)
+GET      /airlines/:airlineId/delete-alliance-label-color-as-airline         controllers.ColorApplication.deleteAllianceLabelColorAsAirline(airlineId: Int, targetAllianceId : Int)
+GET      /airlines/:airlineId/delete-alliance-label-color-as-alliance         controllers.ColorApplication.deleteAllianceLabelColorAsAlliance(airlineId: Int, targetAllianceId : Int)
 
 POST      /airlines/:airlineId/completed-tutorial/:tutorialId     controllers.TutorialApplication.saveCompletedTutorial(airlineId: Int, tutorialId: String, category : String)
 GET      /airlines/:airlineId/completed-tutorial               controllers.TutorialApplication.getCompletedTutorials(airlineId: Int)
 POST      /airlines/:airlineId/tutorial               controllers.TutorialApplication.setSkipTutorial(airlineId : Int, skipTutorial: Boolean)
 
 POST      /airlines/:airlineId/completed-notice/:noticeId     controllers.NoticeApplication.saveCompletedNotice(airlineId: Int, noticeId: String, category : String)
-
-GET      /airlines/:airlineId/airport/:airportId/shuttles     controllers.ShuttleApplication.getShuttles(airlineId: Int, airportId: Int)
-POST      /airlines/:airlineId/airport/:airportId/shuttles     controllers.ShuttleApplication.updateShuttles(airlineId: Int, airportId: Int)
-
 GET     /airlines/:airlineId/profiles   controllers.ProfileApplication.getProfiles(airlineId : Int, airportId : Int)
 PUT     /airlines/:airlineId/profiles/:profileId     controllers.ProfileApplication.buildHqWithProfile(airlineId : Int, airportId : Int, profileId : Int)
 
@@ -204,6 +208,8 @@ GET		/event/olympics/:eventId/airlines/:airlineId/ranking    controllers.Olympic
 PUT     /event/:eventId/airline/:airlineId/reward/category/:categoryId/option/:optionId     controllers.OlympicsApplication.pickOlympicsRewardOption(airlineId : Int, eventId : Int, categoryId : Int, optionId : Int)
 GET     /event/:eventId/airline/:airlineId/reward/olympics-vote  controllers.OlympicsApplication.getOlympicsVoteRewardOptions(airlineId : Int, eventId : Int)
 GET     /event/:eventId/airline/:airlineId/reward/olympics-passenger  controllers.OlympicsApplication.getOlympicsPassengerRewardOptions(airlineId : Int, eventId : Int)
+
+GET     /banner    controllers.BannerApplication.getBanner()
 
 # Admin
 PUT		 /admin-action/:action/:targetUserId		controllers.AdminApplication.adminAction(action : String, targetUserId : Int)

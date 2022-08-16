@@ -152,7 +152,7 @@ function updateUsedAirplaneTable(sortProperty, sortOrder) {
 		row.data("airplane", usedAirplane)
 		row.append("<div class='cell'>" + usedAirplane.id + "</div>")
 
-		row.append("<div class='cell'>" +  getAirlineLogoImg(usedAirplane.ownerId) + usedAirplane.ownerName + "</div>")
+		row.append("<div class='cell'>" +  getAirlineSpan(usedAirplane.ownerId, usedAirplane.ownerName) + "</div>")
 
 		var priceColor
 		if (usedAirplane.dealerRatio >= 1.1) { //expensive
@@ -684,7 +684,7 @@ function updateTopOperatorsTable(stats) {
 	$.each(stats.topAirlines, function(index, entry) {
 		var row = $("<div class='table-row'></div>")
 		var airline = entry.airline
-		row.append("<div class='cell'>" + getAirlineLogoImg(airline.id) +  airline.name + "</div>")
+		row.append("<div class='cell'>" + getAirlineSpan(airline.id, airline.name) + "</div>")
 		row.append("<div class='cell' align='right'>" + entry.airplaneCount + "</div>")
 
 		var percentage = (entry.airplaneCount * 100.0 / stats.total).toFixed(2)
@@ -1177,9 +1177,17 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
                         if (option.id == airplane.configurationId) {
                             configuration = option
                             matchingIndex = index
-                            plotSeatConfigurationBar($('#ownedAirplaneDetailModal .configurationBar'), configuration, airplane.capacity, result.spaceMultipliers)
                         }
                     })
+
+                    //just in case, sometimes it comes to a stale state
+                    if (configuration == null && result.configurations) {
+                        configuration = result.configurations[0]
+                        matchingIndex = 0
+                    }
+
+                    plotSeatConfigurationBar($('#ownedAirplaneDetailModal .configurationBar'), configuration, airplane.capacity, result.spaceMultipliers)
+
                     if (result.configurations.length <= 1) { //then cannot change
                         $("#ownedAirplaneDetail .configuration-view .edit").hide()
                         $("#ownedAirplaneDetail .configuration-view .editDisabled").show()

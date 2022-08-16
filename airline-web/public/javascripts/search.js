@@ -9,6 +9,11 @@ function showSearchCanvas() {
 	$("#searchCanvas").css("display", "flex")
 	highlightTab($('.searchCanvasTab'))
 	$("#routeSearchResult").empty()
+	if (isMobileDevice()) {
+	   $('#searchCanvas .banner').hide()
+	} else {
+	   showBanner()
+    }
 	$("#historySearchResult .table-row").empty()
 	$('#searchCanvas .searchContainer input').val('')
 	$('#searchCanvas .searchContainer input').removeData("selectedId")
@@ -22,6 +27,34 @@ function showSearchCanvas() {
     updateNavigationArrows(titlesContainer)
 
     initializeHistorySearch()
+}
+
+function showBanner() {
+    $.ajax({
+            type: 'GET',
+            url: "banner",
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(result) {
+                if (result.bannerUrl) {
+                    $('#searchCanvas .banner img').attr('src', result.bannerUrl + "=w" + $('#searchCanvas .banner').width())
+                    $('#searchCanvas .banner').show()
+                } else {
+                    $('#searchCanvas .banner').hide()
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(JSON.stringify(jqXHR));
+                    console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            },
+            beforeSend: function() {
+                $('body .loadingSpinner').show()
+            },
+            complete: function(){
+                $('body .loadingSpinner').hide()
+            }
+        });
+
 }
 
 function initializeHistorySearch() {
@@ -76,6 +109,7 @@ function searchFlight(fromAirportId, toAirportId) {
             dataType: 'json',
             success: function(searchResult) {
                 $("#routeSearchResult").empty()
+                $("#searchCanvas .banner").hide()
 
                 $.each(searchResult, function(index, entry) {
                     var itineraryDiv = $("<div class='section itinerary' onclick='toggleSearchLinkDetails($(this))'></div>")
@@ -114,17 +148,17 @@ function searchFlight(fromAirportId, toAirportId) {
                     $.each(entry.route, function(index, link) {
                         if (link.transportType == 'FLIGHT') {
                             flightCount ++
-                            //check shuttle
-                            var preShuttle
-                            var postShuttle
+                            //check generic transit
+                            var preGenericTransit
+                            var postGenericTransit
                             if (index > 0) {
-                                if (entry.route[index - 1].transportType == 'SHUTTLE') {
-                                    preShuttle = entry.route[index - 1]
+                                if (entry.route[index - 1].transportType == 'GENERIC_TRANSIT') {
+                                    preGenericTransit = entry.route[index - 1]
                                 }
                             }
                             if (index < entry.route.length - 1) {
-                                if (entry.route[index + 1].transportType == 'SHUTTLE') {
-                                    postShuttle = entry.route[index + 1]
+                                if (entry.route[index + 1].transportType == 'GENERIC_TRANSIT') {
+                                    postGenericTransit = entry.route[index + 1]
                                 }
                             }
 
@@ -133,10 +167,10 @@ function searchFlight(fromAirportId, toAirportId) {
                             linkSummaryDiv.append("<div style='width: 50%; float:left; display: flex; align-items: center;'> " + getAirlineLogoImg(link.airlineId) + "<span class='summary'>" + link.airlineName + "</span></div>")
                             var linkDurationText = getDurationText(link.arrival - link.departure)
                             var remarks = []
-                            if (preShuttle) {
+                            if (preGenericTransit) {
                                 remarks.push("Depart from " + link.fromAirportIata)
                             }
-                            if (postShuttle) {
+                            if (postGenericTransit) {
                                 remarks.push("Arrive at " + link.toAirportIata)
                             }
                             if (previousLink) {
@@ -164,7 +198,7 @@ function searchFlight(fromAirportId, toAirportId) {
                             linkDetailLeftDiv.append("<div style='display: inline-block; width: 75px;' class='summary'> " + link.flightCode + "</div>")
                             linkDetailLeftDiv.append("<span>" + getAirlineTimeSlotText(link.departure, startDay) + " - " + getAirlineTimeSlotText(link.arrival, startDay) + "</span>")
                             linkDetailLeftDiv.append("<div>$" + link.price + " (" +  link.linkClass + ")</div>")
-                            $featureIconsDiv = getLinkFeatureIconsDiv(link.features, preShuttle || postShuttle)
+                            $featureIconsDiv = getLinkFeatureIconsDiv(link.features)
                             linkDetailLeftDiv.append($featureIconsDiv)
                             linkDetailLeftDiv.append(getLinkReviewDiv(link.computedQuality))
 
@@ -175,11 +209,11 @@ function searchFlight(fromAirportId, toAirportId) {
                             if (link.operatorAirlineId) { //code share
                                 linkDetailRightDiv.append("<div>Operated by " + getAirlineLogoImg(link.operatorAirlineId) + link.operatorAirlineName + "</div>")
                             }
-                            if (preShuttle) {
-                                linkDetailRightDiv.append("<div>Free shuttle from " + preShuttle.fromAirportText + " to " + preShuttle.toAirportText + " by " + getAirlineLogoImg(preShuttle.airlineId) + preShuttle.airlineName + "</div>")
+                            if (preGenericTransit) {
+                                linkDetailRightDiv.append("<div>Depart from " + preGenericTransit.toAirportText + "</div>")
                             }
-                            if (postShuttle) {
-                                linkDetailRightDiv.append("<div>Free shuttle from " + postShuttle.fromAirportText + " to " + postShuttle.toAirportText + " by " + getAirlineLogoImg(postShuttle.airlineId) + postShuttle.airlineName + "</div>")
+                            if (postGenericTransit) {
+                                linkDetailRightDiv.append("<div>Arrive at " + postGenericTransit.fromAirportText + "</div>")
                             }
 
 
@@ -450,8 +484,7 @@ var linkFeatureIconsLookup = {
     "IFE" : { "description" : "In-flight entertainment", "icon" : "assets/images/icons/media-player-phone-horizontal.png"},
     "GAME" : { "description" : "Video game system", "icon" : "assets/images/icons/controller.png"},
     "POSH" : { "description" : "Luxurious", "icon" : "assets/images/icons/diamond.png"},
-    "POWER_OUTLET" : { "description" : "Power outlet", "icon" : "assets/images/icons/plug.png"},
-    "SHUTTLE" : { "description" : "Free Shuttle", "icon" : "assets/images/icons/shuttle.png"}
+    "POWER_OUTLET" : { "description" : "Power outlet", "icon" : "assets/images/icons/plug.png"}
 }
 
 function toggleSearchLinkDetails(containerDiv) {
@@ -462,7 +495,7 @@ function toggleSearchLinkDetails(containerDiv) {
     }
 }
 
-function getLinkFeatureIconsDiv(features, hasShuttle) {
+function getLinkFeatureIconsDiv(features) {
     var featureIconsDiv = $("<div></div>")
     $.each(features, function(index, feature) {
         var featureInfo = linkFeatureIconsLookup[feature]
@@ -470,10 +503,6 @@ function getLinkFeatureIconsDiv(features, hasShuttle) {
          featureIconsDiv.append(icon)
     })
 
-    if (hasShuttle) {
-        var featureInfo = linkFeatureIconsLookup['SHUTTLE']
-        featureIconsDiv.append($("<img src='" + featureInfo.icon + "' title='" + featureInfo.description + "' style='margin: 2px;'>"))
-    }
     return featureIconsDiv
 }
 
@@ -766,6 +795,7 @@ function researchFlight(fromAirportId, toAirportId) {
                 $("#researchSearchResult .toAirport .population").text(commaSeparateNumber(result.toAirport.population))
                 $("#researchSearchResult .toAirport .incomeLevel").text(result.toAirport.incomeLevel)
 
+                $("#researchSearchResult .relationship").html(getCountryFlagImg(result.fromAirport.countryCode) + "&nbsp;vs&nbsp;" + getCountryFlagImg(result.toAirport.countryCode) + getCountryRelationshipDescription(result.mutualRelationship))
                 $("#researchSearchResult .distance").text(result.distance)
                 $("#researchSearchResult .flightType").text(result.flightType)
                 $("#researchSearchResult .demand").text(toLinkClassValueString(result.directDemand))

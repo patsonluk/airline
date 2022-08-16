@@ -44,7 +44,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
   def addAirlineModifier(modifier : AirlineModifierType.Value, airlines : List[Airline]) = {
     val currentCycle = CycleSource.loadCycle()
     airlines.foreach { airline =>
-      AirlineSource.saveAirlineModifier(airline.id, AirlineModifier.fromValues(modifier, currentCycle, None))
+      AirlineSource.saveAirlineModifier(airline.id, AirlineModifier.fromValues(modifier, currentCycle, None, Map.empty))
     }
   }
 

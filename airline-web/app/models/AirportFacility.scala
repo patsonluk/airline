@@ -21,5 +21,5 @@ object AirportFacility {
 
 object FacilityType extends Enumeration {
   type FacilityType = Value
-  val LOUNGE, SHUTTLE = Value
+  val LOUNGE = Value
 }

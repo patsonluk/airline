@@ -207,7 +207,7 @@ object DemandGenerator {
       val income = fromAirport.income
 
       val firstClassPercentage : Double = 
-        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_DOMESTIC || flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
+        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == SHORT_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_DOMESTIC || flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
           if (income <= FIRST_CLASS_INCOME_MIN) {
             0 
           } else if (income >= FIRST_CLASS_INCOME_MAX) {

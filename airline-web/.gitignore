@@ -12,3 +12,5 @@ target
 /.cache-tests
 /.sbtserver
 /conf/gmail-credentials.json
+/conf/google-oauth-credentials.json
+/google-tokens/

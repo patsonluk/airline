@@ -193,7 +193,9 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
         EventSource.loadPickedRewardOption(eventId, airlineId, RewardCategory.OLYMPICS_PASSENGER) match {
           case Some(claimedReward) =>
-            result = result + ("claimedPassengerReward" -> Json.toJson(claimedReward))
+            val redeemDescription = claimedReward.redeemDescription(eventId, airlineId)
+            val rewardJson = Json.toJson(claimedReward).asInstanceOf[JsObject] + ("redeemDescription" -> JsString(redeemDescription))
+            result = result + ("claimedPassengerReward" -> rewardJson)
           case None => //then see if a reward can be claimed
             hasUnclaimedPassengerAward(eventId, airlineId, currentCycle) match {
               case Right(_) =>
@@ -385,7 +387,14 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   def getOlympicsPassengerRewardOptions(airlineId : Int, eventId : Int) = AuthenticatedAirline(airlineId) { request =>
     hasUnclaimedPassengerAward(eventId, airlineId, CycleSource.loadCycle()) match {
       case Right(_) =>
-        Ok(Json.obj("title" -> "Reward of fulfilling passenger goal", "options" -> Olympics.passengerRewardOptions))
+        var optionsArray = Json.arr()
+        Olympics.passengerRewardOptions.foreach { reward =>
+          val description = reward.redeemDescription(eventId, airlineId)
+          val optionJson : JsValue = Json.toJson(reward).asInstanceOf[JsObject] + ("redeemDescription" -> JsString(description))
+          optionsArray = optionsArray.append(optionJson)
+        }
+
+        Ok(Json.obj("title" -> "Reward of fulfilling passenger goal", "options" -> optionsArray))
       case Left(rejection) => BadRequest(rejection)
     }
   }

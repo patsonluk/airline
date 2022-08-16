@@ -73,8 +73,16 @@ public class SearchUtil {
 
 	public static void init() throws IOException {
 		try (RestHighLevelClient client = getClient()) {
+			System.out.println("Initializing ES airports");
 			initAirports(client);
+			System.out.println("Initializing ES countires");
 			initCountries(client);
+			System.out.println("Initializing ES zones");
+			initZones(client);
+			System.out.println("Initializing ES airlines");
+			initAirlines(client);
+			System.out.println("Initializing ES alliances");
+			initAlliances(client);
 		}
 		System.out.println("ES DONE");
 	}
@@ -189,7 +197,7 @@ public class SearchUtil {
 		System.out.println("Added airline " + airline + " to ES");
 	}
 
-	private static void initAlliances(RestHighLevelClient client) throws IOException {
+	public static void initAlliances(RestHighLevelClient client) throws IOException {
 		if (isIndexExist(client, "alliances")) {
 			client.indices().delete(new DeleteIndexRequest("alliances"), RequestOptions.DEFAULT);
 		}
@@ -235,6 +243,17 @@ public class SearchUtil {
 		}
 		System.out.println("Removed alliance with id " + allianceId + " from ES");
 	}
+
+	public static void refreshAlliances() {
+		try (RestHighLevelClient client = getClient()) {
+			System.out.println("Refreshing ES alliances");
+			initAlliances(client);
+		} catch (IOException exception) {
+			exception.printStackTrace();
+		}
+		System.out.println("Refreshed ES alliances");
+	}
+
 
 	private static final Pattern letterSpaceOnlyPattern = Pattern.compile("^[ A-Za-z]+$");
 

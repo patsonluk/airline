@@ -2,6 +2,7 @@ package com.patson.data
 
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Map
+import scala.collection.immutable
 import com.patson.data.Constants._
 import com.patson.model._
 import com.patson.MainSimulation
@@ -654,129 +655,6 @@ object AirlineSource {
       
   }
 
-  def loadShuttleServiceByAirlineAndAirport(airlineId : Int, airportId : Int) : Option[ShuttleService] = {
-    val result = loadShuttleServiceByCriteria(List(("airline", airlineId), ("airport", airportId)))
-    if (result.isEmpty) {
-      None
-    } else {
-      Some(result(0))
-    }
-  }
-
-  def loadShuttleServiceByCriteria(criteria : List[(String, Any)], airports : Map[Int, Airport] = Map[Int, Airport]()) : List[ShuttleService] = {
-    //open the hsqldb
-    val connection = Meta.getConnection()
-    try {
-      var queryString = "SELECT * FROM " + SHUTTLE_SERVICE_TABLE
-
-      if (!criteria.isEmpty) {
-        queryString += " WHERE "
-        for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
-        }
-        queryString += criteria.last._1 + " = ?"
-      }
-
-      val preparedStatement = connection.prepareStatement(queryString)
-
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
-      }
-
-
-      val resultSet = preparedStatement.executeQuery()
-
-      val services = new ListBuffer[ShuttleService]()
-
-      val airlines = Map[Int, Airline]()
-      while (resultSet.next()) {
-        val airlineId = resultSet.getInt("airline")
-        val airline = airlines.getOrElseUpdate(airlineId, AirlineCache.getAirline(airlineId, false).getOrElse(Airline.fromId(airlineId)))
-        AllianceSource.loadAllianceMemberByAirline(airline).foreach { member =>
-          if (member.role != AllianceRole.APPLICANT) {
-            airline.setAllianceId(member.allianceId)
-          }
-        }
-
-        //val airport = Airport.fromId(resultSet.getInt("airport"))
-        val airportId = resultSet.getInt("airport")
-        val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, false).get)
-        val name = resultSet.getString("name")
-        val level = resultSet.getInt("level")
-        val foundedCycle = resultSet.getInt("founded_cycle")
-
-
-        services += ShuttleService(airline, airline.getAllianceId(), airport, name, level, foundedCycle)
-      }
-
-      resultSet.close()
-      preparedStatement.close()
-
-      services.toList
-    } finally {
-      connection.close()
-    }
-  }
-
-  //case class AirlineBase(airline : Airline, airport : Airport, scale : Int, headQuarter : Boolean = false, var id : Int = 0) extends IdObject
-  def saveShuttleService(shuttleService : ShuttleService) = {
-    val connection = Meta.getConnection()
-    try {
-      val preparedStatement = connection.prepareStatement("REPLACE INTO " + SHUTTLE_SERVICE_TABLE + "(airline, airport, name, level, founded_cycle) VALUES(?, ?, ?, ?, ?)")
-
-      preparedStatement.setInt(1, shuttleService.airline.id)
-      preparedStatement.setInt(2, shuttleService.airport.id)
-      preparedStatement.setString(3, shuttleService.name)
-      preparedStatement.setInt(4, shuttleService.level)
-      preparedStatement.setInt(5, shuttleService.foundedCycle)
-      preparedStatement.executeUpdate()
-      preparedStatement.close()
-
-      AirlineCache.invalidateAirline(shuttleService.airline.id)
-      AirportCache.invalidateAirport(shuttleService.airport.id)
-    } finally {
-      connection.close()
-    }
-  }
-
-  def deleteShuttleService(shuttleService : ShuttleService) = {
-    deleteShuttleServiceByCriteria(List(("airline", shuttleService.airline.id), ("airport", shuttleService.airport.id)))
-    AirlineCache.invalidateAirline(shuttleService.airline.id)
-    AirportCache.invalidateAirport(shuttleService.airport.id)
-  }
-
-  def deleteShuttleServiceByCriteria(criteria : List[(String, Any)]) = {
-    //open the hsqldb
-    val connection = Meta.getConnection()
-    try {
-      var queryString = "DELETE FROM " + SHUTTLE_SERVICE_TABLE
-
-      if (!criteria.isEmpty) {
-        queryString += " WHERE "
-        for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
-        }
-        queryString += criteria.last._1 + " = ?"
-      }
-
-      val preparedStatement = connection.prepareStatement(queryString)
-
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
-      }
-
-      val deletedCount = preparedStatement.executeUpdate()
-
-      preparedStatement.close()
-      println("Deleted " + deletedCount + " shuttleService records")
-      deletedCount
-
-    } finally {
-      connection.close()
-    }
-
-  }
-  
   
   def saveTransaction(transaction : AirlineTransaction) = {
     val connection = Meta.getConnection()
@@ -1225,7 +1103,8 @@ object AirlineSource {
   def saveAirlineModifier(airlineId : Int, modifier : AirlineModifier) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_MODIFIER_TABLE (airline, modifier_name, creation, expiry) VALUES(?, ?, ?, ?)")
+      val preparedStatement = connection.prepareStatement(s"INSERT INTO $AIRLINE_MODIFIER_TABLE (airline, modifier_name, creation, expiry) VALUES(?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)
+
       preparedStatement.setInt(1, airlineId)
       preparedStatement.setString(2, modifier.modifierType.toString)
       preparedStatement.setInt(3, modifier.creationCycle)
@@ -1234,9 +1113,59 @@ object AirlineSource {
         case None => preparedStatement.setNull(4, java.sql.Types.INTEGER)
       }
       preparedStatement.executeUpdate()
-
+      val generatedKeys = preparedStatement.getGeneratedKeys
+      if (generatedKeys.next()) {
+        val generatedId = generatedKeys.getInt(1)
+        modifier.id = generatedId
+      }
       preparedStatement.close()
+
+      saveAirlineModifierProperties(modifier)
+
       AirlineCache.invalidateAirline(airlineId)
+    } finally {
+      connection.close()
+    }
+  }
+
+  private[this] def saveAirlineModifierProperties(modifier : AirlineModifier) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_MODIFIER_PROPERTY_TABLE (id, name, value) VALUES(?, ?, ?)")
+
+      modifier.properties.foreach {
+        case (propertyType, value) =>
+          preparedStatement.setInt(1, modifier.id)
+          preparedStatement.setString(2, propertyType.toString)
+          preparedStatement.setLong(3, value)
+          preparedStatement.executeUpdate()
+      }
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadAirlineModifierProperties() = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_MODIFIER_PROPERTY_TABLE)
+
+      val resultSet = preparedStatement.executeQuery()
+
+      val result : Map[Int, Map[AirlineModifierPropertyType.Value, Long]] = Map()
+      while (resultSet.next()) {
+        val propertyType = AirlineModifierPropertyType.withName(resultSet.getString("name"))
+        val value = resultSet.getLong("value")
+        val id = resultSet.getInt("id")
+        val map = result.getOrElseUpdate(id, Map())
+        map.put(propertyType, value)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.view.mapValues(_.toMap).toMap
     } finally {
       connection.close()
     }
@@ -1246,17 +1175,24 @@ object AirlineSource {
   def loadAirlineModifiers() : List[(Int, AirlineModifier)] = { //_1 is airline Id
     val connection = Meta.getConnection()
     try {
+      val propertiesById = loadAirlineModifierProperties()
+
       val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_MODIFIER_TABLE)
 
       val resultSet = preparedStatement.executeQuery()
       val result : ListBuffer[(Int, AirlineModifier)] = ListBuffer[(Int, AirlineModifier)]()
       while (resultSet.next()) {
         val expiryObject = resultSet.getObject("expiry")
+        val id = resultSet.getInt("id")
         val airlineModifier = AirlineModifier.fromValues(
           AirlineModifierType.withName(resultSet.getString("modifier_name")),
           resultSet.getInt("creation"),
-          if (expiryObject == null) None else Some(expiryObject.asInstanceOf[Int])
+          if (expiryObject == null) None else Some(expiryObject.asInstanceOf[Int]),
+          propertiesById.get(id).getOrElse(immutable.Map.empty)
         )
+        airlineModifier.id = id
+
+
         result.append((resultSet.getInt("airline"), airlineModifier))
       }
 
@@ -1282,7 +1218,8 @@ object AirlineSource {
         val airlineModifier = AirlineModifier.fromValues(
           AirlineModifierType.withName(resultSet.getString("modifier_name")),
           resultSet.getInt("creation"),
-          if (expiryObject == null) None else Some(expiryObject.asInstanceOf[Int])
+          if (expiryObject == null) None else Some(expiryObject.asInstanceOf[Int]),
+          loadAirlineModifierPropertiesById(resultSet.getInt("id"))
         )
         result.append(airlineModifier)
       }
@@ -1291,6 +1228,29 @@ object AirlineSource {
       preparedStatement.close()
 
       result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadAirlineModifierPropertiesById(id : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_MODIFIER_PROPERTY_TABLE + " WHERE id = ?")
+      preparedStatement.setInt(1, id)
+
+      val resultSet = preparedStatement.executeQuery()
+      val result = Map[AirlineModifierPropertyType.Value, Long]()
+      while (resultSet.next()) {
+        val propertyType = AirlineModifierPropertyType.withName(resultSet.getString("name"))
+        val value = resultSet.getLong("value")
+        result.put(propertyType, value)
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toMap
     } finally {
       connection.close()
     }

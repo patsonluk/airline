@@ -8,6 +8,7 @@ var selectedLink
 var currentTime
 var currentCycle
 var airlineColors = {}
+var airlineLabelColors = {}
 var polylines = []
 var airports = undefined
 
@@ -29,6 +30,7 @@ $( document ).ready(function() {
 		getAirports();
 //		printConsole("Please log in")
         showAbout();
+        refreshWallpaper()
 	}
 
     registerEscape()
@@ -37,7 +39,6 @@ $( document ).ready(function() {
 
 	populateTooltips()
 	checkAutoplaySettings()
-	refreshWallpaper()
 
 	
 	if ($("#floatMessage").val()) {
@@ -158,20 +159,19 @@ function loadUser(isLogin) {
 	var ajaxCall = {
 	  type: "POST",
 	  url: "login",
-	  async: false,
 	  success: function(user) {
 		  if (user) {
-		    closeAbout()
+		      closeAbout()
 		      activeUser = user
 			  $.cookie('sessionActive', 'true');
 			  $("#loginUserName").val("")
 			  $("#loginPassword").val("")
 
 			  if (isLogin) {
-			      refreshWallpaper()
-				  showFloatMessage("Successfully logged in")
+			  	  showFloatMessage("Successfully logged in")
 				  showAnnoucement()
 			  }
+              refreshWallpaper()
     		  refreshLoginBar()
 //			  printConsole('') //clear console
 			  getAirports()
@@ -193,16 +193,18 @@ function loadUser(isLogin) {
 			  addAirlineSpecificMapControls(map)
               initPrompts()
 		  }
+		  updateAirlineLabelColors()
 
-		  
 	  },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	    	if (jqXHR.status == 401) {
 	    		showFloatMessage("Incorrect username or password")
 	    	} else if (jqXHR.status == 400) {
 	    		showFloatMessage("Session expired. Please log in again")
+		    } else if (jqXHR.status == 403) {
+	    		showFloatMessage("You have been banned for violating the game rules. Please contact admins on Discord for assistance.")
 	    	} else {
-	    	    showFloatMessage("Error logging in, error code " + jqXHR.status + ". Please contact admins on Discord for assistance.")
+	    	    showFloatMessage("Error logging in, error code " + jqXHR.status + ". Please try again. Contact admins on Discord if the issue persists.")
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    	}
@@ -217,7 +219,7 @@ function loadUser(isLogin) {
 
 	}
 	
-	$.ajax(ajaxCall);
+	return $.ajax(ajaxCall);
 }
 
 function passwordLogin(e) {
@@ -227,7 +229,8 @@ function passwordLogin(e) {
 }
 
 function login()  {
-	loadUser(true)
+    $('.button.login').addClass('loading')
+    loadUser(true)
 }
 
 function onGoogleLogin(googleUser) {
@@ -249,6 +252,7 @@ function logout() {
 	    	console.log(message)
 	    	activeUser = null
 	    	activeAirline = null
+	    	airlineLabelColors = {}
 	    	hideUserSpecificElements()
 	    	$.removeCookie('sessionActive')
 	    	//refreshLoginBar()
@@ -612,6 +616,22 @@ function executeConfirmationTarget() {
 	}
 }
 
+function promptSelection(question, choices, targetFunction) {
+	$('#selectionModal .question').text(question)
+	$('#selectionModal .selections').empty()
+	$.each(choices, function(index, choice) {
+	    var $selectionButton = $('<div class="button">' + choice + '</div>')
+        $('#selectionModal .selections').append($selectionButton)
+        $selectionButton.click(function() {
+            targetFunction(choice)
+            closeModal($('#selectionModal'))
+        })
+	})
+
+	$('#selectionModal').fadeIn(200)
+}
+
+
 function updateAirlineColors() {
 	var url = "colors"
     $.ajax({
@@ -627,6 +647,30 @@ function updateAirlineColors() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function updateAirlineLabelColors(callback) {
+    //get airline label color
+    airlineLabelColors = {}
+    $.ajax({
+            type: 'GET',
+            url: "airlines/" + activeAirline.id + "/airline-label-colors",
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            success: function(result) {
+                $.each(result, function(index, entry) {
+                    airlineLabelColors[entry[0]] = entry[1]
+                })
+                if (callback) {
+                    callback()
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                    console.log(JSON.stringify(jqXHR));
+                    console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            }
+    });
+
 }
 
 function assignAirlineColors(dataSet, colorProperty) {
@@ -645,12 +689,14 @@ function populateNavigation(parent) { //change all the tabs to do fake url
         parent = $(":root")
     }
 
-    parent.find('[data-link]').each(function() {
+    parent.find('[data-link]').andSelf().filter('[data-link]').each(function() {
+        $(this).off('click.nav')
+
         var onclickFunction = $(this).attr("onclick")
         var path = $(this).data("link") != "/" ? ("nav-" + $(this).data("link")) : "/"
         //console.log(path + " " + onclickFunction)
 
-        $(this).click(function() {
+        $(this).on('click.nav', function() {
             history.pushState({ "onclickFunction" : onclickFunction }, null, path);
         })
 //

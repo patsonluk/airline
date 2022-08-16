@@ -84,7 +84,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
         Title.PRIVILEGED_AIRLINE
       }
     val title = CountryAirlineTitle.getTitle(airport.countryCode, airline)
-    if (title.title.id <= Title.ESTABLISHED_AIRLINE.id) { //lower id means higher title
+    if (title.title.id <= requiredTitle.id) { //lower id means higher title
       Right(requiredTitle)
     } else {
       Left(requiredTitle)
