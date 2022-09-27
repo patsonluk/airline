@@ -443,7 +443,7 @@ case class DelegateBoostAirlineModifier(amount : Int, duration : Int, override v
   override def isHidden = true
 }
 
-case class BannerLoyaltyAirlineModifier(amount : Int, override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.BANNER_LOYALTY_BOOST, creationCycle, Some(creationCycle +  5 * 52)) {
+case class BannerLoyaltyAirlineModifier(amount : Int, override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.BANNER_LOYALTY_BOOST, creationCycle, Some(creationCycle +  10 * 52)) {
   lazy val internalProperties = Map[AirlineModifierPropertyType.Value, Long](AirlineModifierPropertyType.STRENGTH -> amount)
   override def properties : Map[AirlineModifierPropertyType.Value, Long] = internalProperties
   override def isHidden = false
