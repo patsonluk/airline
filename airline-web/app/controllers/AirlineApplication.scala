@@ -146,10 +146,10 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
 
     val airlineModifiers : Map[Int, List[AirlineModifier]]  =
-      if (request.user.isAdmin) { //modifiers are only visible to admins
+      if (request.user.isAdmin) { //some modifiers are only visible to admins
         AirlineSource.loadAirlineModifiers().groupBy(_._1).view.mapValues(_.toList.map(_._2)).toMap
       } else {
-        Map.empty
+        AirlineSource.loadAirlineModifiers().filter(!_._2.isHidden).groupBy(_._1).view.mapValues(_.toList.map(_._2)).toMap
       }
 
 

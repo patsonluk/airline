@@ -42,6 +42,20 @@ object AirportSource {
       loadAirportsByQueryString(queryString, criteria.map(_._2), fullLoad, loadFeatures)
   }
 
+  def getAirlineGlobalBonuses(): Map[Int, List[AirlineBonus]] = {
+    AirlineSource.loadAirlineModifiers().filter(_._2.modifierType == AirlineModifierType.BANNER_LOYALTY_BOOST).map { //only 1 type for now
+      case (airlineId, modifier) =>
+        val airlineBonus = AirlineBonus(BonusType.BANNER,
+          AirlineAppeal(loyalty = modifier.properties.getOrElse(AirlineModifierPropertyType.STRENGTH, 0L).toDouble,
+            awareness = 0), expirationCycle = modifier.expiryCycle)
+        (airlineId, airlineBonus)
+    }.groupMapReduce(_._1) {
+      case(airlineId, airlineBonus) => List(airlineBonus)
+    } {
+      _:::_ //flatten everything by joining the sub-lists
+    }
+  }
+
   def getAirlineTitleBonuses(airport : Airport, countryAirlineTitleCache : mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]): Map[Int, List[AirlineBonus]] = {
     //get airport bonus //for now no db
     val airlineTitles: Map[Int, CountryAirlineTitle] = countryAirlineTitleCache.getOrElseUpdate(airport.countryCode, CountrySource.loadCountryAirlineTitlesByCountryCode(airport.countryCode).map(entry => (entry.airline.id, entry)).toMap)
@@ -224,6 +238,13 @@ object AirportSource {
       //val airlineMap : Map[Int, Airline] = AirlineSource.loadAllAirlines().foldLeft(Map[Int, Airline]())( (container, airline) => container + Tuple2(airline.id, airline))
       val countryAirlineTitleCache = mutable.HashMap[String, immutable.Map[Int, CountryAirlineTitle]]()
       val currentCycle = CycleSource.loadCycle()
+
+      val airlineGlobalBonuses: Map[Int, List[AirlineBonus]] = //key is airline ID
+        if (fullLoad) {
+          getAirlineGlobalBonuses()
+        } else {
+          Map.empty
+        }
       while (resultSet.next()) {
         val airport = Airport(
           resultSet.getString("iata"),
@@ -284,7 +305,7 @@ object AirportSource {
           val titleBonuses = getAirlineTitleBonuses(airport, countryAirlineTitleCache)
           val campaignBonuses = getCampaignBonuses(airport, currentCycle)
           val airlineBonusesMutable = mutable.Map[Int, ListBuffer[AirlineBonus]]()
-          (titleBonuses.toList ++ campaignBonuses.toList).foreach {
+          (titleBonuses.toList ++ campaignBonuses.toList ++ airlineGlobalBonuses.toList).foreach {
             case((airlineId, bonuses)) =>
               val existingBonusesOfThisAirline = airlineBonusesMutable.getOrElseUpdate(airlineId, ListBuffer[AirlineBonus]())
               existingBonusesOfThisAirline.appendAll(bonuses)

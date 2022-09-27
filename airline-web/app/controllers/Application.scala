@@ -19,7 +19,7 @@ import scala.collection.mutable.{ListBuffer, Set}
 import scala.math.BigDecimal.RoundingMode
 
 
-class Application @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+class Application @Inject()(cc: ControllerComponents, val configuration: play.api.Configuration) extends AbstractController(cc) {
   object AirportSimpleWrites extends Writes[Airport] {
     def writes(airport: Airport): JsValue = {
       JsObject(List(
@@ -150,6 +150,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   
   
   def index = Action {
+    implicit lazy val config = configuration
     Ok(views.html.index(""))
   }
   def test = Action {

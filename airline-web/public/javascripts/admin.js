@@ -1,8 +1,11 @@
 function adminAction(action, targetUserId, callback) {
+ adminActionWithData(action, targetUserId, {}, callback)
+}
+
+function adminActionWithData(action, targetUserId, data, callback) {
 	var url = "/admin-action/" + action + "/" + targetUserId
 	var selectedAirlineId =  $("#rivalDetails .adminActions").data("airlineId")
 
-    var data = { }
 	$.ajax({
 		type: 'PUT',
 		url: url,
@@ -234,6 +237,14 @@ function restore() {
 function banChat() {
     adminAction("ban-chat", $("#rivalDetails .adminActions").data("userId"))
 }
+function setBannerWinner() {
+    adminActionWithData("set-banner-winner", $("#rivalDetails .adminActions").data("userId"),
+    {
+        "strength" : parseInt($("#rivalDetails .bannerLoyaltyBonus").val()),
+        "airlineId" : parseInt($("#rivalDetails .adminActions").data("airlineId")) //airline specific
+    })
+}
+
 function adminSetUsers(action, $modal) {
     var targetUserIds = []
     $.each($modal.find('input:checked'), function(index, input) {

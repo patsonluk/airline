@@ -73,8 +73,16 @@ public class SearchUtil {
 
 	public static void init() throws IOException {
 		try (RestHighLevelClient client = getClient()) {
+			System.out.println("Initializing ES airports");
 			initAirports(client);
+			System.out.println("Initializing ES countires");
 			initCountries(client);
+			System.out.println("Initializing ES zones");
+			initZones(client);
+			System.out.println("Initializing ES airlines");
+			initAirlines(client);
+			System.out.println("Initializing ES alliances");
+			initAlliances(client);
 		}
 		System.out.println("ES DONE");
 	}
