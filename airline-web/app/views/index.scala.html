@@ -1,4 +1,4 @@
-@(message: String)
+@(message: String)(implicit configuration:play.api.Configuration)
 
 <!DOCTYPE html>
 <html>
@@ -5039,8 +5039,9 @@
 		<source src='@routes.Assets.versioned("music/joy-to-the-world.mp3")' type="audio/mp3" />
 	</audio>
 
-    <script src="@routes.Assets.versioned("javascripts/chat-popup.js")"></script>	
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.43&key=AIzaSyDmoX38NBy33nCSacQIc3hMEvSCfscJdnU&libraries=geometry,drawing,visualization&callback=initMap">
+    <script src="@routes.Assets.versioned("javascripts/chat-popup.js")"></script>
+
+    <script src='https://maps.googleapis.com/maps/api/js?v=3.43&key=@configuration.getString("google.mapKey")&libraries=geometry,drawing,visualization&callback=initMap'>
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->
   <script src='/assets/firework/fscreen.js'></script>
