@@ -403,6 +403,9 @@ object AirlineModifier {
         properties(AirlineModifierPropertyType.STRENGTH).toInt,
         properties(AirlineModifierPropertyType.DURATION).toInt,
         creationCycle)
+      case BANNER_LOYALTY_BOOST => BannerLoyaltyAirlineModifier(
+        properties(AirlineModifierPropertyType.STRENGTH).toInt,
+        creationCycle)
     }
 
     modifier
@@ -413,6 +416,7 @@ object AirlineModifier {
 
 abstract class AirlineModifier(val modifierType : AirlineModifierType.Value, val creationCycle : Int, val expiryCycle : Option[Int], var id : Int = 0) extends IdObject {
   def properties : Map[AirlineModifierPropertyType.Value, Long]
+  def isHidden : Boolean //should it be visible to admin only
 }
 
 case class NerfedAirlineModifier(override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.NERFED, creationCycle, None) {
@@ -430,18 +434,25 @@ case class NerfedAirlineModifier(override val creationCycle : Int) extends Airli
   }
 
   override def properties : Map[AirlineModifierPropertyType.Value, Long] = Map.empty
+  override def isHidden = true
 }
 
 case class DelegateBoostAirlineModifier(amount : Int, duration : Int, override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.DELEGATE_BOOST, creationCycle, Some(creationCycle + duration)) {
   lazy val internalProperties = Map[AirlineModifierPropertyType.Value, Long](AirlineModifierPropertyType.STRENGTH -> amount , AirlineModifierPropertyType.DURATION -> duration)
   override def properties : Map[AirlineModifierPropertyType.Value, Long] = internalProperties
+  override def isHidden = true
 }
 
+case class BannerLoyaltyAirlineModifier(amount : Int, override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.BANNER_LOYALTY_BOOST, creationCycle, Some(creationCycle +  5 * 52)) {
+  lazy val internalProperties = Map[AirlineModifierPropertyType.Value, Long](AirlineModifierPropertyType.STRENGTH -> amount)
+  override def properties : Map[AirlineModifierPropertyType.Value, Long] = internalProperties
+  override def isHidden = false
+}
 
 
 object AirlineModifierType extends Enumeration {
   type AirlineModifierType = Value
-  val NERFED, DELEGATE_BOOST = Value
+  val NERFED, DELEGATE_BOOST, BANNER_LOYALTY_BOOST = Value
 }
 
 object AirlineModifierPropertyType extends Enumeration {
