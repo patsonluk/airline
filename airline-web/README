@@ -5,9 +5,8 @@ Then copy the credentials json and put it to `conf` folder with name `gmail-cred
 Similarly the banner uses google oauth. Need to authorize locally by downloading the credentals json as `google-oauth-credentials.json` to conf folder.
 Then invoke the main method of `GooglePhotoUtil`, watch console, it should give u a URL, click on it and it should bring you to authorize it. Afterwards copy the `google-tokens` to the app directory
 
-For google map api (for image search from server)
-
-set `google.apiKey` in `application.conf`
+For google map usage, set `google.mapKey` in `application.conf`
+For image search from server, set `google.apiKey` in `application.conf` (this is optional unless u want image for airports in airport view)
 
 Cities datasource
 http://download.geonames.org/export/dump/cities500.zip

@@ -1,4 +1,4 @@
-@(message: String)
+@(message: String)(implicit configuration:play.api.Configuration)
 
 <!DOCTYPE html>
 <html>
@@ -2682,6 +2682,17 @@
 								<div class="superAdminActions" style="display: none;">
 									<h4>Super Admin Action</h4>
 									<div class="clickable" onclick="switchUser()">Switch to this user</div>
+									<div>
+										<span>Loyalty Bonus:</span>
+										<select class="bannerLoyaltyBonus">
+											<option value="1">1</option>
+											<option value="2">2</option>
+											<option value="3">3</option>
+											<option value="4">4</option>
+											<option value="5">5</option>
+										</select>
+										<div class="button" onclick="setBannerWinner()">Set banner winner</div>
+									</div>
 									<div class="clickable" onclick="promptBroadcastMessage()">Send Broadcast Message</div>
 								</div>
 							</div>
@@ -5028,8 +5039,9 @@
 		<source src='@routes.Assets.versioned("music/joy-to-the-world.mp3")' type="audio/mp3" />
 	</audio>
 
-    <script src="@routes.Assets.versioned("javascripts/chat-popup.js")"></script>	
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.43&key=AIzaSyB5XQhzy2XrM95AyfW8f5BeWJiqr-LGXxU&libraries=geometry,drawing,visualization&callback=initMap">
+    <script src="@routes.Assets.versioned("javascripts/chat-popup.js")"></script>
+
+    <script src='https://maps.googleapis.com/maps/api/js?v=3.43&key=@configuration.get[String]("google.mapKey")&libraries=geometry,drawing,visualization&callback=initMap'>
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->
   <script src='/assets/firework/fscreen.js'></script>

@@ -618,10 +618,10 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   }
 
-  def getAllLinkConsumptions() = Action {
-     val linkConsumptions = LinkSource.loadLinkConsumptions()
-     Ok(Json.toJson(linkConsumptions))
-  }
+//  def getAllLinkConsumptions() = Action {
+//     val linkConsumptions = LinkSource.loadLinkConsumptions()
+//     Ok(Json.toJson(linkConsumptions))
+//  }
 
   def preparePlanLink(airline : Airline, fromAirportId : Int, toAirportId : Int) : Either[String, (Airport, Airport)] = {
     AirportCache.getAirport(fromAirportId, true) match {
