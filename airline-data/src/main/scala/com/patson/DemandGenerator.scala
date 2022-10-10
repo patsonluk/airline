@@ -123,9 +123,9 @@ object DemandGenerator {
       
       val fromAirportAdjustedIncome : Double = if (fromAirport.income > Country.HIGH_INCOME_THRESHOLD) { //to make high income airport a little bit less overpowered
         Country.HIGH_INCOME_THRESHOLD + (fromAirport.income - Country.HIGH_INCOME_THRESHOLD) / 4
-      } else if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) { //to make low income airport a bit more stronger
+      } else if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) { //to make low income airport a bit stronger
         val delta = Country.LOW_INCOME_THRESHOLD - fromAirport.income
-        Country.LOW_INCOME_THRESHOLD + delta * 0.5 //so a 0 income country will be boosted to 7500, a 5000 income country will be boosted to 10000
+        Country.LOW_INCOME_THRESHOLD - delta * 0.5 //so a 0 income country will be boosted to 7500, a 5000 income country will be boosted to 10000
       } else {
         fromAirport.income
       }
