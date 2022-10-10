@@ -176,7 +176,10 @@ object AirportSimulation {
 
 
   def simulateLoyalists(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) = {
-    val existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]] = LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport.id)
+    var existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]] = LoyalistSource.loadLoyalistsByCriteria(List.empty).groupBy(_.airport.id)
+
+    existingLoyalistByAirportId = decayLoyalists(allAirports, existingLoyalistByAirportId)
+
     val (updatingLoyalists,deletingLoyalists) = computeLoyalists(allAirports, linkRidershipDetails, existingLoyalistByAirportId)
     println(s"Updating ${updatingLoyalists.length} loyalists entries")
     LoyalistSource.updateLoyalists(updatingLoyalists)
@@ -207,6 +210,43 @@ object AirportSimulation {
     }
 
     newInfo
+  }
+
+  val DECAY_RATE = 0.001 //1 loyalist disappears per 1000 per week
+  private[patson] def decayLoyalists(allAirports : List[Airport], existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) : immutable.Map[Int, List[Loyalist]] = {
+    val updatingLoyalists, deletingLoyalists = ListBuffer[Loyalist]()
+    val r = new Random()
+    val result : immutable.Map[Int, List[Loyalist]] = existingLoyalistByAirportId.view.mapValues { loyalists =>
+      loyalists.map {
+        loyalist =>
+          var decayAmount = (loyalist.amount * DECAY_RATE).toInt
+          if (decayAmount == 0) { //less than 1, try random
+            if (r.nextInt((1 / DECAY_RATE).toInt) < loyalist.amount) {
+              decayAmount = 1
+            }
+          }
+
+          if (decayAmount == 0) { //no change
+            loyalist
+          } else {
+            val newLoyalist = Loyalist(loyalist.airport, loyalist.airline, loyalist.amount - decayAmount)
+            if (newLoyalist.amount == 0) {
+              deletingLoyalists.append(newLoyalist)
+            } else {
+              updatingLoyalists.append(newLoyalist)
+            }
+            newLoyalist
+          }
+      }.filter(_.amount > 0)
+    }.toMap
+
+    println(s"Decaying (update) ${updatingLoyalists.length} loyalists entries")
+    LoyalistSource.updateLoyalists(updatingLoyalists.toList)
+
+    println(s"Decaying (deletion) ${deletingLoyalists.length} loyalists entries")
+    LoyalistSource.deleteLoyalists(deletingLoyalists.toList)
+
+    result
   }
 
   val MAX_LOYALIST_FLIP_RATIO = 1
