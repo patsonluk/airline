@@ -289,10 +289,10 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 14
   override val frequencySensitivity = 0.15
-  override val flightDurationSensitivity = 1.3
+  override val flightDurationSensitivity = 1.0
 
   def computeCost(baseCost : Double, link : Transport, linkClass : LinkClass) = {
-    val noise = 0.9 + getFlatTopBellRandom(0.2, 0.1)
+    val noise = 0.9 + getFlatTopBellRandom(0.3, 0.25)
 
     //NOISE?
     val finalCost = baseCost * noise

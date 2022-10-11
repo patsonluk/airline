@@ -862,8 +862,8 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       }
 
       val ratio = airline1Picked.toDouble / airline2Picked
-      assert(ratio > 1)
-      assert(ratio < 2)
+      assert(ratio > 1.5)
+      assert(ratio < 2.5)
     }
   }
 }

@@ -1147,7 +1147,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.25)
     }
 
-    "accept some links at 3 x suggested price with neutral quality and decent loyalty for SUPERSONIC flight of Speedy Eco pax".in {
+    "accept some links at 2 x suggested price with neutral quality and decent loyalty for SUPERSONIC flight of Speedy Eco pax".in {
       val clonedFromAirport  = fromAirport.copy()
       clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
 
@@ -1155,7 +1155,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
       val duration = Computation.calculateDuration(2000, distance)
       val suggestedPrice = Pricing.computeStandardPriceForAllClass(distance, clonedFromAirport, toAirport)
-      val price = suggestedPrice * 3
+      val price = suggestedPrice * 2
       val linkType = Computation.getFlightType(fromAirport, toAirport, distance)
       val quality = fromAirport.expectedQuality(linkType, ECONOMY)
       val newLink = Link(clonedFromAirport, toAirport, testAirline1, price = price, distance = distance, LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = quality, duration, frequency = Link.HIGH_FREQUENCY_THRESHOLD, linkType)
