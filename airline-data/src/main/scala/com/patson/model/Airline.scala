@@ -283,8 +283,15 @@ object Airline {
 
         //remove all airplanes
         AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
+
+        //remove all base spec since it has no foreign key on base
+        airline.getBases().foreach { base =>
+          AirportSource.updateAirportBaseSpecializations(base.airport.id, airlineId, List.empty)
+        }
+
         //remove all bases
         AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
+
         //remove all loans
         BankSource.loadLoansByAirline(airlineId).foreach { loan =>
           BankSource.deleteLoan(loan.id)

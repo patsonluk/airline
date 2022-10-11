@@ -466,6 +466,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
               AirlineSource.deleteLounge(lounge)
             }
 
+            //remove all base spec since it has no foreign key on base
+            AirportSource.updateAirportBaseSpecializations(airportId, airlineId, List.empty)
+
             AirlineSource.deleteAirlineBase(base)
 
             Ok(Json.toJson(base))
