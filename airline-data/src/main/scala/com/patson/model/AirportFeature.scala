@@ -57,7 +57,7 @@ sealed case class InternationalHubFeature(baseStrength : Int, boosts : List[Airp
         } else {
           0.5
         }
-      if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL) {
+      if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL) {
         (rawDemand * (strengthFactor * 0.5) * multiplier).toInt //at MAX_STREGTH, add 1x for business traveler, 0.2x for tourists (short haul)   
       } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
         (rawDemand * (strengthFactor * 1) * multiplier).toInt //at MAX_STREGTH, add 2x for business traveler, 0.4x for tourists (long haul)
