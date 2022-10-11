@@ -462,14 +462,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
             }
             AirplaneSource.updateAirplanes(updatingAirplanes)
 
-            AirlineSource.loadLoungeByAirlineAndAirport(airlineId, airportId).foreach { lounge =>
-              AirlineSource.deleteLounge(lounge)
-            }
-
-            //remove all base spec since it has no foreign key on base
-            AirportSource.updateAirportBaseSpecializations(airportId, airlineId, List.empty)
-
-            AirlineSource.deleteAirlineBase(base)
+            base.delete()
 
             Ok(Json.toJson(base))
         }
