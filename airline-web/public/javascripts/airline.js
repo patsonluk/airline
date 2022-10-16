@@ -1929,7 +1929,7 @@ function showLinkEventHistory(linkId) {
                                 var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
                                 var realOffset = row.offsetTop - baseOffset
                                 $linkEventTableContainer.stop(true, true) //stop previous animation
-                                eventTableScrollAnimation = $linkEventTableContainer.animate ({scrollTop: realOffset}, "fast");
+                                $linkEventTableContainer.animate ({scrollTop: realOffset}, "fast");
                             }
                         },
                         function() { //chartout
