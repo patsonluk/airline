@@ -26,19 +26,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
       val currentYear = olympics.currentYear(currentCycle)
       import OlympicsStatus._
-      val status = olympics.status(currentCycle) match {
-        case VOTING => "Voting for Host City"
-        case HOST_CITY_SELECTED => "Host City Voted"
-        case PREPARATION => "Preparation for the Games"
-        case OLYMPICS_YEAR =>
-          val weeksBeforeGames = Olympics.WEEKS_PER_YEAR - Olympics.GAMES_DURATION - olympics.currentWeek(currentCycle)
-          s"$weeksBeforeGames week(s) before the Games"
-        case IN_PROGRESS =>
-          "Olympic Games in Progress"
-        case CONCLUDED =>
-          "Concluded"
-        case _ => "Unknown"
-      }
+      val status = OlympicsUtil.getStatusText(olympics, currentCycle)
       val votingActive = remainingDuration > 0 && currentYear == 1
       var result = JsObject(List(
         "id" -> JsNumber(olympics.id),

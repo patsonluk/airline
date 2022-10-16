@@ -505,7 +505,7 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
             if (hasCapacity.first) {
 			    priceByClass.first.push({ value : linkConsumption.price.first })
 			}
-			
+
 			var mark = Math.floor(linkConsumption.cycle / weeksPerMark)
 			//var week = linkConsumption.cycle % 4 + 1
 			category.push({ label : mark.toString()})
@@ -635,6 +635,278 @@ function plotLinkConsumption(linkConsumptions, ridershipContainer, revenueContai
 	   }	
 	})
 }
+
+function plotRivalHistory(rivalHistory, container, cycleHoverFunc, chartOutFunc) {
+    container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	var dataByAirlineId = {}
+	var airlineNameByAirlineId = {}
+	var emptySeatsData = []
+	var cancelledSeatsData = []
+	var soldSeatsData = {
+			economy : [],
+			business : [],
+	        first : []
+	}
+
+	var category = []
+    var xLabel = 'Week'
+	var maxCapacity = 0
+
+	if (!jQuery.isEmptyObject(rivalHistory)) {
+	    //collect airline ids involved
+		$.each(rivalHistory, function(cycle, linkConsumptionByAirline) {
+		    $.each(linkConsumptionByAirline, function(airlineId, entry) {
+		        airlineNameByAirlineId[airlineId] = entry.airlineName
+		    })
+            category.push({ label : cycle, cycle : cycle })
+		})
+		$.each(airlineNameByAirlineId, function(airlineId, airlineName) {
+            dataByAirlineId[airlineId] = []
+        })
+
+        $.each(rivalHistory, function(cycle, linkConsumptionByAirline) {
+            $.each(airlineNameByAirlineId, function(airlineId, airlineName) {
+                passenger = linkConsumptionByAirline[airlineId] ? linkConsumptionByAirline[airlineId].passenger : 0
+                dataByAirlineId[airlineId].push({ value : passenger, cycle : cycle})
+            })
+        })
+	}
+
+    var dataset = []
+    var paletteColors = []
+    $.each(dataByAirlineId, function(airlineId, data) {
+        if (airlineId == activeAirline.id) { //always put own airline first (bottom)
+            dataset.unshift({ seriesName: airlineNameByAirlineId[airlineId], "data" : data})
+            paletteColors.unshift(airlineColors[airlineId])
+        } else {
+            dataset.push({ seriesName: airlineNameByAirlineId[airlineId], "data" : data})
+            paletteColors.push(airlineColors[airlineId])
+        }
+    })
+
+    var chartConfig = {
+                        "xAxisname": xLabel,
+                        "YAxisName": "Seats Consumption",
+                        //"sYAxisName": "Load Factor %",
+                        //"YAxisMaxValue" : maxCapacity * 1.2,
+                        "transposeAxis":"1",
+                        "useroundedges": "1",
+                        "animation": "0",
+                        "showBorder":"0",
+                          "toolTipBorderRadius": "2",
+                          "toolTipPadding": "5",
+                          "plotBorderAlpha": "10",
+                          "usePlotGradientColor": "0",
+                          "bgAlpha":"0",
+                          "showValues":"0",
+                          "paletteColors": paletteColors.toString(),
+                          "canvasPadding":"0",
+                          "labelDisplay":"wrap",
+                          "drawCrossLine": "1",
+                          "crossLineColor": "#CDFCF6",
+                          "crossLineAlpha": "50",
+                          "showLegend": "0",
+                          "showPlotBorder": "0",
+                          "plotToolText": "$seriesName : $value"
+                    }
+
+	checkDarkTheme(chartConfig, true)
+
+	//var ridershipChart = container.insertFusionCharts( {
+	var ridershipChart = new FusionCharts( {
+		type: 'stackedcolumn2d',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+	    renderAt: container[0].id,
+	    containerBackgroundOpacity :'0',
+		dataSource: {
+	    	"chart": chartConfig,
+	    	"categories" : [
+            {
+            "verticallinecolor": "666666",
+            "verticallinethickness": "3",
+            "alpha": "100",
+            "category" : category}],
+			"dataset" : dataset,
+
+	    },
+	    events : {
+            "dataplotrollover": function (eventObj, dataObj) {
+                if (cycleHoverFunc != null) {
+                    cycleHoverFunc(category[dataObj.index].cycle)
+                }
+
+            },
+            "chartRollOut": function (eventObj, dataObj) {
+                if (chartOutFunc != null) {
+                    chartOutFunc()
+                }
+            }
+	    }
+	}).render()
+	return ridershipChart
+}
+
+function plotLinkEvent(linkConsumptions, linkEventContainer, cycleHoverFunc, chartOutFunc) {
+	linkEventContainer.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+	var emptySeatsData = []
+	var cancelledSeatsData = []
+	var soldSeatsData = {
+			economy : [],
+			business : [],
+	        first : []
+	}
+
+
+	var category = []
+    var xLabel = 'Week'
+	var maxCapacity = 0
+
+	if (!jQuery.isEmptyObject(linkConsumptions)) {
+		var hasCapacity = {} //check if there's any capacity for this link class at all
+        hasCapacity.economy = $.grep(linkConsumptions, function(entry, index) {
+            return entry.capacity.economy > 0
+        }).length > 0
+        hasCapacity.business = $.grep(linkConsumptions, function(entry, index) {
+            return entry.capacity.business > 0
+        }).length > 0
+        hasCapacity.first = $.grep(linkConsumptions, function(entry, index) {
+            return entry.capacity.first > 0
+        }).length > 0
+
+
+		$.each(linkConsumptions.reverse(), function(key, linkConsumption) {
+			var capacity = linkConsumption.capacity.economy + linkConsumption.capacity.business + linkConsumption.capacity.first
+			var soldSeats = linkConsumption.soldSeats.economy + linkConsumption.soldSeats.business + linkConsumption.soldSeats.first
+			var cancelledSeats = linkConsumption.cancelledSeats.economy + linkConsumption.cancelledSeats.business + linkConsumption.cancelledSeats.first
+			emptySeatsData.push({ value : capacity - soldSeats - cancelledSeats, cycle : linkConsumption.cycle  })
+			cancelledSeatsData.push({ value : cancelledSeats, cycle : linkConsumption.cycle  })
+
+			soldSeatsData.economy.push({ value : linkConsumption.soldSeats.economy, cycle : linkConsumption.cycle })
+			soldSeatsData.business.push({ value : linkConsumption.soldSeats.business, cycle : linkConsumption.cycle })
+			soldSeatsData.first.push({ value : linkConsumption.soldSeats.first, cycle : linkConsumption.cycle })
+
+			if (capacity > maxCapacity) {
+			    maxCapacity = capacity
+			}
+
+			//var mark = Math.floor(linkConsumption.cycle / weeksPerMark)
+			//var week = linkConsumption.cycle % 4 + 1
+			category.push({ label : linkConsumption.cycle.toString() , cycle : linkConsumption.cycle })
+
+
+
+		})
+	}
+
+	var chartConfig = {
+                      	    		"xAxisname": xLabel,
+                      	    		"YAxisName": "Seats Consumption",
+                      	    		//"sYAxisName": "Load Factor %",
+                      	    		"YAxisMaxValue" : maxCapacity * 1.2,
+                      	            "transposeAxis":"1",
+                      	    		"useroundedges": "1",
+                      	    		"animation": "0",
+                      	    		"showBorder":"0",
+                                      "toolTipBorderRadius": "2",
+                                      "toolTipPadding": "5",
+                                      "plotBorderAlpha": "10",
+                                      "usePlotGradientColor": "0",
+                                      "paletteColors": "#007849,#0375b4,#ffce00,#D46A6A,#bbbbbb",
+                                      "bgAlpha":"0",
+                                      "showValues":"0",
+                                      "canvasPadding":"0",
+                                      "labelDisplay":"wrap",
+                                      "drawCrossLine": "1",
+                                      "crossLineColor": "#CDFCF6",
+                                      "crossLineAlpha": "50",
+                                      "showLegend": "0",
+                                      "showPlotBorder": "0",
+                                      "plotToolText": "$seriesName : $value"
+                      	    	}
+
+	checkDarkTheme(chartConfig, true)
+
+	var currentWeekHover = 0
+
+
+	//var ridershipChart = linkEventContainer.insertFusionCharts( {
+	var ridershipChart = new FusionCharts( {
+		type: 'stackedcolumn2d',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+	    renderAt: linkEventContainer[0].id,
+	    containerBackgroundOpacity :'0',
+		dataSource: {
+	    	"chart": chartConfig,
+	    	"categories" : [
+            {
+            "verticallinecolor": "666666",
+            "verticallinethickness": "3",
+            "alpha": "100",
+            "category" : category}],
+			"dataset" : [
+			              {"seriesName": "Sold Seats (Economy)", "type": "economy", "data" : soldSeatsData.economy} //type is just our custom attribute, nothing to do with fusioncharts
+						 ,{"seriesName": "Sold Seats (Business)", "type": "business","data" : soldSeatsData.business}
+						 ,{"seriesName": "Sold Seats (First)", "type": "first", "data" : soldSeatsData.first}
+						 ,{ "seriesName": "Cancelled Seats", "type": "cancelled", "data" : cancelledSeatsData}
+						 ,{ "seriesName": "Empty Seats", "type": "empty", "data" : emptySeatsData, "alpha":"10"}
+
+			            //, {"seriesName": "Load Factor", "renderAs" : "line", "parentYAxis": "S", "data" : loadFactorData}
+			            ],
+
+	    },
+	    events : {
+            "dataplotrollover": function (eventObj, dataObj) {
+                if (cycleHoverFunc != null) {
+                    cycleHoverFunc(category[dataObj.index].cycle)
+                }
+
+            },
+            "chartRollOut": function (eventObj, dataObj) {
+                if (chartOutFunc != null) {
+                    chartOutFunc()
+                }
+            }
+	    }
+	}).render()
+	return ridershipChart
+}
+
+
+function toggleLinkEventBar(chart, cycle, on) {
+    if (chart.lastToggledCycle && chart.lastToggledCycle == cycle) {
+        return
+    }
+
+    chart.lastToggledCycle = cycle
+    //chart.setData()
+    var jsonData = chart.getJSONData()
+    $.each(jsonData.dataset, function(i, entry) {
+      $.each(entry.data, function(i, entry) {
+        if (entry.type == "empty") {
+            return //do not change alpha on empty seat bar
+        }
+        if (on) { //toggle on the target cycle bar
+            if (entry.cycle != cycle) { //all other cycle should then have lower alpha
+              entry.alpha = "30"
+            } else {
+              entry.alpha = "100"
+            }
+        } else { //reset everyone
+          entry.alpha = "100"
+        }
+      })
+    })
+    chart.setJSONData(jsonData)
+}
+
 
 
 function stringHashCode(s) {
