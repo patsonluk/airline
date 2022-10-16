@@ -1902,7 +1902,7 @@ function showLinkEventHistory(linkId) {
                 var row = $matchingRows[0]
                 var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
                 var realOffset = row.offsetTop - baseOffset
-                $linkEventTableContainer.stop() //stop previous animation
+                $linkEventTableContainer.stop(true) //stop previous animation
                 $linkEventTableContainer.animate ({scrollTop: realOffset}, "fast");
             }
         },
@@ -1928,7 +1928,7 @@ function showLinkEventHistory(linkId) {
                                 var row = $matchingRows[0]
                                 var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
                                 var realOffset = row.offsetTop - baseOffset
-                                $linkEventTableContainer.stop() //stop previous animation
+                                $linkEventTableContainer.stop(true) //stop previous animation
                                 eventTableScrollAnimation = $linkEventTableContainer.animate ({scrollTop: realOffset}, "fast");
                             }
                         },
