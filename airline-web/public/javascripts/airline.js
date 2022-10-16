@@ -689,6 +689,8 @@ function refreshLinkDetails(linkId) {
 	    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    	    }
 	    	});
+
+	    	$('#linkEventModal').data('link', link)
 	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -770,6 +772,7 @@ function refreshLinkDetails(linkId) {
 		    	enableButton($("#linkDetails .button.viewLinkComposition"))
 	    	}
             plotLinkCharts(linkConsumptions, plotUnit)
+            $('#linkEventChart').data('linkConsumptions', linkConsumptions)
 	    	$("#linkHistoryDetails").show()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -1874,6 +1877,153 @@ function showLinkComposition(linkId) {
 	});
 }
 
+
+function showLinkEventHistory(linkId) {
+    $('#linkEventModal .chart').hide()
+    $('#linkRivalHistoryChart').show()
+
+    var link = $("#linkEventModal").data("link")
+    $("#linkEventModal .title").html("<div style='display: flex; align-items: center;'>"
+    + getCountryFlagImg(link.fromCountryCode)
+    + getAirportText(link.fromAirportCity, link.fromAirportCode)
+    + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>"
+    + getCountryFlagImg(link.toCountryCode)
+    + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+
+    var linkConsumptions = $($('#linkEventChart').data('linkConsumptions')).toArray().slice(0, 8 * 13)
+
+    var chart = plotLinkEvent(linkConsumptions, $('#linkEventChart'),
+        function(hoverCycle) {
+            var $linkEventTableContainer = $("#linkEventModal .linkEventHistoryTableContainer")
+            $linkEventTableContainer.find(".table-row").removeClass('selected')
+            var $matchingRows = $linkEventTableContainer.find(".table-row[data-cycle='" + hoverCycle + "']")
+            $matchingRows.addClass('selected')
+            if ($matchingRows.length > 0) {
+                var row = $matchingRows[0]
+                var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
+                var realOffset = row.offsetTop - baseOffset
+                $linkEventTableContainer.animate ({scrollTop: realOffset});
+            }
+        },
+        function() { //chartout
+             $("#linkEventModal .linkEventHistoryTableContainer .table-row").removeClass('selected')
+        })
+    $("#linkEventChart").data("chart", chart) //record back to the container
+
+    //load rival comparison
+    $.ajax({
+        		type: 'GET',
+        		url: "airlines/" + activeAirline.id + "/link-related-rival-history/" + linkId + "?cycleCount=" + linkConsumptions.length,
+        	    contentType: 'application/json; charset=utf-8',
+        	    dataType: 'json',
+        	    success: function(result) {
+                    var chart = plotRivalHistory(result, $('#linkRivalHistoryChart'),
+                        function(hoverCycle) {
+                            var $linkEventTableContainer = $("#linkEventModal .linkEventHistoryTableContainer")
+                            $linkEventTableContainer.find(".table-row").removeClass('selected')
+                            var $matchingRows = $linkEventTableContainer.find(".table-row[data-cycle='" + hoverCycle + "']")
+                            $matchingRows.addClass('selected')
+                            if ($matchingRows.length > 0) {
+                                var row = $matchingRows[0]
+                                var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
+                                var realOffset = row.offsetTop - baseOffset
+                                $linkEventTableContainer.animate ({scrollTop: realOffset});
+                            }
+                        },
+                        function() { //chartout
+                             $("#linkEventModal .linkEventHistoryTableContainer .table-row").removeClass('selected')
+                        }
+                    )
+                    $("#linkRivalHistoryChart").data("chart", chart) //record back to the container
+        	    },
+                error: function(jqXHR, textStatus, errorThrown) {
+        	            console.log(JSON.stringify(jqXHR));
+        	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        	    }
+        	});
+
+
+
+
+
+
+    var url = "airlines/" + activeAirline.id + "/link-related-event-history/" + linkId + "?cycleCount=" + linkConsumptions.length
+    $.ajax({
+    		type: 'GET',
+    		url: url,
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(result) {
+                var linkEventTable = $("#linkEventModal .linkEventHistoryTable")
+                linkEventTable.children("div.table-row").remove()
+
+                result = result.sort(function (a, b) {
+                    return b.cycle - a.cycle
+                });
+
+                $.each(result, function(index, entry) {
+                    var row = $("<div class='table-row clickable'></div>")
+                    row.attr("data-cycle", entry.cycle)
+                    row.data("index", index)
+                    row.append("<div class='cell'>" + getCycleDeltaText(entry.cycleDelta) + "</div>")
+                    if (entry.airlineId) {
+                        row.append("<div class='cell'>" + getAirlineLogoImg(entry.airlineId) + entry.airlineName + "</div>")
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+                    row.append("<div class='cell'>" + entry.description + "</div>")
+                    if (entry.capacity) {
+                        $("<div class='cell' align='right'></div>").appendTo(row).append(getCapacitySpan(entry.capacity, entry.frequency))
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+
+                    if (entry.capacityDelta) {
+                        $("<div class='cell' align='right'></div>").appendTo(row).append(getCapacityDeltaSpan(entry.capacityDelta))
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+
+                    if (entry.price) {
+                        $("<div class='cell'></div>").appendTo(row).text(toLinkClassValueString(entry.price, '$'))
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+                    if (entry.priceDelta) {
+                        $("<div class='cell'></div>").appendTo(row).append(getPriceDeltaSpan(entry.priceDelta))
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+                    row.mouseenter(function() {
+                        toggleLinkEventBar($('#linkEventModal .chart:visible').data('chart'), entry.cycle, true)
+                    })
+                    linkEventTable.append(row)
+                });
+
+                if (result.length == 0) {
+                    var row = $("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
+                    linkEventTable.append(row)
+                }
+
+                linkEventTable.mouseleave(function() {
+                  toggleLinkEventBar($('#linkEventModal .chart:visible').data('chart'), -1, false)
+                })
+    	    },
+            error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    },
+    	    beforeSend: function() {
+    	    	$('body .loadingSpinner').show()
+    	    },
+    	    complete: function(){
+    	    	$('body .loadingSpinner').hide()
+    	    }
+    	});
+
+    $('#linkEventModal').fadeIn(200)
+}
+
 function showLinkRivalHistory(linkId) {
 	var url = "airlines/" + activeAirline.id + "/link-rival-history/" + linkId + "?cycleCount=30"
 
@@ -1903,6 +2053,11 @@ function showLinkRivalHistory(linkId) {
 	    	$('body .loadingSpinner').hide()
 	    }
 	});
+}
+
+function switchLinkEventChart($chartContainer) {
+    $("#linkEventModal .chart").hide()
+    $chartContainer.show()
 }
 
 function showLinkRivalDetails(linkId) {

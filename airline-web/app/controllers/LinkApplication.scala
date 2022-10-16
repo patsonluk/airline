@@ -4,7 +4,9 @@ import java.util.Calendar
 import com.patson.data._
 import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.{Airplane, LinkAssignment, LinkAssignments, Model}
+import com.patson.model.history.LinkChange
 import com.patson.model.negotiation.LinkNegotiationDiscount
+import com.patson.model.event.Olympics
 import com.patson.model.{FlightPreferenceType, _}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache, AllianceCache, CountryCache}
 import com.patson.{DemandGenerator, Util}
@@ -19,6 +21,8 @@ import play.api.libs.json.{JsBoolean, JsNumber, JsObject, Json, _}
 import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
 
+import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.concurrent.TrieMap
 import scala.collection.immutable.ListMap
 import scala.collection.mutable.ListBuffer
 import scala.collection.{MapView, immutable, mutable}
@@ -1203,6 +1207,256 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     Ok(result)
   }
+
+
+
+  class LinkChangeToEventWrites(currentCycle : Int) extends Writes[LinkChange] {
+    def writes(linkChange : LinkChange) : JsValue = {
+      var priceJson = Json.obj()
+      var priceDeltaJson = Json.obj()
+      var capacityDeltaJson = Json.obj()
+
+      var hasCapacityChange = false
+      var hasPriceChange = false
+      LinkClass.values.foreach { linkClass =>
+        if (linkChange.capacity(linkClass) > 0) { //do not report price for link class that has no capacity
+          priceJson = priceJson + (linkClass.label -> JsNumber(linkChange.price(linkClass)))
+          if (linkChange.priceDelta(linkClass) != 0) { //do not put delta if price has not been changed
+            hasPriceChange = true
+            priceDeltaJson = priceDeltaJson + (linkClass.label -> JsNumber(linkChange.priceDelta(linkClass)))
+          }
+        }
+        if (linkChange.capacityDelta(linkClass) != 0) {
+          hasCapacityChange = true
+          capacityDeltaJson = capacityDeltaJson + (linkClass.label -> JsNumber(linkChange.capacityDelta(linkClass)))
+        }
+      }
+
+      capacityDeltaJson = capacityDeltaJson + ("total" -> JsNumber(linkChange.capacityDelta.total))
+
+
+      val description = s"Flight ${linkChange.fromAirport.displayText} -> ${linkChange.toAirport.displayText}"
+
+
+      val effectiveCycle = linkChange.cycle + 1 //effect is seen 1 cycle after...
+
+      Json.obj(
+        "airlineId" -> linkChange.airline.id,
+        "airlineName" -> linkChange.airline.name,
+        "linkId" -> linkChange.linkId,
+        "description" -> description,
+        "price" -> priceJson,
+        "priceDelta" -> priceDeltaJson,
+        "capacity" -> Json.toJson(linkChange.capacity),
+        "capacityTotal" -> JsNumber(linkChange.capacity.total),
+        "capacityDelta" -> capacityDeltaJson,
+        "capacityDeltaTotal" -> JsNumber(linkChange.capacityDelta.total),
+        "frequency" -> linkChange.frequency,
+        "flightCode" -> LinkUtil.getFlightCode(linkChange.airline, linkChange.flightNumber),
+        "cycle" -> effectiveCycle,
+        "cycleDelta" -> (effectiveCycle - currentCycle))
+    }
+  }
+
+  class AllianceHistoryToEventWrites(currentCycle : Int) extends Writes[AllianceHistory] {
+    def writes(entry : AllianceHistory) : JsValue = {
+      val event = AllianceUtil.getAllianceEventText(entry.event)
+
+
+      val description = s"${entry.airline.name} $event ${entry.allianceName}"
+      val effectiveCycle = entry.cycle + 1 //effect is seen 1 cycle after...
+
+      Json.obj(
+        "airlineId" -> entry.airline.id,
+        "airlineName" -> entry.airline.name,
+        "description" -> description,
+        "cycle" -> effectiveCycle,
+        "cycleDelta" -> (effectiveCycle - currentCycle))
+    }
+  }
+
+
+  /**
+   * Loads various events related to this link, this could be rival changes, connection changes, olympics, airline resets etc
+   * @param airlineId
+   * @param linkId
+   * @param cycleCount
+   * @return
+   */
+  def getLinkRelatedEventHistory(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) { implicit request =>
+    var result = Json.arr()
+
+    val currentCycle = CycleSource.loadCycle()
+    val fromCycle = currentCycle - cycleCount
+    LinkSource.loadFlightLinkById(linkId).foreach { link =>
+      //load change history of this airport pair
+      var linkChanges = loadLinkChangeHistory(link.from, fromCycle, currentCycle) ++ loadLinkChangeHistory(link.to, fromCycle, currentCycle)
+
+      linkChanges = linkChanges.filter { entry =>
+        val perfectMatch = entry.linkId == linkId ||
+        (entry.toAirport.id == link.to.id && entry.fromAirport.id == link.from.id) ||
+        (entry.toAirport.id == link.from.id && entry.fromAirport.id == link.to.id)
+        if (!perfectMatch) {
+          val matchingAirport =
+            if (entry.toAirport.id == link.to.id || entry.fromAirport.id == link.to.id) {
+              link.to
+            } else {
+              link.from
+            }
+          //see if the capacity matter enough. for now only check the airport pop ratio. Not perfect, but want something simple for now
+          link.capacity.total >= matchingAirport.population / 2500
+        } else {
+          true
+        }
+      }
+
+      val linkChangesJson = Json.toJson(linkChanges)(Writes.traversableWrites(new LinkChangeToEventWrites(currentCycle))).as[JsArray]
+      result = result ++ linkChangesJson
+    }
+
+    //self alliance history
+    result = result ++ Json.toJson(AllianceSource.loadAllianceHistoryByAirline(airlineId).filter(_.cycle >= fromCycle).filter(entry => isRelevantAllianceHistoryEvent(entry.event)))(Writes.traversableWrites(new AllianceHistoryToEventWrites(currentCycle))).as[JsArray]
+    //other airline alliance history (complicate if current airline left/joined during the period, for now just get the history of current alliance
+    request.user.getAllianceId().foreach { allianceId =>
+      AllianceSource.loadAllianceById(allianceId).foreach { alliance =>
+        result = result ++
+          Json.toJson(AllianceSource.loadAllianceHistoryByAllianceName(alliance.name).filter {
+            entry => entry.cycle >= fromCycle && entry.airline.id != airlineId && isRelevantAllianceHistoryEvent(entry.event)
+          })(Writes.traversableWrites(new AllianceHistoryToEventWrites(currentCycle))).as[JsArray]
+      }
+    }
+
+    //events such as olympics
+    result = result ++ getEventHistoryJsArray(currentCycle, fromCycle)
+    result = result ++ getAirlineMajorRestructureJsArray(currentCycle, fromCycle)
+
+    Ok(result)
+  }
+
+  /**
+   * Loads rival (and self) consumption history for comparison
+   * @param airlineId
+   * @param linkId
+   * @param cycleCount
+   * @return
+   */
+  def getLinkRelatedRivalHistory(airlineId : Int, linkId : Int, cycleCount : Int) =  AuthenticatedAirline(airlineId) { implicit request =>
+    var result = Json.obj()
+
+    LinkSource.loadFlightLinkById(linkId).foreach { link =>
+      //load change history of this airport pair
+      val relatedLinks = LinkSource.loadFlightLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadFlightLinksByAirports(link.to.id, link.from.id)
+      val consumptionsByCycle = LinkSource.loadLinkConsumptionsByLinksId(relatedLinks.map(_.id), cycleCount).groupBy(_.cycle).toList.sortBy(_._1)
+      consumptionsByCycle.foreach {
+        case(cycle, consumptions) =>
+          var cycleJson = Json.obj()
+          consumptions.sortBy(_.link.airline.id).foreach { consumption =>
+            cycleJson = cycleJson + (consumption.link.airline.id.toString -> Json.obj(
+              "airlineName" -> consumption.link.airline.name,
+              "passenger"-> consumption.link.getTotalSoldSeats
+            ))
+          }
+          result = result + (cycle.toString -> cycleJson)
+      }
+
+      result
+    }
+
+
+
+    Ok(result)
+  }
+
+  var eventHistoryJsArrayCache = Json.arr()
+  val eventHistoryLoadCycle = new AtomicInteger(-1)
+
+  def getEventHistoryJsArray(currentCycle : Int, fromCycle : Int) : JsArray = {
+    //see if it's cached
+    eventHistoryLoadCycle.synchronized {
+      if (eventHistoryLoadCycle.get() != currentCycle) {
+        var result = Json.arr()
+        EventSource.loadEvents().filter(_.startCycle >= fromCycle).foreach { event =>
+          event match {
+            case olympics : Olympics =>
+              //meh kinda ugly to just simulate status by iteration...
+              var walkerStatus = olympics.status(fromCycle)
+              for (cycle <- (olympics.startCycle + 1) to currentCycle) {
+                if (olympics.status(cycle) != walkerStatus) {
+                  Olympics.getSelectedAirport(event.id).foreach { selectedAirport =>
+                    val description = s"${selectedAirport.city} Olympics : ${OlympicsUtil.getStatusText(olympics, cycle)}"
+                    result = result :+ Json.obj(
+                      "description" -> description,
+                      "descriptionCountryCode" -> selectedAirport.countryCode,
+                      "cycle" -> cycle,
+                      "cycleDelta" -> (cycle - currentCycle))
+                  }
+                  walkerStatus = olympics.status(cycle)
+                }
+              }
+            case _ =>
+          }
+        }
+
+        eventHistoryJsArrayCache = result
+        eventHistoryLoadCycle.set(currentCycle)
+      }
+    }
+    eventHistoryJsArrayCache
+  }
+
+  var airlineMajorRestructureJsArrayCache = Json.arr()
+  val airlineMajorRestructureLoadCycle = new AtomicInteger(-1)
+  def getAirlineMajorRestructureJsArray(currentCycle : Int, fromCycle : Int) : JsArray = {
+    val formatter = java.text.NumberFormat.getIntegerInstance
+    //see if it's cached
+    airlineMajorRestructureLoadCycle.synchronized {
+      if (airlineMajorRestructureLoadCycle.get() != currentCycle) {
+        var result = Json.arr()
+        val query = s"SELECT * FROM ${Constants.LINK_CHANGE_HISTORY_TABLE} WHERE cycle >= ? AND cycle <> ? AND capacity_delta <= ?" //exclude current cycle as it does not affect anything until next cycle...
+
+        val linkCutHistory = ChangeHistorySource.loadLinkChangeByQueryString(query, List(fromCycle, currentCycle, -1000))
+
+        linkCutHistory.groupBy(_.airline).foreach {
+          case(airline, linkCuts) => linkCuts.groupBy(_.cycle).foreach {
+            case(cycle, cutsThisCycle) =>
+              val totalCapacityChange = cutsThisCycle.map(_.capacityDelta.total).sum
+              if (totalCapacityChange <= -5000) { //if total delta <= -5000 consider a major restructure
+                val description = s"Major capacity cut of ${formatter.format(totalCapacityChange * -1)} on ${linkCuts.length} route(s)"
+                val effectiveCycle = cycle + 1
+                result = result :+ Json.obj(
+                  "description" -> description,
+                  "airlineId" -> airline.id,
+                  "airlineName" -> airline.name,
+                  "cycle" -> effectiveCycle,
+                  "cycleDelta" -> (effectiveCycle - currentCycle))
+              }
+          }
+        }
+
+        airlineMajorRestructureJsArrayCache = result
+        airlineMajorRestructureLoadCycle.set(currentCycle)
+      }
+    }
+    airlineMajorRestructureJsArrayCache
+  }
+
+
+  def isRelevantAllianceHistoryEvent(event : AllianceEvent.Value)  = {
+    event match {
+      case com.patson.model.AllianceEvent.JOIN_ALLIANCE => true
+      case com.patson.model.AllianceEvent.LEAVE_ALLIANCE => true
+      case com.patson.model.AllianceEvent.BOOT_ALLIANCE => true
+      case _ => false
+    }
+  }
+
+
+  def loadLinkChangeHistory(airport : Airport, fromCycle : Int, currentCycle : Int): List[LinkChange] = {
+    val query = s"SELECT * FROM ${Constants.LINK_CHANGE_HISTORY_TABLE} WHERE (from_airport = ? OR to_airport = ?) AND cycle >= ? AND cycle <> ?" //exclude current cycle as it does not affect anything until next cycle...
+
+    ChangeHistorySource.loadLinkChangeByQueryString(query, List(airport.id, airport.id, fromCycle, currentCycle))
+  }
+
 
   /**
     * Loads a pair of aiports, only return Some(fromAirport, toAirport) if BOTH airports are found
