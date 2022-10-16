@@ -1303,8 +1303,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             } else {
               link.from
             }
+
           //see if the capacity matter enough. for now only check the airport pop ratio. Not perfect, but want something simple for now
-          link.capacity.total >= matchingAirport.population / 2500
+          entry.capacity.total >= matchingAirport.population / 2500
         } else {
           true
         }
