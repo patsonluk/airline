@@ -1290,7 +1290,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val fromCycle = currentCycle - cycleCount
     LinkSource.loadFlightLinkById(linkId).foreach { link =>
       //load change history of this airport pair
-      var linkChanges = loadLinkChangeHistory(link.from, fromCycle, currentCycle) ++ loadLinkChangeHistory(link.to, fromCycle, currentCycle)
+      var linkChanges = loadLinkChangeHistory(link.from, fromCycle, currentCycle)
+      val fromLinkIds = linkChanges.map(_.linkId)
+      linkChanges = linkChanges ++ loadLinkChangeHistory(link.to, fromCycle, currentCycle).filter(entry => !fromLinkIds.contains(entry.linkId))
 
       linkChanges = linkChanges.filter { entry =>
         val perfectMatch = entry.linkId == linkId ||
