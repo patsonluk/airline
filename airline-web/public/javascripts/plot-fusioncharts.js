@@ -881,7 +881,7 @@ function plotLinkEvent(linkConsumptions, linkEventContainer, cycleHoverFunc, cha
 
 
 function toggleLinkEventBar(chart, cycle, on) {
-    if (chart.lastToggledCycle && chart.lastToggledCycle == cycle) {
+    if (chart && chart.lastToggledCycle == cycle) {
         return
     }
 

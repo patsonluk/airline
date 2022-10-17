@@ -1902,7 +1902,8 @@ function showLinkEventHistory(linkId) {
                 var row = $matchingRows[0]
                 var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
                 var realOffset = row.offsetTop - baseOffset
-                $linkEventTableContainer.animate ({scrollTop: realOffset});
+                $linkEventTableContainer.stop(true, true) //stop previous animation
+                $linkEventTableContainer.animate ({scrollTop: realOffset}, "fast");
             }
         },
         function() { //chartout
@@ -1927,7 +1928,8 @@ function showLinkEventHistory(linkId) {
                                 var row = $matchingRows[0]
                                 var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
                                 var realOffset = row.offsetTop - baseOffset
-                                $linkEventTableContainer.animate ({scrollTop: realOffset});
+                                $linkEventTableContainer.stop(true, true) //stop previous animation
+                                $linkEventTableContainer.animate ({scrollTop: realOffset}, "fast");
                             }
                         },
                         function() { //chartout
