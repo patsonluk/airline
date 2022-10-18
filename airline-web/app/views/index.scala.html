@@ -649,13 +649,15 @@
 									<div id=linkCompetitionsPie align="center"></div>
 								</div>
 								<div style="width: 50%; float: left;">
-									<div class="switch" style="float: right;">
-										<input type="radio" class="switch-input" name="view" value="month" id="switchMonth" onchange="refreshLinkCharts()">
-										<label for="switchMonth" class="switch-label switch-label-off">Month</label>
-										<input type="radio" class="switch-input" name="view" value="quarter" id="switchQuarter" onchange="refreshLinkCharts()" checked>
-										<label for="switchQuarter" class="switch-label switch-label-on">Qtr</label>
-										<span class="switch-selection"></span>
-									</div>
+									<fieldset>
+										<div class="switch" style="float: right;">
+											<input type="radio" class="switch-input" name="view" value="month" id="switchMonth" onchange="refreshLinkCharts()">
+											<label for="switchMonth" class="switch-label switch-label-off">Month</label>
+											<input type="radio" class="switch-input" name="view" value="quarter" id="switchQuarter" onchange="refreshLinkCharts()" checked>
+											<label for="switchQuarter" class="switch-label switch-label-on">Qtr</label>
+											<span class="switch-selection"></span>
+										</div>
+									</fieldset>
 									<div style="clear: both;"></div>
 								</div>
 								<div id="linkProfitChart" style="width: 50%; float: left; height: 170px;"></div>
@@ -4032,41 +4034,45 @@
 		  <span class="close" onclick="closeModal($('#linkEventModal'))">&times;</span>
 		  <div style="clear: both;"></div>
 		  <h4 style="margin-bottom: 10px;" class="title"></h4>
-		  <div class="switch" style="float: right;">
-			  <input type="radio" class="switch-input" name="view" value="month" id="switchLinkEventSelf" onchange="switchLinkEventChart($('#linkEventChart'))">
-			  <label for="switchLinkEventSelf" class="switch-label switch-label-off">Self</label>
-			  <input type="radio" class="switch-input" name="view" value="quarter" id="switchLinkEventRival" onchange="switchLinkEventChart($('#linkRivalHistoryChart'))" checked>
-			  <label for="switchLinkEventRival" class="switch-label switch-label-on">All</label>
-			  <span class="switch-selection"></span>
-		  </div>
+		  <fieldset>
+			  <div class="switch" style="float: right;">
+				  <input type="radio" class="switch-input" name="eventGraphType" value="self" id="switchLinkEventSelf" onchange="switchLinkEventChart($('#linkEventChart'))">
+				  <label for="switchLinkEventSelf" class="switch-label switch-label-off">Self</label>
+				  <input type="radio" class="switch-input" name="eventGraphType" value="all" id="switchLinkEventRival" onchange="switchLinkEventChart($('#linkRivalHistoryChart'))" checked>
+				  <label for="switchLinkEventRival" class="switch-label switch-label-on">All</label>
+				  <span class="switch-selection"></span>
+			  </div>
+		  </fieldset>
 		  <div style="clear: both;"></div>
 		  <div id="linkEventChart" class="chart" style="width: 100%; height: 250px;"></div>
 		  <div id="linkRivalHistoryChart" class="chart" style="width: 100%; height: 250px;"></div>
 
 
-		  <div class="table data" style="height: 20px; width: 95%; min-width: 700px; margin: auto;">
-			  <div class="table-header">
-				  <div class="cell" style="width: 8%">Cycle</div>
-				  <div class="cell" style="width: 14%">Airline</div>
-				  <div class="cell" style="width: 32%">Event</div>
-				  <div class="cell clickable" style="width: 8%" align="right">Capacity (Freq.)</div>
-				  <div class="cell clickable" style="width: 8%" align="right">Cap Chg.</div>
-				  <div class="cell" style="width: 15%">Price</div>
-				  <div class="cell" style="width: 15%">Price Chg.</div>
-			  </div>
-		  </div>
-
-		  <div class="linkEventHistoryTableContainer" style="height: 350px; width: 95%;overflow-y: auto; margin: auto;">
-			  <div class="table data linkEventHistoryTable" style="width: 100%; table-layout: fixed; min-width: 700px;">
+		  <div class="section" style="flex-grow: 1;">
+			  <div class="table data" style="height: 20px; width: 95%; min-width: 700px; margin: auto;">
 				  <div class="table-header">
-					  <div class="cell" style="width: 8%; border-bottom: none;"></div>
-					  <div class="cell" style="width: 14%; border-bottom: none;"></div>
-					  <div class="cell" style="width: 32%; border-bottom: none;"></div>
-					  <!--										<div class="cell" style="width: 12%; border-bottom: none;"></div>-->
-					  <div class="cell" style="width: 8%; border-bottom: none;"></div>
-					  <div class="cell" style="width: 8%; border-bottom: none;"></div>
-					  <div class="cell" style="width: 15%; border-bottom: none;"></div>
-					  <div class="cell" style="width: 15%; border-bottom: none;"></div>
+					  <div class="cell" style="width: 8%">Cycle</div>
+					  <div class="cell" style="width: 14%">Airline</div>
+					  <div class="cell" style="width: 32%">Event</div>
+					  <div class="cell clickable" style="width: 8%" align="right">Capacity (Freq.)</div>
+					  <div class="cell clickable" style="width: 8%" align="right">Cap Chg.</div>
+					  <div class="cell" style="width: 15%">Price</div>
+					  <div class="cell" style="width: 15%">Price Chg.</div>
+				  </div>
+			  </div>
+
+			  <div class="linkEventHistoryTableContainer" style="height: 350px; width: 95%;overflow-y: auto; margin: auto;">
+				  <div class="table data linkEventHistoryTable" style="width: 100%; table-layout: fixed; min-width: 700px;">
+					  <div class="table-header">
+						  <div class="cell" style="width: 8%; border-bottom: none;"></div>
+						  <div class="cell" style="width: 14%; border-bottom: none;"></div>
+						  <div class="cell" style="width: 32%; border-bottom: none;"></div>
+						  <!--										<div class="cell" style="width: 12%; border-bottom: none;"></div>-->
+						  <div class="cell" style="width: 8%; border-bottom: none;"></div>
+						  <div class="cell" style="width: 8%; border-bottom: none;"></div>
+						  <div class="cell" style="width: 15%; border-bottom: none;"></div>
+						  <div class="cell" style="width: 15%; border-bottom: none;"></div>
+					  </div>
 				  </div>
 			  </div>
 		  </div>
@@ -4979,13 +4985,15 @@
 				  </div>
 <!--				  <div style="display: flex; align-items: center; flex-wrap: wrap;">-->
 				  <div class="cell" style="vertical-align:middle; text-align:center;">
-					  <div class="switch" style="display: inline-block">
-						  <input type="radio" class="switch-input" name="theme" value="light" id="switchDark" onchange="switchTheme()">
-						  <label for="switchDark" class="switch-label switch-label-off">Dark</label>
-						  <input type="radio" class="switch-input dark" name="theme" value="dark" id="switchLight" onchange="switchTheme()">
-						  <label for="switchLight" class="switch-label switch-label-on">Light</label>
-						  <span class="switch-selection"></span>
-					  </div>
+					  <fieldset>
+						  <div class="switch" style="display: inline-block">
+							  <input type="radio" class="switch-input" name="theme" value="light" id="switchDark" onchange="switchTheme()">
+							  <label for="switchDark" class="switch-label switch-label-off">Dark</label>
+							  <input type="radio" class="switch-input dark" name="theme" value="dark" id="switchLight" onchange="switchTheme()">
+							  <label for="switchLight" class="switch-label switch-label-on">Light</label>
+							  <span class="switch-selection"></span>
+						  </div>
+					  </fieldset>
 				  </div>
 			  </div>
 			  <div class="table-row">

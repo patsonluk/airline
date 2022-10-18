@@ -679,10 +679,18 @@ function plotRivalHistory(rivalHistory, container, cycleHoverFunc, chartOutFunc)
     $.each(dataByAirlineId, function(airlineId, data) {
         if (airlineId == activeAirline.id) { //always put own airline first (bottom)
             dataset.unshift({ seriesName: airlineNameByAirlineId[airlineId], "data" : data})
-            paletteColors.unshift(airlineColors[airlineId])
+            if (airlineColors[airlineId]) {
+                paletteColors.unshift(airlineColors[airlineId])
+            } else {
+                paletteColors.unshift('#d3d3d3')
+            }
         } else {
             dataset.push({ seriesName: airlineNameByAirlineId[airlineId], "data" : data})
-            paletteColors.push(airlineColors[airlineId])
+            if (airlineColors[airlineId]) {
+                paletteColors.push(airlineColors[airlineId])
+            } else {
+                paletteColors.push('#d3d3d3')
+            }
         }
     })
 
