@@ -677,20 +677,19 @@ function plotRivalHistory(rivalHistory, container, cycleHoverFunc, chartOutFunc)
     var dataset = []
     var paletteColors = []
     $.each(dataByAirlineId, function(airlineId, data) {
+        var color
+        if (airlineColors[airlineId]) {
+            color = airlineColors[airlineId]
+        } else {
+            color = colorFromString(airlineNameByAirlineId[airlineId]) //find a random color but steady one
+        }
+
         if (airlineId == activeAirline.id) { //always put own airline first (bottom)
             dataset.unshift({ seriesName: airlineNameByAirlineId[airlineId], "data" : data})
-            if (airlineColors[airlineId]) {
-                paletteColors.unshift(airlineColors[airlineId])
-            } else {
-                paletteColors.unshift('#d3d3d3')
-            }
+            paletteColors.unshift(color)
         } else {
             dataset.push({ seriesName: airlineNameByAirlineId[airlineId], "data" : data})
-            if (airlineColors[airlineId]) {
-                paletteColors.push(airlineColors[airlineId])
-            } else {
-                paletteColors.push('#d3d3d3')
-            }
+            paletteColors.push(color)
         }
     })
 
