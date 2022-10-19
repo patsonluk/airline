@@ -1882,6 +1882,10 @@ function showLinkEventHistory(linkId) {
     $('#linkEventModal .chart').hide()
     $('#linkRivalHistoryChart').show()
 
+    //always default to all airlines (instead of self)
+    $("#switchLinkEventRival").prop('checked', true)
+    $("#switchLinkEventSelf").prop('checked', false)
+
     var link = $("#linkEventModal").data("link")
     $("#linkEventModal .title").html("<div style='display: flex; align-items: center;'>"
     + getCountryFlagImg(link.fromCountryCode)
