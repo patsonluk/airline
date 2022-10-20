@@ -1978,7 +1978,7 @@ function showLinkEventHistory(linkId) {
                         row.append("<div class='cell'>-</div>")
                     }
 
-                    var $descriptionCell = "<div class='cell'>" + entry.description + "</div>"
+                    var $descriptionCell = $("<div class='cell'>" + entry.description + "</div>")
                     if (entry.descriptionCountryCode) {
                         $descriptionCell.prepend(getCountryFlagImg(entry.descriptionCountryCode))
                     }
