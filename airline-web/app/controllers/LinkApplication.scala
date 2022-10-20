@@ -1385,13 +1385,15 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
               var walkerStatus = olympics.status(fromCycle)
               for (cycle <- (olympics.startCycle + 1) to currentCycle) {
                 if (olympics.status(cycle) != walkerStatus) {
-                  Olympics.getSelectedAirport(event.id).foreach { selectedAirport =>
-                    val description = s"${selectedAirport.city} Olympics : ${OlympicsUtil.getStatusText(olympics, cycle)}"
-                    result = result :+ Json.obj(
-                      "description" -> description,
-                      "descriptionCountryCode" -> selectedAirport.countryCode,
-                      "cycle" -> cycle,
-                      "cycleDelta" -> (cycle - currentCycle))
+                  if (cycle >= fromCycle) {
+                    Olympics.getSelectedAirport(event.id).foreach { selectedAirport =>
+                      val description = s"${selectedAirport.city} Olympics : ${OlympicsUtil.getStatusText(olympics, cycle)}"
+                      result = result :+ Json.obj(
+                        "description" -> description,
+                        "descriptionCountryCode" -> selectedAirport.countryCode,
+                        "cycle" -> cycle,
+                        "cycleDelta" -> (cycle - currentCycle))
+                    }
                   }
                   walkerStatus = olympics.status(cycle)
                 }
