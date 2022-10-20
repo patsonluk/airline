@@ -1977,7 +1977,12 @@ function showLinkEventHistory(linkId) {
                     } else {
                         row.append("<div class='cell'>-</div>")
                     }
-                    row.append("<div class='cell'>" + entry.description + "</div>")
+
+                    var $descriptionCell = "<div class='cell'>" + entry.description + "</div>"
+                    if (entry.descriptionCountryCode) {
+                        $descriptionCell.prepend(getCountryFlagImg(entry.descriptionCountryCode))
+                    }
+                    row.append($descriptionCell)
                     if (entry.capacity) {
                         $("<div class='cell' align='right'></div>").appendTo(row).append(getCapacitySpan(entry.capacity, entry.frequency))
                     } else {
