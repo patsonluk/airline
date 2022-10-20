@@ -1378,7 +1378,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     eventHistoryLoadCycle.synchronized {
       if (eventHistoryLoadCycle.get() != currentCycle) {
         var result = Json.arr()
-        EventSource.loadEvents().filter(_.startCycle >= fromCycle).foreach { event =>
+        EventSource.loadEvents().filter(event => event.startCycle + event.duration >= fromCycle).foreach { event =>
           event match {
             case olympics : Olympics =>
               //meh kinda ugly to just simulate status by iteration...
