@@ -714,7 +714,6 @@ function plotRivalHistory(rivalHistory, container, cycleHoverFunc, chartOutFunc)
                           "drawCrossLine": "1",
                           "crossLineColor": "#CDFCF6",
                           "crossLineAlpha": "50",
-                          "showLegend": "0",
                           "showPlotBorder": "0",
                           "plotToolText": "$seriesName : $value"
                     }
