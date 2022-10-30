@@ -387,10 +387,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
               AirlineSource.saveCashFlowItem(AirlineCashFlowItem(request.user.id, CashFlowType.CREATE_LINK, cost * -1))
 
               val toAirport = incomingLink.to
-              val existingAppeal = toAirport.getAirlineBaseAppeal(airlineId)
-              if (existingAppeal.awareness < 5) { //update to 5 for link creation
-                AirportSource.updateAirlineAppeal(toAirport.id, airlineId, AirlineAppeal(existingAppeal.loyalty, 5))
-              }
               link
             }
             case None =>
@@ -1197,8 +1193,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           container + link.capacity
         }
 
-        fromAirportInfo = fromAirportInfo.append(Json.obj("airline" -> rival, "network" -> fromAirportAllianceNetworkCapacity, "awareness" -> fromAirport.getAirlineAwareness(rival.id), "loyalty" -> fromAirport.getAirlineLoyalty(rival.id)))
-        toAirportInfo = toAirportInfo.append(Json.obj("airline" -> rival, "network" -> toAirportAllianceNetworkCapacity, "awareness" -> toAirport.getAirlineAwareness(rival.id), "loyalty" -> toAirport.getAirlineLoyalty(rival.id)))
+        fromAirportInfo = fromAirportInfo.append(Json.obj("airline" -> rival, "network" -> fromAirportAllianceNetworkCapacity,"loyalty" -> fromAirport.getAirlineLoyalty(rival.id)))
+        toAirportInfo = toAirportInfo.append(Json.obj("airline" -> rival, "network" -> toAirportAllianceNetworkCapacity, "loyalty" -> toAirport.getAirlineLoyalty(rival.id)))
       }
 
       result = result ++ Json.obj("fromAirport" -> fromAirportInfo, "fromAirportCode" -> fromAirport.iata, "fromCity" -> fromAirport.city)

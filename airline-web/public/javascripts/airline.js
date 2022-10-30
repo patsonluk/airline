@@ -2098,9 +2098,8 @@ function showLinkRivalDetails(linkId) {
 }
 
 function updateRivalTables(result) {
-    var loyaltyAwarenessTable = $("#rivalLoyaltyAwarenessTable")
+    var appealTable = $("#rivalAppealTable")
     var networkCapacityTable = $("#networkCapacity")
-    loyaltyAwarenessTable.children(".table-row").remove()
     networkCapacityTable.children(".table-row").remove()
 	var fromAirportText = getAirportText(result.fromCity, result.fromAirportCode)
     var toAirportText = getAirportText(result.toCity, result.toAirportCode)
@@ -2111,9 +2110,7 @@ function updateRivalTables(result) {
 	var airlineNameById = {}
 	var fromAirportLoyalty = {}
 	var toAirportLoyalty = {}
-	var fromAirportAwareness = {}
-    var toAirportAwareness = {}
-    var fromAirportCapacity = {}
+	var fromAirportCapacity = {}
     var toAirportCapacity = {}
 
 
@@ -2121,14 +2118,12 @@ function updateRivalTables(result) {
     $.each(result.fromAirport, function(index, entry) {
 	     var airlineId = entry.airline.id
 	     airlineNameById[airlineId] = entry.airline.name
-	     fromAirportAwareness[airlineId] = entry.awareness
 	     fromAirportLoyalty[airlineId] = entry.loyalty
 	     fromAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
      })
 
     $.each(result.toAirport, function(index, entry) {
          var airlineId = entry.airline.id
-         toAirportAwareness[airlineId] = entry.awareness
          toAirportLoyalty[airlineId] = entry.loyalty
          toAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
     })
@@ -2145,10 +2140,8 @@ function updateRivalTables(result) {
      	var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' align='left'>" + getAirlineSpan(airlineId, airlineName) + "</div>")
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, fromAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, fromAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, toAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, toAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		loyaltyAwarenessTable.append(row)
+		appealTable.append(row)
 
 		row = $("<div class='table-row'></div>")
 

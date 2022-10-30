@@ -10,12 +10,6 @@ import scala.collection.mutable.{ListBuffer, Map, Set}
 import scala.math.BigDecimal.RoundingMode
 
 object AirportSimulation {
-  val AWARENESS_DECAY = 0.1
-  val AWARENESS_INCREMENT_WITH_LINKS = 0.5
-  val AWARENESS_INCREMENT_WITH_HQ = 1.0
-  val AWARENESS_INCREMENT_WITH_BASE = 0.5
-  val AWARENESS_INCREMENT_MAX_WITH_HQ = 50 //how much awareness will increment to just because of being a HQ
-  val AWARENESS_INCREMENT_MAX_WITH_BASE = 30 //how much awareness will increment to just because of being a HQ
   val LOYALTY_AUTO_INCREMENT_WITH_HQ = 0.05
   val LOYALTY_AUTO_INCREMENT_WITH_BASE = 0.02
   val LOYALTY_AUTO_INCREMENT_MAX_WITH_HQ = 30 //how much loyalty will increment to just because of being a HQ
@@ -39,8 +33,6 @@ object AirportSimulation {
     val linksByFromAirportId = flightLinks.groupBy(_.from.id)
     val linksByToAirportId = flightLinks.groupBy(_.to.id)
 
-    simulateAwareness(allAirports, linksByFromAirportId, linksByToAirportId)
-
     //update the loyalist on airports based on link consumption
     println("Adjust loyalist by link consumptions")
     val championInfo = simulateLoyalists(allAirports, linkRidershipDetails, cycle)
@@ -52,69 +44,13 @@ object AirportSimulation {
     println("Finished simulation of loyalty by link consumption")
 
 
-    println("Finished loyalist and awareness simulation")
+    println("Finished loyalist simulation")
     //airportProjectSimulation(allAirports)
 
     AirportSource.purgeAirlineAppealBonus(cycle)
 
     championInfo
   }
-
-  def simulateAwareness(allAirports : List[Airport], linksByFromAirportId : immutable.Map[Int, List[Link]], linksByToAirportId : immutable.Map[Int, List[Link]]) = {
-    val finalUpdates = mutable.HashMap[Airport, immutable.Map[Int, Double]]()
-    println("Compute awareness")
-    allAirports.foreach { airport =>
-      val updatingAwareness = mutable.HashMap[Int, Double]()
-      airport.getAirlineBaseAppeals().foreach {
-        case(airlineId, AirlineAppeal(loyalty, awareness)) =>
-          //decay
-          val newAwareness = if (awareness - AWARENESS_DECAY <= 0) 0 else awareness - AWARENESS_DECAY
-          updatingAwareness.put(airlineId, newAwareness)
-      }
-      //add base on bases
-      airport.getAirlineBases().values.foreach { base =>
-        val airline = base.airline
-        var awareness : Double = updatingAwareness.getOrElse(airline.id, 0)
-
-        if (base.headquarter) {
-          if (awareness < AWARENESS_INCREMENT_MAX_WITH_HQ) {
-            awareness += AWARENESS_INCREMENT_WITH_HQ
-          }
-        } else {
-          if (awareness < AWARENESS_INCREMENT_MAX_WITH_BASE) {
-            awareness += AWARENESS_INCREMENT_WITH_BASE
-          }
-        }
-        if (awareness > AirlineAppeal.MAX_AWARENESS) {
-          awareness = AirlineAppeal.MAX_AWARENESS
-        }
-        updatingAwareness.put(airline.id, awareness)
-      }
-      //adjust awareness by links
-      val linksOfThisAirport : List[Link] = linksByFromAirportId.get(airport.id).getOrElse(List.empty[Link]) ++ linksByToAirportId.get(airport.id).getOrElse(List.empty[Link])
-      linksOfThisAirport.map(_.airline.id).toSet.foreach { airlineIdConnectedToThisAirport : Int =>
-        val existingAwareness : Double = updatingAwareness.getOrElse(airlineIdConnectedToThisAirport, 0)
-        val newAwareness =
-          if ((existingAwareness + AWARENESS_INCREMENT_WITH_LINKS) >= AirlineAppeal.MAX_AWARENESS) {
-            AirlineAppeal.MAX_AWARENESS
-          } else {
-            existingAwareness + AWARENESS_INCREMENT_WITH_LINKS
-          }
-        //airport.setAirlineAwareness(airlineId, newAwareness)
-        updatingAwareness.put(airlineIdConnectedToThisAirport, newAwareness)
-      }
-
-
-      if (!updatingAwareness.isEmpty || !airport.getAirlineBaseAppeals().isEmpty) { //2nd or is for removal of existing appeals
-        //AirportSource.replaceAirlineAppeals(airport.id, updatingAwareness.toMap)
-        finalUpdates.put(airport, updatingAwareness.toMap)
-      }
-    }
-    println("Finished computation of awareness, now updating")
-    AirportSource.replaceAirlineAppeals(finalUpdates.toMap)
-    println("Finished updating awareness")
-  }
-
 
   val random = new Random()
   val LOYALIST_HISTORY_SAVE_INTERVAL = 10 //every 10 cycles

@@ -47,7 +47,7 @@ object AirlineBaseSpecialization extends Enumeration {
 
     override def apply(airline: Airline, airport : Airport) = {
       unapply(airline, airport) //unapply first to avoid duplicates
-      AirportSource.saveAirlineAppealBonus(airport.id, airline.id, AirlineBonus(BonusType.BASE_SPECIALIZATION_BONUS, AirlineAppeal(loyalty = loyaltyBoost, awareness = 0), None))
+      AirportSource.saveAirlineAppealBonus(airport.id, airline.id, AirlineBonus(BonusType.BASE_SPECIALIZATION_BONUS, AirlineAppeal(loyalty = loyaltyBoost), None))
     }
 
     override def unapply(airline: Airline, airport : Airport) = {

@@ -48,7 +48,7 @@ class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(san
     AirlineCache.getAirline(santaClausInfo.airline.id, fullLoad = true).foreach { airline =>
       airline.getHeadQuarter().foreach { hq =>
 
-        val bonus = AirlineBonus(BonusType.SANTA_CLAUS, AirlineAppeal(loyalty = BONUS, awareness = 0), Some(CycleSource.loadCycle() + DURATION))
+        val bonus = AirlineBonus(BonusType.SANTA_CLAUS, AirlineAppeal(loyalty = BONUS), Some(CycleSource.loadCycle() + DURATION))
         AirportSource.saveAirlineAppealBonus(hq.airport.id, airline.id, bonus)
       }
     }
@@ -67,7 +67,7 @@ class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
   val DURATION = 52
   override def applyAward(): Unit = {
     val airline = santaClausInfo.airline
-    val bonus = AirlineBonus(BonusType.SANTA_CLAUS, AirlineAppeal(loyalty = BONUS, awareness = 0), Some(CycleSource.loadCycle() + DURATION))
+    val bonus = AirlineBonus(BonusType.SANTA_CLAUS, AirlineAppeal(loyalty = BONUS), Some(CycleSource.loadCycle() + DURATION))
 
     AirportSource.saveAirlineAppealBonus(santaClausInfo.airport.id, airline.id, bonus)
   }

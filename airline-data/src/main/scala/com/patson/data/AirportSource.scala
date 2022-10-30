@@ -46,8 +46,7 @@ object AirportSource {
     AirlineSource.loadAirlineModifiers().filter(_._2.modifierType == AirlineModifierType.BANNER_LOYALTY_BOOST).map { //only 1 type for now
       case (airlineId, modifier) =>
         val airlineBonus = AirlineBonus(BonusType.BANNER,
-          AirlineAppeal(loyalty = modifier.properties.getOrElse(AirlineModifierPropertyType.STRENGTH, 0L).toDouble,
-            awareness = 0), expirationCycle = modifier.expiryCycle)
+          AirlineAppeal(loyalty = modifier.properties.getOrElse(AirlineModifierPropertyType.STRENGTH, 0L).toDouble), expirationCycle = modifier.expiryCycle)
         (airlineId, airlineBonus)
     }.groupMapReduce(_._1) {
       case(airlineId, airlineBonus) => List(airlineBonus)
@@ -66,7 +65,7 @@ object AirportSource {
     airlineTitles.foreach {
       case(airlineId, countryAirlineTitle) =>
         val list = bonusByAirlineId.getOrElseUpdate(airlineId, ListBuffer())
-        list.append(AirlineBonus(bonusType = CountryAirlineTitle.getBonusType(countryAirlineTitle.title), bonus = AirlineAppeal(countryAirlineTitle.loyaltyBonus, 0), expirationCycle = None))
+        list.append(AirlineBonus(bonusType = CountryAirlineTitle.getBonusType(countryAirlineTitle.title), bonus = AirlineAppeal(countryAirlineTitle.loyaltyBonus), expirationCycle = None))
     }
 
     AirportSource.loadAirlineAppealBonusByAirport(airport.id).foreach {
@@ -101,7 +100,7 @@ object AirportSource {
       preparedStatement.setInt(2, airlineId)
       preparedStatement.setInt(3, bonus.bonusType.id)
       preparedStatement.setDouble(4, bonus.bonus.loyalty)
-      preparedStatement.setDouble(5, bonus.bonus.awareness)
+      preparedStatement.setDouble(5, 0)
       bonus.expirationCycle match {
         case Some(cycle) =>
           preparedStatement.setInt(6, cycle)
@@ -172,7 +171,7 @@ object AirportSource {
         val expirationCycle = resultSet.getObject("expiration_cycle")
         bonusList.append(AirlineBonus(
           bonusType = BonusType(resultSet.getInt("bonus_type")),
-          bonus = AirlineAppeal(loyalty = resultSet.getDouble("loyalty_bonus"), awareness = resultSet.getDouble("awareness_bonus")),
+          bonus = AirlineAppeal(loyalty = resultSet.getDouble("loyalty_bonus")),
           expirationCycle = if (expirationCycle == null) None else Some(expirationCycle.asInstanceOf[Int])))
       }
       resultSet.close()
@@ -283,14 +282,12 @@ object AirportSource {
           //load assets
           airport.initAssets(AirportAssetSource.loadAirportAssetsByAirport(airport.id, Some(airport))) //pass the airport loaded so far to avoid cyclic load
 
-          val airlineAwareness = mutable.Map[Int, Double]()
-          val loyaltyStatement = connection.prepareStatement("SELECT airline, loyalty, awareness FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
+          val loyaltyStatement = connection.prepareStatement("SELECT airline, loyalty FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ?")
           loyaltyStatement.setInt(1, airport.id)
           val loyaltyResultSet = loyaltyStatement.executeQuery()
           while (loyaltyResultSet.next()) {
             val airlineId = loyaltyResultSet.getInt("airline")
             //airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
-            airlineAwareness.put(airlineId, loyaltyResultSet.getDouble("awareness"))
           }
 
 
@@ -312,7 +309,7 @@ object AirportSource {
           }
           val airlineBonuses = airlineBonusesMutable.view.mapValues(_.toList).toMap
 
-          airport.initAirlineAppealsComputeLoyalty(airlineAwareness.toMap, airlineBonuses, LoyalistSource.loadLoyalistsByAirportId(airport.id))
+          airport.initAirlineAppealsComputeLoyalty(airlineBonuses, LoyalistSource.loadLoyalistsByAirportId(airport.id))
           loyaltyStatement.close()
           
 //          val slotAssignments = mutable.Map[Int, Int]()
@@ -553,45 +550,11 @@ object AirportSource {
     loadAirportsByCriteria(List(("country_code", countryCode)))
   }
 
-  def replaceAirlineAppeals(airlineAppealsByAirport : Map[Airport, Map[Int, Double]]) = {
-    val connection = Meta.getConnection()
-    try {
-      connection.setAutoCommit(false)
-
-      val purgeStatement = connection.prepareStatement("TRUNCATE " + AIRLINE_APPEAL_TABLE)
-      purgeStatement.executeUpdate()
-      purgeStatement.close()
-
-      val insertStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
-      airlineAppealsByAirport.foreach {
-        case(airport, map) => map.foreach {
-          case (airlineId, airlineAwareness) =>
-            //if (airlineAppeal.awareness > 0 || airlineAppeal.loyalty > 0) {
-            if (airlineAwareness > 0) {
-
-              insertStatement.setInt(1, airport.id)
-              insertStatement.setInt(2, airlineId)
-              insertStatement.setDouble(3, 0) //no longer using this
-              insertStatement.setDouble(4, airlineAwareness)
-              insertStatement.addBatch()
-            }
-        }
-      }
-      insertStatement.executeBatch()
-      insertStatement.close()
-
-      connection.commit()
-      //AirportCache.invalidateAirport(airportId)
-    } finally {
-      connection.close()
-    }
-  }
-  
   def updateAirlineAppeal(airportId : Int, airlineId : Int, airlineAppeal : AirlineAppeal) = {
    val connection = Meta.getConnection()
    try {  
      connection.setAutoCommit(false)
-      if (airlineAppeal.awareness == 0 && airlineAppeal.loyalty == 0) {
+      if (airlineAppeal.loyalty == 0) {
         val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRLINE_APPEAL_TABLE + " WHERE airport = ? AND airline = ?")
         purgeStatement.setInt(1, airportId)
         purgeStatement.setInt(2, airlineId)
@@ -602,7 +565,7 @@ object AirportSource {
         insertStatement.setInt(1, airportId)
         insertStatement.setInt(2, airlineId)
         insertStatement.setDouble(3, airlineAppeal.loyalty)
-        insertStatement.setDouble(4, airlineAppeal.awareness)
+        insertStatement.setDouble(4, 0)
         insertStatement.executeUpdate()
         insertStatement.close()
       }
@@ -632,7 +595,7 @@ object AirportSource {
       val insertStatement = connection.prepareStatement("REPLACE INTO " + AIRLINE_APPEAL_TABLE + "(airport, airline, loyalty, awareness) VALUES (?,?,?,?)")
       airlineAppeals.foreach {
         case (airlineId, airlineAppeal) =>
-          if (airlineAppeal.awareness == 0 && airlineAppeal.loyalty == 0) {
+          if (airlineAppeal.loyalty == 0) {
             purgeStatement.setInt(1, airportId)
             purgeStatement.setInt(2, airlineId)
             purgeStatement.addBatch()
@@ -640,7 +603,7 @@ object AirportSource {
             insertStatement.setInt(1, airportId)
             insertStatement.setInt(2, airlineId)
             insertStatement.setDouble(3, airlineAppeal.loyalty)
-            insertStatement.setDouble(4, airlineAppeal.awareness)
+            insertStatement.setDouble(4, 0)
             insertStatement.addBatch()
           }
       }
