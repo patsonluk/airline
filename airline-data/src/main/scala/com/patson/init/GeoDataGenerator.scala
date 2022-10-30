@@ -339,7 +339,11 @@ object GeoDataGenerator extends App {
 //      }
 //      airport.slots = slots
 
-      airport.copy(baseIncome = (power / population).toInt, basePopulation = population)
+      if (population == 0) {
+        airport
+      } else {
+        airport.copy(baseIncome = (power / population).toInt, basePopulation = population)
+      }
     }.sortBy { airport =>
       airport.baseIncome * airport.basePopulation
     }
