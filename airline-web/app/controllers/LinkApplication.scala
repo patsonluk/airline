@@ -1378,20 +1378,22 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     eventHistoryLoadCycle.synchronized {
       if (eventHistoryLoadCycle.get() != currentCycle) {
         var result = Json.arr()
-        EventSource.loadEvents().filter(_.startCycle >= fromCycle).foreach { event =>
+        EventSource.loadEvents().filter(event => event.startCycle + event.duration >= fromCycle).foreach { event =>
           event match {
             case olympics : Olympics =>
               //meh kinda ugly to just simulate status by iteration...
               var walkerStatus = olympics.status(fromCycle)
               for (cycle <- (olympics.startCycle + 1) to currentCycle) {
                 if (olympics.status(cycle) != walkerStatus) {
-                  Olympics.getSelectedAirport(event.id).foreach { selectedAirport =>
-                    val description = s"${selectedAirport.city} Olympics : ${OlympicsUtil.getStatusText(olympics, cycle)}"
-                    result = result :+ Json.obj(
-                      "description" -> description,
-                      "descriptionCountryCode" -> selectedAirport.countryCode,
-                      "cycle" -> cycle,
-                      "cycleDelta" -> (cycle - currentCycle))
+                  if (cycle >= fromCycle) {
+                    Olympics.getSelectedAirport(event.id).foreach { selectedAirport =>
+                      val description = s"${selectedAirport.city} Olympics : ${OlympicsUtil.getStatusText(olympics, cycle)}"
+                      result = result :+ Json.obj(
+                        "description" -> description,
+                        "descriptionCountryCode" -> selectedAirport.countryCode,
+                        "cycle" -> cycle,
+                        "cycleDelta" -> (cycle - currentCycle))
+                    }
                   }
                   walkerStatus = olympics.status(cycle)
                 }
