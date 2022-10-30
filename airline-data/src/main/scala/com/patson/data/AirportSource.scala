@@ -290,6 +290,24 @@ object AirportSource {
             //airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
           }
 
+          val airlineBaseStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_BASE_TABLE + " WHERE airport = ?")
+          airlineBaseStatement.setInt(1, airport.id)
+
+          val airlineBaseResultSet = airlineBaseStatement.executeQuery()
+          val airlineBases = ListBuffer[AirlineBase]()
+          while (airlineBaseResultSet.next()) {
+            val airlineId = airlineBaseResultSet.getInt("airline")
+            val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
+            val scale = airlineBaseResultSet.getInt("scale")
+            val foundedCycle = airlineBaseResultSet.getInt("founded_cycle")
+            val headquarter = airlineBaseResultSet.getBoolean("headquarter")
+            val countryCode = airlineBaseResultSet.getString("country")
+
+            airlineBases += AirlineBase(airline, airport, countryCode, scale, foundedCycle, headquarter)
+          }
+          airlineBaseStatement.close()
+          airport.initAirlineBases(airlineBases.toList)
+
 
 //          val airlineBonusesByAirlineIdBeforeFlatten : Map[Int, Seq[(Int, List[AirlineBonus])]] = (getAirlineTitleBonuses(airport, countryAirlineTitleCache).toSeq ++ getCampaignBonuses(airport, currentCycle).toSeq).groupBy(_._1)
 //
@@ -345,25 +363,6 @@ object AirportSource {
             airport.addCityServed(city, cityResultSet.getDouble("share"))
           }
           cityStatement.close()
-          
-          val airlineBaseStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_BASE_TABLE + " WHERE airport = ?")
-          airlineBaseStatement.setInt(1, airport.id)
-          
-          val airlineBaseResultSet = airlineBaseStatement.executeQuery()
-          val airlineBases = ListBuffer[AirlineBase]()
-          while (airlineBaseResultSet.next()) {
-             val airlineId = airlineBaseResultSet.getInt("airline")
-             val airline = AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))
-             val scale = airlineBaseResultSet.getInt("scale")
-             val foundedCycle = airlineBaseResultSet.getInt("founded_cycle")
-             val headquarter = airlineBaseResultSet.getBoolean("headquarter")
-             val countryCode = airlineBaseResultSet.getString("country")
-             
-             airlineBases += AirlineBase(airline, airport, countryCode, scale, foundedCycle, headquarter)
-          }
-          airlineBaseStatement.close()
-          airport.initAirlineBases(airlineBases.toList)
-          
           
           val lounges = AirlineSource.loadLoungesByAirport(airport)
           airport.initLounges(lounges)

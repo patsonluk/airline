@@ -1,6 +1,7 @@
 package com.patson.model
 
 import com.patson.data.CountrySource
+import com.patson.model.AirlineBaseSpecialization.{POWERHOUSE, PowerhouseSpecialization}
 import com.patson.model.AirportAssetType.TransitModifier
 import com.patson.model.airplane.Model
 
@@ -40,18 +41,22 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var assetBoosts : Map[AirportBoostType.Value, List[AirportBoost]] = Map.empty
 
   val baseIncomeLevel = Computation.getIncomeLevel(baseIncome)
-  lazy val incomeLevelBoost = assetBoosts.get(AirportBoostType.INCOME) match {
+  lazy val incomeLevelBoost = (assetBoosts.get(AirportBoostType.INCOME) match {
     case Some(boosts) => boosts.map(_.value).sum
     case None => 0
-  }
+  }) + airlineBases.values.map { airlineBase =>
+    airlineBase.specializations.filter(_ == POWERHOUSE).map(_.asInstanceOf[PowerhouseSpecialization].incomeLevelBoost).sum
+  }.sum
   lazy val incomeLevel = baseIncomeLevel + incomeLevelBoost
   lazy val income = if (incomeLevelBoost == 0) baseIncome else Computation.fromIncomeLevel(incomeLevel) //have to deduce from income level (after boost)
 
 
-  lazy val populationBoost = assetBoosts.get(AirportBoostType.POPULATION) match {
+  lazy val populationBoost = (assetBoosts.get(AirportBoostType.POPULATION) match {
     case Some(boosts) => boosts.map(_.value).sum.toInt
     case None => 0
-  }
+  }) + airlineBases.values.map { airlineBase =>
+    airlineBase.specializations.filter(_ == POWERHOUSE).map(_.asInstanceOf[PowerhouseSpecialization].populationBoost).sum
+  }.sum
   lazy val population = basePopulation + populationBoost
   lazy val power = income * population
   val basePower = baseIncome * basePopulation
