@@ -151,15 +151,12 @@ object LinkSimulation {
 
   case class PassengerCost(group : PassengerGroup, passengerCount : Int, cost : Double)
 
-  val minorDelayNormalThreshold = 0.4  // so it's around 24% at 40% condition (multiplier at 0.6) to run into minor delay OR worse
-  val majorDelayNormalThreshold = 0.1 // so it's around 6% at 40% condition (multiplier at 0.6) to run into major delay OR worse
-  val cancellationNormalThreshold = 0.03 // so it's around 1.8% at 40% condition (multiplier at 0.6) to run into cancellation
-  val minorDelayBadThreshold = 0.5  // so it's around 40% at 20% condition (multiplier at 0.8) to run into minor delay OR worse
-  val majorDelayBadThreshold = 0.2 // so it's around 16% at 20% condition (multiplier at 0.8) to run into major delay OR worse
-  val cancellationBadThreshold = 0.1 // so it's around 8% at 20% condition (multiplier at 0.8) to run into cancellation
-  val minorDelayCriticalThreshold = 1  // so it's around 100% at 0% condition (multiplier at 1) to run into minor delay OR worse
-  val majorDelayCriticalThreshold = 0.5 // so it's around 50% at 0% condition (multiplier at 1) to run into major delay OR worse
-  val cancellationCriticalThreshold = 0.3 // so it's around 30% at 0% condition (multiplier at 1) to run into cancellation
+  val minorDelayNormalThreshold = 0.3  // so it's around 18% at 40% condition (multiplier at 0.6) or 24% at 20% condition to run into minor delay OR worse
+  val majorDelayNormalThreshold = 0.1 // so it's around 6% at 40% condition (multiplier at 0.6) or 8% at 20% condition to run into major delay OR worse
+  val cancellationNormalThreshold = 0.03 // so it's around 1.8% at 40% condition (multiplier at 0.6) or 2.4% at 20 condition to run into cancellation
+  val minorDelayCriticalThreshold = 0.5  // so it's around 50% at 0% condition (multiplier at 1) to run into minor delay OR worse
+  val majorDelayCriticalThreshold = 0.2 // so it's around 20% at 0% condition (multiplier at 1) to run into major delay OR worse
+  val cancellationCriticalThreshold = 0.05 // so it's around 5% at 0% condition (multiplier at 1) to run into cancellation
 
   def simulateLinkError(links : List[Link]) = {
     links.foreach {
@@ -171,32 +168,22 @@ object LinkSimulation {
           if (airplaneCount > 0) {
             val airplane = assignedInServiceAirplanes.toList.map(_._1)(i % airplaneCount)           //round robin
             val errorValue = Random.nextDouble()
-            val conditionMultipler = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
-            var minorDelayThreshold : Double = 0
-            var majorDelayThreshold : Double = 0
-            var cancellationThreshold : Double = 0
-            if (airplane.condition > Airplane.BAD_CONDITION) { //small chance of delay and cancellation
-              if (errorValue < cancellationNormalThreshold * conditionMultipler) {
+            val conditionMultiplier = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
+
+            if (airplane.condition > Airplane.CRITICAL_CONDITION) { //small chance of delay and cancellation
+              if (errorValue < cancellationNormalThreshold * conditionMultiplier) {
                 link.cancellationCount = link.cancellationCount + 1
-              } else if (errorValue < majorDelayNormalThreshold * conditionMultipler) {
+              } else if (errorValue < majorDelayNormalThreshold * conditionMultiplier) {
                 link.majorDelayCount = link.majorDelayCount + 1
-              } else if (errorValue < minorDelayNormalThreshold * conditionMultipler) {
-                link.minorDelayCount = link.minorDelayCount + 1
-              }
-            } else if (airplane.condition > Airplane.CRITICAL_CONDITION) {
-              if (errorValue < cancellationBadThreshold * conditionMultipler) {
-                link.cancellationCount = link.cancellationCount + 1
-              } else if (errorValue < majorDelayBadThreshold * conditionMultipler) {
-                link.majorDelayCount = link.majorDelayCount + 1
-              } else if (errorValue < minorDelayBadThreshold * conditionMultipler) {
+              } else if (errorValue < minorDelayNormalThreshold * conditionMultiplier) {
                 link.minorDelayCount = link.minorDelayCount + 1
               }
             } else {
-              if (errorValue < cancellationCriticalThreshold * conditionMultipler) {
+              if (errorValue < cancellationCriticalThreshold * conditionMultiplier) {
                 link.cancellationCount = link.cancellationCount + 1
-              } else if (errorValue < majorDelayCriticalThreshold * conditionMultipler) {
+              } else if (errorValue < majorDelayCriticalThreshold * conditionMultiplier) {
                 link.majorDelayCount = link.majorDelayCount + 1
-              } else if (errorValue < minorDelayCriticalThreshold * conditionMultipler) {
+              } else if (errorValue < minorDelayCriticalThreshold * conditionMultiplier) {
                 link.minorDelayCount = link.minorDelayCount + 1
               }
             }
