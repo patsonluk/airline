@@ -568,7 +568,7 @@ package object controllers {
             }
             bonusJson = bonusJson + (airlineId.toString ->
               Json.obj("loyalty" -> BigDecimal(totalLoyaltyBonus).setScale(2, RoundingMode.HALF_EVEN),
-                "loyaltyBreakdown" -> loyaltyBreakdownJson)
+                "loyaltyBreakdown" -> loyaltyBreakdownJson))
           }
         }
         airportObject = airportObject + ("bonusList" -> bonusJson)
@@ -836,4 +836,3 @@ package object controllers {
 
   val allAirplaneModels = ModelSource.loadAllModels()
   val allCountryRelationships = CountrySource.getCountryMutualRelationships()
-}
