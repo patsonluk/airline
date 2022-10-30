@@ -1245,34 +1245,6 @@
 								<div class="table-row">
 									<div class="label">
 										<h5>
-											<span>Awareness of your airline:</span>
-											<div class="tooltip">
-												<img src='@routes.Assets.versioned("images/icons/information.png")'>
-												<span class="tooltiptext alignLeft" style="width: 400px;">
-													<h5>Airport awareness affects:</h5>
-													<ul>
-														<li>How likely a passenger from this airport will consider your route for his trip</li>
-													</ul>
-													<h5>Airport awareness builds up slowly by:</h5>
-													<ul>
-														<li>Routes serving this airport offered by your airline</li>
-														<li>Airline base in this airport if present</li>
-													</ul>
-												</span>
-											</div>
-										</h5>
-									</div>
-									<div class="value">
-										<span style="display: flex; align-items: center;">
-											<span class="airportAwareness" id="airportDetailsAwareness" style="display: flex; align-items: center;"></span>
-											<span class="airportAwarenessBonus"></span>
-											<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportAwarenessBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
-										</span>
-									</div>
-								</div>
-								<div class="table-row">
-									<div class="label">
-										<h5>
 											<span>Loyalty to your airline:</span>
 											<div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
@@ -2330,7 +2302,7 @@
                                 <li class="label dot">All loans and oil contracts cancelled<li>
                                 <li class="label dot">Dropped from current Alliance<li>
                                 <li class="label dot">Service Quality will be reset<li>
-                                <li class="label dot">Reputation, Awareness and Loyalty will be kept</li>
+                                <li class="label dot">Reputation and Loyalty will be kept</li>
                             </ul>
                             <div class='button resetAirline rebuild' onclick='promptConfirm("Rebuild Airline?", resetAirline, true)'>Rebuild Airline</div>
                             <h4>Declare bankruptcy<img src='@routes.Assets.versioned("images/icons/heart-break.png")'/></h4>
@@ -3551,12 +3523,6 @@
 
 			<div style="display: flex; flex-wrap: wrap; width: 100%">
 				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
-					<img title="Awareness" src='@routes.Assets.versioned("images/icons/tick-circle.png")' style="margin-right: 5px;">
-					<span class="airportAwareness" id="airportPopupAwareness"></span>
-					<span class="airportAwarenessBonus"></span>
-					<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportAwarenessBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('awarenessBreakdown'))" onmouseout="hideAppealBreakdown()">
-				</span>
-				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
 					<img title="Loyalty" src='@routes.Assets.versioned("images/icons/heart.png")' style="margin-right: 5px;">
 					<span class="airportLoyalty" id="airportPopupLoyalty"></span>
 					<span class="airportLoyaltyBonus"></span>
@@ -4435,7 +4401,7 @@
 
   </div>
 
-    <!-- link rival awareness/loyalty modal -->
+    <!-- link rival loyalty modal -->
     <div id="linkRivalHistoryModal" class="modal">
         <div class="modal-content"  style="width : 800px; height: 450px;">
             <span class="close" onclick="closeModal($('#linkRivalHistoryModal'))">&times;</span>
@@ -4482,7 +4448,7 @@
 	<div id="linkRivalDetailsModal" class="modal">
 		<div class="modal-content"  style="width : 800px; height: 600px;">
 			<span class="close" onclick="closeModal($('#linkRivalDetailsModal'))">&times;</span>
-			<h4 style="margin-bottom: 10px;">Loyalty/Awareness</h4>
+			<h4 style="margin-bottom: 10px;">Loyalty</h4>
 			<div style="height: 250px; width: 100%;">
 				<div style="height: 100%; width: 100%; overflow: auto; float: left;">
 					<div class="table data"style="width: 100%">
@@ -4492,13 +4458,11 @@
 							<div class="cell toAirportText" style="width: 40%;  border-bottom: none"></div>
 						</div>
 					</div>
-					<div class="table data" id="rivalLoyaltyAwarenessTable" style="max-height: 100%; width: 100%">
+					<div class="table data" id="rivalAppealTable" style="max-height: 100%; width: 100%">
 						<div class="table-header">
 							<div class="cell" style="width: 20%;  border-radius: 0;">&nbsp;</div>
-							<div class="cell" style="width: 20%" align="right">Loyalty</div>
-							<div class="cell" style="width: 20%" align="right">Awareness</div>
-							<div class="cell" style="width: 20%" align="right">Loyalty</div>
-							<div class="cell" style="width: 20%;  border-radius: 0;" align="right">Awareness</div>
+							<div class="cell" style="width: 40%" align="right">Loyalty</div>
+							<div class="cell" style="width: 40%" align="right">Loyalty</div>
 						</div>
 					</div>
 				</div>
@@ -5036,7 +5000,7 @@
 										</div>
 									</div>
 								</div>
-								<h5><span class="dot"/>Each delegate level provides&nbsp;<span class="awarenessBonus"></span>&nbsp;awareness and <span class="loyaltyBonus"></span>&nbsp;loyalty. Delegate starts at level 0 and progress over time. Hover over each delegate above to see details</h5>
+								<h5><span class="dot"/>Each delegate level provides&nbsp;<span class="loyaltyBonus"></span>&nbsp;loyalty. Delegate starts at level 0 and progress over time. Hover over each delegate above to see details</h5>
 							</div>
 						</div>
 					</div>

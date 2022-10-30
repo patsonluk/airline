@@ -890,15 +890,6 @@ function refreshAirportExtendedDetails(airport) {
         $.each(airport.appealList, function( key, appeal ) {
             if (appeal.airlineId == airlineId) {
                 if (airport.bonusList[airlineId]) {
-                    if (airport.bonusList[airlineId].awareness > 0) {
-                        $(".airportAwarenessBonus").text("(+" + airport.bonusList[airlineId].awareness + ")")
-                        $(".airportAwarenessBonus").show()
-                        $('#appealBonusDetailsTooltip').data('awarenessBreakdown', airport.bonusList[airlineId].awarenessBreakdown)
-                        $('.airportAwarenessBonusTrigger').show()
-                    } else {
-                        $(".airportAwarenessBonus").hide()
-                        $('.airportAwarenessBonusTrigger').hide()
-                    }
                     if (airport.bonusList[airlineId].loyalty > 0) {
                         $(".airportLoyaltyBonus").text("(+" + airport.bonusList[airlineId].loyalty + ")")
                         $(".airportLoyaltyBonus").show()
@@ -915,19 +906,15 @@ function refreshAirportExtendedDetails(airport) {
                 var fullStarSource = "assets/images/icons/star.png"
                 var halfStarSource = "assets/images/icons/star-half.png"
 
-                $(".airportAwareness").empty()
                 $(".airportLoyalty").empty()
-                getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, appeal.awareness).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportAwareness"))
                 getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, appeal.loyalty).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportLoyalty"))
 
-                $(".airportAwareness").append(appeal.awareness)
                 $(".airportLoyalty").append(appeal.loyalty)
 
                 hasMatch = true
             }
         });
         if (!hasMatch) {
-            $(".airportAwareness").text("0")
             $(".airportLoyalty").text("0")
         }
 
@@ -976,12 +963,9 @@ function refreshAirportExtendedDetails(airport) {
 
 function updateAirportExtendedDetails(airportId, countryCode) {
 	//clear the old values
-	$(".airportAwareness").text('-')
 	$(".airportLoyalty").text('-')
 	$(".airportRelationship").text('-')
-	$(".airportAwarenessBonus").hide()
-    $('.airportAwarenessBonusTrigger').hide()
-    $(".airportLoyaltyBonus").hide()
+	$(".airportLoyaltyBonus").hide()
     $('.airportLoyaltyBonusTrigger').hide()
 	$("#airportIcons .feature").hide()
 

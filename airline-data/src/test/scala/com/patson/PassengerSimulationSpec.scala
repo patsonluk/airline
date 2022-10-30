@@ -33,7 +33,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
 
   val fromAirport = Airport.fromId(1).copy(baseIncome = 40000, basePopulation = 1) //income 40k . mid income country
-  val airlineAppeal = AirlineAppeal(0, 100)
+  val airlineAppeal = AirlineAppeal(0)
   fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
   fromAirport.initLounges(List.empty)
   val toAirportsList = List(
@@ -294,21 +294,6 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       //3rd airport, no link as last link only has economy (downgrade 2 classes - forbidden)
       assert(!result(economyPassengerGroup).contains(toAirportsList(2)))
     }
-    "find no route if the airline has no awareness at the fromAirport".in {
-      val clonedFromAirport = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
-      val links = List(Link(clonedFromAirport, toAirportsList(0), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
-        Link(toAirportsList(0), toAirportsList(1), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
-        Link(toAirportsList(1), toAirportsList(2), testAirline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
-      assignLinkIds(links)
-      val economyPassengerGroup = PassengerGroup(clonedFromAirport, AppealPreference(clonedFromAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
-
-      val toAirports = Set[Airport]()
-      toAirports ++= toAirportsList
-      val result : Map[PassengerGroup, Map[Airport, Route]] = PassengerSimulation.findAllRoutes(Map(economyPassengerGroup -> toAirports), links, allAirportIds)
-
-      result(economyPassengerGroup).isEmpty.shouldBe(true) //no awareness
-    }
 
     "find routes if there're valid links with sufficient country openness".in {
       val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
@@ -318,10 +303,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
       val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport4, "C4", 1, 1, headquarter = true)))
-      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
 
       val links = List(Link(airport1, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
         Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
@@ -374,10 +359,10 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
       val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport4, "C4", 1, 1, headquarter = true)))
-      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
 
       val links = List(Link(airport1, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
         Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
@@ -421,11 +406,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
       val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport5, "C3", 1, 1, headquarter = true)))
-      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport5.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport5.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
 
       val links = List(Link(airport1, airport2, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
         Link(airport2, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
@@ -470,11 +455,11 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
       val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport5, "C3", 1, 1, headquarter = true)))
-      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
-      airport5.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport2.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport3.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport4.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+      airport5.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
 
       val links = List(Link(airport5, airport4, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
         Link(airport4, airport3, airline1, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
@@ -520,7 +505,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport1, "C1", 1, 1, headquarter = true)))
       airline2.setBases(List[AirlineBase](AirlineBase(airline2, airport1, "C1", 1, 1, headquarter = true)))
 
-      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100), airline2.id -> AirlineAppeal(0, 100)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0), airline2.id -> AirlineAppeal(0)))
 
       val countryOpenness = Map[String, Int](
         "C1" -> 10,
@@ -584,7 +569,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       val airline1 = Airline("airline 1", id = 1)
       airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport1, "C1", 1, 1, headquarter = true)))
 
-      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0, 100)))
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
 
       airport2a.initAssets(List(AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, AirportAssetType.AIRPORT_HOTEL, 0), Some(airline1), "Test Hotel", 10, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0)))
       airport2b.initAssets(List.empty)
@@ -663,7 +648,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
   "IsLinkAffordable".must {
     "accept almost all route (single link) at 60% of suggested price and neutral quality and 50 loyalty".in { 
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -699,7 +684,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     }
     "accept some route (single link) at 70% of suggested price with 0 quality/loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -734,7 +719,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     }
     "accept most route (single link) at suggested price with neutral quality and decent loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -771,7 +756,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept some (single link) at suggested price with neutral quality and no loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -808,7 +793,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     }
     "accept some (single link) at suggested price with neutral quality and no loyalty for low income country".in {
       val clonedFromAirport  = fromAirport.copy(baseIncome = Country.LOW_INCOME_THRESHOLD / 2)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -846,7 +831,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept some (single link) at suggested price with neutral quality and no loyalty for very low income country".in {
       val clonedFromAirport  = fromAirport.copy(baseIncome = Country.LOW_INCOME_THRESHOLD / 10)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -884,7 +869,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept almost no link at 1.2 suggested price with 0 quality and no loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -920,7 +905,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept very few link at 1.4 x suggested price with neutral quality and decent loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -958,7 +943,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept almost no link at 3 x suggested price with max quality and max loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -997,7 +982,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
     "accept very few link at 2 x suggested price with max quality and max loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100)))
 
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1036,7 +1021,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept very few link at 2 x suggested price with max quality and max loyalty but very low income country".in {
       val clonedFromAirport  = fromAirport.copy(baseIncome = 1000)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 100)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1074,7 +1059,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept no link at 2 x suggested price with no quality and no loyalty".in { 
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1112,7 +1097,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
     "accept few link at suggested price with neutral quality and decent loyalty but downgrade in class (from business to econ)".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50)))
       
       val toAirport = toAirportsList(0)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1149,7 +1134,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
     "accept some links at 2 x suggested price with neutral quality and decent loyalty for SUPERSONIC flight of Speedy Eco pax".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50)))
 
       val toAirport = toAirportsList(2)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1182,7 +1167,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
     "accept some links at 1.4 x suggested price with neutral quality and decent loyalty for SUPERSONIC flight of Appeal First Class pax".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50)))
 
       val toAirport = toAirportsList(2)
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1215,7 +1200,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept very few route with links are at 1.25 price with neutral quality and 0 loyalty".in { //will be less than single link cause each run fitler out some
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       var airportWalker = clonedFromAirport
       val links = toAirportsList.map { toAirport =>
@@ -1260,7 +1245,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "reject route with one short link at 4X suggested price at min loyalty and quality".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       val toAirports = List[Airport] (
         Airport("", "", "To Airport", 0, 30, "", "", "", 1, 0, 0, 0, id = 2),
@@ -1301,7 +1286,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
     "accept some routes with suggested price at good quality but no loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
 
       val toAirports = List[Airport] (
         Airport("", "", "To Airport", 0, 30, "", "", "", 1, 0, 0, 0, id = 2),
@@ -1350,7 +1335,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
     "accept most routes with suggested price at good quality and good loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 80, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 80)))
 
       val toAirports = List[Airport] (
         Airport("", "", "To Airport", 0, 30, "", "", "", 1, 0, 0, 0, id = 2),
@@ -1400,7 +1385,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept most routes with suggested price at neutral quality and decent loyalty".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 50)))
       
       val toAirports = List[Airport] (
         Airport("", "", "To Airport", 0, 30, "", "", "", 1, 0, 0, 0, id = 2),
@@ -1450,7 +1435,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "reject route that at 2X suggested price at min loyalty and quality".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       var airportWalker = clonedFromAirport
       val links = toAirportsList.map { toAirport =>
@@ -1483,7 +1468,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept most route that all links are at 60% price and the total distance travel is 1.25x of the actual displacement with neutral quality".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       val toAirports = List[Airport] (
         Airport("", "", "To Airport", 0, 112.25, "", "", "", 1, 0, 0, 0, id = 2),
@@ -1528,7 +1513,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "reject route that all links are at suggested price and the total distance travel is 3x of the actual displacement".in {
       val clonedFromAirport  = fromAirport.copy()
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(0)))
       
       val toAirports = List[Airport] (
         Airport("", "", "To Airport", 0, 60, "", "", "", 1, 0, 0, 0, id = 2),
@@ -1565,7 +1550,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
    
     "reject most links at standard price if it does not fulfill lounge requirement (long flight)".in {
       val clonedFromAirport  = fromAirport.copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
       
       val toAirport = toAirportsList(2).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) //no lounge on the other side... so it's a no
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1600,7 +1585,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
     "reject some links at standard price if it does not fulfill lounge requirement (short flight)".in {
       val clonedFromAirport  = fromAirport.copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
 
       val toAirport = toAirportsList(0).copy(longitude = 10, size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) //no lounge on the other side... so it's a no
       val distance = Util.calculateDistance(clonedFromAirport.latitude, clonedFromAirport.longitude, toAirport.latitude, toAirport.longitude).intValue()
@@ -1636,7 +1621,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
   
     "accept few links at standard price if it fulfill some lounge requirement (long flight level 1 at departing airport only)".in {
       val clonedFromAirport  = fromAirport.copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
       clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = clonedFromAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       
       val toAirport = toAirportsList(2).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
@@ -1673,7 +1658,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept some links at standard price if it fulfill some lounge requirement (long flight level 1 at both airports)".in {
       val clonedFromAirport  = fromAirport.copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
       clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = clonedFromAirport, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       
       val toAirport = toAirportsList(2).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
@@ -1711,7 +1696,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept most links at standard price if it fulfill all lounge requirements (level 3 at both airports)".in {
       val clonedFromAirport  = fromAirport.copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
       clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, allianceId  = None, airport = clonedFromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
       
       val toAirport = toAirportsList(2).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
@@ -1749,7 +1734,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
 
     "accept some links at 1.3 * price if it fulfill all lounge requirements (level 3 at both airports)".in {
       val clonedFromAirport  = fromAirport.copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
       clonedFromAirport.initLounges(List(Lounge(airline = testAirline1, allianceId  = None, airport = clonedFromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) //only from airport has it
 
       val toAirport = toAirportsList(2).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
@@ -1788,7 +1773,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
     
     "accept most at standard price if it fulfill all lounge requirements (level 3 at both airports from alliance)".in {
       val clonedFromAirport  = fromAirport.copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)
-      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50, 0)))
+      clonedFromAirport.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(50)))
       clonedFromAirport.initLounges(List(Lounge(airline = testAirline2, allianceId = Some(1), airport = clonedFromAirport, level = 3, status = LoungeStatus.ACTIVE, foundedCycle = 0))) 
       testAirline1.setAllianceId(1)
       val toAirport = toAirportsList(2).copy(size = Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT)

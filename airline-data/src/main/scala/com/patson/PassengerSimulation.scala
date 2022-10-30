@@ -426,8 +426,7 @@ object PassengerSimulation {
    * 
    * Take note that when finding routes, in order to be considered as a valid route, this method takes into consideration of:
    * 1. whether the link has available capacity left for the PassengerGroup's link Class, all the links in between 2 points should have capacity for the correct class
-   * 2. whether the awareness/reputation makes the links "searchable" by the passenger group. There is some randomness to this, but at 0 awareness and reputation it simply cannot be found
-   *    
+   *
    */
   def findAllRoutes(requiredRoutes : Map[PassengerGroup, Set[Airport]],
                     linksList : List[Transport],
@@ -476,46 +475,15 @@ object PassengerSimulation {
           //see if there are any seats for that class (or lower) left
           link.availableSeatsAtOrBelowClass(preferredLinkClass).foreach {
             case(matchingLinkClass, seatsLeft) =>
-              val isAwareOfService =
-                if (link.transportType == TransportType.GENERIC_TRANSIT) {
-                  true
-                } else {
-                  //from the perspective of the passenger group, how well does it know each link
-                  val airlineAwarenessFromCity = passengerGroup.fromAirport.getAirlineAwareness(link.airline.id)
-                  val airlineAwarenessFromReputation = if (link.airline.getReputation() >= AirlineGrade.CONTINENTAL.reputationCeiling) AirlineAppeal.MAX_AWARENESS else link.airline.getReputation() * 2 //if reputation is 50+ then everyone will see it, otherwise reputation * 2
-                  //println("Awareness from reputation " + airlineAwarenessFromReputation)
-                  val airlineAwareness = Math.max(airlineAwarenessFromCity, airlineAwarenessFromReputation)
-                  airlineAwareness > Random.nextInt(AirlineAppeal.MAX_AWARENESS)
-                }
-
-
-              if (isAwareOfService) {
-//                var cost = passengerGroup.preference.computeCost(link, matchingLinkClass)
-//
-//                if (airlineCostModifiers.contains(link.airline.id)) {
-//                  cost *= airlineCostModifiers(link.airline.id)
-//                }
-//
-//                val airlineFromAirportTuple = (link.airline.id, link.from.id)
-//                if (specializationCostModifiers.contains(airlineFromAirportTuple)) {
-//                  cost *= specializationCostModifiers(airlineFromAirportTuple).value(preferredLinkClass)
-//                }
-//                val airlineToAirportTuple = (link.airline.id, link.to.id)
-//                if (specializationCostModifiers.contains(airlineToAirportTuple)) {
-//                  cost *= specializationCostModifiers(airlineToAirportTuple).value(preferredLinkClass)
-//                }
-
-
-                //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
-                val costProvider = CostStoreProvider() //use same instance of costProvider so this is only computed once
-                val linkConsideration1 = LinkConsideration(link, matchingLinkClass, false, passengerGroup, externalCostModifier, costProvider)
-                val linkConsideration2 = LinkConsideration(link, matchingLinkClass, true, passengerGroup, externalCostModifier, costProvider)
-                if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
-                  linkConsiderations.add(linkConsideration1)
-                }
-                if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
-                  linkConsiderations.add(linkConsideration2)
-                }
+              //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
+              val costProvider = CostStoreProvider() //use same instance of costProvider so this is only computed once
+              val linkConsideration1 = LinkConsideration(link, matchingLinkClass, false, passengerGroup, externalCostModifier, costProvider)
+              val linkConsideration2 = LinkConsideration(link, matchingLinkClass, true, passengerGroup, externalCostModifier, costProvider)
+              if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
+                linkConsiderations.add(linkConsideration1)
+              }
+              if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
+                linkConsiderations.add(linkConsideration2)
               }
           }
         }

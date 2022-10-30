@@ -530,9 +530,6 @@ package object controllers {
       //      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
       //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)
       //      }
-      //      val awarenessMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
-      //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.awareness)
-      //      }
 
       var airportObject = JsObject(List(
         "id" -> JsNumber(airport.id),
@@ -553,7 +550,7 @@ package object controllers {
 
       if (airport.isAirlineAppealsInitialized) {
         airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAdjustedAppeals().toList.map {
-          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  RoundingMode.HALF_EVEN))
+          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, RoundingMode.HALF_EVEN))
         }
         ))
 
@@ -561,26 +558,17 @@ package object controllers {
         airport.getAllAirlineBonuses.toList.foreach {
           case (airlineId, bonuses) => {
             var totalLoyaltyBonus = 0.0
-            var totalAwarenessBonus = 0.0
             var loyaltyBreakdownJson = Json.arr(Json.obj("description" -> "Basic", "value" -> BigDecimal(airport.getAirlineBaseAppeal(airlineId).loyalty).setScale(2, RoundingMode.HALF_EVEN)))
-            var awarenessBreakdownJson = Json.arr(Json.obj("description" -> "Basic", "value" -> BigDecimal(airport.getAirlineBaseAppeal(airlineId).awareness).setScale(2, RoundingMode.HALF_EVEN)))
             bonuses.foreach { entry =>
               val loyaltyBonus = entry.bonus.loyalty
               if (loyaltyBonus != 0) {
                 totalLoyaltyBonus += loyaltyBonus
                 loyaltyBreakdownJson = loyaltyBreakdownJson.append(Json.obj("description" -> BonusType.description(entry.bonusType), "value" -> BigDecimal(loyaltyBonus).setScale(2, RoundingMode.HALF_EVEN)))
               }
-              val awarenessBonus = entry.bonus.awareness
-              if (awarenessBonus != 0) {
-                totalAwarenessBonus += awarenessBonus
-                awarenessBreakdownJson = awarenessBreakdownJson.append(Json.obj("description" -> BonusType.description(entry.bonusType), "value" -> BigDecimal(awarenessBonus).setScale(2, RoundingMode.HALF_EVEN)))
-              }
             }
             bonusJson = bonusJson + (airlineId.toString ->
               Json.obj("loyalty" -> BigDecimal(totalLoyaltyBonus).setScale(2, RoundingMode.HALF_EVEN),
-                "awareness" -> BigDecimal(totalAwarenessBonus).setScale(2, RoundingMode.HALF_EVEN),
-                "loyaltyBreakdown" -> loyaltyBreakdownJson,
-              "awarenessBreakdown" -> awarenessBreakdownJson))
+                "loyaltyBreakdown" -> loyaltyBreakdownJson)
           }
         }
         airportObject = airportObject + ("bonusList" -> bonusJson)

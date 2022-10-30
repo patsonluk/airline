@@ -95,7 +95,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     if (result != null) {
       result
     } else {
-      AirlineAppeal(0, 0)
+      AirlineAppeal(0)
     }
   }
 
@@ -153,19 +153,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       0
     }
   }
-  def getAirlineAwareness(airlineId : Int) : Double = {
-    if (!airlineAppealsLoaded) {
-      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
-    }
-    val appeal = airlineAdjustedAppeals.get(airlineId)
-    if (appeal != null) {
-      appeal.awareness
-    } else {
-      0
-    }
-  }
 
-  
   def isAirlineAppealsInitialized = airlineAppealsLoaded
 
   
@@ -213,17 +201,12 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     baseFeatures.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
   }
 
-  def initAirlineAppealsComputeLoyalty(airlineBaseAwareness : Map[Int, Double], airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty, loyalistEntries : List[Loyalist]) = {
+  def initAirlineAppealsComputeLoyalty(airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty, loyalistEntries : List[Loyalist]) = {
     this.loyalistEntries = loyalistEntries
-    val airlineBaseLoyalty = computeLoyaltyByLoyalist(loyalistEntries)
+    val airlineBaseLoyalty : Map[Int, Double] = computeLoyaltyByLoyalist(loyalistEntries)
 
-    val preFlattenAppealsByAirlineId : Map[Int, List[(Int, AirlineAppeal)]] = (airlineBaseLoyalty.view.mapValues(loyalty => AirlineAppeal(loyalty = loyalty, awareness = 0)).toList ++
-    airlineBaseAwareness.view.mapValues(awareness => AirlineAppeal(loyalty = 0, awareness = awareness)).toList).groupBy(_._1)
-    //now flatten it if both awareness and loyalty entry is present
-    val appealsByAirlineId = preFlattenAppealsByAirlineId.view.mapValues { entries =>
-      AirlineAppeal(loyalty = entries.map(_._2.loyalty).sum, awareness = entries.map(_._2.awareness).sum)
-    }.toMap
-    initAirlineAppeals(appealsByAirlineId, airlineBonuses)
+    val appealsByAirlineId = airlineBaseLoyalty.view.mapValues(AirlineAppeal(_))
+    initAirlineAppeals(appealsByAirlineId.toMap, airlineBonuses)
   }
 
   private[model] lazy val computeLoyaltyByLoyalist = (loyalistEntries : List[Loyalist]) => loyalistEntries.map {
@@ -255,8 +238,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
           val existingAppeal = this.airlineAdjustedAppeals.get(airlineId)
           if (existingAppeal != null) {
             val newLoyalty = Math.min(existingAppeal.loyalty + bonus.bonus.loyalty, AirlineAppeal.MAX_LOYALTY)
-            val newAwareness = Math.min(existingAppeal.awareness + bonus.bonus.awareness, AirlineAppeal.MAX_AWARENESS)
-            this.airlineAdjustedAppeals.put(airlineId, AirlineAppeal(newLoyalty, newAwareness))
+            this.airlineAdjustedAppeals.put(airlineId, AirlineAppeal(newLoyalty))
           } else { //not yet has appeal data, add one
             this.airlineAdjustedAppeals.put(airlineId, bonus.bonus)
           }
@@ -424,10 +406,9 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
 }
 
-case class AirlineAppeal(loyalty : Double, awareness : Double)
+case class AirlineAppeal(loyalty : Double)
 object AirlineAppeal {
   val MAX_LOYALTY = 100
-  val MAX_AWARENESS = 100
 }
 case class AirlineBonus(bonusType : BonusType.Value, bonus : AirlineAppeal, expirationCycle : Option[Int]) {
   val isExpired : Int => Boolean = currentCycle => expirationCycle.isDefined && currentCycle > expirationCycle.get

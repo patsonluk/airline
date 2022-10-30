@@ -12,16 +12,15 @@ class CampaignSpec extends WordSpecLike with Matchers {
   val airline2 = Airline.fromId(2)
 
   "campaign".must {
-    "Generate no awareness and loyalty for the area if delegate is level 0".in {
+    "Generate no loyalty for the area if delegate is level 0".in {
       val area = List(airport1, airport2)
       val campaign1 = Campaign(airline1, airport1, 100, area.map(_.population).sum, area, 1)
       val campaign1DelegateTask = DelegateTask.campaign(0, campaign1)
       val currentCycle = 0
       val result = campaign1.getAirlineBonus(airport1, List(campaign1DelegateTask), currentCycle)
       assert(result.bonus.loyalty == 0)
-      assert(result.bonus.awareness == 0)
     }
-    "Generate some awareness and loyalty for the area if delegate is level > 0".in {
+    "Generate some loyalty for the area if delegate is level > 0".in {
       val area = List(airport1, airport2)
       val campaign1 = Campaign(airline1, airport1, 100, area.map(_.population).sum, area, 1)
       val campaign1DelegateTask = DelegateTask.campaign(0, campaign1)
@@ -30,13 +29,11 @@ class CampaignSpec extends WordSpecLike with Matchers {
       val airport2Bonus = campaign1.getAirlineBonus(airport2, List(campaign1DelegateTask), currentCycle)
       val airport3Bonus = campaign1.getAirlineBonus(airport3, List(campaign1DelegateTask), currentCycle)
       assert(airport1Bonus.bonus.loyalty > 0)
-      assert(airport1Bonus.bonus.awareness > 0)
       assert(airport2Bonus.bonus.loyalty > 0)
-      assert(airport2Bonus.bonus.awareness > 0)
       assert(airport3Bonus.bonus.loyalty == 0) //no coverage
-      assert(airport3Bonus.bonus.awareness == 0) //no coverage
     }
-    "Generate more awareness and loyalty for the area if delegate is level is higher".in {
+
+    "Generate more loyalty for the area if delegate is level is higher".in {
       val area = List(airport1, airport2)
       val campaign1 = Campaign(airline1, airport1, 100, area.map(_.population).sum, area, 1)
       val campaign1DelegateTask = DelegateTask.campaign(0, campaign1) //higher level delegate
@@ -47,14 +44,11 @@ class CampaignSpec extends WordSpecLike with Matchers {
       val campaign1Bonus = campaign1.getAirlineBonus(airport1, List(campaign1DelegateTask), currentCycle)
       val campaign2Bonus = campaign2.getAirlineBonus(airport1, List(campaign2DelegateTask), currentCycle)
       assert(campaign1Bonus.bonus.loyalty > 0)
-      assert(campaign1Bonus.bonus.awareness > 0)
       assert(campaign2Bonus.bonus.loyalty > 0)
-      assert(campaign2Bonus.bonus.awareness > 0)
       assert(campaign1Bonus.bonus.loyalty > campaign2Bonus.bonus.loyalty)
-      assert(campaign1Bonus.bonus.awareness > campaign2Bonus.bonus.loyalty)
       println(campaign1Bonus.bonus)
     }
-    "Generate awareness and loyalty according to area pop ratio".in {
+    "Generate loyalty according to area pop ratio".in {
       val area1 = List(airport1, airport2)
       val area2 = List(airport1, airport2, airport3)
       val campaign1 = Campaign(airline1, airport1, 100, area1.map(_.population).sum, area1, 1)
@@ -67,11 +61,8 @@ class CampaignSpec extends WordSpecLike with Matchers {
       val campaign2Bonus = campaign2.getAirlineBonus(airport1, List(campaign2DelegateTask), currentCycle)
 
       assert(campaign1Bonus.bonus.loyalty > 0)
-      assert(campaign1Bonus.bonus.awareness > 0)
       assert(campaign2Bonus.bonus.loyalty > 0)
-      assert(campaign2Bonus.bonus.awareness > 0)
       assert(campaign1Bonus.bonus.loyalty > campaign2Bonus.bonus.loyalty) //campaign1 more effective as it covers less area
-      assert(campaign1Bonus.bonus.awareness > campaign2Bonus.bonus.loyalty)
     }
   }
   

@@ -512,11 +512,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                    airport => //TODO for now. Maybe update to Ad event later on
                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
                    AirlineSource.saveAirlineBase(newBase)
-                   val existingAppeal = airport.getAirlineBaseAppeal(airlineId)
-                   if (existingAppeal.awareness < 20) { //update to 10 for hq
-                     AirportSource.updateAirlineAppeal(airport.id, airlineId, AirlineAppeal(existingAppeal.loyalty, 20))
-                   }
-                   
+
                    airline.setCountryCode(newBase.countryCode)
                    AirlineSource.saveAirlineInfo(airline, updateBalance = false)
                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)

@@ -104,7 +104,7 @@ abstract class FlightPreference(homeAirport : Airport) {
   }
 
   def loyaltyAdjustRatio(link : Transport) = {
-    val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
+    val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0))
     val loyalty = appeal.loyalty
     //the maxReduceFactorForThisAirline, if at max loyalty, it is the same as maxReduceFactorAtMaxLoyalty, at 0 loyalty, this is at maxReduceFactorAtMinLoyalty
     //    val maxReduceFactorForThisAirline = maxReduceFactorAtMinLoyalty + (maxReduceFactorAtMaxLoyalty - maxReduceFactorAtMinLoyalty) * (loyalty.toDouble / maxLoyalty)
