@@ -566,7 +566,7 @@ function populateTooltips() {
 }
 function populateDelegatesTooltips() {
     var $html = $("<div></div>")
-    $html.append("<p>Gained my leveling up your airline. Airline grade is determined by reputation points.</p>")
+    $html.append("<p>Gained by leveling up your airline. Airline grade is determined by reputation points.</p>")
     $html.append("<p>Delegates conduct various tasks, such as Flight negotiations, Country relationship improvements, Advertisement campaigns etc.</p>")
 
     addTooltipHtml($('.delegatesTooltip'), $html, {'width' : '350px'})
