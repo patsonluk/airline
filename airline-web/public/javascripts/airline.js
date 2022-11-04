@@ -729,6 +729,7 @@ function refreshLinkDetails(linkId) {
 
 		    	disableButton($("#linkDetails .button.viewLinkHistory"), "Passenger Map is not yet available for this route - please wait for the simulation (time estimation on top left of the screen).")
 		    	disableButton($("#linkDetails .button.viewLinkComposition"), "Passenger Survey is not yet available for this route - please wait for the simulation (time estimation on top left of the screen).")
+		    	disableButton($("#linkDetails .button.viewLinkEvent"), "Event history is not yet available for this route - please wait for the simulation (time estimation on top left of the screen).")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
 	    		$("#linkHistoryPrice").text(toLinkClassValueString(linkConsumption.price, "$"))
@@ -770,6 +771,7 @@ function refreshLinkDetails(linkId) {
 		    	}
 		    	enableButton($("#linkDetails .button.viewLinkHistory"))
 		    	enableButton($("#linkDetails .button.viewLinkComposition"))
+		    	enableButton($("#linkDetails .button.viewLinkEvent"))
 	    	}
             plotLinkCharts(linkConsumptions, plotUnit)
             $('#linkEventChart').data('linkConsumptions', linkConsumptions)
