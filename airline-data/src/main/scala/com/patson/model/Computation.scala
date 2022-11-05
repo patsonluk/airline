@@ -184,7 +184,8 @@ object Computation {
 //      BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 //    }
 //  }
-  
+
+  val REDUCED_COMPENSATION_SERVICE_LEVEL_THRESHOLD = 40 //airline with service level below this will pay less compensation
   
   def computeCompensation(link : Link) : Int = {
     if (link.majorDelayCount > 0 || link.minorDelayCount > 0 || link.cancellationCount > 0 ) {
@@ -195,8 +196,13 @@ object Computation {
       var compensation = (affectedSeatsPerFlight * link.cancellationCount * 0.5 * link.price).total  //50% of ticket price, as there's some penalty for that already
       compensation = compensation + (affectedSeatsPerFlight * link.majorDelayCount * 0.3 * link.price).total //30% of ticket price
       compensation = compensation + (affectedSeatsPerFlight * link.minorDelayCount * 0.05 * link.price).total //5% of ticket price
-      
-      compensation.toInt
+
+      if (link.airline.getCurrentServiceQuality() < REDUCED_COMPENSATION_SERVICE_LEVEL_THRESHOLD) { //down to only 20%
+        val ratio = 0.2 + 0.8 * link.airline.getCurrentServiceQuality() / REDUCED_COMPENSATION_SERVICE_LEVEL_THRESHOLD
+        (compensation * ratio).toInt
+      } else {
+        compensation.toInt
+      }
     } else {
       0
     }
