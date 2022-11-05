@@ -117,6 +117,9 @@ body {
 	color: var(--text-color);
 
 	background: var(--fallback-background);  /* fallback for old browsers */
+	background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
 }
 
 a {

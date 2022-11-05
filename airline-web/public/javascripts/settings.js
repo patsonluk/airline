@@ -83,7 +83,7 @@ function updateCustomWallpaperPanel() {
                         url:"users/" + activeUser.id + "/wallpaper",
                         multiple:false,
                         dragDrop:false,
-                        acceptFiles:"image/png,image/gif",
+                        acceptFiles:"image/png,image/gif,image/jpg",
                         fileName:"wallpaperFile",
                         maxFileSize:2 * 1024 * 1024,
                         onSuccess:function(files,data,xhr,pd)
