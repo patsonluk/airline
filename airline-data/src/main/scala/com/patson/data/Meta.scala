@@ -1711,7 +1711,7 @@ object Meta {
 
     statement = connection.prepareStatement("CREATE TABLE " + CAMPAIGN_AREA_TABLE + "(" +
       "campaign INTEGER REFERENCES " + CAMPAIGN_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-      "airport INTEGER REFERENCES " + CAMPAIGN_AREA_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "airport INTEGER REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "PRIMARY KEY (campaign, airport)" +
       ")")
 
