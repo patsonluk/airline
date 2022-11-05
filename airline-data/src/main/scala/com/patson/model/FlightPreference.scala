@@ -327,6 +327,11 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     var perceivedPrice = baseCost
 
+    if (getPreferenceType == ELITE && link.computedQuality() > 80) { //find luxurious flight attractive
+      val discount = 0.4 * (link.computedQuality() - 80) / 20.0
+      perceivedPrice = perceivedPrice * (1 - discount)
+    }
+
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
     val noise = 0.9 + getFlatTopBellRandom(0.3, 0.25)
 
