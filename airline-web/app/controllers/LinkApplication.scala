@@ -1210,7 +1210,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
 
-  class LinkChangeToEventWrites(currentCycle : Int) extends Writes[LinkChange] {
+  class LinkChangeToEventWrites(currentCycle : Int, originalLink : Link) extends Writes[LinkChange] {
     def writes(linkChange : LinkChange) : JsValue = {
       var priceJson = Json.obj()
       var priceDeltaJson = Json.obj()
@@ -1240,6 +1240,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
       val effectiveCycle = linkChange.cycle + 1 //effect is seen 1 cycle after...
 
+      val matchFrom =
+        originalLink.from.id == linkChange.fromAirport.id || originalLink.from.id == linkChange.toAirport.id
+      val matchTo =
+        originalLink.to.id == linkChange.fromAirport.id || originalLink.to.id == linkChange.toAirport.id
+
       Json.obj(
         "airlineId" -> linkChange.airline.id,
         "airlineName" -> linkChange.airline.name,
@@ -1253,6 +1258,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         "capacityDeltaTotal" -> JsNumber(linkChange.capacityDelta.total),
         "frequency" -> linkChange.frequency,
         "flightCode" -> LinkUtil.getFlightCode(linkChange.airline, linkChange.flightNumber),
+        "matchFrom" -> matchFrom,
+        "matchTo" -> matchTo,
         "cycle" -> effectiveCycle,
         "cycleDelta" -> (effectiveCycle - currentCycle))
     }
@@ -1313,7 +1320,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         }
       }
 
-      val linkChangesJson = Json.toJson(linkChanges)(Writes.traversableWrites(new LinkChangeToEventWrites(currentCycle))).as[JsArray]
+      val linkChangesJson = Json.toJson(linkChanges)(Writes.traversableWrites(new LinkChangeToEventWrites(currentCycle, link))).as[JsArray]
       result = result ++ linkChangesJson
     }
 

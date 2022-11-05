@@ -6,6 +6,18 @@ var loadedLinks = []
 var loadedLinksById = {}
 var currentAnimationStatus = true
 var currentAirlineAllianceMembers = []
+
+$( document ).ready(function() {
+    $('#linkEventModal .filterCheckboxes input:checkbox').change(function() {
+        var filterType = $(this).data('filter')
+        if ($(this).prop('checked')) {
+            $("#linkEventModal .linkEventHistoryTable .table-row.filter-" + filterType).show()
+        } else {
+            $("#linkEventModal .linkEventHistoryTable .table-row.filter-" + filterType).hide()
+        }
+    })
+})
+
 function updateAirlineInfo(airlineId) {
 	$.ajax({
 		type: 'GET',
@@ -1889,12 +1901,15 @@ function showLinkEventHistory(linkId) {
     $("#switchLinkEventSelf").prop('checked', false)
 
     var link = $("#linkEventModal").data("link")
-    $("#linkEventModal .title").html("<div style='display: flex; align-items: center;'>"
+    $("#linkEventModal .title").html("<div style='display: inline-flex; align-items: center;'>"
     + getCountryFlagImg(link.fromCountryCode)
     + getAirportText(link.fromAirportCity, link.fromAirportCode)
     + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>"
     + getCountryFlagImg(link.toCountryCode)
     + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+    $('#linkEventModal .fromAirportCode').text(link.fromAirportCode)
+    $('#linkEventModal .toAirportCode').text(link.toAirportCode)
+    $("#linkEventModal div.filterCheckboxes input:checkbox").prop('checked', true)
 
     var linkConsumptions = $($('#linkEventChart').data('linkConsumptions')).toArray().slice(0, 8 * 13)
 
@@ -2010,6 +2025,15 @@ function showLinkEventHistory(linkId) {
                     row.mouseenter(function() {
                         toggleLinkEventBar($('#linkEventModal .chart:visible').data('chart'), entry.cycle, true)
                     })
+                    if (entry.matchFrom) {
+                        row.addClass('filter-fromAirport')
+                    }
+                    if (entry.matchTo) {
+                        row.addClass('filter-toAirport')
+                    }
+                    if (!entry.matchFrom && !entry.matchTo) {
+                        row.addClass('filter-other')
+                    }
                     linkEventTable.append(row)
                 });
 
