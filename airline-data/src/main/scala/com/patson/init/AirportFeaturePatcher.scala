@@ -169,7 +169,7 @@ object AirportFeaturePatcher extends App {
       "STX" -> 14, //Christiansted (US Virgin Islands)
       "RAK" -> 14, //Marrakesh (Morocco)
       "MBJ" -> 13, //Montego Bay (Jamaica)
-      LXA" -> 12, //Lhasa (Tibet/China)
+      "LXA" -> 12, //Lhasa (Tibet/China)
       "MYR" -> 12, //Myrtle Beach
       "KBV" -> 12, //Krabi (Thailand)
       "VFA" -> 12, //Victoria Fall (Zimbabwe)
