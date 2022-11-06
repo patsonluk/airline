@@ -81,6 +81,7 @@ object AirportFeaturePatcher extends App {
       "CUN" -> 32, //Cancun
       "ORY" -> 32, //Paris Orly
       "JED" -> 32, //Jeddah/Mecca
+      "GIG" -> 32, //Rio de Janeiro
       "GUM" -> 31, //Guam
       "KIX" -> 30, //Osaka
       "LAS" -> 30, //Vegas
@@ -95,16 +96,20 @@ object AirportFeaturePatcher extends App {
       "MRS" -> 27, //Marseille
       "MXP" -> 27, //Milan
       "SJD" -> 26, //Los Cabos
-      "GIG" -> 26, //Rio de Janeiro
+      "UTP" -> 26, //Pattaya
       "KOA" -> 25, //Kailua Hawaii
       "NAS" -> 25, //Bahamas (Nassau)
       "DBV" -> 25, //Dubrovnik (Croatia)
+      "FLN" -> 25, //Florianopolis (Brazil)
+      "CNX" -> 25, //Chiang Mai
       "KEF" -> 24, //Reykjavik
       "BUD" -> 24, //Budapest
+      "EZE" -> 23, //Buenos Aires
       "FLL" -> 22, //Fort Lauderdale
       "NCE" -> 22, //Nice
       "PSA" -> 22, //Pisa
       "OSL" -> 22, //Oslo
+      "ACA" -> 22, //Acapulco
       "AMS" -> 21, //Amsterdam
       "TLV" -> 21, //Tel Aviv
       "CPH" -> 21, //Copenhagen
@@ -122,6 +127,8 @@ object AirportFeaturePatcher extends App {
       "OOL" -> 20, //Gold Coast (Australia)
       "CMB" -> 20, //Colombo (Sri Lanka)
       "MRU" -> 20, //Mauritius
+      "MHD" -> 20, //Mashhad (Iran)
+      "CZM" -> 20, //Cozumel
       "KIN" -> 19, //Kingston (Jamaica)
       "BWN" -> 19, //Brunei
       "MFM" -> 19, //Macau
@@ -130,32 +137,42 @@ object AirportFeaturePatcher extends App {
       "PMI" -> 19, //Palma De Mallorca
       "KUL" -> 19, //Kuala Lumpur
       "LIS" -> 19, //Lisbon
+      "BAH" -> 19, //Bahrein
+      "TUN" -> 19, //Tunis
+      "AGP" -> 19, //Málaga
       "OGG" -> 18, //Kahului (Hawaii)
       "SYX" -> 18, //Sanya (China)
       "XIY" -> 18, //Xian (China)
       "PVG" -> 18, //Shanghai
       "PER" -> 18, //Perth (Australia)
-      "FLN" -> 18, //Florianopolis (Brazil)
       "NAP" -> 18, //Naples
       "KRK" -> 18, //Krakow
       "VRA" -> 18, //Varadero Cuba
+      "SXR" -> 18, //Srinagar (India)
+      "AYT" -> 18, //Antaya (Turkey)
       "HEL" -> 17, //Helsinki
       "LED" -> 17, //St Petersburg
       "CJU" -> 17, //Jeju
       "HGH" -> 17, //Hangzhou (China)
       "SJO" -> 17, //Costa Rica
+      "IGU" -> 17, //Foz Do Iguaçu
+      "SCL" -> 17, //Santiago
+      "NBO" -> 17, //Nairobi
       "LIH" -> 16, //Lihue (Hawaii)
       "CEB" -> 16, //Cebu
+      "HAK" -> 16, //Haikou
       "ITO" -> 15, //Hilo (Hawaii)
       "WAW" -> 15, //Warsaw
       "SAW" -> 15, //Istanbul Sabiha Gökçen
       "KWL" -> 15, //Guilin (China)
       "DRW" -> 14, //Darwin (Australia)
       "STX" -> 14, //Christiansted (US Virgin Islands)
+      "RAK" -> 14, //Marrakesh (Morocco)
       "MBJ" -> 13, //Montego Bay (Jamaica)
-      "LXA" -> 12, //Lhasa (Tibet/China)
+      LXA" -> 12, //Lhasa (Tibet/China)
       "MYR" -> 12, //Myrtle Beach
       "KBV" -> 12, //Krabi (Thailand)
+      "VFA" -> 12, //Victoria Fall (Zimbabwe)
       "AUA" -> 11, //Aruba
       "BGI" -> 11, //Barbados
       "IBZ" -> 11, //Ibiza
