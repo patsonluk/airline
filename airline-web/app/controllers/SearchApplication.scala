@@ -372,7 +372,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       features += PREMIUM_DRINK_SERVICE
     }
 
-    if (link.rawQuality == 100 && airlineServiceQuality >= 85) {
+    if (link.rawQuality == 100 && airlineServiceQuality >= 80) {
       features += POSH
     }
 
