@@ -1764,6 +1764,13 @@ function updateLinksTable(sortProperty, sortOrder) {
 		
 		linksTable.append(row)
 	});
+	if (loadedLinks.length == 0) {
+        $('#linksCanvas .noLinkTips').show();
+	} else {
+	    $('#linksCanvas .noLinkTips').hide();
+    }
+
+
 }
 
 function selectLinkFromMap(linkId, refocus) {
@@ -2763,14 +2770,15 @@ function getLinkNegotiation(callback) {
                     if (negotiationInfo.finalRequirementValue > availableDelegates) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Not enough available delegates)'
-                        $('#linkConfirmationModal .negotiationInfo img.error').show();
+                        $('#linkConfirmationModal .negotiationInfo .error').show();
                     } else if (negotiationInfo.finalRequirementValue > 10) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Too difficult to negotiate)'
                         $('#linkConfirmationModal .negotiationInfo img.error').show();
+                        $('#linkConfirmationModal .negotiationInfo .error').show();
                     } else {
                         $('#linkConfirmationModal .negotiationInfo img.info').show();
-                        $('#linkConfirmationModal .negotiationInfo img.error').hide();
+                        $('#linkConfirmationModal .negotiationInfo .error').hide();
                     }
 
                     $('#negotiationDifficultyModal .negotiationInfo .negotiationDifficultyTotal').text(difficultyTotalText)

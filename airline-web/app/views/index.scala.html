@@ -1046,7 +1046,24 @@
 											<div class="cell" style="width: 11%; border-bottom: none;"></div>
 										</div>
 									</div>
+									<div style="height: 100px; width: 100%; min-width: 600px; display:none;" class="noLinkTips">
+										<div style="height: 100%; width: 100%; display:flex; justify-content: center; align-items: center;">
+<!--											<div>-->
+												<div class="tooltip clickable">
+													<span style="vertical-align:middle">No flights yet</span>
+													<img src='@routes.Assets.versioned("images/icons/information.png")' style="vertical-align:middle">
+													<span class="tooltiptext below">
+														<h4>First build your Headquarters</h4>
+														<img data-src='@routes.Assets.versioned("images/tutorial/build-hq.gif")' class="lazyload" alt="">
+														<h4 style="margin-top: 10px;">Then select the Destination Airport from the world map</h4>
+														<img data-src='@routes.Assets.versioned("images/tutorial/plan-link-1.gif")' class="lazyload" alt="">
+													</span>
+												</div>
+<!--											</div>-->
+										</div>
+									</div>
 								</div>
+
 							</div>
 						</div>
 					</div>
@@ -4234,9 +4251,15 @@
 			  <h4 style="margin-bottom: 10px; margin-top: 30px; display: flex; align-items: center;">Negotiation Difficulty :&nbsp;
 			      <span class="negotiationDifficultyTotal"></span>
              	  <img class="clickable info" src='@routes.Assets.versioned("images/icons/information-24.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)">
-				  <img class="clickable error" src='@routes.Assets.versioned("images/icons/24px/cross-circle.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)" style="display: hidden;">
-
+				  <span class="error">
+					  <img class="clickable" src='@routes.Assets.versioned("images/icons/24px/cross-circle.png")' onmouseover="$('#negotiationDifficultyModal').fadeIn(500)" style="display: hidden;">
+				  </span>
 			  </h4>
+			  <div class="glow">
+				  Too hard! Reduce frequency, change airport or improve relationship first.<br/>
+				  Difficulty value should be less than delegates available below.<br/>
+				  Hover over the Red Cross icon above for details.
+			  </div>
 			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Delegates<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
 			  <div class="section">
 				  <h4>Pool</h4>
