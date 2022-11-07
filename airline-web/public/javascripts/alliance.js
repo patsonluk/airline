@@ -941,7 +941,7 @@ function showAllianceMissionModal(candidates, selectedMission, isAdmin) {
         if ("lastWeekValue" in candidate) {
             var $referenceBar = $("<div>Reference value from last week:</div>")
             var $lastWeekValueSpan = $("<span style='margin-left: 5px;'></span>")
-            $lastWeekValueSpan.text(candidate["lastWeekValue"])
+            $lastWeekValueSpan.text(commaSeparateNumber(candidate["lastWeekValue"]))
             $referenceBar.append($lastWeekValueSpan)
             $candidateDiv.append($referenceBar)
         }
