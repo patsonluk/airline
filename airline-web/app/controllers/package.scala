@@ -334,7 +334,7 @@ package object controllers {
 
   implicit object FacilityReads extends Reads[AirportFacility] {
     def reads(json: JsValue): JsResult[AirportFacility] = {
-      val airport = AirportCache.getAirport((json \ "airportId").as[Int]).get
+      val airport = AirportCache.getAirport((json \ "airportId").as[Int], true).get
       val airline = Airline.fromId((json \ "airlineId").as[Int])
       val name = (json \ "name").as[String]
       val level = (json \ "level").as[Int]

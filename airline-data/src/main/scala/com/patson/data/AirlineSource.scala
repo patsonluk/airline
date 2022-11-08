@@ -575,7 +575,7 @@ object AirlineSource {
           
           //val airport = Airport.fromId(resultSet.getInt("airport"))
           val airportId = resultSet.getInt("airport")
-          val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, false).get)
+          val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, true).get)
           val name = resultSet.getString("name")
           val level = resultSet.getInt("level")
           val foundedCycle = resultSet.getInt("founded_cycle")
