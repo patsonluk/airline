@@ -148,7 +148,7 @@ object AirportSimulation {
     newInfo
   }
 
-  val DECAY_RATE = 0.001 //1 loyalist disappears per 1000 per week
+  val DECAY_RATE = 0.0005 //1 loyalist disappears per 2000 per week
   private[patson] def decayLoyalists(allAirports : List[Airport], existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) : immutable.Map[Int, List[Loyalist]] = {
     val updatingLoyalists, deletingLoyalists = ListBuffer[Loyalist]()
     val r = new Random()
