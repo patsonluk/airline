@@ -21,7 +21,7 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
       "categoryText" -> JsString(LogCategory.getDescription(log.category)),
       "severity" -> JsNumber(log.severity.id),
       "severityText" -> JsString(LogSeverity.getDescription(log.severity)),
-      "cycleAgo" -> JsNumber(currentCycle - log.cycle),
+      "cycleDelta" -> JsNumber(log.cycle - currentCycle),
       "properties" -> Json.toJson(log.properties)
       ))
   }
@@ -33,7 +33,26 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
   def getLogs(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val cycle = CycleSource.loadCycle
     implicit val logWrites = LogWrites(cycle)
-    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, cycle - LOG_RANGE)))
+    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, cycle - Log.RETENTION_CYCLE).sortBy(_.cycle)(Ordering[Int].reverse)))
+  }
+
+  val MAX_NOTE_LENGTH : Int = 100
+
+  def putSelfNote(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val cycle = CycleSource.loadCycle
+    val json = request.body.asInstanceOf[AnyContentAsJson].json
+    json.\("note").asOpt[String] match {
+      case Some(note) =>
+        if (LogSource.loadLogsByAirline(airlineId, cycle).filter(_.category == LogCategory.SELF_NOTE).length >= 5) { //max 5 notes per cycle
+          Ok(Json.obj("error" -> "Exceeded note limit per cycle"))
+        } else {
+          LogSource.insertLogs(List(Log(request.user, note.substring(0, Math.min(note.length(), MAX_NOTE_LENGTH)), LogCategory.SELF_NOTE, LogSeverity.INFO, cycle)))
+          Ok(Json.obj())
+        }
+      case None =>
+        BadRequest(Json.obj("error" -> "No note found"))
+    }
+
   }
   
   

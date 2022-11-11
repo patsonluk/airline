@@ -65,7 +65,7 @@ object MainSimulation extends App {
       
       //purge log
       println("Purging logs")
-      LogSource.deleteLogsBeforeCycle(cycle - 100)
+      LogSource.deleteLogsBeforeCycle(cycle - com.patson.model.Log.RETENTION_CYCLE)
 
       //purge history
       println("Purging link history")

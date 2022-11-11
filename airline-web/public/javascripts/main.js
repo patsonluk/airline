@@ -189,7 +189,7 @@ function loadUser(isLogin) {
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
 			  loadAllCountries() //load country again for relationship
-			  loadAllLogs()
+			  //loadAllLogs()
 			  addAirlineSpecificMapControls(map)
               initPrompts()
 		  }

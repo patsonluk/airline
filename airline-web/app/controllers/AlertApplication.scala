@@ -32,16 +32,16 @@ import javax.inject.Inject
 
 
 class AlertApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
-  implicit object AlertWrites extends Writes[Alert] {
-    def writes(alert: Alert): JsValue = { 
+  case class AlertWrites(currentCycle : Int) extends Writes[Alert] {
+    def writes(alert: Alert): JsValue = {
       var result = JsObject(List(
       "airlineName" -> JsString(alert.airline.name),
       "airlineId" -> JsNumber(alert.airline.id),
       "message" -> JsString(alert.message),
       "category" -> JsNumber(alert.category.id),
       "categoryText" -> JsString(AlertCategory.getDescription(alert.category)),
-        "duration" -> JsNumber(alert.duration),
-      "cycle" -> JsNumber(alert.cycle)
+      "duration" -> JsNumber(alert.duration),
+      "cycleDelta" -> JsNumber(alert.cycle - currentCycle)
       ))
       
       alert.targetId.foreach { targetId =>
@@ -57,7 +57,10 @@ class AlertApplication @Inject()(cc: ControllerComponents) extends AbstractContr
   
   
   def getAlerts(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    Ok(Json.toJson(AlertSource.loadAlertsByAirline(request.user.id)))
+    val alerts = AlertSource.loadAlertsByAirline(request.user.id).sortBy(_.cycle)(Ordering[Int].reverse)
+    //Ok(Json.toJson(alerts)(Writes.traversableWrites(AlertWrites(CycleSource.loadCycle()))))
+    implicit val alertWrites = AlertWrites(CycleSource.loadCycle())
+    Ok(Json.toJson(alerts))
   }
   
   

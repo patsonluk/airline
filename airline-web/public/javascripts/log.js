@@ -1,17 +1,21 @@
 var loadedLogs = []
 var loadedAlerts = []
 
+$( document ).ready(function() {
+    bindEnter($('#logCanvas .selfNote'), putSelfNote)
+})
 
 function showLogCanvas() {
 	setActiveDiv($("#logCanvas"))
 	highlightTab($('.logCanvasTab'))
 	loadAllLogs()
 	loadAllAlerts()
+
 }
 
 function loadAllLogs() {
 	var url = "airlines/" + activeAirline.id + "/logs"
-	
+	$('.selfNote.rejection').hide()
 	loadedLogs = []
 
 	$.ajax({
@@ -63,11 +67,11 @@ function updateLogTable(sortProperty, sortOrder) {
 	
 	$.each(loadedLogs, function(index, log) {
 		var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell'>" + log.cycleAgo + " week(s) ago</div>")
+		row.append("<div class='cell'>" + getCycleDeltaText(log.cycleDelta) + "</div>")
 		row.append("<div class='cell'>" + log.severityText + "</div>")
 		row.append("<div class='cell'>" + log.categoryText + "</div>")
 		row.append("<div class='cell'>" + getAirlineSpan(log.airlineId, log.airlineName) + "</div>")
-		var $messageDiv = $("<div class='cell'>" + log.message + "</div>")
+		var $messageDiv = $("<div class='cell'>" + htmlEncode(log.message) + "</div>")
 		row.append($messageDiv)
 		if (log.properties.airportId) {
 		    row.addClass('clickable')
@@ -96,7 +100,7 @@ function updateAlertTable(sortProperty, sortOrder) {
 
 	$.each(loadedAlerts, function(index, alert) {
 		var row = $("<div class='table-row clickable'  onclick=' showLinksDetails(); refreshLinkDetails(" + alert.targetId + ");'></div>")
-		row.append("<div class='cell'>" + alert.cycle + "</div>")
+		row.append("<div class='cell'>" + getCycleDeltaText(alert.cycleDelta) + "</div>")
 		row.append("<div class='cell'>" + alert.categoryText + "</div>")
 		row.append("<div class='cell'>" + alert.duration + " week(s)</div>")
 		row.append("<div class='cell'>" + getAirlineSpan(alert.airlineId, alert.airlineName) + "</div>")
@@ -106,7 +110,7 @@ function updateAlertTable(sortProperty, sortOrder) {
 	});
 
     if (loadedAlerts.length == 0) {
-    	    alertTable.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
+        alertTable.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
     }
 }
 
@@ -129,4 +133,31 @@ function toggleLogTableSortOrder(sortHeader) {
 function toggleAlertTableSortOrder(sortHeader) {
     toggleTableSortOrder(sortHeader, updateAlertTable)
 }
+
+
+function putSelfNote() {
+	var url = "airlines/" + activeAirline.id + "/log/self-note"
+
+	$.ajax({
+		type: 'POST',
+		url: url,
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+        data: JSON.stringify({ note : $('#logCanvas .selfNote').val()}),
+        success: function(result) {
+	        if (result.error) {
+	          $('.selfNote.rejection .reason').text(result.error)
+	          $('.selfNote.rejection').show()
+	        } else {
+	          $('#logCanvas .selfNote').val('')
+	          loadAllLogs()
+	        }
+	    },
+	    error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
 
