@@ -127,6 +127,7 @@ DELETE	 /airlines/:airlineId/oil-contracts/:contractId	controllers.OilApplicatio
 GET	 	 /airlines/:airlineId/oil-inventory-options		controllers.OilApplication.getInventoryOptions(airlineId : Int)
 GET		 /airlines/:airlineId/set-oil-inventory-option  controllers.OilApplication.setInventoryOption(airlineId : Int, optionId : Int)
 GET		 /airlines/:airlineId/logs  controllers.LogApplication.getLogs(airlineId : Int)
+POST	 /airlines/:airlineId/log/self-note  controllers.LogApplication.putSelfNote(airlineId : Int)
 GET		 /airlines/:airlineId/alerts  controllers.AlertApplication.getAlerts(airlineId : Int)
 GET		 /airlines/:airlineId/configurations                   controllers.AirplaneConfigurationApplication.getConfigurations(airlineId : Int, modelId : Int)
 GET		 /airlines/:airlineId/configurations/:configurationId  controllers.AirplaneConfigurationApplication.getConfiguration(airlineId : Int, configurationId : Int)

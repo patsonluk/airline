@@ -713,3 +713,12 @@ function isTouchDevice() {
   }
 }
 
+
+function bindEnter(bindToElement, actionFunction) {
+   $(bindToElement).keyup(function(ev) {
+       // 13 is ENTER
+       if (ev.which === 13) {
+          actionFunction()
+       }
+   });
+}
