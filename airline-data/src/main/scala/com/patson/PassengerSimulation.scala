@@ -675,7 +675,7 @@ object PassengerSimulation {
               connectionCost *= 1 + linkConsideration.from.computeTransitModifierValue(
                 predecessorLink.frequencyByClass(predecessorLinkConsideration.linkClass),
                 linkConsideration.link.frequencyByClass(linkConsideration.linkClass),
-                passengerGroup.preference.preferredLinkClass)
+                passengerGroup)
             }
             connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
           }

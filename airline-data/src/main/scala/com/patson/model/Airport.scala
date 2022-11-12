@@ -287,10 +287,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     }
   }
 
-  //positive indicates extra cost, negative indicates discount. Should be >= -1. The new cost will be sum of all modifier values. Then transitCost * (1 + x)
-  //hence -0.5 indicates 50% off
-  def computeTransitModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxlinkClass : LinkClass): Double = {
-    Math.max(-1, transitModifiers.map(_.computeModifierValue(fromLinkFreq, toLinkFreq, paxlinkClass)).sum)
+  //positive indicates extra cost, negative indicates discount. The new cost will be sum of all modifier values. Then transitCost * (1 + x)
+  //hence -0.5 indicates 50% off (this COULD in extreme case be < -1, hence introducing a negative transit cost, for example
+  //high level attractions for tourists)
+  def computeTransitModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup): Double = {
+    Math.max(-1, transitModifiers.map(_.computeModifierValue(fromLinkFreq, toLinkFreq, paxGroup)).sum)
   }
 
 
