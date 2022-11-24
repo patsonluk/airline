@@ -354,7 +354,7 @@ object AirportAssetType extends Enumeration {
     trait TransitModifier {
         //positive indicates extra cost, negative indicates discount. Should be >= -1. The new cost will be sum of all modifier values. Then transitCost * (1 + x)
         //hence -0.5 indicates 50% off
-        def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup): Double
+        def computeModifierValue(fromLinkConsideration : LinkConsideration, toLinkConsideration : LinkConsideration, paxGroup : PassengerGroup): Double
     }
 
 
@@ -534,15 +534,42 @@ abstract class RentalAsset extends AirportAsset {
     final def initialSpace : Int = spacePerLease * leasePerLevel
 }
 
-case class SkiResortAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
+case class SkiResortAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset with TransitModifier {
     override val initialCapacity = 200
+    override def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+        if (paxGroup.passengerType == PassengerType.TOURIST) {
+            level * -0.5 / AirportAsset.MAX_LEVEL
+        } else {
+            level * -0.1 / AirportAsset.MAX_LEVEL
+        }
+    }
 }
-case class BeachResortAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
+case class BeachResortAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset with TransitModifier {
     override val initialCapacity = 200
+
+    override def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+        if (paxGroup.passengerType == PassengerType.TOURIST) {
+            level * -0.4 / AirportAsset.MAX_LEVEL
+        } else {
+            level * -0.05 / AirportAsset.MAX_LEVEL
+        }
+    }
 }
-case class ConventionCenterAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
-case class MuseumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+case class ConventionCenterAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset with TransitModifier {
+    override def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+        if (paxGroup.passengerType == PassengerType.BUSINESS) {
+            level * -0.7 / AirportAsset.MAX_LEVEL
+        } else {
+            0
+        }
+    }
+}
+case class MuseumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset with TransitModifier {
     override val initialCapacity = 5000
+
+    override def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+        level * -0.15 / AirportAsset.MAX_LEVEL
+    }
 }
 case class ResidentialComplexAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends RentalAsset {
     override val spacePerLease = 1000
@@ -561,8 +588,16 @@ case class GrandHotelTouristAsset(override val blueprint : AirportAssetBlueprint
 case class GrandHotelBusinessAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 300
 }
-case class AmusementParkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+case class AmusementParkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset with TransitModifier {
     override val initialCapacity = 5000
+
+    override def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+        if (paxGroup.passengerType == PassengerType.TOURIST) {
+            level * -0.5 / AirportAsset.MAX_LEVEL
+        } else {
+            0
+        }
+    }
 }
 case class SubwayAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset {
     override def costModifier : Double = super.costModifier +
@@ -576,15 +611,27 @@ case class SubwayAsset(override val blueprint : AirportAssetBlueprint, override 
         }
     }
 }
-case class StadiumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+case class StadiumAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset with TransitModifier {
     override val initialCapacity = 2000
+
+    override def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+        level * -0.15 / AirportAsset.MAX_LEVEL
+    }
 }
 case class ScienceParkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long])   extends RentalAsset {
     override val spacePerLease = 30000
     override val leasePerLevel = 50
 }
-case class LandmarkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+case class LandmarkAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset with TransitModifier {
     override val initialCapacity = 5000
+
+    override def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+        if (paxGroup.passengerType == PassengerType.TOURIST) {
+            level * -0.5 / AirportAsset.MAX_LEVEL
+        } else {
+            level * -0.1 / AirportAsset.MAX_LEVEL
+        }
+    }
 }
 
 case class SolarPowerPlantAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AirportAsset
@@ -600,8 +647,12 @@ case class InnAsset(override val blueprint : AirportAssetBlueprint, override val
 case class LuxuriousHotelAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset {
     override val initialCapacity = 200
 }
-case class GolfCourseAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset {
+case class GolfCourseAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset with TransitModifier {
     override val initialCapacity = 400
+
+    override def computeModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+        level * -0.1 / AirportAsset.MAX_LEVEL
+    }
 }
 case class OfficeBuilding1Asset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends RentalAsset {
     override val spacePerLease = 10000
@@ -626,13 +677,15 @@ case class OfficeBuilding4Asset(override val blueprint : AirportAssetBlueprint, 
 case class AirportHotelAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends HotelAsset with TransitModifier {
     override val initialCapacity = 500
 
-    override def computeModifierValue(arrivalLinkFreq : Int, departureLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
+    override def computeModifierValue(arrivalLinkConsideration : LinkConsideration, departureLinkConsideration : LinkConsideration, paxGroup : PassengerGroup) : Double = {
+        val arrivalLinkFreq = arrivalLinkConsideration.link.frequencyByClass(arrivalLinkConsideration.linkClass)
+        val departureLinkFreq = departureLinkConsideration.link.frequencyByClass(departureLinkConsideration.linkClass)
         val minFrequency = Math.min(arrivalLinkFreq,departureLinkFreq)
         var discount = {
           if (minFrequency <= 7) { //very helpful
-            0.2 + (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.2 //20% - 40% off
+            0.3 + (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.2 //30% - 50% off
           } else if (minFrequency <= 14) {
-            0.1 + (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.1 //20% - 30% off
+            0.2 + (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.1 //20% - 30% off
           } else {
             level * 1.0 / AirportAsset.MAX_LEVEL * 0.1 //<10% off
           }
