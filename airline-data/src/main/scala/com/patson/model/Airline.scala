@@ -118,7 +118,11 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     if (code.length() > 2) {
       code = code.substring(0, 2)
     } else if (code.length() < 2) {
-      code = name.substring(0, 2).toUpperCase()
+      if (name.length == 1) {
+        code = (name.charAt(0).toString + name.charAt(0)).toUpperCase()
+      } else {
+        code = name.substring(0, 2).toUpperCase()
+      }
     }
     code
   }
