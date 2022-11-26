@@ -496,14 +496,14 @@
 										<div class="table-row">
 											<div class="label"><h5>From:</h5></div>
 											<div class="value">
-												<span class="clickable" id="linkFromAirport"></span>
+												<span class="clickable" id="linkFromAirport" data-link="airport"></span>
 											</div>
 
 										</div>
 										<div class="table-row">
 											<div class="label"><h5>To:</h5></div>
 											<div class="value">
-												<span class="clickable" id="linkToAirport"></span>
+												<span class="clickable" id="linkToAirport" data-link="airport"></span>
 											</div>
 										</div>
 										<div class="table-row">
@@ -673,9 +673,9 @@
 									<div class="table-row">
 										<div class="label"><h5>From:</h5></div>
 										<div class="value">
-											<span id="planLinkFromAirportName" class="clickable"></span>
+											<span id="planLinkFromAirportName" class="clickable" data-link="airport"></span>
 											<img class="clickable" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
-											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
+											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport" data-link="airport">
 
 											<div class="value"><select class="select-css" id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 
