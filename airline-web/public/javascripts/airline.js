@@ -868,6 +868,7 @@ function planToAirport(toAirportId, toAirportName) {
 }
 
 function planLink(fromAirport, toAirport) {
+    deselectLink()
     checkTutorial("planLink")
 	var airlineId = activeAirline.id
 	$("#planLinkFromAirportId").val(fromAirport)
