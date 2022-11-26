@@ -1000,7 +1000,10 @@ function updatePlanLinkInfo(linkInfo) {
     
 	//unhighlight the existing path if any
 	if (selectedLink) {
-		unhighlightLink(selectedLink)
+	    unhighlightLink(selectedLink)
+	    if (!linkInfo.existingLink || linkInfo.existingLink.id != selectedLink) {
+	        deselectLink()
+	    }
 	}
 	
 	if (!linkInfo.existingLink || !flightPaths[linkInfo.existingLink.id]) { //new link or link show visible (other views)

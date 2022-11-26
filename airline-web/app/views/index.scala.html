@@ -497,14 +497,14 @@
 										<div class="table-row">
 											<div class="label"><h5>From:</h5></div>
 											<div class="value">
-												<span class="clickable" id="linkFromAirport"></span>
+												<span class="clickable" id="linkFromAirport" data-link="airport"></span>
 											</div>
 
 										</div>
 										<div class="table-row">
 											<div class="label"><h5>To:</h5></div>
 											<div class="value">
-												<span class="clickable" id="linkToAirport"></span>
+												<span class="clickable" id="linkToAirport" data-link="airport"></span>
 											</div>
 										</div>
 										<div class="table-row">
@@ -674,9 +674,9 @@
 									<div class="table-row">
 										<div class="label"><h5>From:</h5></div>
 										<div class="value">
-											<span id="planLinkFromAirportName" class="clickable"></span>
+											<span id="planLinkFromAirportName" class="clickable" data-link="airport"></span>
 											<img class="clickable" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
-											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
+											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport" data-link="airport">
 
 											<div class="value"><select class="select-css" id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 
@@ -3114,13 +3114,15 @@
 
 
 					<div style="width : 95%; height: 500px" class="section">
-						<h4>Add Self Note</h4>
-						<input type="text" class="selfNote" size="50" maxlength="100">
-						<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class="clickable" onclick="putSelfNote()" style="vertical-align: text-bottom;">
-						<div class="selfNote rejection" style="display: none;">
-							<img src='@routes.Assets.versioned("images/icons/exclamation-red-frame.png")' style="vertical-align: text-bottom;"><span class="reason"></span>
+						<div style="height: 60px;">
+							<h4>Add Self Note</h4>
+							<input type="text" class="selfNote" size="50" maxlength="100">
+							<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class="clickable" onclick="putSelfNote()" style="vertical-align: text-bottom;">
+							<div class="selfNote rejection" style="display: none;">
+								<img src='@routes.Assets.versioned("images/icons/exclamation-red-frame.png")' style="vertical-align: text-bottom;"><span class="reason"></span>
+							</div>
 						</div>
-						<h4 style="margin-top: 5px;">Logs</h4>
+						<h4>Logs</h4>
 						<div id = "logTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 							<div class="table-header">
 								<div class="cell clickable selected" style="width: 10%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Week</div>
@@ -3130,7 +3132,7 @@
 								<div class="cell clickable" style="width: 50%" data-sort-property="message" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Message</div>
 							</div>
 						</div>
-						<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+						<div style="height: calc(100% - 100px); width: 100%; overflow: auto;">
 							<div class="table data" id="logTable" style="width: 100%; max-height: 100%">
 								<div class="table-header">
 									<div class="cell" style="width: 10%; border-bottom: none;"></div>
