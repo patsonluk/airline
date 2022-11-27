@@ -651,11 +651,13 @@ object PassengerSimulation {
 
           var connectionCost = 0.0
           var isValid : Boolean = true
+          val fromCost = distanceMap.get(linkConsideration.from.id)
           if (predecessorLinkConsideration != null) { //then it should be a connection flight
             val predecessorLink = predecessorLinkConsideration.link
             val previousLinkAirlineId = predecessorLink.airline.id
             val currentLinkAirlineId = linkConsideration.link.airline.id
 
+            var flightTransit = false
             if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
               isValid = false
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
@@ -672,18 +674,26 @@ object PassengerSimulation {
               if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
                 connectionCost += 75
               }
-              connectionCost *= 1 + linkConsideration.from.computeTransitModifierValue(
+              flightTransit = true
+            }
+            connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
+
+            if (flightTransit) { //perhaps it's a nice idea to make a detour??
+              val discount = linkConsideration.from.computeTransitDiscount(
                 predecessorLinkConsideration,
                 linkConsideration,
                 passengerGroup)
+
+              val waitTimeDiscount = Math.min(discount.waitTimeDiscount, 1)
+              val stopOverDiscount = Math.min(discount.stopOverDiscount, 0.3)
+
+              connectionCost = (1 - waitTimeDiscount) * connectionCost - stopOverDiscount * fromCost
             }
-            connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
           }
 
           if (isValid) {
             val cost = Math.max(0, linkConsideration.cost + connectionCost) //just to avoid loop in graph
 
-            val fromCost = distanceMap.get(linkConsideration.from.id)
             val newCost = fromCost + cost
 
 
