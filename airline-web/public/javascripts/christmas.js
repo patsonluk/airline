@@ -1,4 +1,4 @@
-var christmasFlag = false
+var christmasFlag = true
 var santaFound = false
 
 function initSantaClaus() {
