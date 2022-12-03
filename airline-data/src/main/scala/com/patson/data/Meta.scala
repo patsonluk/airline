@@ -1699,6 +1699,7 @@ object Meta {
       "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
       "amount INTEGER," +
       "cycle INTEGER, " +
+      "INDEX " + LOYALIST_HISTORY_INDEX_PREFIX + 1 + " (airline)," +
       "PRIMARY KEY (airport, airline, cycle)" +
       ")")
 
