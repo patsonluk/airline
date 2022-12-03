@@ -50,9 +50,9 @@ function loadLinkHistory(linkId) {
     $("#linkHistoryControlPanel .transitAirlineList").empty()
 
     var url = "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?cycleDelta=" + cycleDelta +
-    "?economy=" + $("#linkHistoryControlPanel .showEconomy").is(":checked") +
-    "?business=" + $("#linkHistoryControlPanel .showBusiness").is(":checked") +
-    "?first=" + $("#linkHistoryControlPanel .showFirst").is(":checked")
+    "&economy=" + $("#linkHistoryControlPanel .showEconomy").is(":checked") +
+    "&business=" + $("#linkHistoryControlPanel .showBusiness").is(":checked") +
+    "&first=" + $("#linkHistoryControlPanel .showFirst").is(":checked")
 
     $.ajax({
         type: 'GET',
