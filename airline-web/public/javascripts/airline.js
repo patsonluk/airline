@@ -2133,6 +2133,14 @@ function showLinkRivalDetails(linkId) {
 	});
 }
 
+function getLoungeIconSpan(lounge) {
+    var $loungeSpan = $('<span style="position:relative"></span>')
+    $loungeSpan.append($('<img src="' + 'assets/images/icons/sofa.png' +  '">'))
+    $loungeSpan.attr('title', lounge.name + ' at ' + lounge.airportName + ' (' + lounge.airlineName + ' level ' + lounge.level + ')')
+    $loungeSpan.append('<div style="position: absolute; right: 0px; bottom: 0px; padding: 0px; vertical-align: middle; color: rgb(69, 69, 68); background-color: rgb(140, 185, 217); font-size: 8px; font-weight: bold;">' + lounge.level + '</div>')
+    return $loungeSpan
+}
+
 function updateRivalTables(result) {
     var appealTable = $("#rivalAppealTable")
     var networkCapacityTable = $("#networkCapacity")
@@ -2148,20 +2156,26 @@ function updateRivalTables(result) {
 	var toAirportLoyalty = {}
 	var fromAirportCapacity = {}
     var toAirportCapacity = {}
-
-
+    var fromAirportLounge = {}
+    var toAirportLounge = {}
 
     $.each(result.fromAirport, function(index, entry) {
 	     var airlineId = entry.airline.id
 	     airlineNameById[airlineId] = entry.airline.name
 	     fromAirportLoyalty[airlineId] = entry.loyalty
 	     fromAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
+	     if (entry.lounge) {
+            fromAirportLounge[airlineId] = entry.lounge
+	     }
      })
 
     $.each(result.toAirport, function(index, entry) {
          var airlineId = entry.airline.id
          toAirportLoyalty[airlineId] = entry.loyalty
          toAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
+         if (entry.lounge) {
+             toAirportLounge[airlineId] = entry.lounge
+         }
     })
 
 
@@ -2174,7 +2188,15 @@ function updateRivalTables(result) {
     var yellowManSource = "assets/images/icons/man-yellow.png"
     $.each(airlineNameById, function(airlineId, airlineName) {
      	var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell' align='left'>" + getAirlineSpan(airlineId, airlineName) + "</div>")
+     	var $airlineSpan = $(getAirlineSpan(airlineId, airlineName))
+     	if (fromAirportLounge[airlineId]) {
+     	    $airlineSpan.append(getLoungeIconSpan(fromAirportLounge[airlineId]))
+     	}
+     	if (toAirportLounge[airlineId]) {
+            $airlineSpan.append(getLoungeIconSpan(toAirportLounge[airlineId]))
+        }
+        var $airlineCell = $("<div class='cell' align='left'></div>").append($airlineSpan)
+		row.append($airlineCell)
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, fromAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, toAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		appealTable.append(row)
