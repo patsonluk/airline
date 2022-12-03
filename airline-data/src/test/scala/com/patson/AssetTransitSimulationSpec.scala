@@ -409,7 +409,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         assertAssetEffect(AirportAssetType.CONVENTION_CENTER, EffectBoundary(0.49, 0.51, 0.58, 0.61))
       }
       "MuseumAssetType" in {
-        assertAssetEffect(AirportAssetType.MUSEUM, EffectBoundary(0.52, 0.54, 0.5, 0.52))
+        assertAssetEffect(AirportAssetType.MUSEUM, EffectBoundary(0.52, 0.54, 0.505, 0.525))
       }
       "StadiumAssetType" in {
         assertAssetEffect(AirportAssetType.STADIUM, EffectBoundary(0.51, 0.53, 0.5, 0.52))
@@ -418,7 +418,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         assertAssetEffect(AirportAssetType.LANDMARK, EffectBoundary(0.53, 0.56, 0.53, 0.56))
       }
       "GolfCourseAssetType" in {
-        assertAssetEffect(AirportAssetType.GOLF_COURSE, EffectBoundary(0.5, 0.53, 0.5, 0.53))
+        assertAssetEffect(AirportAssetType.GOLF_COURSE, EffectBoundary(0.5, 0.51, 0.5, 0.51))
       }
     }
   }

@@ -659,7 +659,7 @@ case class LuxuriousHotelAsset(override val blueprint : AirportAssetBlueprint, o
 case class GolfCourseAsset(override val blueprint : AirportAssetBlueprint, override val airline : Option[Airline], override val name : String, override val level : Int, override val completionCycle : Option[Int], override val status : AirportAssetStatus.Value, override var boosts : List[AirportBoost], override var revenue : Long, override var expense : Long, override var roi : Double, override var properties : Map[String, Long]) extends AdmissionAsset with TransitStopOverModifier {
     override val initialCapacity = 400
 
-    override val probability = 5
+    override val probability = 2
     override val touristDiscount = 0.15
     override val businessDiscount = 0.15
 }
