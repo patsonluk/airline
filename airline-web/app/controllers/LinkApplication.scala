@@ -935,13 +935,20 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //    Ok(Json.toJson(RouteHistorySource.loadVipRoutes()))
 //  }
   
-  def getRelatedLinkConsumption(airlineId : Int, linkId : Int, cycleDelta : Int, selfOnly : Boolean) =  AuthenticatedAirline(airlineId) {
+  def getRelatedLinkConsumption(airlineId : Int, linkId : Int, cycleDelta : Int, selfOnly : Boolean, economy : Boolean, business : Boolean, first : Boolean) =  AuthenticatedAirline(airlineId) {
     LinkSource.loadFlightLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
       case Some(link) => {
         if (link.airline.id != airlineId) {
           Forbidden(Json.obj())
         } else {
-          Ok(Json.toJson(HistoryUtil.loadConsumptionByLink(link, cycleDelta, selfOnly)))
+          val filter = (linkConsideration : LinkConsideration) => {
+            if (economy && business && first) {
+              true
+            } else {
+              (linkConsideration.linkClass == ECONOMY && economy) || (linkConsideration.linkClass == BUSINESS && business) || (linkConsideration.linkClass == FIRST && first)
+            }
+          }
+          Ok(Json.toJson(HistoryUtil.loadConsumptionByLink(link, filter, cycleDelta, selfOnly)))
         }
       }
       case None => NotFound(Json.obj())
