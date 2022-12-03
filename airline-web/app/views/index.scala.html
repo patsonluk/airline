@@ -1011,7 +1011,7 @@
 				<div id="linksCanvas"  class="canvas" style="display: none; height: 100%; min-width: 400px;">
 					<div style="float: left;" class="mainPanel">
 						<div class="section" style="height: 95% ; width : 98%; float: left;">
-							<div style="height: 20px; padding-left: 20px;">
+							<div style="height: 20px; padding-left: 30px;">
 								<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
 							</div>
 							<div style="width: 100%; height: 100%; overflow:auto;">
@@ -3006,9 +3006,9 @@
 						<h4>Logs</h4>
 						<div id = "logTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 							<div class="table-header">
-								<div class="cell clickable selected" style="width: 10%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Week</div>
-								<div class="cell clickable" style="width: 10%" data-sort-property="severity" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Category</div>
-								<div class="cell clickable" style="width: 10%" data-sort-property="category" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Severity</div>
+								<div class="cell clickable selected" style="width: 10%" data-sort-property="cycleDelta" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Week</div>
+								<div class="cell clickable" style="width: 10%" data-sort-property="severity" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Severity</div>
+								<div class="cell clickable" style="width: 10%" data-sort-property="category" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Category</div>
 								<div class="cell clickable" style="width: 20%" data-sort-property="airlineName" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Airline</div>
 								<div class="cell clickable" style="width: 50%" data-sort-property="message" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Message</div>
 							</div>
