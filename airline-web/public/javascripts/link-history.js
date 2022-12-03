@@ -48,9 +48,15 @@ function loadLinkHistory(linkId) {
     var airlineNamesById = {}
     var cycleDelta = $('#linkHistoryControlPanel').data('cycleDelta')
     $("#linkHistoryControlPanel .transitAirlineList").empty()
+
+    var url = "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?cycleDelta=" + cycleDelta +
+    "?economy=" + $("#linkHistoryControlPanel .showEconomy").is(":checked") +
+    "?business=" + $("#linkHistoryControlPanel .showBusiness").is(":checked") +
+    "?first=" + $("#linkHistoryControlPanel .showFirst").is(":checked")
+
     $.ajax({
         type: 'GET',
-        url: "airlines/" + activeAirline.id + "/related-link-consumption/" + linkId + "?cycleDelta=" + cycleDelta,
+        url: url,
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(linkHistory) {
