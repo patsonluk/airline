@@ -1215,7 +1215,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           toAirportJson = toAirportJson + ("lounge" -> loungeJson)
         }
         fromAirportInfo = fromAirportInfo.append(fromAirportJson)
-        toAirportInfo = fromAirportInfo.append(toAirportJson)
+        toAirportInfo = toAirportInfo.append(toAirportJson)
       }
 
       result = result ++ Json.obj("fromAirport" -> fromAirportInfo, "fromAirportCode" -> fromAirport.iata, "fromCity" -> fromAirport.city)
