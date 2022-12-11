@@ -9,6 +9,7 @@ import com.patson.model.AirlineBaseSpecialization.BrandSpecialization
 import com.patson.model.FlightType.Value
 import com.patson.model._
 
+import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Set}
 import scala.util.Random
 import scala.collection.parallel.CollectionConverters._
@@ -608,6 +609,7 @@ object PassengerSimulation {
     val distanceMap = new java.util.HashMap[Int, Double]()
     var predecessorMap = new java.util.HashMap[Int, LinkConsideration]()
     var activeVertices = new java.util.HashSet[Int]()
+    val assetDiscountByAirportId = mutable.HashMap[Int, Option[(Double, List[AirportAsset])]]() //key is airport
     activeVertices.add(from.id)
     allVertices.foreach { vertex => 
       if (vertex == from.id) {
@@ -652,12 +654,13 @@ object PassengerSimulation {
           var connectionCost = 0.0
           var isValid : Boolean = true
           val fromCost = distanceMap.get(linkConsideration.from.id)
+          var flightTransit = false
           if (predecessorLinkConsideration != null) { //then it should be a connection flight
             val predecessorLink = predecessorLinkConsideration.link
             val previousLinkAirlineId = predecessorLink.airline.id
             val currentLinkAirlineId = linkConsideration.link.airline.id
 
-            var flightTransit = false
+
             if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
               isValid = false
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
@@ -678,24 +681,29 @@ object PassengerSimulation {
             }
             connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
 
-            if (flightTransit) { //perhaps it's a nice idea to make a detour??
-              val discount = linkConsideration.from.computeTransitDiscount(
+            if (flightTransit) {
+              val waitTimeDiscount = linkConsideration.from.computeTransitDiscount(
                 predecessorLinkConsideration,
                 linkConsideration,
                 passengerGroup)
 
-              val waitTimeDiscount = Math.min(discount.waitTimeDiscount, 1)
-              val stopOverDiscount = Math.min(discount.stopOverDiscount, 0.3)
-
-              connectionCost = (1 - waitTimeDiscount) * connectionCost - stopOverDiscount * fromCost
+              connectionCost = (1 - waitTimeDiscount) * connectionCost
             }
+
           }
 
           if (isValid) {
             val cost = Math.max(0, linkConsideration.cost + connectionCost) //just to avoid loop in graph
 
-            val newCost = fromCost + cost
+            var newCost = fromCost + cost
 
+            assetDiscountByAirportId.getOrElseUpdate(linkConsideration.to.id, linkConsideration.to.computePassengerCostAssetDiscount(linkConsideration, passengerGroup)).foreach {
+              case(discount, _) =>
+                //discount scale by cost travelled so far ie bigger impact for pax from far away
+                //however the discount should never be more than half the new cost, otherwise it COULD potentially get cheaper the further it goes
+                val costDiscount = Math.min(cost * 0.5, newCost * discount)
+                newCost -= costDiscount
+            }
 
             if (newCost < distanceMap.get(linkConsideration.to.id)) {
               distanceMap.put(linkConsideration.to.id, newCost)

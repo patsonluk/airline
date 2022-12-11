@@ -6,6 +6,7 @@ import com.patson.PassengerSimulation.RouteRejectionReason
 import com.patson.model.FlightType._
 import com.patson.model._
 import com.patson.model.airplane.AirplaneMaintenanceUtil
+import com.patson.model.airplane.Model
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import java.util.Collections
@@ -395,6 +396,75 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
       assert(economyViaAsset.toDouble / iterations < 0.55)
     }
 
+    "some pax might stop-over an airport if it's on the way and has attractive asset" in {
+      val airport1 = Airport("HKG", "", "Airport 1", 22.308901, 113.915001, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2a = Airport("SFO", "", "Airport 2a", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 2)
+      val airport2b = Airport("SFO", "", "Airport 2b", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 3)
+      val airport3 = Airport("LAS", "", "Airport 3", 36.08010101,	-115.1520004, "C2", "", "", 1, 0, 0, 0, id = 4)
+
+
+      val airline1 = Airline("airline 1", id = 1)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport1, "C1", 1, 1, headquarter = true)))
+
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+
+      airport2a.initAssets(
+        List(
+          AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, AirportAssetType.CONVENTION_CENTER), Some(airline1), "Test Asset", 10, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0),
+          AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, AirportAssetType.AMUSEMENT_PARK), Some(airline1), "Test Asset", 10, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0)
+        ))
+
+
+      val countryOpenness = Map[String, Int](
+        "C1" -> 10,
+        "C2" -> 10)
+
+      val links = List(
+        buildLink(airline1, airport1, airport2a),
+        buildLink(airline1, airport1, airport2b),
+        buildLink(airline1, airport2a, airport3),
+        buildLink(airline1, airport2b, airport3),
+        buildLink(airline1, airport1, airport3), //direct flight
+      )
+
+      assignLinkIds(links)
+      val pool = DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport)
+
+      val toAirports = Set[Airport](airport3)
+
+      val activeAirports = links.flatMap(link => Set(link.from.id, link.to.id)).to(collection.mutable.Set)
+
+      var transitAsset = 0
+      var transitNoAsset = 0
+      var direct = 0
+
+      for (i <- 0 until iterations) {
+        val economyPassengerGroup = PassengerGroup(airport1, pool.draw(ECONOMY, airport1, airport3), PassengerType.BUSINESS)
+        val result : Map[PassengerGroup, Map[Airport, Route]] =
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports),
+            links,
+            activeAirports,
+            countryOpenness = countryOpenness)
+
+        val firstLink = result(economyPassengerGroup)(airport3).links(0).link
+        if (firstLink.to == airport2a) {
+          transitAsset += 1
+        } else if (firstLink.to == airport2b) {
+          transitNoAsset += 1
+        } else if (firstLink.to == airport3) {
+          direct += 1
+        } else { //shouldn't be!
+          fail(s"Unexpected first link $firstLink")
+        }
+      }
+
+      assert(transitAsset > 0.15 && transitAsset.toDouble / iterations < 0.25)
+      assert(transitNoAsset.toDouble / iterations < 0.1)
+      assert(direct.toDouble / iterations > 0.7)
+    }
+
+
     "stopover asset effect on pax" when {
       "amusement park" in {
         assertAssetEffect(AirportAssetType.AMUSEMENT_PARK, EffectBoundary(0.54, 0.57, 0.49, 0.51))
@@ -403,7 +473,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         assertAssetEffect(AirportAssetType.SKI_RESORT, EffectBoundary(0.58, 0.61, 0.5, 0.52))
       }
       "BeachResortAssetType" in {
-        assertAssetEffect(AirportAssetType.BEACH_RESORT, EffectBoundary(0.54, 0.57, 0.5, 0.52))
+        assertAssetEffect(AirportAssetType.BEACH_RESORT, EffectBoundary(0.53, 0.56, 0.5, 0.52))
       }
       "ConventionCenterAssetType" in {
         assertAssetEffect(AirportAssetType.CONVENTION_CENTER, EffectBoundary(0.49, 0.51, 0.58, 0.61))
@@ -418,27 +488,19 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         assertAssetEffect(AirportAssetType.LANDMARK, EffectBoundary(0.53, 0.56, 0.53, 0.56))
       }
       "GolfCourseAssetType" in {
-        assertAssetEffect(AirportAssetType.GOLF_COURSE, EffectBoundary(0.5, 0.51, 0.5, 0.51))
+        assertAssetEffect(AirportAssetType.GOLF_COURSE, EffectBoundary(0.5, 0.52, 0.5, 0.52))
       }
     }
   }
 
 
-
-
-
-
-
-
-
-
   case class EffectBoundary(touristLowerBound : Double, touristUpperBound : Double, businessLowerBound : Double, businessUpperBound : Double)
 
   def assertAssetEffect(assetType : AirportAssetType.Value, effectBoundaries : EffectBoundary): Unit = {
-    val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
-    val airport2a = Airport("", "", "Airport 2a", 0, 60, "C1", "", "", 1, 0, 0, 0, id = 2)
-    val airport2b = Airport("", "", "Airport 2b", 0, 60, "C1", "", "", 1, 0, 0, 0, id = 3)
-    val airport3 = Airport("", "", "Airport 3", 0, 90, "C2", "", "", 1, 0, 0, 0, id = 4)
+    val airport1 = Airport("HKG", "", "Airport 1", 22.308901, 113.915001, "C1", "", "", 1, 0, 0, 0, id = 1)
+    val airport2a = Airport("LAX1", "", "Airport 2a", 33.942501,	-118.407997, "C2", "", "", 1, 0, 0, 0, id = 2)
+    val airport2b = Airport("LAX2", "", "Airport 2b", 33.942501,	-118.407997, "C2", "", "", 1, 0, 0, 0, id = 3)
+    val airport3 = Airport("SFO", "", "Airport 3",  37.61899948120117,	-122.375, "C2", "", "", 1, 0, 0, 0, id = 4)
 
 
     val airline1 = Airline("airline 1", id = 1)
@@ -455,10 +517,10 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
 
 
     val links = List(
-      Link(airport1, airport2a, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERCONTINENTAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
-      Link(airport1, airport2b, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERCONTINENTAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
-      Link(airport2a, airport3, airline1, price = Pricing.computeStandardPriceForAllClass(500, SHORT_HAUL_DOMESTIC), 500, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 30, 7, SHORT_HAUL_DOMESTIC),
-      Link(airport2b, airport3, airline1, price = Pricing.computeStandardPriceForAllClass(500, SHORT_HAUL_DOMESTIC), 500, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 30, 7, SHORT_HAUL_DOMESTIC),
+      buildLink(airline1, airport1, airport2a),
+      buildLink(airline1, airport1, airport2b),
+      buildLink(airline1, airport2a, airport3),
+      buildLink(airline1, airport2b, airport3),
     )
 
     assignLinkIds(links)
@@ -499,6 +561,14 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
 
     assert(businessViaAsset.toDouble / iterations > effectBoundaries.businessLowerBound)
     assert(businessViaAsset.toDouble / iterations < effectBoundaries.businessUpperBound)
+  }
+
+  def buildLink(airline : Airline, fromAirport : Airport, toAirport : Airport, frequency : Int = Link.HIGH_FREQUENCY_THRESHOLD): Link = {
+    val distance = Computation.calculateDistance(fromAirport, toAirport)
+    val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
+    val price = Pricing.computeStandardPriceForAllClass(distance, LONG_HAUL_INTERCONTINENTAL)
+    val duration = Computation.calculateDuration(870, distance)
+    Link(fromAirport, toAirport, airline, price, distance, capacity = LinkClassValues.getInstance(10000, 10000, 10000), rawQuality = 0, duration, frequency, flightType)
   }
 }
 
