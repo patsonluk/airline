@@ -102,8 +102,13 @@ object UserSource {
           val modifiers = modifiersByUserId.getOrElse(userId, List.empty)
           (User(userName, resultSet.getString("u.email"), creationTime, lastActiveTime, status, level = resultSet.getInt("level"),  adminStatus = adminStatus, modifiers = modifiers, id = userId), ListBuffer[Int]())
         })
-        
-        userAirlines += resultSet.getInt("ua.airline") 
+
+        val airlineId = resultSet.getInt("ua.airline")
+        if (airlineId != 0) {
+          userAirlines += airlineId
+        } else {
+          println(s"User $user has no airline!")
+        }
       }
       
       val allAirlineIds : List[Int] = userList.values.map(_._2).flatten.toSet.toList

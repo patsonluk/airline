@@ -521,9 +521,9 @@ function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
 	highlightTab($('.worldMapCanvasTab'))
 	$('#sidePanel').appendTo($('#worldMapCanvas'))
-	closeAirportInfoPopup()
+	//closeAirportInfoPopup()
 	if (selectedLink) {
-		selectLinkFromMap(selectedLink, true)
+		selectLinkFromMap(selectedLink, !activeAirportPopupInfoWindow) //do not refocus if there's a popup, stay where it is
 	}
 	checkTutorial('worldMap')
 }

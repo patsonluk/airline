@@ -43,10 +43,14 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
     val json = request.body.asInstanceOf[AnyContentAsJson].json
     json.\("note").asOpt[String] match {
       case Some(note) =>
-        if (LogSource.loadLogsByAirline(airlineId, cycle).filter(_.category == LogCategory.SELF_NOTE).length >= 5) { //max 5 notes per cycle
-          Ok(Json.obj("error" -> "Exceeded note limit per cycle"))
-        } else {
-          LogSource.insertLogs(List(Log(request.user, note.substring(0, Math.min(note.length(), MAX_NOTE_LENGTH)), LogCategory.SELF_NOTE, LogSeverity.INFO, cycle)))
+        if (!note.trim.isEmpty) {
+          if (LogSource.loadLogsByAirline(airlineId, cycle).filter(_.category == LogCategory.SELF_NOTE).length >= 5) { //max 5 notes per cycle
+            Ok(Json.obj("error" -> "Exceeded note limit per cycle"))
+          } else {
+            LogSource.insertLogs(List(Log(request.user, note.substring(0, Math.min(note.length(), MAX_NOTE_LENGTH)), LogCategory.SELF_NOTE, LogSeverity.INFO, cycle)))
+            Ok(Json.obj())
+          }
+        } else { //just ignore empty notes
           Ok(Json.obj())
         }
       case None =>

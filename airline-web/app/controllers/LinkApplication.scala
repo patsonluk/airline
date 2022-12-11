@@ -931,13 +931,20 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //    Ok(Json.toJson(RouteHistorySource.loadVipRoutes()))
 //  }
   
-  def getRelatedLinkConsumption(airlineId : Int, linkId : Int, cycleDelta : Int, selfOnly : Boolean) =  AuthenticatedAirline(airlineId) {
+  def getRelatedLinkConsumption(airlineId : Int, linkId : Int, cycleDelta : Int, selfOnly : Boolean, economy : Boolean, business : Boolean, first : Boolean) =  AuthenticatedAirline(airlineId) {
     LinkSource.loadFlightLinkById(linkId, LinkSource.SIMPLE_LOAD) match {
       case Some(link) => {
         if (link.airline.id != airlineId) {
           Forbidden(Json.obj())
         } else {
-          Ok(Json.toJson(HistoryUtil.loadConsumptionByLink(link, cycleDelta, selfOnly)))
+          val filter = (linkConsideration : LinkConsideration) => {
+            if (economy && business && first) {
+              true
+            } else {
+              (linkConsideration.linkClass == ECONOMY && economy) || (linkConsideration.linkClass == BUSINESS && business) || (linkConsideration.linkClass == FIRST && first)
+            }
+          }
+          Ok(Json.toJson(HistoryUtil.loadConsumptionByLink(link, filter, cycleDelta, selfOnly)))
         }
       }
       case None => NotFound(Json.obj())
@@ -1193,8 +1200,18 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           container + link.capacity
         }
 
-        fromAirportInfo = fromAirportInfo.append(Json.obj("airline" -> rival, "network" -> fromAirportAllianceNetworkCapacity,"loyalty" -> fromAirport.getAirlineLoyalty(rival.id)))
-        toAirportInfo = toAirportInfo.append(Json.obj("airline" -> rival, "network" -> toAirportAllianceNetworkCapacity, "loyalty" -> toAirport.getAirlineLoyalty(rival.id)))
+        var fromAirportJson = Json.obj("airline" -> rival, "network" -> fromAirportAllianceNetworkCapacity, "loyalty" -> fromAirport.getAirlineLoyalty(rival.id))
+        var toAirportJson = Json.obj("airline" -> rival, "network" -> toAirportAllianceNetworkCapacity, "loyalty" -> toAirport.getAirlineLoyalty(rival.id))
+
+        //check lounges
+        getLoungeJson(rival, fromAirport).foreach { loungeJson =>
+          fromAirportJson = fromAirportJson + ("lounge" -> loungeJson)
+        }
+        getLoungeJson(rival, toAirport).foreach { loungeJson =>
+          toAirportJson = toAirportJson + ("lounge" -> loungeJson)
+        }
+        fromAirportInfo = fromAirportInfo.append(fromAirportJson)
+        toAirportInfo = fromAirportInfo.append(toAirportJson)
       }
 
       result = result ++ Json.obj("fromAirport" -> fromAirportInfo, "fromAirportCode" -> fromAirport.iata, "fromCity" -> fromAirport.city)
@@ -1202,6 +1219,20 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
 
     Ok(result)
+  }
+
+  def getLoungeJson(airline : Airline, airport : Airport) : Option[JsValue] = {
+    airport.getLoungeByAirline(airline.id, true) match {
+      case Some(lounge) =>
+        return Some(Json.toJson(lounge))
+      case None =>
+        airline.getAllianceId().foreach { allianceId =>
+          airport.getLoungeByAlliance(allianceId, true).foreach { lounge =>
+            return Some(Json.toJson(lounge))
+          }
+        }
+    }
+    return None
   }
 
 

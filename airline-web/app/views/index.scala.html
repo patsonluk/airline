@@ -148,9 +148,16 @@
 			</div>
 		</div>
 		<div style="float: left; width : 50%">
-			<input class="showAlliance" type="checkbox" checked="checked" onclick="showLinkHistory()">Alliance
-			<input class="showOther" type="checkbox" checked="checked" onclick="showLinkHistory()">Other
-			<input class="showAnimation" type="checkbox" checked="checked" onclick="showLinkHistory()">Animated
+			<div>
+				<input class="showAlliance" type="checkbox" checked="checked" onclick="showLinkHistory()">Alliance
+				<input class="showOther" type="checkbox" checked="checked" onclick="showLinkHistory()">Other
+				<input class="showAnimation" type="checkbox" checked="checked" onclick="showLinkHistory()">Animated
+			</div>
+			<div title="Filter PAX traffic by class, take note this applied to the current select flight, related flights shown could be of different classes">
+				<input class="showEconomy" type="checkbox" checked="checked" onclick="loadLinkHistory(selectedLink)">Economy
+				<input class="showBusiness" type="checkbox" checked="checked" onclick="loadLinkHistory(selectedLink)">Business
+				<input class="showFirst" type="checkbox" checked="checked" onclick="loadLinkHistory(selectedLink)">First
+			</div>
 			<div style="width : 100%" class="routeList">
 			</div>
 			<div style="display: flex; align-items: center;">
@@ -497,14 +504,14 @@
 										<div class="table-row">
 											<div class="label"><h5>From:</h5></div>
 											<div class="value">
-												<span class="clickable" id="linkFromAirport"></span>
+												<span class="clickable" id="linkFromAirport" data-link="airport"></span>
 											</div>
 
 										</div>
 										<div class="table-row">
 											<div class="label"><h5>To:</h5></div>
 											<div class="value">
-												<span class="clickable" id="linkToAirport"></span>
+												<span class="clickable" id="linkToAirport" data-link="airport"></span>
 											</div>
 										</div>
 										<div class="table-row">
@@ -674,9 +681,9 @@
 									<div class="table-row">
 										<div class="label"><h5>From:</h5></div>
 										<div class="value">
-											<span id="planLinkFromAirportName" class="clickable"></span>
+											<span id="planLinkFromAirportName" class="clickable" data-link="airport"></span>
 											<img class="clickable" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
-											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport">
+											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport" data-link="airport">
 
 											<div class="value"><select class="select-css" id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 
@@ -1012,7 +1019,7 @@
 				<div id="linksCanvas"  class="canvas" style="display: none; height: 100%; min-width: 400px;">
 					<div style="float: left;" class="mainPanel">
 						<div class="section" style="height: 95% ; width : 98%; float: left;">
-							<div style="height: 20px; padding-left: 20px;">
+							<div style="height: 20px; padding-left: 30px;">
 								<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
 							</div>
 							<div style="width: 100%; height: 100%; overflow:auto;">
@@ -3114,23 +3121,25 @@
 
 
 					<div style="width : 95%; height: 500px" class="section">
-						<h4>Add Self Note</h4>
-						<input type="text" class="selfNote" size="50" maxlength="100">
-						<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class="clickable" onclick="putSelfNote()" style="vertical-align: text-bottom;">
-						<div class="selfNote rejection" style="display: none;">
-							<img src='@routes.Assets.versioned("images/icons/exclamation-red-frame.png")' style="vertical-align: text-bottom;"><span class="reason"></span>
+						<div style="height: 60px;">
+							<h4>Add Self Note</h4>
+							<input type="text" class="selfNote" size="50" maxlength="100">
+							<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class="clickable" onclick="putSelfNote()" style="vertical-align: text-bottom;">
+							<div class="selfNote rejection" style="display: none;">
+								<img src='@routes.Assets.versioned("images/icons/exclamation-red-frame.png")' style="vertical-align: text-bottom;"><span class="reason"></span>
+							</div>
 						</div>
-						<h4 style="margin-top: 5px;">Logs</h4>
+						<h4>Logs</h4>
 						<div id = "logTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 							<div class="table-header">
-								<div class="cell clickable selected" style="width: 10%" data-sort-property="cycle" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Week</div>
-								<div class="cell clickable" style="width: 10%" data-sort-property="severity" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Category</div>
-								<div class="cell clickable" style="width: 10%" data-sort-property="category" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Severity</div>
+								<div class="cell clickable selected" style="width: 10%" data-sort-property="cycleDelta" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Week</div>
+								<div class="cell clickable" style="width: 10%" data-sort-property="severity" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Severity</div>
+								<div class="cell clickable" style="width: 10%" data-sort-property="category" data-sort-order="descending" onclick="toggleLogTableSortOrder($(this))">Category</div>
 								<div class="cell clickable" style="width: 20%" data-sort-property="airlineName" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Airline</div>
 								<div class="cell clickable" style="width: 50%" data-sort-property="message" data-sort-order="ascending" onclick="toggleLogTableSortOrder($(this))">Message</div>
 							</div>
 						</div>
-						<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+						<div style="height: calc(100% - 100px); width: 100%; overflow: auto;">
 							<div class="table data" id="logTable" style="width: 100%; max-height: 100%">
 								<div class="table-header">
 									<div class="cell" style="width: 10%; border-bottom: none;"></div>
