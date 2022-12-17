@@ -396,7 +396,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
       assert(economyViaAsset.toDouble / iterations < 0.55)
     }
 
-    "some pax might stop-over an airport if it's on the way and has attractive asset" in {
+    "some pax might stop-over an airport if it's on the way and has attractive asset after a long trip" in {
       val airport1 = Airport("HKG", "", "Airport 1", 22.308901, 113.915001, "C1", "", "", 1, 0, 0, 0, id = 1)
       val airport2a = Airport("SFO", "", "Airport 2a", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 2)
       val airport2b = Airport("SFO", "", "Airport 2b", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 3)
@@ -459,13 +459,81 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         }
       }
 
-      assert(transitAsset > 0.15 && transitAsset.toDouble / iterations < 0.25)
+      assert(transitAsset.toDouble / iterations > 0.15 && transitAsset.toDouble / iterations < 0.25)
+      assert(transitNoAsset.toDouble / iterations < 0.1)
+      assert(direct.toDouble / iterations > 0.7)
+    }
+
+    "some, but less pax might stop-over an airport if it's on the way and has attractive asset after short trip" in {
+      val airport1 = Airport("LAS", "", "Airport 1",  36.08010101, -115.1520004, "C2", "", "", 1, 0, 0, 0, id = 1)
+      val airport2a = Airport("SFO", "", "Airport 2a", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 2)
+      val airport2b = Airport("SFO", "", "Airport 2b", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 3)
+      val airport3 = Airport("HKG", "", "Airport 3", 22.308901, 113.915001, "C1", "", "", 1, 0, 0, 0, id = 4)
+
+
+      val airline1 = Airline("airline 1", id = 1)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport1, "C1", 1, 1, headquarter = true)))
+
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+
+      airport2a.initAssets(
+        List(
+          AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, AirportAssetType.CONVENTION_CENTER), Some(airline1), "Test Asset", 10, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0),
+          AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, AirportAssetType.AMUSEMENT_PARK), Some(airline1), "Test Asset", 10, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0)
+        ))
+
+
+      val countryOpenness = Map[String, Int](
+        "C1" -> 10,
+        "C2" -> 10)
+
+      val links = List(
+        buildLink(airline1, airport1, airport2a),
+        buildLink(airline1, airport1, airport2b),
+        buildLink(airline1, airport2a, airport3),
+        buildLink(airline1, airport2b, airport3),
+        buildLink(airline1, airport1, airport3), //direct flight
+      )
+
+      assignLinkIds(links)
+      val pool = DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport)
+
+      val toAirports = Set[Airport](airport3)
+
+      val activeAirports = links.flatMap(link => Set(link.from.id, link.to.id)).to(collection.mutable.Set)
+
+      var transitAsset = 0
+      var transitNoAsset = 0
+      var direct = 0
+
+      for (i <- 0 until iterations) {
+        val economyPassengerGroup = PassengerGroup(airport1, pool.draw(ECONOMY, airport1, airport3), PassengerType.BUSINESS)
+        val result : Map[PassengerGroup, Map[Airport, Route]] =
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports),
+            links,
+            activeAirports,
+            countryOpenness = countryOpenness)
+
+        val firstLink = result(economyPassengerGroup)(airport3).links(0).link
+        if (firstLink.to == airport2a) {
+          transitAsset += 1
+        } else if (firstLink.to == airport2b) {
+          transitNoAsset += 1
+        } else if (firstLink.to == airport3) {
+          direct += 1
+        } else { //shouldn't be!
+          fail(s"Unexpected first link $firstLink")
+        }
+      }
+
+      assert(transitAsset.toDouble /iterations < 0.1 && transitAsset.toDouble / iterations > transitNoAsset.toDouble / iterations)
       assert(transitNoAsset.toDouble / iterations < 0.1)
       assert(direct.toDouble / iterations > 0.7)
     }
 
 
-    "stopover asset effect on pax" when {
+    "general asset effect on pax" when {
       "amusement park" in {
         assertAssetEffect(AirportAssetType.AMUSEMENT_PARK, EffectBoundary(0.54, 0.57, 0.49, 0.51))
       }

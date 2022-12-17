@@ -5148,7 +5148,7 @@
 
 
   <div id="airportAssetDetailsModal" class="modal">
-	  <div class="modal-content" style="width : 500px; max-width: 100%">
+	  <div class="modal-content" style="width : 600px; max-width: 100%">
 		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
 		  <h4><span class="name"></span></h4>
 <!--		  <div class="descriptions"></div>-->
@@ -5222,6 +5222,26 @@
 				  <div class="value sellValue"></div>
 			  </div>
 		  </div>
+
+		  <div class="visitorByAir">
+			  <h5 style="margin-top: 10px; margin-bottom: 10px;">Visitors by Air</h5>
+			  <div style="width: 100%; display: flex; flex-wrap: wrap">
+				  <div style="flex-grow: 1; display:flex; flex-direction: column; align-items: center;">
+					  <h5 align="center">Country</h5>
+					  <div class="visitorCompositionByCountryPie" style="height: 160px; width: 250px" align="center"></div>
+					  <div class="table data topCountryTable" style="width: 250px;">
+					  </div>
+				  </div>
+				  <div style="flex-grow: 1; display:flex; flex-direction: column; align-items: center;">
+					  <h5 align="center">Passenger Type</h5>
+					  <div class="visitorCompositionByPassengerTypePie" style="height: 160px; width: 250px" align="center"></div>
+					  <div class="table data passengerTypeTable" style="width: 250px;">
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+
+
 		  <h5>Level History</h5>
 		  <div class="table data" style="width: 100%;">
 			  <div class="table-header">

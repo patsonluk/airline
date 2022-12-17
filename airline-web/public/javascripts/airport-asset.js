@@ -322,6 +322,12 @@ function showAssetModal(asset) {
             var fullStarSource = "assets/images/icons/star.png"
             var $performanceBar = getHalfStepImageBarByValue(fullStarSource, null, 0.5, assetDetails.performanceApprox).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'})
             $('#airportAssetDetailsModal .assetPerformance').append($performanceBar)
+
+            if (assetDetails.countryRanking) {
+                showAssetVisitorDetails(assetDetails.countryRanking, { "Transit" : assetDetails.transitPax, "Final Destination" : assetDetails.destinationPax})
+            } else {
+                $('#airportAssetDetailsModal .visitorByAir').hide()
+            }
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
@@ -331,6 +337,30 @@ function showAssetModal(asset) {
 
 
     $('#airportAssetDetailsModal').fadeIn(200)
+}
+
+function showAssetVisitorDetails(countryRanking, paxByType) {
+    plotPie(countryRanking, null , $("#airportAssetDetailsModal .visitorCompositionByCountryPie"), "countryName", "passengerCount")
+    plotPie(paxByType, null , $("#airportAssetDetailsModal .visitorCompositionByPassengerTypePie"))
+    $('#airportAssetDetailsModal .visitorByAir').show()
+
+    var max = 5;
+	var index = 0;
+    $('#airportAssetDetailsModal .topCountryTable .table-row').remove()
+    $.each(countryRanking, function(key, entry) {
+        $('#airportAssetDetailsModal .topCountryTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.countryName
+                   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+        index ++;
+        if (index >= max) {
+            return false;
+        }
+    });
+
+    $('#airportAssetDetailsModal .passengerTypeTable .table-row').remove()
+    $.each(paxByType, function(key, entry) {
+        $('#airportAssetDetailsModal .passengerTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + key
+                   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry) + "</div></div>")
+    });
 }
 
 function refreshBoostHistory(history, baseBoosts) {

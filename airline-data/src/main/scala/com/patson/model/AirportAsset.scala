@@ -2,7 +2,10 @@ package com.patson.model
 
 import com.patson.data.{AirportAssetSource, AirportSource, CycleSource}
 import com.patson.model.AirportAssetType.{PassengerCostAssetModifier, TransitWaitTimeModifier}
+import com.patson.model.Country.CountryCode
 
+import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 case class AirportAssetBlueprint(airport : Airport, assetType : AirportAssetType.Value, var id : Int = 0) extends IdObject
@@ -513,23 +516,44 @@ abstract class AirportAsset() extends IdObject{
         AirportAsset.getAirportAsset(blueprint, airline, name, level + 1, Some(completionCycle), boosts, revenue, expense, roi, false, properties, currentCycle)
     }
 
-    def boostHistory() : List[AirportAssetBoostHistory] = {
+    lazy val boostHistory : List[AirportAssetBoostHistory] = {
         AirportAssetSource.loadAirportBoostHistoryByAssetId(id)
     }
-    def propertiesHistory() : List[AirportAssetPropertiesHistory] = {
+    lazy val propertiesHistory : List[AirportAssetPropertiesHistory] = {
         AirportAssetSource.loadAirportPropertyHistoryByAssetId(id)
     }
 
-    def publicProperties() : Map[String, Long] = {
+    lazy val publicProperties : Map[String, Long] = {
         properties.filter {
             case(key, _) => assetType.publicPropertyKeys.contains(key)
         }
     }
 
-    def privateProperties() : Map[String, Long] = {
+    lazy val privateProperties : Map[String, Long] = {
         properties.filter {
             case(key, _) => assetType.privatePropertyKeys.contains(key)
         }
+    }
+
+    lazy val propertyHistoryLastCycle =  {
+        AirportAssetSource.loadAirportPropertyHistoryByAssetIdAndCycle(id, CycleSource.loadCycle() - 1)
+    }
+
+    lazy val paxByCountryCodeLastCycle : List[(String, Long)] = {
+        propertyHistoryLastCycle match {
+            case Some(entry) => AirportAsset.fromPropertiesToCountryStats(entry.properties).sortBy(_._2).reverse
+            case None => List.empty
+        }
+    }
+
+    lazy val transitPaxLastCycle : Long = propertyHistoryLastCycle match {
+        case Some(entry) => entry.properties.get("transit_pax_count").map(_.toLong).getOrElse(0)
+        case None => 0
+    }
+
+    lazy val destinationPaxLastCycle : Long = propertyHistoryLastCycle match {
+        case Some(entry) => entry.properties.get("total_pax_count").map(_.toLong).getOrElse(0L) - transitPaxLastCycle
+        case None => 0
     }
 
     def performance = {
@@ -779,6 +803,34 @@ object AirportAsset {
           case Some(completionCycle) => if (completionCycle <= currentCycle) AirportAssetStatus.COMPLETED else AirportAssetStatus.UNDER_CONSTRUCTION
           case None => AirportAssetStatus.BLUEPRINT
       }
+
+    def getPropertiesFromCountryStats(countryStats : Map[String, Int]) : Map[String, String] = {
+        val result = mutable.HashMap[String, String]()
+        var counter = 0
+        countryStats.foreach {
+            case (countryCode, paxCount) =>
+                result.put(s"country_pax_${countryCode}", paxCount.toString)
+        }
+        result.toMap
+    }
+
+    def getPropertiesFromPaxTypeStats(transitCount : Long, totalCount : Long) = {
+        val result = mutable.HashMap[String, String]()
+        result.put("transit_pax_count", transitCount.toString)
+        result.put("total_pax_count", totalCount.toString)
+        result.toMap
+    }
+
+    def fromPropertiesToCountryStats(properties : Map[String, String]) : List[(CountryCode, Long)] = {
+        val countryProperties = properties.filter(_._1.startsWith("country_pax_"))
+        val countryStats = ListBuffer[(CountryCode, Long)]()
+        countryProperties.foreach {
+            case(key, paxCount) =>
+            val countryCode = key.substring("country_pax_".length)
+            countryStats.append((countryCode, paxCount.toLong))
+        }
+        countryStats.toList
+    }
 }
 
 
@@ -812,6 +864,6 @@ object AirportAssetStatus extends Enumeration {
 
 //history entries are designed to be loosely coupled with asset itself, make no direct reference back nor asset has reference to it
 case class AirportAssetBoostHistory(assetId : Int, level : Int, boostType: AirportBoostType.Value, value : Double, gain : Double, upgradeFactor : Double, cycle : Int)
-case class AirportAssetPropertiesHistory(assetId : Int, properties : Map[String, Long], cycle : Int)
+case class AirportAssetPropertiesHistory(assetId : Int, properties : Map[String, String], cycle : Int)
 
 

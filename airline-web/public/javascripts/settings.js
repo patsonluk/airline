@@ -37,7 +37,12 @@ function refreshWallpaper() {
         if ($.cookie('wallpaperIndex')) {
             wallpaperIndex = parseInt($.cookie('wallpaperIndex'))
         }
-        template = wallpaperTemplates[wallpaperIndex]
+        if (wallpaperIndex < wallpaperTemplates.length) {
+            template = wallpaperTemplates[wallpaperIndex]
+        } else { //somehow an index that does not exist, might happen when wallpaper list switches
+            template = wallpaperTemplates[0]
+        }
+
     }
 
 

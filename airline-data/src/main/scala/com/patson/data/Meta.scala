@@ -2092,7 +2092,7 @@ object Meta {
       "asset INTEGER, " +
       "property VARCHAR(256), " +
       "cycle INT, " +
-      "value BIGINT, " +
+      "value VARCHAR(256), " +
       "PRIMARY KEY (asset, property, cycle)," +
       "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

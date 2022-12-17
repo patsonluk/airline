@@ -62,8 +62,9 @@ object PassengerSimulation {
     //10 random
     //findRandomRoutes(airportGroups(0)(0), airportGroups(4)(0), links.toList, 10)
   }
-  
-  def passengerConsume[T <: Transport](demand : List[(PassengerGroup, Airport, Int)], links : List[T]) : (Map[(PassengerGroup, Airport, Route), Int], Map[(PassengerGroup, Airport), Int]) = {
+  case class PassengerConsumptionResult(consumptionByRoutes : Map[(PassengerGroup, Airport, Route), Int], missedDemand : Map[(PassengerGroup, Airport), Int])
+
+  def passengerConsume[T <: Transport](demand : List[(PassengerGroup, Airport, Int)], links : List[T]) : PassengerConsumptionResult = {
     val consumptionResult = ListBuffer[(PassengerGroup, Airport, Int, Route)]()
     val missedDemandChunks = ListBuffer[(PassengerGroup, Airport, Int)]()
     val consumptionCycleMax = 10; //try and rebuild routes 10 times
@@ -240,8 +241,8 @@ object PassengerSimulation {
       case(passengerGroup, toAirport, passengerCount, route) => (passengerGroup, toAirport, route)
     }.mapValues { consumptions => consumptions.map(_._3).sum }
 
+    println("Collapsed consumption map size: " + collapsedMap.size)
 
-    println("Collasped consumption map size: " + collapsedMap.size)
 
     val missedMap = missedDemandChunks.groupBy {
       case(passengerGroup, toAirport, passengerCount) => (passengerGroup, toAirport)
@@ -260,7 +261,7 @@ object PassengerSimulation {
 //
 //    LinkSource.saveLinkConsumptions(soldLinks)
 
-    (collapsedMap.toMap, missedMap)
+    PassengerConsumptionResult(collapsedMap.toMap, missedMap)
   }
 
   val ROUTE_COST_TOLERANCE_FACTOR = 1.5
@@ -590,7 +591,7 @@ object PassengerSimulation {
 //    links.toList
 //  }
 
- 
+
   /**
    * Find the shortest routes from the fromAirport to ALL the toAirport
    * Returns a map with valid route in format of
@@ -725,6 +726,7 @@ object PassengerSimulation {
       var foundSolution = false
       var hasFlight = false
       var route = ListBuffer[LinkConsideration]()
+      val visitedAssetsListBuffer = ListBuffer[AirportAsset]()
       var hopCounter = 0
       while (!foundSolution && !noSolution) {
         val link = predecessorMap.get(walker)
@@ -732,6 +734,10 @@ object PassengerSimulation {
           route.prepend(link)
           if (link.link.transportType == TransportType.FLIGHT) {
             hasFlight = true
+          }
+          assetDiscountByAirportId.get(walker).foreach { _.foreach {
+              case(_, visitedAssetsOfThisAirport) => visitedAssetsListBuffer.addAll(visitedAssetsOfThisAirport)
+            }
           }
           walker = link.from.id
           if (walker == from.id && hasFlight) { //at least 1 leg has to be a flight. We don't want route with no flights
@@ -743,7 +749,12 @@ object PassengerSimulation {
         hopCounter += 1        
       }
       if (foundSolution) {
-        resultMap.put(to, Route(route.toList, distanceMap.get(to.id)))
+        if (visitedAssetsListBuffer.isEmpty) {
+          resultMap.put(to, Route(route.toList, distanceMap.get(to.id)))
+        } else {
+          resultMap.put(to, Route(route.toList, distanceMap.get(to.id), visitedAssetsListBuffer.toList))
+        }
+
       }  
     }
     
