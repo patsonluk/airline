@@ -973,20 +973,27 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 	var data = []
 
 	$.each(dataSource, function(key, dataEntry) {
-		var entry = {
-			label : dataEntry[keyName],
-			value : dataEntry[valueName]
-		}
-		
+	    var keyLabel, dataValue
+
+	    if (keyName && valueName) {
+            keyLabel = dataEntry[keyName],
+            dataValue = dataEntry[valueName]
+        } else {
+            keyLabel = key
+            dataValue = dataEntry
+        }
+
+        var entry = { label : keyLabel, value : dataValue }
+
 		if (dataEntry.color) {
 			entry.color = dataEntry.color
-		} else if (defaultPieColors[dataEntry[keyName]]) {
-		    entry.color = defaultPieColors[dataEntry[keyName]]
+		} else if (defaultPieColors[keyLabel]) {
+		    entry.color = defaultPieColors[keyLabel]
 		} else {
-		    entry.color = colorFromString(dataEntry[keyName])
+		    entry.color = colorFromString(keyLabel)
 		}
 		
-		if (currentKey && dataEntry[keyName] == currentKey) {
+		if (currentKey && keyLabel == currentKey) {
 			entry.issliced = "1"
 		}
 		

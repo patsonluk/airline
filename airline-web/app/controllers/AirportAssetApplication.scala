@@ -1,7 +1,9 @@
 package controllers
 
 import com.patson.data.{AirlineSource, AirportAssetSource, CycleSource}
+import com.patson.model.AirportAssetType.PassengerCostModifier
 import com.patson.model._
+import com.patson.util.CountryCache
 import controllers.AuthenticationObject.AuthenticatedAirline
 import play.api.libs.json._
 import play.api.mvc._
@@ -30,13 +32,23 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         "boosts" -> entry.boosts,
         "id" -> entry.id,
         "baseBoosts" -> entry.baseBoosts,
-        "publicProperties" -> computeAssetProperties(entry, entry.publicProperties())
+        "publicProperties" -> computeAssetProperties(entry, entry.publicProperties)
       )
 
       entry.completionCycle.foreach { completionCycle =>
         result = result + ("completionDuration" -> JsNumber(completionCycle - CycleSource.loadCycle()))
       }
+
+      if (entry.isInstanceOf[PassengerCostModifier] && entry.propertyHistoryLastCycle.isDefined) {
+        result = result ++ Json.obj(
+          "countryRanking" -> entry.paxByCountryCodeLastCycle.toList.sortBy(_._2)(Ordering[Long].reverse).map {
+            case (countryCode, paxCount) => Json.obj("countryCode" -> countryCode, "countryName" -> CountryCache.getCountry(countryCode).get.name, "passengerCount" -> paxCount)
+          },
+          "transitPax" -> entry.transitPaxLastCycle,
+          "destinationPax" -> entry.destinationPaxLastCycle)
+      }
       result
+
     }
   }
 
@@ -48,7 +60,9 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         ("expense" -> JsNumber(entry.expense)) +
         ("revenue" -> JsNumber(entry.revenue)) +
         ("performanceApprox" -> JsNumber(performanceApprox)) + //don't show the actual value. more fun if we hide some details :)
-        ("privateProperties" -> Json.toJson(computeAssetProperties(entry, entry.privateProperties())))
+        ("privateProperties" -> Json.toJson(computeAssetProperties(entry, entry.privateProperties)))
+
+
 
       result
     }

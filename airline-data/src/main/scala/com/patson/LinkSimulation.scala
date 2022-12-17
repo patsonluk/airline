@@ -1,5 +1,6 @@
 package com.patson
 
+import com.patson.PassengerSimulation.PassengerConsumptionResult
 import com.patson.model._
 import com.patson.data._
 
@@ -38,7 +39,7 @@ object LinkSimulation {
 
     simulateLinkError(flightLinks)
     
-    val (consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], missedPassengerResult : immutable.Map[(PassengerGroup, Airport), Int])= PassengerSimulation.passengerConsume(demand, links)
+    val PassengerConsumptionResult(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], missedPassengerResult : immutable.Map[(PassengerGroup, Airport), Int])= PassengerSimulation.passengerConsume(demand, links)
     
     //generate statistic 
     println("Generating flight stats")
@@ -541,7 +542,7 @@ object LinkSimulation {
     val scoresByAirline = mutable.HashMap[Airline, BigDecimal]()
 
     olympicsConsumptions.foreach {
-      case ((_, _, Route(links, _, _)), passengerCount) =>
+      case ((_, _, Route(links, _, _, _)), passengerCount) =>
         links.foreach { link =>
           if (link.link.transportType == TransportType.FLIGHT) {
             val existingScore : BigDecimal = scoresByAirline.getOrElse(link.link.airline, 0)

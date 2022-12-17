@@ -361,32 +361,61 @@ object AirportAssetSource {
     }
   }
 
-  def loadAirportPropertyHistoryByAssetId(assetId : Int) : List[AirportAssetPropertiesHistory] = {
-    val queryString = s"SELECT * FROM $AIRPORT_ASSET_PROPERTY_HISTORY_TABLE where asset = ?";
+  def loadAirportPropertyHistoryByAssetId(assetId : Int) = {
+    loadAirportPropertyHistoryByCriteria(List(("asset", assetId)))
+  }
+
+  def loadAirportPropertyHistoryByAssetIdAndCycle(assetId : Int, cycle : Int) = {
+    val result = loadAirportPropertyHistoryByCriteria(List(("asset", assetId), ("cycle", cycle)))
+    if (result.length == 1) {
+      Some(result(0))
+    } else if (result.length > 1) { //unexpected
+      println(s"loadAirportPropertyHistoryByAssetIdAndCycle expects 1 result but found ${result.length}")
+      Some(result(0))
+    } else {
+      None
+    }
+  }
+
+  def loadAirportPropertyHistoryByCriteria(criteria : List[(String, Any)]) : List[AirportAssetPropertiesHistory] = {
+    var queryString = s"SELECT * FROM $AIRPORT_ASSET_PROPERTY_HISTORY_TABLE";
+
+    if (!criteria.isEmpty) {
+      queryString += " WHERE "
+      for (i <- 0 until criteria.size - 1) {
+        queryString += criteria(i)._1 + " = ? AND "
+      }
+      queryString += criteria.last._1 + " = ?"
+    }
+
 
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement(queryString)
-      preparedStatement.setObject(1, assetId)
+
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._2)
+      }
 
       val resultSet = preparedStatement.executeQuery()
-      val result = mutable.Map[Int, mutable.Map[String, Long]]()
+      val result = mutable.Map[(Int, Int), mutable.Map[String, String]]() //key (assetId, cycle)
       while (resultSet.next()) {
         val assetId = resultSet.getInt("asset")
         val propertyKey = resultSet.getString("property")
-        val value = resultSet.getLong("value")
+        val value = resultSet.getString("value")
         val cycle = resultSet.getInt("cycle")
-        val cycleProperties = result.getOrElseUpdate(cycle, mutable.Map[String, Long]())
+        val cycleProperties = result.getOrElseUpdate((assetId, cycle), mutable.Map[String, String]())
         cycleProperties.put(propertyKey, value)
       }
 
       result.map {
-        case(cycle, properties) => AirportAssetPropertiesHistory(assetId, properties.toMap, cycle)
+        case((assetId, cycle), properties) => AirportAssetPropertiesHistory(assetId, properties.toMap, cycle)
       }.toList
     } finally {
       connection.close()
     }
   }
+
 
 
   def saveAirportBoostHistory(entries : List[AirportAssetBoostHistory]) = {
@@ -425,7 +454,7 @@ object AirportAssetSource {
           preparedStatement.setInt(1, entry.assetId)
           preparedStatement.setString(2, property)
           preparedStatement.setInt(3, entry.cycle)
-          preparedStatement.setLong(4, value)
+          preparedStatement.setString(4, value)
           preparedStatement.executeUpdate()
         }
       }

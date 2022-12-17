@@ -1880,7 +1880,7 @@ function showLinkComposition(linkId) {
 
 	    	updateTopCountryComposition(result.country)
 	    	updatePassengerTypeComposition(result.passengerType)
-	    	updatePrefernceTypeComposition(result.preferenceType)
+	    	updatePreferenceTypeComposition(result.preferenceType)
 	    	updateTopAirportComposition(result.airport)
 	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
 	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
@@ -2442,25 +2442,25 @@ function updateTopAirportComposition(airportComposition) {
 	});
 }
 
-function updatePassengerTypeComposition(countryComposition) {
-	countryComposition = countryComposition.sort(function (a, b) {
+function updatePassengerTypeComposition(typeComposition) {
+	typeComposition = typeComposition.sort(function (a, b) {
 	    return b.passengerCount - a.passengerCount 
 	});
 	
 	$('#linkCompositionModal .passengerTypeTable .table-row').remove()
-	$.each(countryComposition, function(key, entry) {
+	$.each(typeComposition, function(key, entry) {
 		$('#linkCompositionModal .passengerTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 
-function updatePrefernceTypeComposition(countryComposition) {
-	countryComposition = countryComposition.sort(function (a, b) {
+function updatePreferenceTypeComposition(preferenceComposition) {
+	preferenceComposition = preferenceComposition.sort(function (a, b) {
 	    return b.passengerCount - a.passengerCount 
 	});
 	
 	$('#linkCompositionModal .preferenceTypeTable .table-row').remove()
-	$.each(countryComposition, function(key, entry) {
+	$.each(preferenceComposition, function(key, entry) {
 		$('#linkCompositionModal .preferenceTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});

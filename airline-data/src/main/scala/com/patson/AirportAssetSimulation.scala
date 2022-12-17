@@ -1,15 +1,16 @@
 package com.patson
 
 import com.patson.data.{AirlineSource, AirportAssetSource, DelegateSource}
+import com.patson.model.Country.CountryCode
 import com.patson.model._
 
 import scala.collection.mutable.ListBuffer
 import scala.math.BigDecimal.RoundingMode
-import scala.collection.mutable
+import scala.collection.{MapView, mutable}
 
 object AirportAssetSimulation {
 
-  def computePaxStats(airportIds : Set[Int], linkRidershipDetails : Map[(PassengerGroup, Airport, Route), Int]) : Map[Int, PassengerStats] = {
+  def computeAirportPaxStats(airportIds : Set[Int], linkRidershipDetails : Map[(PassengerGroup, Airport, Route), Int]) : Map[Int, PassengerStats] = {
 
     val arrivalGroupsByDestAirportIds = mutable.Map[Int, ListBuffer[(PassengerGroup, Int)]]() //key is arrival airport ID
     val departureGroupsByAirportIds = mutable.Map[Int, ListBuffer[(PassengerGroup, Int)]]() //key is departure airport ID
@@ -62,13 +63,60 @@ object AirportAssetSimulation {
     }.toMap
   }
 
+  case class PaxAssetStats(countryStats :MapView[CountryCode, Int], transitCount: Int, totalCount : Int)
+  def computeAssetPaxStats(linkRidershipDetails : Map[(PassengerGroup, Airport, Route), Int]) : Map[AirportAsset, PaxAssetStats] = {
+    val flattenedList : List[(AirportAsset, (PassengerGroup, Int))] = linkRidershipDetails.toList.flatMap {
+      case((paxGroup, airport, route), paxCount) => route.visitedAssets.map( asset => (asset, (paxGroup, paxCount)))
+    }
+    val paxGroupByAsset : MapView[AirportAsset, List[(PassengerGroup, Int)]] = flattenedList.groupBy(_._1).view.mapValues {
+      list => list.map(_._2)
+    }
+
+    val countryPaxByAsset : MapView[AirportAsset, MapView[CountryCode, Int]] = paxGroupByAsset.mapValues { paxGroupList =>
+      paxGroupList.map {
+        case (paxGroup, paxCount) => (paxGroup.fromAirport.countryCode, paxCount)
+      }.groupBy(_._1).view.mapValues { countryCodePaxCountList =>
+         countryCodePaxCountList.map(_._2).sum
+      }
+    }
+
+    val flattenIsDestinationList : List[(AirportAsset, (Boolean, Int))] = linkRidershipDetails.toList.flatMap {
+      case ((paxGroup, destinationAirport, route), paxCount) => route.visitedAssets.map(asset => (asset, (asset.airport.id == destinationAirport.id, paxCount)))
+    }
+
+    val finalResult = mutable.HashMap[AirportAsset, PaxAssetStats]()
+
+    val isDestinationPaxByAsset : MapView[AirportAsset, List[(Boolean, Int)]] = flattenIsDestinationList.groupBy(_._1).view.mapValues(list => list.map(_._2))
+    isDestinationPaxByAsset.foreach {
+      case(asset, isDestinationPaxList) =>
+        var transitPax = 0
+        var totalPax = 0
+        isDestinationPaxList.foreach {
+          case (isFinalDestination, paxCount) =>
+            if (!isFinalDestination) {
+              transitPax += paxCount
+            }
+            totalPax += paxCount
+        }
+        //combine the 2 map, both should have same keys
+        val finalStats = PaxAssetStats(countryPaxByAsset(asset), transitPax, totalPax)
+        finalResult.put(asset, finalStats)
+    }
+    finalResult.toMap
+  }
+
+  def extractPropertiesFromStats(assetPaxStats : PaxAssetStats) : Map[String, String] = {
+    AirportAsset.getPropertiesFromCountryStats(assetPaxStats.countryStats.toMap) ++ AirportAsset.getPropertiesFromPaxTypeStats(assetPaxStats.transitCount, assetPaxStats.totalCount)
+  }
+
   def simulate(currentCycle : Int, linkRidershipDetails : Map[(PassengerGroup, Airport, Route), Int]) = {
 
     val allAssets = AirportAssetSource.loadAirportAssetsByAssetCriteria(List.empty)
     val allAssetPropertiesHistory = ListBuffer[AirportAssetPropertiesHistory]()
 
     val allAirportIds = allAssets.map(_.airport.id).toSet
-    val paxStatsByAirportId = computePaxStats(allAirportIds, linkRidershipDetails)
+    val paxStatsByAirportId = computeAirportPaxStats(allAirportIds, linkRidershipDetails) //currently use pax stats for profit computation
+    val paxStatsByAsset = computeAssetPaxStats(linkRidershipDetails)//for visited assets, fun facts - top 3 countries, total pax, transit %; Otherwise, might have to rewrite a lot of profit logic...
 
 
     allAssets.foreach { asset =>
@@ -93,11 +141,15 @@ object AirportAssetSimulation {
       asset.expense = result.expense
       asset.properties = asset.properties ++ result.properties
 
+
       AirportAssetSource.updateAirportAsset(asset)
 
-      allAssetPropertiesHistory.append(AirportAssetPropertiesHistory(asset.id, asset.properties + ("revenue" -> result.revenue) + ("expense" -> result.expense), currentCycle))
+      var propertiesHistory = asset.properties.view.mapValues(_.toString).toMap + ("revenue" -> result.revenue.toString) + ("expense" -> result.expense.toString)
+      paxStatsByAsset.get(asset).foreach { assetPaxStats => //just for fun fact, save to history only for now
+        propertiesHistory = propertiesHistory ++ extractPropertiesFromStats(assetPaxStats)
+      }
 
-      //TODO update airline finances (history/cash balance) or should this be done in Airline Sim?
+      allAssetPropertiesHistory.append(AirportAssetPropertiesHistory(asset.id, propertiesHistory , currentCycle))
     }
 
     AirportAssetSource.deleteAirportPropertiesHistory(currentCycle - 100)
@@ -113,7 +165,7 @@ object AirportAssetSimulation {
   def checkUpgradeCompletion(asset : AirportAsset, cycle : Int) : Option[(List[(AirportBoost, Double)], Double, Double)] = { //(new boost, new roi, upgrade factor)
     //if (asset.status == AirportAssetStatus.COMPLETED && !asset.upgradeApplied) {
     if (asset.completionCycle.get <= cycle && !asset.upgradeApplied) {
-      val history = asset.boostHistory()
+      val history = asset.boostHistory
       if (history.isEmpty || history.map(_.level).max < asset.level) { //double check, the upgradeApplied flag is actually good enough
         val previousLevelBoosts =
           if (history.isEmpty) { //use basic as starting point
@@ -139,7 +191,7 @@ object AirportAssetSimulation {
     val historyEntries = AirportAssetSource.loadAirportPropertyHistoryByAssetId(asset.id).sortBy(_.cycle).takeRight(10)
 
     val performances : Seq[Double] = historyEntries.map { entry =>
-      entry.properties.get("performance").getOrElse(0L) / 100.0
+      entry.properties.get("performance").map(_.toLong).getOrElse(0L) / 100.0
     }
 
     if (performances.length == 0 || asset.level == 1) {  //all rng for level 1

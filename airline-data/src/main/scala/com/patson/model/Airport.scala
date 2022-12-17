@@ -2,7 +2,7 @@ package com.patson.model
 
 import com.patson.data.CountrySource
 import com.patson.model.AirlineBaseSpecialization.{POWERHOUSE, PowerhouseSpecialization}
-import com.patson.model.AirportAssetType.TransitModifier
+import com.patson.model.AirportAssetType.{PassengerCostModifier, TransitModifier}
 import com.patson.model.airplane.Model
 
 import scala.collection.mutable.ListBuffer
@@ -25,6 +25,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] val loungesByAlliance = scala.collection.mutable.Map[Int, Lounge]()
   private[this] var assets = List[AirportAsset]()
   lazy val transitModifiers = getTransitModifiers()
+  lazy val assetPassengerCostModifiers = getPassengerCostModifiers()
 
 
   private[this] var runways = List.empty[Runway]
@@ -287,38 +288,69 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     }
   }
 
-  //positive indicates extra cost, negative indicates discount. Should be >= -1. The new cost will be sum of all modifier values. Then transitCost * (1 + x)
-  //hence -0.5 indicates 50% off
-  def computeTransitModifierValue(fromLinkFreq : Int, toLinkFreq : Int, paxlinkClass : LinkClass): Double = {
-    Math.max(-1, transitModifiers.map(_.computeModifierValue(fromLinkFreq, toLinkFreq, paxlinkClass)).sum)
+  private[this] def getPassengerCostModifiers() : List[PassengerCostModifier] = {
+    if (!assetsLoaded) {
+      println("Cannot get airline pax cost modifiers w/o assets loaded")
+      List.empty
+    } else {
+      assets.filter(asset => asset.isInstanceOf[PassengerCostModifier] && asset.level > 0).map(_.asInstanceOf[PassengerCostModifier])
+    }
   }
 
+  def computePassengerCostAssetDiscount(linkConsideration : LinkConsideration, paxGroup : PassengerGroup) : Option[(Double, List[AirportAsset])] = {
+    if (assetPassengerCostModifiers.isEmpty) {
+      None
+    } else {
+      val visitedAssets = ListBuffer[AirportAsset]()
+      var totalDiscount = 0.0
+      assetPassengerCostModifiers.foreach { costModifier =>
+        costModifier.computeDiscount(linkConsideration, paxGroup).foreach { discount =>
+          totalDiscount += discount
+          visitedAssets.append(costModifier.asInstanceOf[AirportAsset])
+        }
+      }
+      if (visitedAssets.isEmpty) {
+        None
+      } else {
+        Some(totalDiscount, visitedAssets.toList)
+      }
+    }
+  }
+  def computeTransitDiscount(fromLinkConsideration : LinkConsideration, toLinkConsideration : LinkConsideration, paxGroup : PassengerGroup): Double = {
+    if (transitModifiers.isEmpty) {
+      0
+    } else {
+      transitModifiers.map { transitModifier =>
+        transitModifier.computeTransitDiscount(fromLinkConsideration, toLinkConsideration, paxGroup)
+      }.sum
+    }
+  }
 
   def addFeature(feature : AirportFeature) = {
     this.baseFeatures += feature
   }
-  
+
   def initLounges(lounges : List[Lounge]) = {
     this.loungesByAirline.clear()
     lounges.foreach { lounge =>
       this.loungesByAirline.put(lounge.airline.id, lounge)
       lounge.allianceId.foreach {
-         allianceId => this.loungesByAlliance.put(allianceId, lounge)  
+         allianceId => this.loungesByAlliance.put(allianceId, lounge)
       }
     }
   }
-  
-  def slotFee(airplaneModel : Model, airline : Airline) : Int = { 
+
+  def slotFee(airplaneModel : Model, airline : Airline) : Int = {
     val baseSlotFee = size match {
       case 1 => 50 //small
       case 2 => 50 //medium
       case 3 => 80 //large
       case 4 => 150  //international class
       case 5 => 250
-      case 6 => 350 
+      case 6 => 350
       case _ => 500 //mega airports - not suitable for tiny jets
     }
-    
+
     import Model.Type._
     val multiplier = airplaneModel.airplaneType match {
       case LIGHT => 1
@@ -330,7 +362,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case JUMBO => 18
       case SUPERSONIC => 12
     }
-    
+
     //apply discount if it's a base
     val discount = getAirlineBase(airline.id) match {
       case Some(airlineBase) =>
@@ -338,36 +370,36 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case None =>
         1 //no discount
     }
-    
+
     (baseSlotFee * multiplier * discount).toInt
   }
-  
+
   def landingFee(airplaneModel : Model) : Int = {
-    val perSeat = 
+    val perSeat =
       if (size <= 3) {
         3
       } else {
         size
       }
-    
+
     airplaneModel.capacity * perSeat
   }
-  
+
   def allowsModel(airplaneModel : Model) : Boolean = {
     runwayLength >= airplaneModel.runwayRequirement
   }
-  
+
   val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
     Math.max(0, Math.min(incomeLevel.toInt, 50) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //50% on income level, 50% on flight adjust
   }
-  
+
   private[this] def getCountry() : Country = {
     if (country.isEmpty) {
       country = CountrySource.loadCountryByCode(countryCode)
     }
     country.get
   }
-  
+
   lazy val airportRadius : Int = {
     size match {
       case 1 => 100
@@ -376,7 +408,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case _ => 0
     }
   }
-  
+
   val displayText = city + "(" + iata + ")"
 
   var loyalistEntries : List[Loyalist] = List.empty
@@ -443,15 +475,15 @@ object Airport {
     airportWithJustId.id = id
     airportWithJustId
   }
-  
+
   val MAJOR_AIRPORT_LOWER_THRESHOLD = 5
   val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
   val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
   val NON_BASE_MAX_SLOT = 70
   val MIN_RUNWAY_LENGTH = 750
-  
+
   import FlightType._
-  val qualityExpectationFlightTypeAdjust = 
+  val qualityExpectationFlightTypeAdjust =
   Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
         SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
         SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 5, 15),
@@ -471,4 +503,4 @@ object RunwayType extends Enumeration {
     val Asphalt, Concrete, Gravel, Unknown = Value
 }
 
-
+//case class AssetDiscount(waitTimeDiscount : Double, stopOverDiscount : Double)
