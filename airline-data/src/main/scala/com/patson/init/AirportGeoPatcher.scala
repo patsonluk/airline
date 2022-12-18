@@ -57,7 +57,7 @@ object AirportGeoPatcher extends App {
     val newAirports = computedAirports.filter(_.id == 0)
     val updatingAirports = computedAirports.filter(_.id > 0)
 
-    GeoDataGenerator.setAirportRunwayDetails(csvAirports, runways)
+    //GeoDataGenerator.setAirportRunwayDetails(csvAirports, runways)
     println(s"Creating ${newAirports.length} Airports")
     AirportSource.saveAirports(newAirports)
 

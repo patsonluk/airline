@@ -406,17 +406,8 @@ object GeoDataGenerator extends App {
   def setAirportRunwayDetails(csvAirports : List[CsvAirport], runwaysByCsvId : Map[Int, List[Runway]]) : Unit = {
     csvAirports.foreach {
       case (CsvAirport(airport, csvId, _)) =>
-        runwaysByCsvId.get(csvId) match {
-        case Some(runways) =>
-          if (runways.length > 0) {
-            airport.setRunways(runways)
-            println(s"$airport has max runway ${airport.runwayLength}")
-          } else {
-            println(s"$airport has no runway")
-          }
-        case None =>
-          println(s"$airport has no runway")
-      }
+        val runways = runwaysByCsvId.get(csvId).getOrElse(List.empty)
+        airport.setRunways(runways)
     }
   }
 
