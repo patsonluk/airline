@@ -537,8 +537,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
       assert(transitHighAsset.toDouble / iterations > 0.4 && transitHighAsset.toDouble / iterations < 0.6)
       assert(transitHighAsset.toDouble / iterations > transitLowAsset.toDouble / iterations)
       assert(transitLowAsset.toDouble / iterations > transitNoAsset.toDouble / iterations)
-      assert(transitNoAsset.toDouble / iterations < 0.05 && transitNoAsset.toDouble / iterations > 0) //still some with no asset noone
-
+      assert(transitNoAsset.toDouble / iterations > 0) //still some with no asset
     }
 
     "some, but less pax might stop-over an airport if it's on the way and has attractive asset after short trip" in {
@@ -624,7 +623,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         assertAssetEffect(AirportAssetType.CONVENTION_CENTER, EffectBoundary(0.49, 0.51, 0.58, 0.61))
       }
       "MuseumAssetType" in {
-        assertAssetEffect(AirportAssetType.MUSEUM, EffectBoundary(0.52, 0.54, 0.505, 0.525))
+        assertAssetEffect(AirportAssetType.MUSEUM, EffectBoundary(0.52, 0.54, 0.50, 0.525))
       }
       "StadiumAssetType" in {
         assertAssetEffect(AirportAssetType.STADIUM, EffectBoundary(0.51, 0.53, 0.5, 0.52))
@@ -653,7 +652,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
 
     airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
 
-    airport2a.initAssets(List(AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, assetType, 0), Some(airline1), "Test Asset", 10, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0)))
+    airport2a.initAssets(List(AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, assetType, 0), Some(airline1), "Test Asset", AirportAsset.MAX_LEVEL, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0)))
     airport2b.initAssets(List.empty)
 
     val countryOpenness = Map[String, Int](
