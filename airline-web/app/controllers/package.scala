@@ -30,21 +30,22 @@ package object controllers {
     }
 
     def writes(airline: Airline): JsValue = {
-      var result = JsObject(List(
-      "id" -> JsNumber(airline.id),
-      "name" -> JsString(airline.name),
-      "reputation" -> JsNumber(airline.getReputation()),
-      "gradeValue" -> JsNumber(airline.airlineGrade.value),
-      "airlineCode" -> JsString(airline.getAirlineCode()),
-      "baseCount" -> JsNumber(airline.getBases().size),
-      "isGenerated" -> JsBoolean(airline.isGenerated)
-      ))
+      var result = Json.obj(
+        "id" -> airline.id,
+        "name" -> airline.name,
+        "reputation" -> airline.getReputation(),
+        "gradeValue" -> airline.airlineGrade.value,
+        "gradeDescription" -> airline.airlineGrade.description,
+        "airlineCode" -> airline.getAirlineCode(),
+        "baseCount" -> airline.getBases().size,
+        "isGenerated" -> airline.isGenerated
+      )
 
       if (airline.getCountryCode.isDefined) {
-        result = result.asInstanceOf[JsObject] + ("countryCode" -> JsString(airline.getCountryCode.get))
+        result = result + ("countryCode" -> JsString(airline.getCountryCode.get))
       }
       airline.getHeadQuarter().foreach { headquarters =>
-        result = result.asInstanceOf[JsObject] +
+        result = result +
         ("headquartersAirportName" -> JsString(headquarters.airport.name)) +
         ("headquartersCity" -> JsString(headquarters.airport.city)) +
         ("headquartersAirportIata" -> JsString(headquarters.airport.iata))
@@ -635,17 +636,13 @@ package object controllers {
     ))
   }
 
-//  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
-//    def writes(requirement : NegotiationRequirement): JsValue = {
-//      var result = Json.arr()
-//      odds.getFactors.foreach {
-//        case (factor, value) =>
-//          result = result.append(Json.obj("description" -> JsString(NegotationFactor.description(factor)),
-//            "value"-> JsNumber(value)))
-//      }
-//      result
-//    }
-//  }
+  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
+    def writes(requirement : NegotiationRequirement) : JsValue = {
+      Json.obj(
+        "description" -> JsString(requirement.description),
+        "value" -> JsNumber(requirement.value))
+    }
+  }
 
   case class NegotiationInfoWrites(link : Link) extends Writes[NegotiationInfo] {
     def writes(info : NegotiationInfo): JsValue = {
@@ -718,16 +715,6 @@ package object controllers {
       }
 
       busyDelegateJson
-    }
-  }
-
-
-
-  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
-    def writes(requirement : NegotiationRequirement): JsValue = {
-      Json.obj(
-        "description" -> JsString(requirement.description),
-        "value" -> JsNumber(requirement.value))
     }
   }
 
