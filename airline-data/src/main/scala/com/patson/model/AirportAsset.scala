@@ -376,7 +376,7 @@ object AirportAssetType extends Enumeration {
         override def computeDiscount(linkConsideration : LinkConsideration, paxGroup : PassengerGroup) : Option[Double] = {
             if (paxGroup.preference.getPreferenceType == FlightPreferenceType.SPEED) {
                 None
-            } else if (Random.nextInt(100) < probability){
+            } else if (Random.nextInt(100) < Math.max(1, probability * level / AirportAsset.MAX_LEVEL)){
                 Some(computeAssetDiscount(paxGroup))
             } else {
                 None
@@ -386,15 +386,17 @@ object AirportAssetType extends Enumeration {
 
         def computeAssetDiscount(paxGroup : PassengerGroup) : Double = {
             if (paxGroup.passengerType == PassengerType.BUSINESS) {
-                businessDiscount
+                businessDiscount * (0.5 + 0.5 * level / AirportAsset.MAX_LEVEL)
             } else {
-                touristDiscount
+                touristDiscount * (0.5 + 0.5 * level / AirportAsset.MAX_LEVEL)
             }
         }
 
         def probability : Int //probability in percentage that this asset will be picked for stop over consideration
         def touristDiscount : Double //max discount to fromCost at max level for Passenger Type NON BUSINESS (mostly tourist, sometimes olympic pax too), for example 0.1 means this asset can impost 10% discount to the from cost
         def businessDiscount : Double //max discount to fromCost at max level for Passenger Type BUSINESS
+
+        def level : Int
     }
 
 

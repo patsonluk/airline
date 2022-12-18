@@ -464,6 +464,83 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
       assert(direct.toDouble / iterations > 0.7)
     }
 
+
+    "asset level matter" in {
+      val airport1 = Airport("HKG", "", "Airport 1", 22.308901, 113.915001, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2a = Airport("SFO", "", "Airport 2a", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 2)
+      val airport2b = Airport("SFO", "", "Airport 2b", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 3)
+      val airport2c = Airport("SFO", "", "Airport 2c", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 4)
+      val airport3 = Airport("LAS", "", "Airport 3", 36.08010101, -115.1520004, "C2", "", "", 1, 0, 0, 0, id = 5)
+
+
+      val airline1 = Airline("airline 1", id = 1)
+      airline1.setBases(List[AirlineBase](AirlineBase(airline1, airport1, "C1", 1, 1, headquarter = true)))
+
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
+
+      airport2a.initAssets(
+        List(
+          AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, AirportAssetType.CONVENTION_CENTER), Some(airline1), "Test Asset", 10, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0),
+        ))
+
+      airport2b.initAssets(
+        List(
+          AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2b, AirportAssetType.CONVENTION_CENTER), Some(airline1), "Test Asset", 2, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0),
+        ))
+
+
+      val countryOpenness = Map[String, Int](
+        "C1" -> 10,
+        "C2" -> 10)
+
+      val links = List(
+        buildLink(airline1, airport1, airport2a),
+        buildLink(airline1, airport1, airport2b),
+        buildLink(airline1, airport1, airport2c),
+        buildLink(airline1, airport2a, airport3),
+        buildLink(airline1, airport2b, airport3),
+        buildLink(airline1, airport2c, airport3),
+      )
+
+      assignLinkIds(links)
+      val pool = DemandGenerator.getFlightPreferencePoolOnAirport(fromAirport)
+
+      val toAirports = Set[Airport](airport3)
+
+      val activeAirports = links.flatMap(link => Set(link.from.id, link.to.id)).to(collection.mutable.Set)
+
+      var transitHighAsset = 0
+      var transitLowAsset = 0
+      var transitNoAsset = 0
+
+      for (i <- 0 until iterations) {
+        val economyPassengerGroup = PassengerGroup(airport1, pool.draw(ECONOMY, airport1, airport3), PassengerType.BUSINESS)
+        val result : Map[PassengerGroup, Map[Airport, Route]] =
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports),
+            links,
+            activeAirports,
+            countryOpenness = countryOpenness)
+
+        val firstLink = result(economyPassengerGroup)(airport3).links(0).link
+        if (firstLink.to == airport2a) {
+          transitHighAsset += 1
+        } else if (firstLink.to == airport2b) {
+          transitLowAsset += 1
+        } else if (firstLink.to == airport2c) {
+          transitNoAsset += 1
+        } else { //shouldn't be!
+          fail(s"Unexpected first link $firstLink")
+        }
+      }
+
+      assert(transitHighAsset.toDouble / iterations > 0.4 && transitHighAsset.toDouble / iterations < 0.6)
+      assert(transitHighAsset.toDouble / iterations > transitLowAsset.toDouble / iterations)
+      assert(transitLowAsset.toDouble / iterations > transitNoAsset.toDouble / iterations)
+      assert(transitNoAsset.toDouble / iterations < 0.05 && transitNoAsset.toDouble / iterations > 0) //still some with no asset noone
+
+    }
+
     "some, but less pax might stop-over an airport if it's on the way and has attractive asset after short trip" in {
       val airport1 = Airport("LAS", "", "Airport 1",  36.08010101, -115.1520004, "C2", "", "", 1, 0, 0, 0, id = 1)
       val airport2a = Airport("SFO", "", "Airport 2a", 37.61899948120117, -122.375, "C2", "", "", 1, 0, 0, 0, id = 2)
