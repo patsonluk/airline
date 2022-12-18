@@ -1,7 +1,6 @@
 package com.patson.init
 
 import java.nio.file.Paths
-
 import akka.NotUsed
 
 import scala.concurrent.Future
@@ -9,6 +8,7 @@ import scala.util.{Failure, Success}
 import akka.actor.ActorSystem
 import akka.stream.IOResult
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.sys.process.ProcessImpl
 //import akka.stream.scaladsl.{FileIO, Flow, Framing, RunnableGraph, Sink, Source}
@@ -88,6 +88,8 @@ object GeoDataGenerator extends App {
     placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || placeCode == "PPLA3" || (placeCode == "PPL" && (population >= 100000 || !countryCode.equals("US")))
   }
 
+
+
   def getRunway() : Future[Map[Int, List[Runway]]] = {
     Future {
       val result = scala.collection.mutable.HashMap[Int, collection.mutable.ListBuffer[Runway]]()
@@ -141,9 +143,41 @@ object GeoDataGenerator extends App {
         //          result += new City(infoArray(1), infoArray(4).toDouble, infoArray(5).toDouble, infoArray(8), infoArray(14).toInt, incomeInfo.get(infoArray(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
         //        }
       }
+
+
+      val icaoToCsvId = mutable.HashMap[Icao, Int]()
+      //process patches, unfortunately to avoid flow, we have to load the csv airport ID here
+      Await.result(GeoDataGenerator.getAirport(), Duration.Inf).map { csvAirport =>
+        val rawAirport = csvAirport.airport
+        val csvAirportId = csvAirport.csvAirportId
+        icaoToCsvId.put(rawAirport.icao, csvAirportId)
+      }
+
+      loadPatchRunways().foreach {
+        case (icao, patchRunways) =>
+          icaoToCsvId.get(icao) match {
+            case Some(csvId) =>
+              val list = result.getOrElseUpdate(csvId, ListBuffer[Runway]())
+              //make sure no duplicates
+              patchRunways.foreach { patchRunway =>
+                list.find(_.code.equals(patchRunway.code)) match {
+                  case Some(duplicate) =>
+                    println(s"Skipping patch runways for $icao as same code for runway $duplicate is already found for $patchRunway!")
+                  case None =>
+                    list += patchRunway
+                }
+              }
+
+            case None =>
+              println(s"Cannot patch runways for $icao as CSV id not found!")
+          }
+
+      }
       result.view.mapValues(_.toList).toMap
     }
   }
+
+  type Icao = String
 
   def getAirport() : Future[List[CsvAirport]] = {
     Future {
@@ -511,5 +545,37 @@ object GeoDataGenerator extends App {
     println(s"Saved ${countries.length} countries")
 
     CountryMutualRelationshipGenerator.mainFlow()
+  }
+
+
+  def loadPatchRunways() : Map[Icao, List[Runway]] = {
+    val patchRunwayFiles = List("runway-patch-2022-dec.csv")
+
+    val result = scala.collection.mutable.HashMap[String, collection.mutable.ListBuffer[Runway]]()
+    patchRunwayFiles.foreach { file =>
+      for (line : String <- Source.fromFile(file).getLines) {
+        val info = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1).map { token =>
+          if (token.startsWith("\"") && token.endsWith("\"")) {
+            token.substring(1, token.length() - 1)
+          } else {
+            token
+          }
+        }
+
+        try {
+          val length = info(1).toInt
+
+          val icao = info(0)
+          val code = info(3)
+
+          val runway = Runway(length, code, RunwayType.withName(info(2)), true)
+          val list = result.getOrElseUpdate(icao, ListBuffer[Runway]())
+          list += runway
+        } catch {
+          case _ : NumberFormatException => None
+        }
+      }
+    }
+    result.view.mapValues(_.toList).toMap
   }
 }

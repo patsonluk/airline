@@ -22,7 +22,6 @@ object AirportGeoPatcher extends App {
   mainFlow
 
   def mainFlow() {
-    val runways : Map[Int, List[Runway]] = Await.result(GeoDataGenerator.getRunway(), Duration.Inf)
     val existingAirports = AirportSource.loadAllAirports(false)
     val iataToGeneratedId : Map[String, Int] = existingAirports.map(airport => (airport.iata, airport.id)).toMap //just load to get IATA to our generated ID
 
@@ -35,7 +34,9 @@ object AirportGeoPatcher extends App {
         case Some(savedId) => CsvAirport(rawAirport.copy(id = savedId), csvAirportId, scheduleService)
         case None => csvAirport
       }
+
     }
+    val runways : Map[Int, List[Runway]] = Await.result(GeoDataGenerator.getRunway(), Duration.Inf)
 
     val incomeInfo = getIncomeInfo()
     val getCityFuture = getCity(incomeInfo)
@@ -63,9 +64,9 @@ object AirportGeoPatcher extends App {
     println(s"Updating ${updatingAirports.length} Airports")
     AirportSource.updateAirports(updatingAirports)
 
-    val deletingAirportIds = existingAirports.map(_.id).diff(computedAirports.map(_.id))
-    println(s"Deleting ${deletingAirportIds.length} Airports")
-    AirportSource.deleteAirports(deletingAirportIds)
+//    val deletingAirportIds = existingAirports.map(_.id).diff(computedAirports.map(_.id))
+//    println(s"Deleting ${deletingAirportIds.length} Airports")
+//    AirportSource.deleteAirports(deletingAirportIds)
 
 
     AirportFeaturePatcher.patchFeatures()
