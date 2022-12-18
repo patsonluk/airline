@@ -142,9 +142,8 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	var businessValue = linkValues.hasOwnProperty('business') ? linkValues.business : '-'
 	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
 
-    boolean addComma = (economyValue >= 1_000_000 || businessValue >= 1_000_000 || firstValue >= 1_000_000)
 
-	if (addComma) {
+	if (economyValue >= 1_000_000 || businessValue >= 1_000_000 || firstValue >= 1_000_000) {
  	    return prefix + commaSeparateNumber(economyValue) + suffix + " / " + prefix + commaSeparateNumber(businessValue) + suffix + " / " + prefix + commaSeparateNumber(firstValue) + suffix
     } else {
         return prefix + economyValue + suffix + " / " + prefix + businessValue + suffix + " / " + prefix + firstValue + suffix
