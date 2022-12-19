@@ -872,7 +872,7 @@ function updateAirportLoyalistDetails(airport) {
 	    	assignAirlineColors(currentData, "airlineId")
 
 	    	plotPie(currentData, activeAirline ? activeAirline.name : null , $("#airportCanvas .loyalistPie"), "airlineName", "amount")
-	    	plotLoyalistHistoryChart(result.history, $("#airportCanvas .loyalistHistoryChart"))
+	    	plotLoyalistHistoryChart(result.history, $("#loyalistHistoryModal .loyalistHistoryChart"))
             populateNavigation($('#airportCanvas'))
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -880,6 +880,10 @@ function updateAirportLoyalistDetails(airport) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function showLoyalistHistoryModal() {
+    $("#loyalistHistoryModal").fadeIn(500)
 }
 
 function refreshAirportExtendedDetails(airport) {
