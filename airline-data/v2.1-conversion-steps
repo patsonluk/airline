@@ -1,5 +1,6 @@
 1. Ensure https://github.com/patsonluk/airline/issues/541 is taken care of
-2. Run AirportGeoPatcher for new runways
+2. Run AirportGeoPatcher for new runways `sbt "runMain com.patson.init.AirportGeoPatcher"`
 3. Figure out the DB changes and update QuickCreateSchema accordingly
 4. Run DB scripts
 5. Run AssetBlueprintGenerator
+6. Run model `sbt "runMain com.patson.init.AirplaneModelPatcher"`
