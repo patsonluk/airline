@@ -401,10 +401,11 @@ object AirlineGrade {
   val TOP_INTERNATIONAL_3 = AirlineGrade(12, 350, "Top International Airline III")
   val TOP_INTERNATIONAL_4 = AirlineGrade(13, 400, "Top International Airline IV")
   val TOP_INTERNATIONAL_5 = AirlineGrade(14, 450, "Top International Airline V")
-  val LEGENDARY = AirlineGrade(15, 500, "Legendary Airline")
+  val EPIC = AirlineGrade(15, 500, "Epic Airline")
   val ULTIMATE = AirlineGrade(16, 550, "Ultimate Airline")
-  val CELESTIAL = AirlineGrade(17, 600, "Celestial Airline")
-  val MYTHIC = AirlineGrade(18, 700, "Mythic Airline")
+  val LEGENDARY = AirlineGrade(17, 600, "Legendary Airline")
+  val CELESTIAL = AirlineGrade(18, 700, "Celestial Airline")
+  val MYTHIC = AirlineGrade(19, 800, "Mythic Airline")
 
   def addGrade(grade : AirlineGrade) = {
     allGrades.append(grade)
