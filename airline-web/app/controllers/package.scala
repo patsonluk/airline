@@ -284,6 +284,16 @@ package object controllers {
     }
   }
 
+  implicit object AirlineBaseSpecializationWrites extends OWrites[AirlineBaseSpecialization.Value] {
+    override def writes(specialization : AirlineBaseSpecialization.Value) : JsObject = {
+      Json.obj(
+        "id" -> specialization.toString,
+        "label" -> specialization.label,
+        "descriptions" -> specialization.descriptions,
+      )
+    }
+  }
+
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {
       val airport = AirportCache.getAirport((json \ "airportId").as[Int], true).get
@@ -320,16 +330,6 @@ package object controllers {
       }
 
       jsObject
-    }
-  }
-
-  implicit object AirlineBaseSpecializationWrites extends OWrites[AirlineBaseSpecialization.Value] {
-    override def writes(specialization : AirlineBaseSpecialization.Value) : JsObject = {
-      Json.obj(
-        "id" -> specialization.toString,
-        "label" -> specialization.label,
-        "descriptions" -> specialization.descriptions,
-      )
     }
   }
 
