@@ -747,8 +747,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       "baseFactor" -> AirplaneMaintenanceUtil.BASE_MAINTENANCE_FACTOR,
       "familyFactor" -> AirplaneMaintenanceUtil.PER_FAMILY_MAINTENANCE_FACTOR,
       "modelFactor" -> AirplaneMaintenanceUtil.PER_MODEL_MAINTENANCE_FACTOR,
-      "families" -> Json.toJson(info.families.toList),
-      "models" -> Json.toJson(info.models.map(_.name).toList),
+      "families" -> Json.toJson(info.families.toList.sorted),
+      "models" -> Json.toJson(info.models.map(_.name).toList.sorted),
     ))
   }
 
