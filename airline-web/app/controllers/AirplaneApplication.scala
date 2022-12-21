@@ -741,15 +741,14 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
 
   def getMaintenanceFactor(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val ownedModels = AirplaneOwnershipCache.getOwnership(airlineId).map(_.model).toSet.toList.sortWith(_.name < _.name)
-    val ownedFamilies = ownedModels.map(_.family).toSet.toList
+    val info = AirplaneOwnershipCache.getOwnershipInfo(airlineId)
 
     Ok(Json.obj("factor" -> AirplaneMaintenanceUtil.getMaintenanceFactor(airlineId),
       "baseFactor" -> AirplaneMaintenanceUtil.BASE_MAINTENANCE_FACTOR,
       "familyFactor" -> AirplaneMaintenanceUtil.PER_FAMILY_MAINTENANCE_FACTOR,
       "modelFactor" -> AirplaneMaintenanceUtil.PER_MODEL_MAINTENANCE_FACTOR,
-      "families" -> Json.toJson(ownedFamilies),
-      "models" -> Json.toJson(ownedModels.map(_.name)),
+      "families" -> Json.toJson(info.families.toList),
+      "models" -> Json.toJson(info.models.toList),
     ))
   }
 

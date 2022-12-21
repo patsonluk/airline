@@ -3,14 +3,17 @@ package com.patson.util
 import com.patson.data.AirplaneSource
 import com.patson.model.airplane.Airplane
 
-
 object AirplaneOwnershipCache {
   import com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
 
-  val simpleCache: LoadingCache[Int, List[Airplane]] = CacheBuilder.newBuilder.maximumSize(10000).build(new SimpleLoader())
+  val simpleCache: LoadingCache[Int, AirplaneOwnershipInfo] = CacheBuilder.newBuilder.maximumSize(10000).build(new SimpleLoader())
+
+  def getOwnershipInfo(airlineId : Int) : AirplaneOwnershipInfo = {
+    simpleCache.get(airlineId)
+  }
 
   def getOwnership(airlineId : Int) : List[Airplane] = {
-    simpleCache.get(airlineId)
+    simpleCache.get(airlineId).airplanes
   }
 
   def invalidateAll() = {
@@ -22,13 +25,17 @@ object AirplaneOwnershipCache {
   }
 
 
-  class SimpleLoader() extends CacheLoader[Int, List[Airplane]] {
+  class SimpleLoader() extends CacheLoader[Int, AirplaneOwnershipInfo] {
     override def load(airlineId: Int) = {
-      AirplaneSource.loadAirplanesByOwner(airlineId)
+      AirplaneOwnershipInfo(AirplaneSource.loadAirplanesByOwner(airlineId))
     }
   }
 
 }
 
+case class AirplaneOwnershipInfo(airplanes : List[Airplane]) {
+  lazy val models = airplanes.map(_.model).toSet
+  lazy val families = models.map(_.family)
+}
 
 

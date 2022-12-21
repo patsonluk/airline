@@ -7,7 +7,7 @@ import akka.actor.Props
 import akka.actor.Actor
 import com.patson.data._
 import com.patson.stream.{CycleCompleted, CycleStart, SimulationEventStream}
-import com.patson.util.{AirlineCache, AirportCache}
+import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirplaneOwnershipInfo, AirportCache}
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -35,6 +35,7 @@ object MainSimulation extends App {
   def invalidateCaches() = {
     AirlineCache.invalidateAll()
     AirportCache.invalidateAll()
+    AirplaneOwnershipCache.invalidateAll()
   }
 
   def startCycle(cycle : Int) = {
