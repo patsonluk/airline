@@ -3,4 +3,3 @@
   - mysql -u [user name] –p airline_v2_1 < [dumpfilename.sql]
 3. Check db location for application.conf for both web and data make sure it's now airline_v2_1
 4. Run `sbt "runMain com.patson.init.Version2_1Patcher"`
-5. Run model `sbt "runMain com.patson.init.AirplaneModelPatcher"`
