@@ -1009,7 +1009,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) { request =>
     val consumptionEntries : List[LinkConsumptionHistory] = ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
     val consumptionByCountry = consumptionEntries.groupBy(_.homeAirport.countryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
-    val consumptionByAirport = consumptionEntries.groupBy(_.homeAirport).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByHomeAirport = consumptionEntries.groupBy(_.homeAirport).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByDestinationAirport = consumptionEntries.groupBy(_.destinationAirport).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).view.mapValues(entries => entries.map(_.passengerCount).sum)
 
@@ -1022,10 +1023,16 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     }
 
-    var airportJson = Json.arr()
-    consumptionByAirport.toList.sortBy(_._2)(Ordering[Int].reverse).take(30).foreach {
+    var homeAirportsJson = Json.arr()
+    consumptionByHomeAirport.toList.sortBy(_._2)(Ordering[Int].reverse).take(30).foreach {
       case (airport, passengerCount) =>
-        airportJson = airportJson.append(Json.obj("airport" -> airport.displayText, "countryCode" -> airport.countryCode, "passengerCount" -> passengerCount))
+        homeAirportsJson = homeAirportsJson.append(Json.obj("airport" -> airport.displayText, "countryCode" -> airport.countryCode, "passengerCount" -> passengerCount))
+    }
+
+    var destinationAirportsJson = Json.arr()
+    consumptionByDestinationAirport.toList.sortBy(_._2)(Ordering[Int].reverse).take(30).foreach {
+      case (airport, passengerCount) =>
+        destinationAirportsJson = destinationAirportsJson.append(Json.obj("airport" -> airport.displayText, "countryCode" -> airport.countryCode, "passengerCount" -> passengerCount))
     }
 
     var passengerTypeJson = Json.arr()
@@ -1123,7 +1130,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
     Ok(Json.obj("country" -> countryJson,
-      "airport" -> airportJson,
+      "homeAirports" -> homeAirportsJson,
+      "destinationAirports" -> destinationAirportsJson,
       "passengerType" -> passengerTypeJson,
       "preferenceType" -> preferenceTypeJson,
       "linkClassSatisfaction" -> satisfactionByClassJson,

@@ -352,6 +352,7 @@ object ConsumptionHistorySource {
             result += LinkConsumptionHistory(link = link, 
                 passengerCount = resultSet.getInt("passenger_count"), 
                 homeAirport = AirportCache.getAirport(resultSet.getInt("home_airport")).get,
+                destinationAirport = AirportCache.getAirport(resultSet.getInt("destination_airport")).get,
                 passengerType = PassengerType(resultSet.getInt("passenger_type")),
                 preferredLinkClass = preferredLinkClass,
                 preferenceType = FlightPreferenceType(resultSet.getInt("preference_type")),

@@ -36,7 +36,6 @@ object PlayerResetPatcher extends App {
     IncomeSource.deleteIncomesBefore(nextCycle, Period.MONTHLY)
     IncomeSource.deleteIncomesBefore(nextCycle, Period.WEEKLY)
     IncomeSource.deleteIncomesBefore(nextCycle, Period.YEARLY)
-    LinkConsumptionHistory
     AirlineSource.deleteCashFlowItems(nextCycle)
     AirlineSource.deleteTransactions(nextCycle)
     ModelSource.deleteAllAirlineDiscounts()

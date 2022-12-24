@@ -1881,7 +1881,8 @@ function showLinkComposition(linkId) {
 	    	updateTopCountryComposition(result.country)
 	    	updatePassengerTypeComposition(result.passengerType)
 	    	updatePreferenceTypeComposition(result.preferenceType)
-	    	updateTopAirportComposition(result.airport)
+	    	updateTopAirportComposition($('#linkCompositionModal div.topHomeAirports'), result.homeAirports)
+	    	updateTopAirportComposition($('#linkCompositionModal div.topDestinationAirports'), result.destinationAirports)
 	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
 	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
 	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
@@ -2428,14 +2429,14 @@ function updateTopCountryComposition(countryComposition) {
 	});
 }
 
-function updateTopAirportComposition(airportComposition) {
+function updateTopAirportComposition($container, airportComposition) {
 	var maxPerColumn = 10;
 	var index = 0;
-	$('#linkCompositionModal .topAirportTables').empty()
+	$container.empty()
 	var $table
 	$.each(airportComposition, function(index, entry) {
 	    if (index % maxPerColumn == 0) { //flush a column (a table)
-	        $table = $('<div class="table data" style="flex : 1; min-width: 200px;"></div>').appendTo($('#linkCompositionModal .topAirportTables'))
+	        $table = $('<div class="table data" style="flex : 1; min-width: 200px;"></div>').appendTo($container)
 	    }
 		$table.append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.airport
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
