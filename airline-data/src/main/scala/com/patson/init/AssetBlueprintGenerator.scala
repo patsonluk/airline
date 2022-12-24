@@ -3,13 +3,13 @@ package com.patson.init
 import com.patson.data.AirportAssetSource
 import com.patson.model.{AirportAssetType, _}
 
+import java.math.BigInteger
+import java.security.SecureRandom
 import scala.collection.mutable.ListBuffer
-import scala.util.Random
 
 
 object AssetBlueprintGenerator {
   val assetTypesByGroup : Map[GenerationGroup.Value, AirportAssetType.ValueSet] = AirportAssetType.values.groupBy(GenerationGroup.getGenerationGroup(_))
-  val random = new Random(1234567890123L)
 
   def main(airports : List[Airport]) : Unit = {
     AirportAssetSource.deleteAllAirportAssetBlueprints()
@@ -47,6 +47,7 @@ object AssetBlueprintGenerator {
     val limit = Math.min(getAirportBlueprintsLimit(airport) - generatedBlueprints.size, maxCount)
     val assetTypes = candidates.toList.sortBy(_.id).reverse //consider the bigger enum ID first (lower items have higher precedence within the group)
     val newAssetTypes = ListBuffer[AirportAssetType.Value]()
+    val random = new SecureRandom(BigInteger.valueOf(airport.id).toByteArray)
     for (i <- 0 until iterationCount) {
       assetTypes.foreach { assetType =>
         if (newAssetTypes.length >= limit) {

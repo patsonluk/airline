@@ -1,8 +1,6 @@
 1. Ensure https://github.com/patsonluk/airline/issues/541 is taken care of
 2. Backup and restore DB to airline_v2_1. Remove from application.conf the mysqldb.schema="airline_v2" property (both web and data). Back up sim log file for comparison
   - mysql -u [user name] –p airline_v2_1 < [dumpfilename.sql]
-3. Run AirportGeoPatcher for new runways `sbt "runMain com.patson.init.AirportGeoPatcher"`
-4. Figure out the DB changes and update QuickCreateSchema accordingly
-5. Run DB scripts
-6. Run `sbt "runMain com.patson.init.AssetBlueprintGenerator"`
-7. Run model `sbt "runMain com.patson.init.AirplaneModelPatcher"`
+3. Check db location for application.conf for both web and data make sure it's now airline_v2_1
+4. Run `sbt "runMain com.patson.init.Version2_1Patcher"`
+5. Run model `sbt "runMain com.patson.init.AirplaneModelPatcher"`

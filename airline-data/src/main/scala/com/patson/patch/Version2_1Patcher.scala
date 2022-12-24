@@ -4,7 +4,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource
 import com.patson.CountrySimulation
 import com.patson.data.Constants.{DATABASE_CONNECTION, DATABASE_PASSWORD, DATABASE_USER, DB_DRIVER}
 import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, Meta}
-import com.patson.init.{AssetBlueprintGenerator, actorSystem}
+import com.patson.init.{AirplaneModelPatcher, AirportGeoPatcher, AssetBlueprintGenerator, actorSystem}
 import com.patson.model._
 import com.patson.model.airplane._
 
@@ -22,7 +22,9 @@ object Version2_1Patcher extends App {
 
   def mainFlow() {
     patchSchema()
+    AirportGeoPatcher.main(Array.empty)
     patchAssetBlueprints()
+    AirplaneModelPatcher.main(Array.empty)
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }
