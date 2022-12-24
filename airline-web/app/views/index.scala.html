@@ -3253,36 +3253,38 @@
 						<div class="titleSelection" data-search-type="history">History</div>
 						<div class="titleSelection" data-search-type="research">Research</div>
 					  </div>
-					  <div class="routeSearch searchContainer" style="display: flex; flex-flow: column; flex-grow : 1;">
-						  <div style="margin-top: 10px">
-							  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
-								  <div style="float: left; width : 50%; position: relative;">
-									  <div class="searchInput" data-search-type="airport">
-										  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.routeSearch input.fromAirport'))" onkeydown="searchKeyDown(event, $('div.routeSearch input.fromAirport'))">
-										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
-									  </div>
-									  <div class="searchResult"></div>
-								  </div>
-								  <div style="float: left; width : 50%; position: relative;">
-									  <div class="searchInput" data-search-type="airport">
-										  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.routeSearch input.toAirport'))" onkeydown="searchKeyDown(event, $('div.routeSearch input.toAirport'))">
-										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
-									  </div>
-									  <div class="searchResult"></div>
-								  </div>
-								  <div style="clear: both;"></div>
-							  </div>
 
-							  <div class="button search" tabindex="103" onkeypress="searchButtonKeyPress(event, $(this))" onclick="searchFlight($('div.routeSearch input.fromAirport').data('selectedId'), $('div.routeSearch input.toAirport').data('selectedId'))">Search</div>
+					  <!-- shared for route and research-->
+					  <div class="searchFieldContainer" style="margin-top: 10px">
+						  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
+							  <div style="float: left; width : 50%; position: relative;">
+								  <div class="searchInput" data-search-type="airport">
+									  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.searchFieldContainer input.fromAirport'))" onkeydown="searchKeyDown(event, $('div.searchFieldContainer input.fromAirport'))">
+									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+								  </div>
+								  <div class="searchResult"></div>
+							  </div>
+							  <div style="float: left; width : 50%; position: relative;">
+								  <div class="searchInput" data-search-type="airport">
+									  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.searchFieldContainer input.toAirport'))" onkeydown="searchKeyDown(event, $('div.searchFieldContainer input.toAirport'))">
+									  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
+								  </div>
+								  <div class="searchResult"></div>
+							  </div>
+							  <div style="clear: both;"></div>
 						  </div>
 
+						  <div class="button search" tabindex="103" onkeypress="searchButtonKeyPress(event, $(this))" onclick="searchAction($('div.searchFieldContainer input.fromAirport').data('selectedId'), $('div.searchFieldContainer input.toAirport').data('selectedId'))">Search</div>
+					  </div>
+
+					  <div class="routeSearch searchContainer" style="display: flex; flex-flow: column; flex-grow : 1;">
 						  <div id="routeSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px; height: 0px;"></div> <!-- need height otherwise the scroll would not work -->
 						  <div class="banner" style="width: 90%; margin: auto;">
 							  <img src="" style="width: 100%;">
 						  </div>
-				  	  </div>
+					  </div>
 					  <div class="historySearch searchContainer" style="flex-grow: 1; display: flex; flex-flow: column; ">
-					  	 <div style="margin-top: 10px">
+						 <div style="margin-top: 10px">
 							<div class="locationCriteria" style="float: left; width : 50%; position: relative; box-sizing: border-box;">
 							  <div class="searchCriterion"> <!-- Airport -->
 								  <div style="float: left; width : 50%; position: relative;">
@@ -3370,7 +3372,7 @@
 							</div>
 							<div style='clear: both;'></div>
 						  <div class="button search" tabindex="111" onkeypress="searchButtonKeyPress(event, $(this))" onclick="searchLinkHistory()">Search</div>
-					     </div>
+						 </div>
 						 <div id="historySearchResult" class="section" style="height: 100px; overflow-y: auto; flex-grow: 1;">
 							<div class="table data" style="height: 20px; width: 100%; min-width: 700px;">
 								<div class="table-header sortHeader">
@@ -3381,7 +3383,7 @@
 <!--									<div class="cell clickable" style="width: 12%" data-sort-property="model" data-sort-order="ascending">Model</div>-->
 									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacityTotal" data-sort-order="ascending">Capacity (Freq.)</div>
 									<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacityDeltaTotal" data-sort-order="descending">Cap Chg.</div>
-                                    <div class="cell" style="width: 15%">Price</div>
+									<div class="cell" style="width: 15%">Price</div>
 									<div class="cell" style="width: 15%">Price Chg.</div>
 								</div>
 							</div>
@@ -3395,37 +3397,15 @@
 <!--										<div class="cell" style="width: 12%; border-bottom: none;"></div>-->
 										<div class="cell" style="width: 8%; border-bottom: none;"></div>
 										<div class="cell" style="width: 8%; border-bottom: none;"></div>
-                                        <div class="cell" style="width: 15%; border-bottom: none;"></div>
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
 										<div class="cell" style="width: 15%; border-bottom: none;"></div>
 									</div>
 								</div>
 							</div>
-                         </div>
+						 </div>
 					  </div>
 
 					  <div class="research searchContainer" style="display: flex; flex-flow: column; flex-grow : 1;">
-						  <div style="margin-top: 10px">
-							  <div style="padding: 10px; margin: 10px 0px;"> <!--from and to box-->
-								  <div style="float: left; width : 50%; position: relative;">
-									  <div class="searchInput" data-search-type="airport">
-										  <input type="text" style="width: 80%" tabindex="101" class="fromAirport" placeholder="From" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.research input.fromAirport'))" onkeydown="searchKeyDown(event, $('div.research input.fromAirport'))">
-										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
-									  </div>
-									  <div class="searchResult"></div>
-								  </div>
-								  <div style="float: left; width : 50%; position: relative;">
-									  <div class="searchInput" data-search-type="airport">
-										  <input type="text" style="width: 80%" tabindex="102" class="toAirport" placeholder="To" oninput="searchChange($(this))" onfocus="$(this).select();" onfocusout="searchFocusOut($(this))" onkeyup="searchKeyUp(event, $('div.research input.toAirport'))" onkeydown="searchKeyDown(event, $('div.research input.toAirport'))">
-										  <span class="spinner" style="display: none;"><img src='https://i.stack.imgur.com/FhHRx.gif' style="height: 16px"></span>
-									  </div>
-									  <div class="searchResult"></div>
-								  </div>
-								  <div style="clear: both;"></div>
-							  </div>
-
-							  <div class="button search" tabindex="103" onkeypress="searchButtonKeyPress(event, $(this))" onclick="researchFlight($('div.research input.fromAirport').data('selectedId'), $('div.research input.toAirport').data('selectedId'))">Search</div>
-						  </div>
-
 						  <div id="researchSearchResult" style="overflow-y: auto; flex-grow: 1; padding: 10px; height: 0px;"><!-- need height otherwise the scroll would not work -->
 							  <div style="width: 600px; max-width:100%; margin: auto;">
 								  <div style=" float: left; width:50%; min-width: 200px; padding-left: 10%; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; " class="fromAirport">
@@ -3511,8 +3491,6 @@
 
 						  </div>
 					  </div>
-
-
 				  </div>
 				<div style="clear: both;"></div>
 			  </div>
