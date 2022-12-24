@@ -11,8 +11,6 @@ import scala.util.Random
 case class AirportAssetBlueprint(airport : Airport, assetType : AirportAssetType.Value, var id : Int = 0) extends IdObject
 
 object AirportAssetType extends Enumeration {
-    val TEST_SPEEDUP = 52 //TODO for testing ONLY, REMOVE FOR RELEASE
-
     abstract class AirportAssetType() extends super.Val {
         val constructionDuration : Int
         val label : String
@@ -512,7 +510,7 @@ abstract class AirportAsset() extends IdObject{
 
     def levelUp(name : String) = {
         val currentCycle = CycleSource.loadCycle()
-        val completionCycle = currentCycle + assetType.constructionDuration / AirportAssetType.TEST_SPEEDUP
+        val completionCycle = currentCycle + assetType.constructionDuration
 
         //do not generate new boosts here, should let only do it when upgrade is completed
         AirportAsset.getAirportAsset(blueprint, airline, name, level + 1, Some(completionCycle), boosts, revenue, expense, roi, false, properties, currentCycle)
@@ -795,7 +793,7 @@ object AirportAsset {
 
     def buildNewAsset(airline : Airline, blueprint : AirportAssetBlueprint, name : String) : AirportAsset = {
         val currentCycle = CycleSource.loadCycle()
-        val completionCycle = currentCycle + blueprint.assetType.constructionDuration  / AirportAssetType.TEST_SPEEDUP
+        val completionCycle = currentCycle + blueprint.assetType.constructionDuration
 
         getAirportAsset(blueprint, Some(airline), name, 1, Some(completionCycle), List.empty, 0, 0, blueprint.assetType.initRoi, false, Map.empty, currentCycle)
     }

@@ -14,18 +14,10 @@ import scala.util.Random
 object AllianceMissionSimulation {
   val MAX_HISTORY_DURATION = 40 * AllianceMission.WEEKS_PER_YEAR //40 years
 
-//  val SELECTION_DURATION = 1 * AllianceMission.WEEKS_PER_YEAR //1 year
-//  val ACTIVE_DURATION = 10 * AllianceMission.WEEKS_PER_YEAR// 10 years
-
-  //TODO test
-  val SELECTION_DURATION = 8 // 8 weeks
-  //val ACTIVE_DURATION = AllianceMission.WEEKS_PER_YEAR * 2// 2 years
-  val ACTIVE_DURATION = 20 // 20 weeks for test
+  val SELECTION_DURATION = 1 * AllianceMission.WEEKS_PER_YEAR //1 year
+  val ACTIVE_DURATION = 10 * AllianceMission.WEEKS_PER_YEAR// 10 years
 
   val MISSION_DURATION = SELECTION_DURATION + ACTIVE_DURATION
-
-
-  //END TODO
 
   val MAX_MISSION_CANDIDATES = 3 //how many options
 
