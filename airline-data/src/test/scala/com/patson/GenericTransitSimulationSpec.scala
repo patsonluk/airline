@@ -22,8 +22,8 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
  
   val testAirline1 = Airline("airline 1", id = 1)
   val testAirline2 = Airline("airline 2", id = 2)
-  val fromAirport = Airport.fromId(1).copy(power = 40000, population = 1, name = "F0") //income 40k . mid income country
-  val airlineAppeal = AirlineAppeal(0, 100)
+  val fromAirport = Airport.fromId(1).copy(baseIncome = 40000, basePopulation = 1, name = "F0") //income 40k . mid income country
+  val airlineAppeal = AirlineAppeal(0)
   fromAirport.initAirlineAppeals(Map(testAirline1.id -> airlineAppeal, testAirline2.id -> airlineAppeal))
   fromAirport.initLounges(List.empty)
   val toAirportsList = List(
@@ -141,10 +141,10 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
       val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
       val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
       val lgb = fromAirport.copy(iata = "LGB", name = "LGB", latitude = 33.817699, longitude = -118.152, id = 4) //long beach
-      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
 
       val sjcToSfo = GenericTransit(sjc, sfo, Computation.calculateDistance(sfo, sjc), LinkClassValues.getInstance(economy = 10000), id = 1)
       val sfoToLax = {
@@ -215,10 +215,10 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
       val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
       val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
       val lgb = fromAirport.copy(iata = "LGB", name = "LGB", latitude = 33.817699, longitude = -118.152, id = 4) //long beach
-      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
 
       val sjcToSfo = GenericTransit(sjc, sfo, Computation.calculateDistance(sfo, sjc), LinkClassValues.getInstance(economy = 10000), id = 1)
       val sfoToLax = {
@@ -290,10 +290,10 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
       val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
       val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
       val lgb = fromAirport.copy(iata = "LGB", name = "LGB", latitude = 33.817699, longitude = -118.152, id = 4) //long beach
-      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
-      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 100)))
+      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
 
       val sjcToSfo = GenericTransit(sjc, sfo, Computation.calculateDistance(sfo, sjc), LinkClassValues.getInstance(economy = 10000), id = 1)
       val sfoToLax = {
@@ -379,10 +379,10 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
       val sjc = fromAirport.copy(iata = "SJC", name = "SJC", latitude = 37.362598, longitude = -121.929001, id = 2)
       val lax = fromAirport.copy(iata = "LAX", name = "LAX", latitude = 33.942501, longitude = -118.407997, id = 3)
       val lgb = fromAirport.copy(iata = "LGB", name = "LGB", latitude = 33.817699, longitude = -118.152, id = 4) //long beach
-      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
-      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
-      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
-      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0, 0)))
+      sfo.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      sjc.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      lax.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
+      lgb.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(loyalty = 0)))
 
       val sjcToSfo = GenericTransit(sjc, sfo, Computation.calculateDistance(sfo, sjc), LinkClassValues.getInstance(economy = 1000))
       val sfoToLax = {

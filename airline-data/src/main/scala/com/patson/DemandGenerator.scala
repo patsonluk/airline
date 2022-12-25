@@ -120,12 +120,14 @@ object DemandGenerator {
       //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
       //we are using income level for to airport as destination income difference should have less impact on demand compared to origination airport (and income level is log(income))
       val toAirportIncomeLevel = toAirport.incomeLevel
-      
+
+      val lowIncomeThreshold = Country.LOW_INCOME_THRESHOLD + 10_000 //due to a bug in v2, we need to increase this a bit to avoid demand collapse in low income countries
+
       val fromAirportAdjustedIncome : Double = if (fromAirport.income > Country.HIGH_INCOME_THRESHOLD) { //to make high income airport a little bit less overpowered
-        50000
-      } else if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) { //to make low income airport a bit more stronger
-        val delta = Country.LOW_INCOME_THRESHOLD - fromAirport.income
-        Country.LOW_INCOME_THRESHOLD + delta * 0.5 //so a 0 income country will be boosted to 7500, a 5000 income country will be boosted to 10000
+        Country.HIGH_INCOME_THRESHOLD + (fromAirport.income - Country.HIGH_INCOME_THRESHOLD) / 2
+      } else if (fromAirport.income < lowIncomeThreshold) { //to make low income airport a bit stronger
+        val delta = lowIncomeThreshold - fromAirport.income
+        lowIncomeThreshold - delta * 0.3 //so a 0 income country will be boosted to 21000, a 10000 income country will be boosted to 24000
       } else {
         fromAirport.income
       }
@@ -168,9 +170,9 @@ object DemandGenerator {
       
       
       //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
-      val incomeLevel = Computation.getIncomeLevel(fromAirport.income)
-      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && incomeLevel > 25) {
-        adjustedDemand += baseDemand * (((incomeLevel - 25).toDouble / 10) * 2)       
+
+      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
+        adjustedDemand += baseDemand * (((fromAirport.incomeLevel - 25).toDouble / 10) * 2)
       }
       
       //adjustments : these zones do not have good ground transport

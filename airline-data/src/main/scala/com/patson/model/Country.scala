@@ -14,7 +14,10 @@ case class Country(countryCode : String, name : String, airportPopulation : Int,
 //  }
 }
 
+
 object Country {
+  type CountryCode = String
+
   val MAX_OPENNESS : Int = 10
   val HOSTILE_RELATIONSHIP_THRESHOLD = -2
   val INTERNATIONAL_INBOUND_MIN_OPENNESS = 2;

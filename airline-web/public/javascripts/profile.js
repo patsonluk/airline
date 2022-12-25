@@ -35,7 +35,6 @@ function createProfileDiv(profile, profileId) {
 
         $airplaneLi.append($airplaneSpan)
     }
-    $('<li class="dot"></li>').appendTo($list).text(profile.awareness + " awareness at " + profile.airportText)
     $('<li class="dot"></li>').appendTo($list).text(profile.reputation + " reputation")
     if (profile.loan) {
         $('<li class="dot"></li>').appendTo($list).text("Outstanding loan of $" + commaSeparateNumber(profile.loan.remainingAmount) + " weekly payment of $" + commaSeparateNumber(profile.loan.weeklyPayment))

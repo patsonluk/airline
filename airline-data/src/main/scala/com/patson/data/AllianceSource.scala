@@ -1,11 +1,12 @@
 package com.patson.data
 
 import java.sql.Statement
-
 import com.patson.data.Constants._
 import com.patson.model._
+import com.patson.model.alliance.AllianceStats
 import com.patson.util.{AirlineCache, AllianceCache}
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 
@@ -117,7 +118,7 @@ object AllianceSource {
         connection.close()
       }
   }
-  
+
   def loadAllianceMemberByAirline(airline : Airline) : Option[AllianceMember] = {
     val connection = Meta.getConnection()
     try {
@@ -179,7 +180,7 @@ object AllianceSource {
       }
     }
   }
-  
+
   
   def loadAllianceHistoryByAirline(airlineId : Int) : List[AllianceHistory] = {
     loadAllianceHistoryByCriteria(List(("airline", airlineId)))
@@ -466,6 +467,104 @@ object AllianceSource {
       preparedStatement.close()
       println("Deleted " + deletedCount + " airline history records")
       deletedCount
+    } finally {
+      connection.close()
+    }
+  }
+
+  def saveAllianceStats(stats : List[AllianceStats]) = {
+    internalSaveAllianceStat(ALLIANCE_STATS_TABLE, stats)
+  }
+  def saveAllianceMissionStats(stats : List[AllianceStats]) = {
+    internalSaveAllianceStat(ALLIANCE_MISSION_STATS_TABLE, stats)
+  }
+
+  def internalSaveAllianceStat(tableName : String, stats : List[AllianceStats]) = {
+    val queryString = s"REPLACE INTO $tableName (alliance, cycle, property, value) VALUES(?,?,?,?)";
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      val preparedStatement = connection.prepareStatement(queryString)
+      stats.foreach { entry =>
+        entry.properties.foreach { case(property, value) =>
+          preparedStatement.setInt(1, entry.alliance.id)
+          preparedStatement.setInt(2, entry.cycle)
+          preparedStatement.setString(3, property)
+          preparedStatement.setLong(4, value)
+          preparedStatement.executeUpdate()
+        }
+      }
+      preparedStatement.close()
+      connection.commit()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def deleteAllianceStatsBeforeCutoff(cutoff : Int) = {
+    val queryString = s"DELETE FROM $ALLIANCE_STATS_TABLE WHERE cycle < ?";
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(queryString)
+      preparedStatement.setInt(1, cutoff)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+
+  }
+
+  def loadAllianceStatsByCycle(allianceId : Int, cycle : Int) : Option[AllianceStats] = {
+    loadAllianceStatsByCriteria(List(("alliance", "=", allianceId), ("cycle", "=", cycle))).headOption
+  }
+
+  def loadAllianceStatsByCriteria(criteria : List[(String, String, Any)]) : List[AllianceStats]= {
+    internalLoadAllianceStatsByCriteria(ALLIANCE_STATS_TABLE, criteria)
+  }
+
+  def loadAllianceMissionStatsByCriteria(criteria : List[(String, String, Any)]) : List[AllianceStats]= {
+    internalLoadAllianceStatsByCriteria(ALLIANCE_MISSION_STATS_TABLE, criteria)
+  }
+
+  def internalLoadAllianceStatsByCriteria(tableName : String, criteria : List[(String, String, Any)]) : List[AllianceStats]= {
+    var queryString = s"SELECT * FROM $tableName";
+
+    val connection = Meta.getConnection()
+    try {
+
+      if (!criteria.isEmpty) {
+        queryString += " WHERE "
+        for (i <- 0 until criteria.size - 1) {
+          queryString += criteria(i)._1 + " " + criteria(i)._2 + " ? AND "
+        }
+        queryString += criteria.last._1 + " " + criteria.last._2 + " ? "
+      }
+
+
+      val preparedStatement = connection.prepareStatement(queryString)
+      for (i <- 0 until criteria.size) {
+        preparedStatement.setObject(i + 1, criteria(i)._3)
+      }
+
+      val resultSet = preparedStatement.executeQuery()
+      val propertiesByAllianceAndCycle = scala.collection.mutable.Map[(Alliance, Int), scala.collection.mutable.Map[String, Long]]()
+      while (resultSet.next()) {
+        val allianceId = resultSet.getInt("alliance")
+        val alliance = AllianceCache.getAlliance(resultSet.getInt("alliance")).getOrElse(Alliance.fromId(allianceId))
+        val cycle = resultSet.getInt("cycle")
+        val key = (alliance, cycle)
+
+        val propertyKey = resultSet.getString("property")
+        val value = resultSet.getLong("value")
+
+        val properties = propertiesByAllianceAndCycle.getOrElseUpdate(key, mutable.HashMap())
+        properties.put(propertyKey, value)
+      }
+
+      propertiesByAllianceAndCycle.map { case ((alliance, cycle), properties) =>
+        AllianceStats.buildAllianceStats(alliance, properties.toMap, cycle)
+      }.toList
     } finally {
       connection.close()
     }

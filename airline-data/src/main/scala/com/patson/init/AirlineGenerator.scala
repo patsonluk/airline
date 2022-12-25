@@ -67,8 +67,6 @@ object AirlineGenerator extends App {
       
       AirlineSource.saveAirplaneRenewal(newAirline.id, 50)
       
-      AirportSource.updateAirlineAppeal(baseAirport.id, newAirline.id, AirlineAppeal(0, 100))
-      
       println(i + " generated user " + user.userName)
                   
       //generate Local Links

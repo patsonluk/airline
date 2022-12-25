@@ -32,6 +32,7 @@
     text-shadow: none;
     font-weight: normal;
     max-width: 95vw;
+    box-shadow: var(--table-header-shadow);
 }
 
 .customTooltip .tooltiptext {

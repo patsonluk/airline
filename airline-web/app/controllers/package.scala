@@ -1,10 +1,11 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.patson.Util
+import com.patson.{AllianceMissionSimulation, Util}
 import com.patson.data._
 import com.patson.data.airplane._
 import com.patson.model.{AirlineBaseSpecialization, AirlineCashFlow, AirlineIncome, Computation, _}
 import com.patson.model.airplane._
+import com.patson.model.alliance.{AllianceMission, AllianceMissionStatus, AllianceMissionReward}
 import com.patson.model.event.EventReward
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo, ChampionUtil, CountryChampionInfo}
 import models.{AirportFacility, AirportWithChampion, FacilityType}
@@ -27,32 +28,33 @@ package object controllers {
       val airline = Airline.fromId((json \ "id").as[Int])
       JsSuccess(airline)
     }
-    
+
     def writes(airline: Airline): JsValue = {
-      var result = JsObject(List(
-      "id" -> JsNumber(airline.id),
-      "name" -> JsString(airline.name),
-      "reputation" -> JsNumber(airline.getReputation()),
-      "gradeValue" -> JsNumber(airline.airlineGrade.value),
-      "airlineCode" -> JsString(airline.getAirlineCode()),
-      "baseCount" -> JsNumber(airline.getBases().size),
-      "isGenerated" -> JsBoolean(airline.isGenerated)
-      ))
-      
+      var result = Json.obj(
+        "id" -> airline.id,
+        "name" -> airline.name,
+        "reputation" -> airline.getReputation(),
+        "gradeValue" -> airline.airlineGrade.value,
+        "gradeDescription" -> airline.airlineGrade.description,
+        "airlineCode" -> airline.getAirlineCode(),
+        "baseCount" -> airline.getBases().size,
+        "isGenerated" -> airline.isGenerated
+      )
+
       if (airline.getCountryCode.isDefined) {
-        result = result.asInstanceOf[JsObject] + ("countryCode" -> JsString(airline.getCountryCode.get))
+        result = result + ("countryCode" -> JsString(airline.getCountryCode.get))
       }
       airline.getHeadQuarter().foreach { headquarters =>
-        result = result.asInstanceOf[JsObject] + 
-        ("headquartersAirportName" -> JsString(headquarters.airport.name)) + 
-        ("headquartersCity" -> JsString(headquarters.airport.city)) + 
+        result = result +
+        ("headquartersAirportName" -> JsString(headquarters.airport.name)) +
+        ("headquartersCity" -> JsString(headquarters.airport.city)) +
         ("headquartersAirportIata" -> JsString(headquarters.airport.iata))
       }
-      
+
       result
     }
   }
-  
+
   implicit object AirplaneModelWrites extends Writes[Model] {
     def writes(airplaneModel: Model): JsValue = {
           JsObject(List(
@@ -75,7 +77,7 @@ package object controllers {
       "countryCode" -> JsString(airplaneModel.manufacturer.countryCode),
       "manufacturer" -> JsString(airplaneModel.manufacturer.name)
           ))
-      
+
     }
   }
 
@@ -112,7 +114,7 @@ package object controllers {
       ))
     }
   }
-  
+
   implicit object AirplaneWrites extends Writes[Airplane] {
     def writes(airplane: Airplane): JsValue = {
       Json.toJson(airplane)(SimpleAirplaneWrite).asInstanceOf[JsObject] + ("availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes))
@@ -142,7 +144,7 @@ package object controllers {
       }.toMap)
     }
   }
-  
+
   implicit object LinkFormat extends Format[Link] {
     def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -175,7 +177,7 @@ package object controllers {
       } else if (rawQuality < 0) {
         rawQuality = 0
       }
-         
+
       val link = Link(fromAirport, toAirport, airline, price, distance, capacity = LinkClassValues.getInstance(), rawQuality, duration, frequency = 0, flightType) //compute frequency and capacity after validating the assigned airplanes
       link.setAssignedAirplanes(airplaneAssignments.toList.map {
         case(airplane, frequency) => (airplane, LinkAssignment(frequency, frequency * flightMinutesRequiredPerFlight))
@@ -183,7 +185,7 @@ package object controllers {
       //(json \ "id").asOpt[Int].foreach { link.id = _ } 
       JsSuccess(link)
     }
-    
+
     def writes(link: Link): JsValue = {
       var json = JsObject(List(
       "id" -> JsNumber(link.id),
@@ -236,17 +238,17 @@ package object controllers {
       json
     }
   }
-  
+
   object SimpleLinkConsumptionWrite extends Writes[LinkConsumptionDetails] {
-     def writes(linkConsumption : LinkConsumptionDetails): JsValue = { 
-       var priceJson = Json.obj() 
+     def writes(linkConsumption : LinkConsumptionDetails): JsValue = {
+       var priceJson = Json.obj()
        LinkClass.values.foreach { linkClass =>
          if (linkConsumption.link.capacity(linkClass) > 0) { //do not report price for link class that has no capacity
            priceJson = priceJson + (linkClass.label -> JsNumber(linkConsumption.link.price(linkClass)))
-         }  
+         }
        }
-       
-       
+
+
       JsObject(List(
         "linkId" -> JsNumber(linkConsumption.link.id),
         "airlineId" -> JsNumber(linkConsumption.link.airline.id),
@@ -281,7 +283,17 @@ package object controllers {
         "capacity" -> Json.toJson(linkConsumption.link.capacity)))
     }
   }
-  
+
+  implicit object AirlineBaseSpecializationWrites extends OWrites[AirlineBaseSpecialization.Value] {
+    override def writes(specialization : AirlineBaseSpecialization.Value) : JsObject = {
+      Json.obj(
+        "id" -> specialization.toString,
+        "label" -> specialization.label,
+        "descriptions" -> specialization.descriptions,
+      )
+    }
+  }
+
   implicit object AirlineBaseFormat extends Format[AirlineBase] {
     def reads(json: JsValue): JsResult[AirlineBase] = {
       val airport = AirportCache.getAirport((json \ "airportId").as[Int], true).get
@@ -290,7 +302,7 @@ package object controllers {
       val headquarter = (json \ "headquarter").as[Boolean]
       JsSuccess(AirlineBase(airline, airport, airport.countryCode, scale, 0, headquarter))
     }
-    
+
     def writes(base: AirlineBase): JsValue = {
       var jsObject = JsObject(List(
       "airportId" -> JsNumber(base.airport.id),
@@ -308,7 +320,7 @@ package object controllers {
       "delegatesRequired" -> JsNumber(base.delegatesRequired),
       "headquarter" -> JsBoolean(base.headquarter),
       "foundedCycle" -> JsNumber(base.foundedCycle)))
-      
+
       base.airline.getCountryCode().foreach { countryCode =>
         jsObject = jsObject + ("airlineCountryCode" -> JsString(countryCode))
       }
@@ -316,31 +328,21 @@ package object controllers {
       if (!base.specializations.isEmpty) {
         jsObject = jsObject + ("specializations" -> Json.toJson(base.specializations))
       }
-      
+
       jsObject
     }
   }
 
-  implicit object AirlineBaseSpecializationWrites extends OWrites[AirlineBaseSpecialization.Value] {
-    override def writes(specialization : AirlineBaseSpecialization.Value) : JsObject = {
-      Json.obj(
-        "id" -> specialization.toString,
-        "label" -> specialization.label,
-        "descriptions" -> specialization.descriptions,
-      )
-    }
-  }
-  
   implicit object FacilityReads extends Reads[AirportFacility] {
     def reads(json: JsValue): JsResult[AirportFacility] = {
-      val airport = AirportCache.getAirport((json \ "airportId").as[Int]).get
+      val airport = AirportCache.getAirport((json \ "airportId").as[Int], true).get
       val airline = Airline.fromId((json \ "airlineId").as[Int])
       val name = (json \ "name").as[String]
       val level = (json \ "level").as[Int]
       JsSuccess(AirportFacility(airline, airport, name, level, FacilityType.withName((json \ "type").as[String])))
     }
   }
-  
+
   implicit object LoungeWrites extends Writes[Lounge] {
     def writes(lounge: Lounge): JsValue = {
       var jsObject = JsObject(List(
@@ -354,12 +356,12 @@ package object controllers {
       "status" -> JsString(lounge.status.toString()),
       "type" -> JsString(FacilityType.LOUNGE.toString()),
       "foundedCycle" -> JsNumber(lounge.foundedCycle)))
-      
+
       jsObject
     }
   }
 
-  
+
   implicit object LoungeConsumptionDetailsWrites extends Writes[LoungeConsumptionDetails] {
     def writes(details: LoungeConsumptionDetails): JsValue = {
       var jsObject = JsObject(List(
@@ -367,11 +369,11 @@ package object controllers {
       "selfVisitors" -> JsNumber(details.selfVisitors),
       "allianceVisitors" -> JsNumber(details.allianceVisitors),
       "cycle" -> JsNumber(details.cycle)))
-      
+
       jsObject
     }
   }
-  
+
   implicit object AirlineIncomeWrite extends Writes[AirlineIncome] {
      def writes(airlineIncome : AirlineIncome): JsValue = {
       JsObject(List(
@@ -405,9 +407,9 @@ package object controllers {
         "othersLoungeUpkeep" -> JsNumber(airlineIncome.others.loungeUpkeep),
         "othersLoungeCost" -> JsNumber(airlineIncome.others.loungeCost),
         "othersLoungeIncome" -> JsNumber(airlineIncome.others.loungeIncome),
-        "othersShuttleCost" -> JsNumber(airlineIncome.others.shuttleCost),
+        "othersAssetExpense" -> JsNumber(airlineIncome.others.assetExpense),
+        "othersAssetRevenue" -> JsNumber(airlineIncome.others.assetRevenue),
         "othersServiceInvestment" -> JsNumber(airlineIncome.others.serviceInvestment),
-        "othersMaintenanceInvestment" -> JsNumber(airlineIncome.others.maintenanceInvestment),
         "othersAdvertisement" -> JsNumber(airlineIncome.others.advertisement),
         "othersFuelProfit" -> JsNumber(airlineIncome.others.fuelProfit),
         "othersDepreciation" -> JsNumber(airlineIncome.others.depreciation),
@@ -430,23 +432,24 @@ package object controllers {
         "createLink" -> JsNumber(airlineCashFlow.createLink),
         "facilityConstruction" -> JsNumber(airlineCashFlow.facilityConstruction),
         "oilContract" -> JsNumber(airlineCashFlow.oilContract),
+        "assetTransactions" -> JsNumber(airlineCashFlow.assetTransactions),
         "period" -> JsString(airlineCashFlow.period.toString()),
         "cycle" -> JsNumber(airlineCashFlow.cycle)))
     }
   }
-  
+
   implicit object CountryWrites extends Writes[Country] {
     def writes(country : Country): JsValue = {
       Json.obj(
         "countryCode" -> country.countryCode,
         "name" -> country.name,
         "airportPopulation" -> country.airportPopulation,
-        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "incomeLevel" -> Computation.getIncomeLevel(country.income).toInt,
         "openness" ->  country.openness
       )
     }
   }
-  
+
   implicit object CountryWithMutualRelationshipWrites extends Writes[(Country, Int)] {
     def writes(countryWithMutualRelationship : (Country, Int)): JsValue = {
       val (country, mutualRelationship) = countryWithMutualRelationship
@@ -454,13 +457,13 @@ package object controllers {
         "countryCode" -> country.countryCode,
         "name" -> country.name,
         "airportPopulation" -> country.airportPopulation,
-        "incomeLevel" -> Computation.getIncomeLevel(country.income),
+        "incomeLevel" -> Computation.getIncomeLevel(country.income).toInt,
         "openness" ->  country.openness,
         "mutualRelationship" -> mutualRelationship
       )
     }
   }
-  
+
   implicit object ChampionedCountriesWrites extends Writes[CountryChampionInfo] {
     def writes(info : CountryChampionInfo): JsValue = {
       Json.obj(
@@ -496,8 +499,7 @@ package object controllers {
 
   implicit object CityWrites extends Writes[City] {
     def writes(city: City): JsValue = {
-      val averageIncome = city.income
-      val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
+      val incomeLevel = Computation.getIncomeLevel(city.income).toInt
       JsObject(List(
         "id" -> JsNumber(city.id),
         "name" -> JsString(city.name),
@@ -505,7 +507,17 @@ package object controllers {
         "longitude" -> JsNumber(city.longitude),
         "countryCode" -> JsString(city.countryCode),
         "population" -> JsNumber(city.population),
-        "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
+        "incomeLevel" -> JsNumber(incomeLevel)))
+    }
+  }
+
+  implicit object AirportAssetBoostWrites extends Writes[AirportBoost] {
+    def writes(entry : AirportBoost): JsValue = {
+      Json.obj(
+        "boostType" -> entry.boostType.toString,
+        "label" -> AirportBoostType.getLabel(entry.boostType),
+        "value" -> entry.value,
+      )
     }
   }
 
@@ -516,12 +528,8 @@ package object controllers {
     }
 
     def writes(airport: Airport): JsValue = {
-      val incomeLevel = Computation.getIncomeLevel(airport.income)
       //      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
       //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)
-      //      }
-      //      val awarenessMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
-      //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.awareness)
       //      }
 
       var airportObject = JsObject(List(
@@ -536,15 +544,14 @@ package object controllers {
         "longitude" -> JsNumber(airport.longitude),
         "countryCode" -> JsString(airport.countryCode),
         "population" -> JsNumber(airport.population),
-        "slots" -> JsNumber(airport.slots),
         "radius" -> JsNumber(airport.airportRadius),
         "zone" -> JsString(airport.zone),
-        "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
+        "incomeLevel" -> JsNumber(airport.incomeLevel.toInt)))
 
 
       if (airport.isAirlineAppealsInitialized) {
         airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAdjustedAppeals().toList.map {
-          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  RoundingMode.HALF_EVEN))
+          case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineCache.getAirline(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, RoundingMode.HALF_EVEN))
         }
         ))
 
@@ -552,35 +559,40 @@ package object controllers {
         airport.getAllAirlineBonuses.toList.foreach {
           case (airlineId, bonuses) => {
             var totalLoyaltyBonus = 0.0
-            var totalAwarenessBonus = 0.0
             var loyaltyBreakdownJson = Json.arr(Json.obj("description" -> "Basic", "value" -> BigDecimal(airport.getAirlineBaseAppeal(airlineId).loyalty).setScale(2, RoundingMode.HALF_EVEN)))
-            var awarenessBreakdownJson = Json.arr(Json.obj("description" -> "Basic", "value" -> BigDecimal(airport.getAirlineBaseAppeal(airlineId).awareness).setScale(2, RoundingMode.HALF_EVEN)))
             bonuses.foreach { entry =>
               val loyaltyBonus = entry.bonus.loyalty
               if (loyaltyBonus != 0) {
                 totalLoyaltyBonus += loyaltyBonus
                 loyaltyBreakdownJson = loyaltyBreakdownJson.append(Json.obj("description" -> BonusType.description(entry.bonusType), "value" -> BigDecimal(loyaltyBonus).setScale(2, RoundingMode.HALF_EVEN)))
               }
-              val awarenessBonus = entry.bonus.awareness
-              if (awarenessBonus != 0) {
-                totalAwarenessBonus += awarenessBonus
-                awarenessBreakdownJson = awarenessBreakdownJson.append(Json.obj("description" -> BonusType.description(entry.bonusType), "value" -> BigDecimal(awarenessBonus).setScale(2, RoundingMode.HALF_EVEN)))
-              }
             }
             bonusJson = bonusJson + (airlineId.toString ->
               Json.obj("loyalty" -> BigDecimal(totalLoyaltyBonus).setScale(2, RoundingMode.HALF_EVEN),
-                "awareness" -> BigDecimal(totalAwarenessBonus).setScale(2, RoundingMode.HALF_EVEN),
-                "loyaltyBreakdown" -> loyaltyBreakdownJson,
-              "awarenessBreakdown" -> awarenessBreakdownJson))
+                "loyaltyBreakdown" -> loyaltyBreakdownJson))
           }
         }
         airportObject = airportObject + ("bonusList" -> bonusJson)
       }
       if (airport.isFeaturesLoaded) {
         airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().sortBy(_.featureType.id).map { airportFeature =>
-          Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> airportFeature.getDescription)
+          var featureJson = Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> airportFeature.getDescription)
+          airportFeature match {
+            case f : InternationalHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
+            case f : FinancialHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
+            case f : VacationHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
+            case _ =>
+          }
+          featureJson
         }
         ))
+
+        if (airport.populationBoost > 0) {
+          airportObject = airportObject + ("populationBoost" -> JsNumber(airport.populationBoost))
+        }
+        if (airport.incomeLevelBoost > 0) {
+          airportObject = airportObject + ("incomeLevelBoost" -> JsNumber(airport.incomeLevelBoost))
+        }
       }
       if (airport.isGateway()) {
         airportObject = airportObject + ("isGateway" -> JsBoolean(true))
@@ -593,12 +605,9 @@ package object controllers {
         }
         ))
       }
-//      if (airport.getAirportImageUrl.isDefined) {
-//        airportObject = airportObject + ("airportImageUrl" -> JsString(airport.getAirportImageUrl.get))
-//      }
-//      if (airport.getCityImageUrl.isDefined) {
-//        airportObject = airportObject + ("cityImageUrl" -> JsString(airport.getCityImageUrl.get))
-//      }
+
+
+
 
       airportObject = airportObject + ("citiesServed" -> Json.toJson(airport.citiesServed.map(_._1).toList))
 
@@ -627,17 +636,13 @@ package object controllers {
     ))
   }
 
-//  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
-//    def writes(requirement : NegotiationRequirement): JsValue = {
-//      var result = Json.arr()
-//      odds.getFactors.foreach {
-//        case (factor, value) =>
-//          result = result.append(Json.obj("description" -> JsString(NegotationFactor.description(factor)),
-//            "value"-> JsNumber(value)))
-//      }
-//      result
-//    }
-//  }
+  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
+    def writes(requirement : NegotiationRequirement) : JsValue = {
+      Json.obj(
+        "description" -> JsString(requirement.description),
+        "value" -> JsNumber(requirement.value))
+    }
+  }
 
   case class NegotiationInfoWrites(link : Link) extends Writes[NegotiationInfo] {
     def writes(info : NegotiationInfo): JsValue = {
@@ -690,7 +695,7 @@ package object controllers {
 
   implicit object DelegateInfoWrites extends Writes[DelegateInfo] {
     def writes(delegateInfo : DelegateInfo): JsValue = {
-      var result = Json.obj("availableCount" -> delegateInfo.availableCount).asInstanceOf[JsObject]
+      var result = Json.obj("availableCount" -> delegateInfo.availableCount, "boost" -> delegateInfo.boost).asInstanceOf[JsObject]
       val currentCycle = CycleSource.loadCycle()
       var busyDelegatesJson = Json.arr()
       val delegateWrites = new BusyDelegateWrites(currentCycle)
@@ -710,16 +715,6 @@ package object controllers {
       }
 
       busyDelegateJson
-    }
-  }
-
-
-
-  implicit object NegotiationRequirementWrites extends Writes[NegotiationRequirement] {
-    def writes(requirement : NegotiationRequirement): JsValue = {
-      Json.obj(
-        "description" -> JsString(requirement.description),
-        "value" -> JsNumber(requirement.value))
     }
   }
 
@@ -765,6 +760,43 @@ package object controllers {
         "title" -> title.title.toString,
         "description" -> title.description
 
+      )
+    }
+  }
+
+  implicit object AllianceMissionWrites extends Writes[AllianceMission] {
+    def writes(allianceMission : AllianceMission) : JsValue = {
+      val currentCycle = CycleSource.loadCycle()
+      val statusText = allianceMission.status match {
+        case AllianceMissionStatus.SELECTED => "Selected"
+        case AllianceMissionStatus.CANDIDATE => "Candidate"
+        case AllianceMissionStatus.IN_PROGRESS => s"In Progress ${allianceMission.endCycle - currentCycle} week(s) remaining"
+        case AllianceMissionStatus.CONCLUDED => s"Concluded"
+      }
+
+      val historyCycle = Math.min(currentCycle - 1, allianceMission.endCycle)
+
+      Json.obj(
+        "id" -> allianceMission.id,
+        "description" -> allianceMission.description,
+        "stats" -> allianceMission.stats(historyCycle).properties,
+        "tillNextPhase" -> AllianceMissionSimulation.cycleToNextPhase(allianceMission, currentCycle),
+        "progress" -> allianceMission.progress(historyCycle),
+        "difficulty" -> allianceMission.difficulty,
+        "statusText" -> statusText,
+        "status" -> allianceMission.status.toString
+
+      )
+    }
+  }
+
+  implicit object AllianceMissionRewardWrites extends Writes[AllianceMissionReward] {
+    def writes(reward : AllianceMissionReward) : JsValue = {
+      Json.obj(
+        "id" -> reward.id,
+        "description" -> reward.description,
+        "isClaimed" -> reward.claimed,
+        "isAvailable" -> reward.available,
       )
     }
   }

@@ -101,10 +101,6 @@ object Meta {
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_FEATURE_TABLE)
     statement.execute()
     statement.close()
-    
-    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_PROJECT_TABLE)
-    statement.execute()
-    statement.close()
 
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_TABLE)
     statement.execute()
@@ -170,7 +166,7 @@ object Meta {
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, power LONG, population LONG, slots LONG, runway_length SMALLINT)")
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, income BIGINT, population LONG, slots LONG, runway_length SMALLINT)")
     statement.execute()
     statement.close()
     
@@ -319,6 +315,7 @@ object Meta {
     createAirlineModifierProperty(connection)
     createUserModifier(connection)
     createAllianceLabelColor(connection)
+    createAirportAsset(connection)
 
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CITY_SHARE_TABLE + "(" +
       "airport INTEGER," +
@@ -349,23 +346,6 @@ object Meta {
     statement.close()
 
     statement = connection.prepareStatement("CREATE INDEX " + AIRPORT_FEATURE_INDEX_1 + " ON " + AIRPORT_FEATURE_TABLE + "(airport)")
-    statement.execute()
-    statement.close()
-
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_PROJECT_TABLE + "(" +
-      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-      "airport INTEGER," +
-      "project_type VARCHAR(256)," +
-      "project_status VARCHAR(256)," +
-      "progress DOUBLE," +
-      "duration INTEGER," +
-      "level INTEGER," +
-      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
-      ")")
-    statement.execute()
-    statement.close()
-
-    statement = connection.prepareStatement("CREATE INDEX " + AIRPORT_PROJECT_INDEX_1 + " ON " + AIRPORT_PROJECT_TABLE + "(airport)")
     statement.execute()
     statement.close()
 
@@ -848,12 +828,12 @@ object Meta {
       "loan_interest LONG," +
       "base_upkeep LONG," +
       "service_investment LONG," +
-      "maintenance_investment LONG," +
       "advertisement LONG," +
       "lounge_upkeep LONG, " +
       "lounge_cost LONG, " +
       "lounge_income LONG, " +
-      "shuttle_cost LONG, " +
+      "asset_expense LONG, " +
+      "asset_revenue LONG, " +
       "fuel_profit LONG, " +
       "depreciation LONG," +
       "overtime_compensation LONG," +
@@ -882,6 +862,7 @@ object Meta {
       "create_link BIGINT(20), " +
       "facility_construction BIGINT(20), " +
       "oil_contract BIGINT(20), " +
+      "asset_transactions BIGINT(20), " +
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +
@@ -2025,6 +2006,99 @@ object Meta {
     statement.close()
   }
 
+  def createAirportAsset(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_PROPERTY_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_BOOST_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_BOOST_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_ASSET_BLUEPRINT_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airport INTEGER," +
+      "asset_type VARCHAR(256)," +
+      "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_TABLE + "(" +
+      "id INTEGER PRIMARY KEY, " +
+      "airline INTEGER, " +
+      "airport INTEGER," +
+      "asset_type VARCHAR(256)," +
+      "name VARCHAR(256)," +
+      "level INTEGER, " +
+      "completion_cycle INTEGER, " +
+      "revenue BIGINT, " +
+      "expense BIGINT, " +
+      "roi DECIMAL(9,8), " +
+      "upgrade_applied TINYINT, " +
+      "FOREIGN KEY(id) REFERENCES " + AIRPORT_ASSET_BLUEPRINT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BOOST_TABLE + "(" +
+      "asset INTEGER, " +
+      "boost_type VARCHAR(256), " +
+      "value DECIMAL(12,2), " +
+      "PRIMARY KEY (asset, boost_type)," +
+      "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_PROPERTY_TABLE + "(" +
+      "asset INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (asset, property)," +
+      "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BOOST_HISTORY_TABLE + "(" +
+      "asset INTEGER, " +
+      "boost_type VARCHAR(256), " +
+      "level SMALLINT, " +
+      "cycle INT, " + //not strictly necessary but nice for debugging
+      "value DECIMAL(12,2), " +
+      "gain DECIMAL(12,2), " +
+      "upgrade_factor DECIMAL(5,4), " +
+      "PRIMARY KEY (asset, boost_type, level)," +
+      "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_PROPERTY_HISTORY_TABLE + "(" +
+      "asset INTEGER, " +
+      "property VARCHAR(256), " +
+      "cycle INT, " +
+      "value VARCHAR(256), " +
+      "PRIMARY KEY (asset, property, cycle)," +
+      "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
 
   def createAllianceLabelColor(connection : Connection) {
     var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE)
@@ -2060,6 +2134,122 @@ object Meta {
     statement.close()
   }
 
+  def createAllianceMission(connection : Connection): Unit = {
+
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_REWARD_PROPERTY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_REWARD_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_STATS_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + ALLIANCE_MISSION_STATS_TABLE)
+    statement.execute()
+    statement.close()
+
+
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "start_cycle INTEGER, " +
+      "mission_type VARCHAR(256), " +
+      "duration INTEGER," +
+      "alliance INTEGER, " +
+      "status VARCHAR(256), " +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_PROPERTY_TABLE + "(" +
+      "mission INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (mission, property)," +
+      "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE + "(" +
+      "mission INTEGER, " +
+      "property VARCHAR(256), " +
+      "cycle INT, " +
+      "value BIGINT, " +
+      "PRIMARY KEY (mission, property, cycle)," +
+      "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_REWARD_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "airline INTEGER, " +
+      "mission INTEGER, " +
+      "reward_type VARCHAR(256), " +
+      "available TINYINT(1), " +
+      "claimed TINYINT(1), " +
+      "FOREIGN KEY(mission) REFERENCES " + ALLIANCE_MISSION_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_REWARD_PROPERTY_TABLE + "(" +
+      "reward INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (reward, property)," +
+      "FOREIGN KEY(reward) REFERENCES " + ALLIANCE_MISSION_REWARD_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_STATS_TABLE + "(" +
+      "alliance INTEGER, " +
+      "cycle INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (alliance, cycle, property)," +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + ALLIANCE_MISSION_STATS_TABLE + "(" +
+      "alliance INTEGER, " +
+      "cycle INTEGER, " +
+      "property VARCHAR(256), " +
+      "value BIGINT, " +
+      "PRIMARY KEY (alliance, cycle, property)," +
+      "FOREIGN KEY(alliance) REFERENCES " + ALLIANCE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
 
 
 

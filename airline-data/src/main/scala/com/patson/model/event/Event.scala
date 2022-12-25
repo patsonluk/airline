@@ -208,7 +208,7 @@ case class OlympicsVoteCashReward() extends EventReward(EventType.OLYMPICS, Rewa
 case class OlympicsVoteLoyaltyReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_VOTE, RewardOption.LOYALTY) {
   val LOYALTY_BONUS = 10
   override def applyReward(event: Event, airline : Airline) = {
-    val bonus = AirlineBonus(BonusType.OLYMPICS_VOTE, AirlineAppeal(loyalty = LOYALTY_BONUS, awareness = 0), Some(event.startCycle + event.duration))
+    val bonus = AirlineBonus(BonusType.OLYMPICS_VOTE, AirlineAppeal(loyalty = LOYALTY_BONUS), Some(event.startCycle + event.duration))
     Olympics.getAffectedAirport(event.id, Olympics.getSelectedAirport(event.id).get).foreach { affectedAirport =>
       AirportSource.saveAirlineAppealBonus(affectedAirport.id, airline.id, bonus)
     }
@@ -241,7 +241,7 @@ case class OlympicsPassengerCashReward() extends EventReward(EventType.OLYMPICS,
 case class OlympicsPassengerLoyaltyReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.LOYALTY) {
   val LOYALTY_BONUS = 25
   override def applyReward(event: Event, airline : Airline) = {
-    val bonus = AirlineBonus(BonusType.OLYMPICS_PASSENGER, AirlineAppeal(loyalty = LOYALTY_BONUS, awareness = 0), Some(event.startCycle + event.duration * 2))
+    val bonus = AirlineBonus(BonusType.OLYMPICS_PASSENGER, AirlineAppeal(loyalty = LOYALTY_BONUS), Some(event.startCycle + event.duration * 2))
     Olympics.getAffectedAirport(event.id, Olympics.getSelectedAirport(event.id).get).foreach { affectedAirport =>
       AirportSource.saveAirlineAppealBonus(affectedAirport.id, airline.id, bonus)
     }

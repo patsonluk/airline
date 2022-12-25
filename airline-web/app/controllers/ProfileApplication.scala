@@ -22,7 +22,6 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         "description" -> profile.description,
         "cash" -> profile.cash,
         "airplanes" -> profile.airplanes,
-        "awareness" -> profile.awareness,
         "reputation" -> profile.reputation,
         "airportText" -> profile.airport.displayText)
       profile.loan.foreach { loan =>
@@ -81,7 +80,6 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         description = "A newly acquired airline with a modest aircraft fleet of young age. Grow this humble airline into the most powerful and respected brand in the aviation world!",
         cash = (capital * 1.5).toInt - smallAirplanes.map(_.value).sum +  difficulty * BONUS_PER_DIFFICULTY_POINT / 2,
         airport = airport,
-        awareness = 20,
         reputation = 10,
         airplanes = smallAirplanes,
         loan = Some(Bank.getLoanOptions((capital * 1).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
@@ -97,7 +95,6 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         description = "An airline that has previously over-expanded by mismanagement of now retired CEO. It is left with some aging airplanes and heavy debt. Can you turn this airline around?",
         cash = (capital * 4).toInt - largeAirplanes.map(_.value).sum + difficulty * BONUS_PER_DIFFICULTY_POINT,
         airport = airport,
-        awareness = 50,
         reputation = 25,
         airplanes = largeAirplanes,
         loan = Some(Bank.getLoanOptions((capital * 3.5).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
@@ -130,7 +127,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         airline.setCountryCode(airport.countryCode)
         airline.setReputation(profile.reputation)
         airline.setBalance(profile.cash)
-        AirportSource.updateAirlineAppeal(airportId, airlineId, AirlineAppeal(loyalty = 0, awareness = profile.awareness))
+        AirportSource.updateAirlineAppeal(airportId, airlineId, AirlineAppeal(loyalty = 0))
 
         profile.airplanes.foreach(_.assignDefaultConfiguration())
         AirplaneSource.saveAirplanes(profile.airplanes)

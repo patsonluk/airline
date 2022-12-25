@@ -77,22 +77,22 @@ object AirlineSource {
           
           airlines += airline
         }
+
+        val allianceMembers = AllianceSource.loadAllianceMemberByAirlines(airlines.toList)
+        airlines.foreach { airline =>
+          allianceMembers.get(airline) match { //i don't like foreach or fold... hard to read
+            case Some(allianceMember) =>
+              if (allianceMember.role != AllianceRole.APPLICANT) {
+                airline.setAllianceId(allianceMember.allianceId)
+              }
+            case None => //do nothing
+          }
+        }
         
         if (fullLoad) {
           val airlineBases : scala.collection.immutable.Map[Int, List[AirlineBase]] = loadAirlineBasesByAirlines(airlines.toList).groupBy(_.airline.id)
           airlines.foreach { airline =>
             airline.setBases(airlineBases.getOrElse(airline.id, List.empty))
-          }
-          
-          val allianceMembers = AllianceSource.loadAllianceMemberByAirlines(airlines.toList)
-          airlines.foreach { airline =>
-            allianceMembers.get(airline) match { //i don't like foreach or fold... hard to read
-              case Some(allianceMember) =>
-                if (allianceMember.role != AllianceRole.APPLICANT) {
-                  airline.setAllianceId(allianceMember.allianceId)
-                }
-              case None => //do nothing
-            }
           }
         }
         
@@ -575,7 +575,7 @@ object AirlineSource {
           
           //val airport = Airport.fromId(resultSet.getInt("airport"))
           val airportId = resultSet.getInt("airport")
-          val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, false).get)
+          val airport = airports.getOrElseUpdate(airportId, AirportCache.getAirport(airportId, true).get)
           val name = resultSet.getString("name")
           val level = resultSet.getInt("level")
           val foundedCycle = resultSet.getInt("founded_cycle")

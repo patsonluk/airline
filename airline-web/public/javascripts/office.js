@@ -52,7 +52,8 @@ function showOfficeCanvas() {
 	
 	updateAirlineDetails()
 	loadSheets();
-	updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
+	//updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
+	updateAirlineAssets()
 	updateCampaignSummary()
 	updateChampionedCountriesDetails()
 	updateChampionedAirportsDetails()
@@ -86,6 +87,50 @@ function updateCampaignSummary() {
             });
             if (result.length == 0) {
                 $campaignSummary.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div></div>")
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+    });
+}
+
+function updateAirlineAssets() {
+    $.ajax({
+        type: 'GET',
+        url: "airlines/" + activeAirline.id + "/airport-assets",
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            var $assetList = $("#officeCanvas .assetList")
+            $assetList.children("div.table-row").remove()
+
+            $.each(result, function(index, asset) {
+                var profit = asset.revenue - asset.expense
+                var margin
+                if (asset.expense == 0) {
+                    margin = "-"
+                } else {
+                    margin = (profit * 100.0 / asset.revenue).toFixed(2)
+                }
+                var $row = $("<div class='table-row clickable'></div>")
+                $row.append("<div class='cell'>" + getCountryFlagImg(asset.airport.countryCode) + asset.airport.iata + "</div>")
+                $row.append("<div class='cell'>" + asset.name + "</div>")
+                $row.append("<div class='cell' style='text-align: right;'>" + asset.level + "</div>")
+                $row.append("<div class='cell' style='text-align: right;'>$" + commaSeparateNumber(profit) + "</div>")
+                $row.append("<div class='cell' style='text-align: right;'>" + margin  + "%</div>")
+
+                $row.click(function() {
+                    showAssetModal(asset)
+                    $("#airportAssetDetailsModal").data('postUpdateFunc', function() {
+                        updateAirlineAssets()
+                    })
+                })
+                $assetList.append($row)
+            });
+            if (result.length == 0) {
+                $assetList.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
             }
         },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -359,9 +404,9 @@ function updateIncomeSheet(airlineIncome) {
         $("#othersLoungeUpkeep").text('$' + commaSeparateNumber(airlineIncome.othersLoungeUpkeep))
         $("#othersLoungeCost").text('$' + commaSeparateNumber(airlineIncome.othersLoungeCost))
         $("#othersLoungeIncome").text('$' + commaSeparateNumber(airlineIncome.othersLoungeIncome))
-        //$("#othersShuttleCost").text('$' + commaSeparateNumber(airlineIncome.othersShuttleCost))
+        $("#othersAssetExpense").text('$' + commaSeparateNumber(airlineIncome.othersAssetExpense))
+        $("#othersAssetRevenue").text('$' + commaSeparateNumber(airlineIncome.othersAssetRevenue))
         $("#othersServiceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersServiceInvestment))
-        $("#othersMaintenanceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersMaintenanceInvestment))
         $("#othersAdvertisement").text('$' + commaSeparateNumber(airlineIncome.othersAdvertisement))
         $("#othersFuelProfit").text('$' + commaSeparateNumber(airlineIncome.othersFuelProfit))
         $("#othersDepreciation").text('$' + commaSeparateNumber(airlineIncome.othersDepreciation))
@@ -405,6 +450,7 @@ function updateCashFlowSheet(airlineCashFlow) {
         $("#cashFlowSheet .createLink").text('$' + commaSeparateNumber(airlineCashFlow.createLink))
         $("#cashFlowSheet .facilityConstruction").text('$' + commaSeparateNumber(airlineCashFlow.facilityConstruction))
         $("#cashFlowSheet .oilContract").text('$' + commaSeparateNumber(airlineCashFlow.oilContract))
+        $("#cashFlowSheet .assetTransactions").text('$' + commaSeparateNumber(airlineCashFlow.assetTransactions))
 	}
 }
 
@@ -963,6 +1009,7 @@ function updateResetAirlineInfo() {
 	    	
 	    	$('.resetTooltip .airplanes').text(commaSeparateNumber(result.airplanes))
 	    	$('.resetTooltip .bases').text(commaSeparateNumber(result.bases))
+	    	$('.resetTooltip .assets').text(commaSeparateNumber(result.assets))
 	    	$('.resetTooltip .loans').text(commaSeparateNumber(result.loans))
 	    	$('.resetTooltip .oilContracts').text(commaSeparateNumber(result.oilContracts))
 	    	$('.resetTooltip .cash').text(commaSeparateNumber(result.existingBalance))

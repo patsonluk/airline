@@ -6,7 +6,7 @@ case class Lounge(airline : Airline, allianceId : Option[Int], airport : Airport
   }
   
   val getUpkeep : Long = {
-    if (status == LoungeStatus.ACTIVE) (10000 + airport.income) * 5 * level else 0 
+    if (status == LoungeStatus.ACTIVE) (10000 + airport.baseIncome) * 5 * level else 0 //use base income for calculation here
   }
   
   //to be considered active, it should have passenger ranking smaller (ie higher) or equals to this value)

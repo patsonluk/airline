@@ -2,6 +2,7 @@ package com.patson.model
 
 import FlightCategory._
 import com.patson.data.AirportSource
+import com.patson.util.AirportCache
 
 object AirlineBaseSpecialization extends Enumeration {
   abstract class Specialization() extends super.Val {
@@ -38,6 +39,22 @@ object AirlineBaseSpecialization extends Enumeration {
     override val descriptions = List(s"$delegateBoost extra delegates")
   }
 
+  case class PowerhouseSpecialization() extends Specialization {
+    override val getType = BaseSpecializationType.AIRPORT_POWER
+    override val label = "Powerhouse"
+    override val free = true
+    override val scaleRequirement : Int = 14
+    val populationBoost = 30000
+    val incomeLevelBoost = 5
+    override val descriptions = List(s"Increase population by $populationBoost", s"Increase income level by $incomeLevelBoost")
+    override def apply(airline: Airline, airport : Airport) = {
+      AirportCache.invalidateAirport(airport.id)
+    }
+    override def unapply(airline: Airline, airport : Airport) = {
+      AirportCache.invalidateAirport(airport.id)
+    }
+  }
+
   case class LoyaltySpecialization() extends Specialization {
     override val getType = BaseSpecializationType.LOYALTY
     override val label = "Sports Events Sponsorship"
@@ -47,7 +64,7 @@ object AirlineBaseSpecialization extends Enumeration {
 
     override def apply(airline: Airline, airport : Airport) = {
       unapply(airline, airport) //unapply first to avoid duplicates
-      AirportSource.saveAirlineAppealBonus(airport.id, airline.id, AirlineBonus(BonusType.BASE_SPECIALIZATION_BONUS, AirlineAppeal(loyalty = loyaltyBoost, awareness = 0), None))
+      AirportSource.saveAirlineAppealBonus(airport.id, airline.id, AirlineBonus(BonusType.BASE_SPECIALIZATION_BONUS, AirlineAppeal(loyalty = loyaltyBoost), None))
     }
 
     override def unapply(airline: Airline, airport : Airport) = {
@@ -133,10 +150,11 @@ object AirlineBaseSpecialization extends Enumeration {
   val DELEGATE_RECRUITER = DelegateSpecialization()
   val BRANDING_BUDGET = BudgetAirlineSpecialization()
   val BRANDING_PREMIUM = PremiumAirlineSpecialization()
+  val POWERHOUSE = PowerhouseSpecialization()
 }
 
 object BaseSpecializationType extends Enumeration {
   type SpecializationType = Value
-  val FLIGHT_TYPE, DELEGATE, BRANDING, LOYALTY, NEGOTIATION = Value
+  val FLIGHT_TYPE, DELEGATE, BRANDING, LOYALTY, NEGOTIATION, AIRPORT_POWER = Value
   val COOLDOWN = 100 //change every 100 cycles
 }

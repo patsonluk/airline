@@ -50,8 +50,7 @@ object QuickCreateSchema extends App {
   def createSchema(connection : Connection) = {
 //    Meta.createLog(connection)
 //    Meta.createAlert(connection)
-    //Meta.createDelegate(connection)
-    Meta.createLogProperty(connection)
+    Meta.createAllianceMission(connection)
   }
   
   

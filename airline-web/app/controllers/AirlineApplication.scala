@@ -88,6 +88,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       JsObject(List(
       "airplanes" -> JsNumber(info.airplanes),
       "bases" -> JsNumber(info.bases),
+      "assets" -> JsNumber(info.assets),
       "loans" -> JsNumber(info.loans),
       "oilContracts" -> JsNumber(info.oilContracts),
       "existingBalance" -> JsNumber(info.existingBalance),
@@ -462,8 +463,14 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
             }
             AirplaneSource.updateAirplanes(updatingAirplanes)
 
-            base.delete()
+            //delete assets
+            AirportAssetSource.loadAirportAssetsByAirline(airlineId).filter(_.airport.id == airportId).foreach { asset =>
+              AirportAssetSource.deleteAirportAsset(asset.id)
+              AirlineSource.adjustAirlineBalance(airlineId, asset.sellValue)
+              AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.ASSET_TRANSACTION, asset.sellValue))
+            }
 
+            base.delete()
             Ok(Json.toJson(base))
         }
       case None => //
@@ -505,11 +512,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                    airport => //TODO for now. Maybe update to Ad event later on
                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
                    AirlineSource.saveAirlineBase(newBase)
-                   val existingAppeal = airport.getAirlineBaseAppeal(airlineId)
-                   if (existingAppeal.awareness < 20) { //update to 10 for hq
-                     AirportSource.updateAirlineAppeal(airport.id, airlineId, AirlineAppeal(existingAppeal.loyalty, 20))
-                   }
-                   
+
                    airline.setCountryCode(newBase.countryCode)
                    AirlineSource.saveAirlineInfo(airline, updateBalance = false)
                    AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)

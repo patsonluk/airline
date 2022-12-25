@@ -973,20 +973,27 @@ function plotPie(dataSource, currentKey, container, keyName, valueName) {
 	var data = []
 
 	$.each(dataSource, function(key, dataEntry) {
-		var entry = {
-			label : dataEntry[keyName],
-			value : dataEntry[valueName]
-		}
-		
+	    var keyLabel, dataValue
+
+	    if (keyName && valueName) {
+            keyLabel = dataEntry[keyName],
+            dataValue = dataEntry[valueName]
+        } else {
+            keyLabel = key
+            dataValue = dataEntry
+        }
+
+        var entry = { label : keyLabel, value : dataValue }
+
 		if (dataEntry.color) {
 			entry.color = dataEntry.color
-		} else if (defaultPieColors[dataEntry[keyName]]) {
-		    entry.color = defaultPieColors[dataEntry[keyName]]
+		} else if (defaultPieColors[keyLabel]) {
+		    entry.color = defaultPieColors[keyLabel]
 		} else {
-		    entry.color = colorFromString(dataEntry[keyName])
+		    entry.color = colorFromString(keyLabel)
 		}
 		
-		if (currentKey && dataEntry[keyName] == currentKey) {
+		if (currentKey && keyLabel == currentKey) {
 			entry.issliced = "1"
 		}
 		
@@ -1460,6 +1467,66 @@ function plotLoyalistHistoryChart(loyalistHistory, container) {
 	})
 }
 
+function plotMissionStatsGraph(stats, threshold, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+
+	var data = []
+	var category = []
+
+	$.each(stats, function(i, entry) {
+		data.push({ value : entry })
+		category.push({ label : "week " + i})
+	})
+
+
+	var chartConfig = {
+                      	    		"xAxisname": "Week",
+                      	    		"yAxisName": "Achieved Value",
+                      	    		"useroundedges": "1",
+                      	    		"animation": "1",
+                      	    		"showBorder":"0",
+                      	    		"showValues": "0",
+                                      "toolTipBorderRadius": "2",
+                                      "toolTipPadding": "5",
+                                      "bgAlpha":"0",
+                                      "drawAnchors": "0",
+                                      "setAdaptiveYMin":"1",
+                                      "labelStep": "10"
+                      	    	}
+    checkDarkTheme(chartConfig)
+
+    var dataSource = {
+                        "chart": chartConfig,
+                        "categories" : [{ "category" : category}],
+                        "dataset" : [{ "seriesname": "Value", "data" : data}],
+                    }
+    if (threshold) {
+        dataSource["trendlines"] = [{
+                             	            "line": [
+                             	                {
+                             	                    "startvalue": threshold,
+                             	                    "color": "#A1D490",
+                             	                    "displayvalue": "Threshold",
+                             	                    "valueOnRight": "1",
+                             	                    "thickness": "2"
+                             	                }
+                             	            ]
+                             	        }]
+    }
+
+	var chart = container.insertFusionCharts({
+		type: 'msline',
+	    width: '100%',
+	    height: '100%',
+	    containerBackgroundOpacity :'0',
+	    dataFormat: 'json',
+		dataSource: dataSource
+	})
+}
+
+
 function checkDarkTheme(chartConfig, keepPallette) {
     if (document.documentElement.getAttribute("data-theme") === "dark") {
     //if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -1487,3 +1554,4 @@ function checkDarkTheme(chartConfig, keepPallette) {
     //                "legendIconBorderThickness": "3"
     }
 }
+

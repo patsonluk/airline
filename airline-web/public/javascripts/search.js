@@ -1,7 +1,6 @@
 var loadedOlympicsEvents = []
 var loadedAlerts = []
 
-
 function showSearchCanvas() {
     var titlesContainer = $("#searchCanvas div.titlesContainer")
     positionTitles(titlesContainer)
@@ -86,19 +85,31 @@ function refreshSearchDiv(selectedDiv) {
     if (searchTitleType === 'route') {
         $('#searchCanvas div.routeSearch').show();
         $('#searchCanvas div.routeSearch').siblings('.searchContainer').hide();
+        $('#searchCanvas .searchFieldContainer').show();
     } else if (searchTitleType === 'history') {
         $('#searchCanvas div.historySearch').show();
         $('#searchCanvas div.historySearch').siblings('.searchContainer').hide();
+        $('#searchCanvas .searchFieldContainer').hide();
     } else if (searchTitleType === 'research') {
         $('#searchCanvas div.research').show();
         $('#researchSearchResult').hide();
         $('#searchCanvas div.research').siblings('.searchContainer').hide();
+        $('#searchCanvas .searchFieldContainer').show();
     }
 
 }
 
+function searchAction(fromAirportId, toAirportId) {
+    var searchTitleType = $('#searchCanvas div.titlesContainer div.selected').data('searchType')
+    if (searchTitleType === 'route') {
+        searchRoute(fromAirportId, toAirportId)
+    } else if (searchTitleType === 'research') {
+        researchFlight(fromAirportId, toAirportId)
+    }
+}
 
-function searchFlight(fromAirportId, toAirportId) {
+
+function searchRoute(fromAirportId, toAirportId) {
     if (fromAirportId && toAirportId) {
         var url = "search-route/" + fromAirportId + "/" + toAirportId
 

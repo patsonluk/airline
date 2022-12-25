@@ -12,9 +12,13 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     } else if (headquarter && scale == 1) { //free to start HQ
       0
     } else {
-      val baseCost = (1000000 + airport.rating.overallRating * 120000).toLong
+      var baseCost = (1000000 + airport.rating.overallRating * 120000).toLong
+      //adjust if income has been boosted, we want to negate the boost effect
+      if (airport.baseIncome != airport.income) {
+        baseCost = baseCost * airport.baseIncome / airport.income
+      }
 
-      baseCost * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) ).toLong
+      (baseCost * airportSizeRatio * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) )).toLong
     }
   }
 
@@ -22,9 +26,21 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   
   lazy val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
-    val baseUpkeep = (5000 + airport.rating.overallRating * 150).toLong
-    baseUpkeep * (Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
+    var baseUpkeep = (5000 + airport.rating.overallRating * 150).toLong
+    //adjust if income has been boosted, we want to negate the boost effect
+    if (airport.baseIncome != airport.income) {
+      baseUpkeep = baseUpkeep * airport.baseIncome / airport.income
+    }
+
+    (baseUpkeep * airportSizeRatio * Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
   }
+
+  lazy val airportSizeRatio =
+    if (airport.size > 6) {
+      1.0
+    } else { //discount for size < 6
+      0.2 + airport.size * 0.1
+    }
 
 //  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
 //    val base = 5

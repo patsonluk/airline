@@ -3,15 +3,19 @@ package controllers
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
+
 import javax.inject._
 import views._
 import models._
 import com.patson.data.UserSource
 import com.patson.model._
 import com.patson.Authentication
+
 import java.util.Calendar
 import com.patson.data.AirlineSource
+import com.patson.util.AirlineCache
 import play.api.libs.ws.WSClient
+
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Await
@@ -86,8 +90,13 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
 //    val existingUser = NewUser("fakeuser", "secret", "fake@gmail.com") 
 //    Ok(html.signup(signupForm.fill(existingUser)))
 //  }
-  
-  /**
+
+  def airlineNameCheck(airlineName : String)= Action { implicit request =>
+    val ok = AirlineSource.loadAirlinesByCriteria(List(("name", airlineName))).length == 0
+    Ok(Json.obj("ok" -> ok))
+  }
+
+   /**
    * Handle form submission.
    */
   def submit = Action { implicit request =>

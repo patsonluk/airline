@@ -26,8 +26,9 @@ GET	 	 /airports/:airportId/loyalist-data	        controllers.Application.getAir
 GET	 	 /airports/:airportId/departures/:dayOfWeek/:hour/:minute controllers.Application.getDepartures(airportId : Int, dayOfWeek : Int, hour : Int, minute : Int)
 GET		 /airports/:fromAirportId/to/:toAirportId				controllers.Application.getAirportLinkConsumptions(fromAirportId : Int, toAirportId : Int)
 GET		 /airports/:airportId/link-consumptions	controllers.Application.getLinkConsumptionsByAirport(airportId : Int)
-GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportProjects(airportId : Int)
-PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
+#GET	 	 /airports/:airportId/projects	      controllers.Application.getAirportProjects(airportId : Int)
+#PUT	 	 /airports/:airportId/projects	      controllers.Application.addAirportProject(airlineId : Int, airportId : Int)
+GET	 	 /airports/:airportId/assets	      controllers.AirportAssetApplication.getAirportAssets(airportId : Int)
 GET	 	 /airports/:airportId/champions	      controllers.Application.getAirportChampions(airportId : Int, airlineId: Option[Int])
 GET		 /airports/base/scale-details			  controllers.Application.getScaleDetails()
 GET      /airports/:airportId/generic-transits     controllers.GenericTransitApplication.getGenericTransits(airportId: Int)
@@ -135,11 +136,21 @@ PUT		 /airlines/:airlineId/airplanes/:airplaneId/configuration/:configurationId 
 DELETE	 /airlines/:airlineId/configurations/:configurationId  controllers.AirplaneConfigurationApplication.deleteConfiguration(airlineId : Int, configurationId : Int)
 GET      /airlines/:airlineId/favorite-model/:modelId    controllers.AirplaneApplication.getFavoriteModelDetails(airlineId : Int, modelId : Int)
 PUT      /airlines/:airlineId/favorite-model/:modelId    controllers.AirplaneApplication.setFavoriteModel(airlineId : Int, modelId : Int)
+GET      /airlines/:airlineId/maintenance-factor            controllers.AirplaneApplication.getMaintenanceFactor(airlineId: Int)
 GET		 /airlines/:airlineId/heatmap-data 				controllers.HeatmapApplication.getHeatmapData(airlineId: Int, heatmapType : String, cycleDelta : Int)
 GET 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.getCampaigns(airlineId: Int, fullLoad : Boolean ?= false)
 POST 	 /airlines/:airlineId/campaigns         controllers.CampaignApplication.saveCampaign(airlineId: Int)
 DELETE 	 /airlines/:airlineId/campaigns/:campaignId         controllers.CampaignApplication.deleteCampaign(airlineId: Int, campaignId : Int)
 GET 	 /airlines/:airlineId/campaign-airports/:airportId         controllers.CampaignApplication.getCampaignAirports(airlineId: Int, airportId: Int, radius : Int)
+GET	 	 /airlines/:airlineId/airport-assets	      controllers.AirportAssetApplication.getAirportAssetsWithAirline(airlineId : Int)
+GET	 	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.getAirportAssetDetailsWithAirline(airlineId : Int, assetId : Int)
+PUT	 	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.putAirportAsset(airlineId : Int, assetId : Int)
+DELETE	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.deleteAirportAsset(airlineId : Int, assetId : Int)
+GET	 	 /airlines/:airlineId/select-alliance-mission/:missionId	      controllers.AllianceMissionApplication.selectAllianceMission(airlineId : Int, missionId : Int)
+GET      /airlines/:airlineId/mission-stats/:missionId      controllers.AllianceMissionApplication.getAllianceMissionStats(airlineId : Int, missionId : Int)
+GET	 	 /airlines/:airlineId/select-alliance-mission-reward/:missionId/:rewardId	      controllers.AllianceMissionApplication.selectAllianceMissionReward(airlineId : Int, missionId : Int, rewardId : Int)
+
+GET	 	 /airport-asset/:assetId	      controllers.AirportAssetApplication.getAirportAssetDetailsWithoutAirline(assetId : Int)
 
 GET      /airlines/:airlineId/alliance-label-color         controllers.ColorApplication.getAllianceLabelColor(airlineId: Int, allianceId : Int)
 GET      /airlines/:airlineId/airline-label-colors         controllers.ColorApplication.getAirlineLabelColors(airlineId: Int)
@@ -147,6 +158,7 @@ GET      /airlines/:airlineId/set-alliance-label-color-as-airline         contro
 GET      /airlines/:airlineId/set-alliance-label-color-as-alliance         controllers.ColorApplication.setAllianceLabelColorAsAlliance(airlineId: Int, targetAllianceId : Int, color : String)
 GET      /airlines/:airlineId/delete-alliance-label-color-as-airline         controllers.ColorApplication.deleteAllianceLabelColorAsAirline(airlineId: Int, targetAllianceId : Int)
 GET      /airlines/:airlineId/delete-alliance-label-color-as-alliance         controllers.ColorApplication.deleteAllianceLabelColorAsAlliance(airlineId: Int, targetAllianceId : Int)
+
 
 POST      /airlines/:airlineId/completed-tutorial/:tutorialId     controllers.TutorialApplication.saveCompletedTutorial(airlineId: Int, tutorialId: String, category : String)
 GET      /airlines/:airlineId/completed-tutorial               controllers.TutorialApplication.getCompletedTutorials(airlineId: Int)
@@ -234,6 +246,7 @@ DELETE	 /users/:userId/wallpaper	controllers.SettingsApplication.deleteWallpaper
 GET     /signup                     controllers.SignUp.form
 #GET     /editUser/fakeuser             controllers.SignUp.editForm
 POST    /signup                     controllers.SignUp.submit
+GET     /signup/airline-name-check  controllers.SignUp.airlineNameCheck(airlineName : String)
 
 # PasswordReset
 GET    /password-reset				controllers.AccountApplication.passwordResetForm(resetToken : String)

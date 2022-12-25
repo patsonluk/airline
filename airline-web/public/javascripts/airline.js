@@ -1767,6 +1767,13 @@ function updateLinksTable(sortProperty, sortOrder) {
 		
 		linksTable.append(row)
 	});
+	if (loadedLinks.length == 0) {
+        $('#linksCanvas .noLinkTips').show();
+	} else {
+	    $('#linksCanvas .noLinkTips').hide();
+    }
+
+
 }
 
 function selectLinkFromMap(linkId, refocus) {
@@ -1873,8 +1880,9 @@ function showLinkComposition(linkId) {
 
 	    	updateTopCountryComposition(result.country)
 	    	updatePassengerTypeComposition(result.passengerType)
-	    	updatePrefernceTypeComposition(result.preferenceType)
-	    	updateTopAirportComposition(result.airport)
+	    	updatePreferenceTypeComposition(result.preferenceType)
+	    	updateTopAirportComposition($('#linkCompositionModal div.topHomeAirports'), result.homeAirports)
+	    	updateTopAirportComposition($('#linkCompositionModal div.topDestinationAirports'), result.destinationAirports)
 	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
 	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
 	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
@@ -2135,9 +2143,8 @@ function getLoungeIconSpan(lounge) {
 }
 
 function updateRivalTables(result) {
-    var loyaltyAwarenessTable = $("#rivalLoyaltyAwarenessTable")
+    var appealTable = $("#rivalAppealTable")
     var networkCapacityTable = $("#networkCapacity")
-    loyaltyAwarenessTable.children(".table-row").remove()
     networkCapacityTable.children(".table-row").remove()
 	var fromAirportText = getAirportText(result.fromCity, result.fromAirportCode)
     var toAirportText = getAirportText(result.toCity, result.toAirportCode)
@@ -2148,9 +2155,7 @@ function updateRivalTables(result) {
 	var airlineNameById = {}
 	var fromAirportLoyalty = {}
 	var toAirportLoyalty = {}
-	var fromAirportAwareness = {}
-    var toAirportAwareness = {}
-    var fromAirportCapacity = {}
+	var fromAirportCapacity = {}
     var toAirportCapacity = {}
     var fromAirportLounge = {}
     var toAirportLounge = {}
@@ -2158,7 +2163,6 @@ function updateRivalTables(result) {
     $.each(result.fromAirport, function(index, entry) {
 	     var airlineId = entry.airline.id
 	     airlineNameById[airlineId] = entry.airline.name
-	     fromAirportAwareness[airlineId] = entry.awareness
 	     fromAirportLoyalty[airlineId] = entry.loyalty
 	     fromAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
 	     if (entry.lounge) {
@@ -2168,7 +2172,6 @@ function updateRivalTables(result) {
 
     $.each(result.toAirport, function(index, entry) {
          var airlineId = entry.airline.id
-         toAirportAwareness[airlineId] = entry.awareness
          toAirportLoyalty[airlineId] = entry.loyalty
          toAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
          if (entry.lounge) {
@@ -2196,10 +2199,8 @@ function updateRivalTables(result) {
         var $airlineCell = $("<div class='cell' align='left'></div>").append($airlineSpan)
 		row.append($airlineCell)
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, fromAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, fromAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, toAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, toAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		loyaltyAwarenessTable.append(row)
+		appealTable.append(row)
 
 		row = $("<div class='table-row'></div>")
 
@@ -2227,7 +2228,7 @@ function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStep
 		var image = $("<img src='" + fullStepImageSrc + "'>")
 		containerDiv.append(image)
     }
-    if (hasRemainder) {
+    if (hasRemainder && halfStepImageSrc) {
         var image = $("<img src='" + halfStepImageSrc + "'>")
     	containerDiv.append(image)
     }
@@ -2428,39 +2429,39 @@ function updateTopCountryComposition(countryComposition) {
 	});
 }
 
-function updateTopAirportComposition(airportComposition) {
+function updateTopAirportComposition($container, airportComposition) {
 	var maxPerColumn = 10;
 	var index = 0;
-	$('#linkCompositionModal .topAirportTables').empty()
+	$container.empty()
 	var $table
 	$.each(airportComposition, function(index, entry) {
 	    if (index % maxPerColumn == 0) { //flush a column (a table)
-	        $table = $('<div class="table data" style="flex : 1; min-width: 200px;"></div>').appendTo($('#linkCompositionModal .topAirportTables'))
+	        $table = $('<div class="table data" style="flex : 1; min-width: 200px;"></div>').appendTo($container)
 	    }
 		$table.append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.airport
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 
-function updatePassengerTypeComposition(countryComposition) {
-	countryComposition = countryComposition.sort(function (a, b) {
+function updatePassengerTypeComposition(typeComposition) {
+	typeComposition = typeComposition.sort(function (a, b) {
 	    return b.passengerCount - a.passengerCount 
 	});
 	
 	$('#linkCompositionModal .passengerTypeTable .table-row').remove()
-	$.each(countryComposition, function(key, entry) {
+	$.each(typeComposition, function(key, entry) {
 		$('#linkCompositionModal .passengerTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 
-function updatePrefernceTypeComposition(countryComposition) {
-	countryComposition = countryComposition.sort(function (a, b) {
+function updatePreferenceTypeComposition(preferenceComposition) {
+	preferenceComposition = preferenceComposition.sort(function (a, b) {
 	    return b.passengerCount - a.passengerCount 
 	});
 	
 	$('#linkCompositionModal .preferenceTypeTable .table-row').remove()
-	$.each(countryComposition, function(key, entry) {
+	$.each(preferenceComposition, function(key, entry) {
 		$('#linkCompositionModal .preferenceTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
@@ -2795,14 +2796,15 @@ function getLinkNegotiation(callback) {
                     if (negotiationInfo.finalRequirementValue > availableDelegates) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Not enough available delegates)'
-                        $('#linkConfirmationModal .negotiationInfo img.error').show();
+                        $('#linkConfirmationModal .negotiationInfo .error').show();
                     } else if (negotiationInfo.finalRequirementValue > 10) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Too difficult to negotiate)'
                         $('#linkConfirmationModal .negotiationInfo img.error').show();
+                        $('#linkConfirmationModal .negotiationInfo .error').show();
                     } else {
                         $('#linkConfirmationModal .negotiationInfo img.info').show();
-                        $('#linkConfirmationModal .negotiationInfo img.error').hide();
+                        $('#linkConfirmationModal .negotiationInfo .error').hide();
                     }
 
                     $('#negotiationDifficultyModal .negotiationInfo .negotiationDifficultyTotal').text(difficultyTotalText)

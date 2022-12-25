@@ -220,8 +220,11 @@ a {
    width: 35%;
 }
 
-.airportCanvasLeftGroup, .officeCanvasLeftGroup  {
+.officeCanvasLeftGroup  {
     width: 70%;
+}
+.airportCanvasLeftGroup {
+    width: 80%;
 }
 
 .airportCanvasLeftGroup {
@@ -229,14 +232,24 @@ a {
     box-sizing: border-box;
 }
 
-.airportCanvasRightGroup, .officeCanvasRightGroup {
+.officeCanvasRightGroup {
     width: 30%;
+}
+.airportCanvasRightGroup {
+    width: 20%;
 }
 
 #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, .campaignDetails .verticalGroup, #allianceCanvas .verticalGroup {
     width: 50%;
 }
 
+.assetsDetails div.blueprint {
+    filter : grayscale(100%);
+}
+
+.assetsDetails div.blueprint:hover {
+    filter : none;
+}
 
 #loanInterestRateChart, #oilPriceChart {
     width: 90%;
@@ -250,10 +263,6 @@ a {
 
 #eventCanvas .secondColumn {
     width: 70%;
-}
-
-.airportEntry.selected {
-    background-color: #cbdff2;
 }
 
 body.christmas {
@@ -374,7 +383,7 @@ body.christmas {
     box-shadow: var(--table-selected-row-shadow);
 }
 
-div.section.clickable:hover, div.section.clickable.selected {
+div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCandidates div.selected {
   background: var(--table-header-selected-background);
   box-shadow: var(--table-header-selected-shadow);
 }
@@ -978,7 +987,7 @@ img.flag {
     font-weight: bold;
 }
 
-.tick:hover:after, .number-button span {
+.tick:not(.disabled):hover:after, .selected .tick:not(.disabled):after, .number-button span {
     color:#83d244;
     text-shadow:0px 0px 6px #83d244;
 }
@@ -1016,12 +1025,12 @@ div {
      scrollbar-color: var(--scrollbar-color);
 }
 
-input:disabled, .button.disabled, .clickable.disabled {
+input:disabled, .button.disabled, .clickable.disabled, .round-button.disabled {
   color: #a0a0a0;
   position: relative;
 }
 
-input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover {
+input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover, .round-button.disabled:hover {
   cursor: not-allowed;
   color: #444444;
 }

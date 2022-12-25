@@ -6,6 +6,17 @@ function htmlEncode(str){
   });
 }
 
+function generateSimpleImageBar(imageSrc, count) {
+    var containerDiv = $("<div>")
+
+    for (i = 0 ; i < count ; i ++) {
+		var image = $("<img src='" + imageSrc + "'>")
+		containerDiv.append(image)
+    }
+
+    return containerDiv
+}
+
 function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, callback) {
     generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, 10, callback)
 }
@@ -129,9 +140,14 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	}
 	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy : '-'
 	var businessValue = linkValues.hasOwnProperty('business') ? linkValues.business : '-'
-	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'	
-		
- 	return prefix + economyValue + suffix + " / " + prefix + businessValue + suffix + " / " + prefix + firstValue + suffix
+	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
+
+
+	if (economyValue >= 1_000_000 || businessValue >= 1_000_000 || firstValue >= 1_000_000) {
+ 	    return prefix + commaSeparateNumber(economyValue) + suffix + " / " + prefix + commaSeparateNumber(businessValue) + suffix + " / " + prefix + commaSeparateNumber(firstValue) + suffix
+    } else {
+        return prefix + economyValue + suffix + " / " + prefix + businessValue + suffix + " / " + prefix + firstValue + suffix
+    }
 }
 
 function changeColoredElementValue(element, newValue) {

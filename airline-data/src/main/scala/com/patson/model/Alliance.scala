@@ -60,6 +60,11 @@ object AllianceRole extends Enumeration {
     case LEADER | CO_LEADER => true
     case _ => false
   }
+
+  val isAccepted : AllianceRole => Boolean = (role : AllianceRole) => role match {
+    case APPLICANT => false
+    case _ => true
+  }
 }
 
 case class AllianceHistory(allianceName: String, airline: Airline, event: AllianceEvent.Value, cycle: Int, var id: Int = 0)
@@ -79,23 +84,23 @@ object Alliance {
     } else if (ranking == 2) {
       40
     } else if (ranking == 3) {
-      30
+      35
     } else if (ranking == 4) {
-      25
+      32
     } else if (ranking == 5) {
-      20
+      30
     } else if (ranking == 6) {
-      15
+      28
     } else if (ranking == 7) {
-      12
+      26
     } else if (ranking == 8) {
-      10
+      24
     } else if (ranking == 9) {
-      9
+      22
     } else if (ranking == 10) {
-      8
+      20
     } else {
-      5
+      Math.max(30 - ranking, 5)
     }
   }
 
