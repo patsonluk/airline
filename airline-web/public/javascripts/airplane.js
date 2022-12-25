@@ -1345,7 +1345,7 @@ function populateMaintenanceFactor() {
           contentType: 'application/json; charset=utf-8',
           dataType: 'json',
           success: function(result) {
-            $('div.maintenanceFactorSection .factor').text(Number(result.factor).toFixed(1))
+            $('div.maintenanceFactorSection .factor').text(Number(result.factor).toFixed(2))
             $('div.maintenanceFactorSection .baseFactor').text(result.baseFactor)
             $('div.maintenanceFactorSection .familyFactor').text(result.familyFactor)
             $('div.maintenanceFactorSection .modelFactor').text(result.modelFactor)
