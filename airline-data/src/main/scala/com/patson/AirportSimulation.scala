@@ -156,9 +156,13 @@ object AirportSimulation {
       loyalists.map {
         loyalist =>
           var decayAmount = (loyalist.amount * DECAY_RATE).toInt
-          if (decayAmount == 0) { //less than 1, try random
-            if (r.nextInt((1 / DECAY_RATE).toInt) < loyalist.amount) {
+          if (decayAmount == 0) { //less than 1. For populated airport, we should just use 1, this should aid with purging excessive loyalist records
+            if (loyalist.airport.basePopulation >= 1_000_000) {
               decayAmount = 1
+            } else { //for pop 0, one in 100 chance to lose 1
+              if (r.nextInt(100) <= loyalist.airport.basePopulation / 10_000 ) {
+                decayAmount = 1
+              }
             }
           }
 
