@@ -132,7 +132,7 @@ function loadCurrentAirlineMemberDetails() {
 }
 
 function updateAllianceMission(current, previous, isAdmin) {
-    if (current.selectedMission) {
+    if (current && current.selectedMission) {
         $('#currentAirlineMemberDetails .mission .description').text(current.selectedMission.description)
         $('#currentAirlineMemberDetails .mission .progress').text(current.selectedMission.progress + "%")
         $('#currentAirlineMemberDetails .mission .status').text(current.selectedMission.statusText)
@@ -140,7 +140,7 @@ function updateAllianceMission(current, previous, isAdmin) {
         $('#currentAirlineMemberDetails .mission .value').text('-')
     }
 
-    if (current.missionCandidates && current.missionCandidates.length > 0) {
+    if (current && current.missionCandidates && current.missionCandidates.length > 0) {
         $('#currentAirlineMemberDetails .button.currentMission').show()
         $('#currentAirlineMemberDetails .button.currentMission').unbind('click').bind('click', function() {
             showAllianceMissionModal(current.missionCandidates, current.selectedMission, isAdmin)
@@ -149,7 +149,7 @@ function updateAllianceMission(current, previous, isAdmin) {
         $('#currentAirlineMemberDetails .button.currentMission').hide()
     }
 
-    if (previous.missionCandidates && previous.selectedMission) {
+    if (previous && previous.missionCandidates && previous.selectedMission) {
         $('#currentAirlineMemberDetails .button.previousMission').show()
         $('#currentAirlineMemberDetails .button.previousMission').unbind('click').bind('click', function() {
             showAllianceMissionModal(previous.missionCandidates, previous.selectedMission, isAdmin)
