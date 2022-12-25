@@ -2800,10 +2800,8 @@ function getLinkNegotiation(callback) {
                     } else if (negotiationInfo.finalRequirementValue > 10) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Too difficult to negotiate)'
-                        $('#linkConfirmationModal .negotiationInfo img.error').show();
                         $('#linkConfirmationModal .negotiationInfo .error').show();
                     } else {
-                        $('#linkConfirmationModal .negotiationInfo img.info').show();
                         $('#linkConfirmationModal .negotiationInfo .error').hide();
                     }
 
