@@ -246,6 +246,7 @@ DELETE	 /users/:userId/wallpaper	controllers.SettingsApplication.deleteWallpaper
 GET     /signup                     controllers.SignUp.form
 #GET     /editUser/fakeuser             controllers.SignUp.editForm
 POST    /signup                     controllers.SignUp.submit
+GET     /signup/airline-name-check  controllers.SignUp.airlineNameCheck(airlineName : String)
 
 # PasswordReset
 GET    /password-reset				controllers.AccountApplication.passwordResetForm(resetToken : String)
