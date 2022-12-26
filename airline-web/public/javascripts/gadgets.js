@@ -391,17 +391,27 @@ function getOpennessSpan(openness) {
 /*
 Get a span with value and a tool tip of breakdown
 */
-function getBoostSpan(finalValue, boosts, css) {
+function getBoostSpan(finalValue, boosts, $tooltip) {
     var $valueSpan = $('<span>' + commaSeparateNumber(finalValue) + '</span>')
     if (boosts) {
         $valueSpan.css('color', '#41A14D')
-        var $boostList = $('<div class="table" style="width: 100%">')
+        $tooltip.find('.table .table-row').remove()
+        var $table = $tooltip.find('.table')
         $.each(boosts, function(description, boost) {
-            var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + description + '</div><div class="cell" style="width: 30%;">+' + commaSeparateNumber(boost) + '</div></div>')
+            var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + description + '</div><div class="cell" style="width: 30%; text-align:right;">+' + commaSeparateNumber(boost) + '</div></div>')
             $row.css('color', 'white')
-            $boostList.append($row)
+            $table.append($row)
         })
-        addTooltipHtml($valueSpan, $boostList.prop('outerHTML'), css)
+
+        $valueSpan.hover( function() {
+             var yPos = $(this).offset().top - $(window).scrollTop() + $(this).height()
+             var xPos = $(this).offset().left - $(window).scrollLeft() + $(this).width() - $tooltip.width() / 2
+
+             $tooltip.css('top', yPos + 'px')
+             $tooltip.css('left', xPos + 'px')
+             $tooltip.show()
+        }, function() { $tooltip.hide() }
+        )
     }
     return $valueSpan
 }

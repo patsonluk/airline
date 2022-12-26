@@ -326,6 +326,7 @@ package object controllers {
       }
 
       if (!base.specializations.isEmpty) {
+        implicit val writes = AirlineBaseSpecializationWrites(base.airport)
         jsObject = jsObject + ("specializations" -> Json.toJson(base.specializations))
       }
 

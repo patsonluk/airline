@@ -80,10 +80,10 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	$("#airportDetailsCity").text(airport.city)
     $("#airportDetailsSize").text(airport.size)
 
-    var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, {'width' : '200px'})
+    var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, $('#populationDetailsTooltip'))
     $("#airportDetailsPopulation").html($populationSpan)
 
-    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, {'width' : '200px'})
+    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, $('#incomeDetailsTooltip'))
     $("#airportDetailsIncomeLevel").html($incomeLevelSpan)
 
 	$("#airportDetailsCountry").text(loadedCountriesByCode[airport.countryCode].name)
@@ -923,10 +923,10 @@ function refreshAirportExtendedDetails(airport) {
 //            $(".airportRelationship").text('-')
 //        }
     }
-    var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, { 'width' : '120px'})
+    var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, $('#populationDetailsTooltip'))
     $("#airportPopupPopulation").html($populationSpan)
 
-    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , { 'width' : '120px' })
+    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , $('#incomeDetailsTooltip'))
     $("#airportPopupIncomeLevel").html($incomeLevelSpan)
 
     $(".airportFeatures .feature").remove()
@@ -1315,9 +1315,9 @@ function showAppealBreakdown($icon, bonusDetails) {
     $('#appealBonusDetailsTooltip').show()
 
 
-    $('#appealBonusDetailsTooltip .table .table-row').empty()
+    $('#appealBonusDetailsTooltip .table .table-row').remove()
     $.each(bonusDetails, function(index, entry) {
-        var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 70%;">+' + entry.value + '</div></div>')
+        var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 30%; text-align: right;">+' + entry.value + '</div></div>')
         $row.css('color', 'white')
         $('#appealBonusDetailsTooltip .table').append($row)
     })
