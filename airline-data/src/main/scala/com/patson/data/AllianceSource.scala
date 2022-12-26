@@ -562,6 +562,9 @@ object AllianceSource {
         properties.put(propertyKey, value)
       }
 
+      resultSet.close()
+      preparedStatement.close()
+
       propertiesByAllianceAndCycle.map { case ((alliance, cycle), properties) =>
         AllianceStats.buildAllianceStats(alliance, properties.toMap, cycle)
       }.toList

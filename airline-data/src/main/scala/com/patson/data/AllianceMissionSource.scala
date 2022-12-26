@@ -95,6 +95,9 @@ object AllianceMissionSource {
         missions += AllianceMission.buildAllianceMission(missionType, startCycle, duration, allianceId, status, idToProperties.getOrElse(missionId, Map.empty), missionId)
       }
 
+      resultSet.close()
+      preparedStatement.close()
+
       missions.toList
     } finally {
       connection.close()
@@ -127,6 +130,9 @@ object AllianceMissionSource {
           val property = result.getOrElseUpdate(missionId, mutable.Map[String, Long]())
           property.put(resultSet.getString("property"), resultSet.getLong("value"))
         }
+
+        resultSet.close()
+        preparedStatement.close()
         result.view.mapValues(_.toMap).toMap
 
       } finally {
@@ -221,6 +227,8 @@ object AllianceMissionSource {
         cycleProperties.put(propertyKey, value)
       }
 
+      resultSet.close()
+      preparedStatement.close()
       AllianceMissionPropertiesHistory(missionId, cycleProperties.toMap, cycle)
     } finally {
       connection.close()
@@ -246,6 +254,8 @@ object AllianceMissionSource {
         resultByCycle.getOrElseUpdate(cycle, mutable.Map[String, Long]()).put(propertyKey, value)
       }
 
+      resultSet.close()
+      preparedStatement.close()
       resultByCycle.toList.sortBy(_._1).map {
         case (cycle, properties) => AllianceMissionPropertiesHistory(missionId, properties.toMap, cycle)
       }
@@ -378,6 +388,7 @@ object AllianceMissionSource {
 
         options += AllianceMissionReward.buildMissionReward(missionId, airlineId, rewardType, available, claimed, properties.toMap, rewardId)
       }
+      resultSet.close()
       preparedStatement.close()
 
       options.toList
