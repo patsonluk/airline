@@ -587,11 +587,11 @@ package object controllers {
         }
         ))
 
-        if (airport.populationBoost > 0) {
-          airportObject = airportObject + ("populationBoost" -> JsNumber(airport.populationBoost))
+        if (airport.populationBoostFactors.size > 0) {
+          airportObject = airportObject + ("populationBoost" -> Json.toJson(airport.populationBoostFactors))
         }
-        if (airport.incomeLevelBoost > 0) {
-          airportObject = airportObject + ("incomeLevelBoost" -> JsNumber(airport.incomeLevelBoost))
+        if (airport.incomeLevelBoostFactors.size > 0) {
+          airportObject = airportObject + ("incomeLevelBoost" -> Json.toJson(airport.incomeLevelBoostFactors))
         }
       }
       if (airport.isGateway()) {

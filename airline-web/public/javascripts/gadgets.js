@@ -388,6 +388,24 @@ function getOpennessSpan(openness) {
 	
 }
 
+/*
+Get a span with value and a tool tip of breakdown
+*/
+function getBoostSpan(finalValue, boosts, css) {
+    var $valueSpan = $('<span>' + commaSeparateNumber(finalValue) + '</span>')
+    if (boosts) {
+        $valueSpan.css('color', '#41A14D')
+        var $boostList = $('<div class="table" style="width: 100%">')
+        $.each(boosts, function(description, boost) {
+            var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + description + '</div><div class="cell" style="width: 30%;">+' + commaSeparateNumber(boost) + '</div></div>')
+            $row.css('color', 'white')
+            $boostList.append($row)
+        })
+        addTooltipHtml($valueSpan, $boostList.prop('outerHTML'), css)
+    }
+    return $valueSpan
+}
+
 function sortPreserveOrder(array, property, ascending) {
 	if (ascending == undefined) {
 		ascending = true

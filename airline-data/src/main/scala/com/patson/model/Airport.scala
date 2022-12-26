@@ -5,6 +5,7 @@ import com.patson.model.AirlineBaseSpecialization.{POWERHOUSE, PowerhouseSpecial
 import com.patson.model.AirportAssetType.{PassengerCostModifier, TransitModifier}
 import com.patson.model.airplane.Model
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 
@@ -40,25 +41,38 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   //val baseIncome = if (basePopulation > 0) (power / basePopulation).toInt  else 0
 
 
-  private[this] var assetBoosts : Map[AirportBoostType.Value, List[AirportBoost]] = Map.empty
+  private[this] var assetBoostFactors : Map[AirportBoostType.Value, List[(AirportAsset, AirportBoost)]] = Map.empty
 
   val baseIncomeLevel = Computation.getIncomeLevel(baseIncome)
-  lazy val incomeLevelBoost = (assetBoosts.get(AirportBoostType.INCOME) match {
-    case Some(boosts) => boosts.map(_.value).sum
-    case None => 0
-  }) + airlineBases.values.map { airlineBase =>
-    airlineBase.specializations.filter(_ == POWERHOUSE).map(_.asInstanceOf[PowerhouseSpecialization].incomeLevelBoost(this)).sum
-  }.sum
+  lazy val incomeLevelBoost = incomeLevelBoostFactors.map(_._2).sum
+
+  lazy val incomeLevelBoostFactors : Map[String, Double] = {
+    (assetBoostFactors.getOrElse(AirportBoostType.INCOME, List.empty).map {
+      case (asset, boost) => (asset.name, boost.value)
+    } ++ airlineBases.values.flatMap { airlineBase =>
+      airlineBase.specializations.filter(_ == POWERHOUSE).map { spec =>
+        val description = s"${airlineBase.airline.name} Powerhouse"
+        (description, spec.asInstanceOf[PowerhouseSpecialization].incomeLevelBoost(this))
+      }
+    }).toMap
+  }
+
   lazy val incomeLevel = baseIncomeLevel + incomeLevelBoost
   lazy val income = if (incomeLevelBoost == 0) baseIncome else Computation.fromIncomeLevel(incomeLevel) //have to deduce from income level (after boost)
 
 
-  lazy val populationBoost = (assetBoosts.get(AirportBoostType.POPULATION) match {
-    case Some(boosts) => boosts.map(_.value).sum.toInt
-    case None => 0
-  }) + airlineBases.values.map { airlineBase =>
-    airlineBase.specializations.filter(_ == POWERHOUSE).map(_.asInstanceOf[PowerhouseSpecialization].populationBoost).sum
-  }.sum
+  lazy val populationBoost = populationBoostFactors.map(_._2).sum
+  lazy val populationBoostFactors : Map[String, Int] = {
+    (assetBoostFactors.getOrElse(AirportBoostType.POPULATION, List.empty).map {
+      case (asset, boost) => (asset.name, boost.value.toInt)
+    }
+     ++ airlineBases.values.flatMap { airlineBase =>
+      airlineBase.specializations.filter(_ == POWERHOUSE).map { spec =>
+        val description = s"${airlineBase.airline.name} Powerhouse"
+        (description, spec.asInstanceOf[PowerhouseSpecialization].populationBoost)
+      }
+    }).toMap
+  }
   lazy val population = basePopulation + populationBoost
   lazy val power = income * population
   val basePower = baseIncome * basePopulation
@@ -288,7 +302,14 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   def initAssets(assets : List[AirportAsset]) = {
     this.assets = assets
     assetsLoaded = true
-    assetBoosts = assets.flatMap(_.boosts).groupBy(_.boostType)
+    val result = mutable.HashMap[AirportBoostType.Value, ListBuffer[(AirportAsset, AirportBoost)]]()
+    assets.foreach { asset =>
+      asset.boosts.foreach { boost =>
+        val list = result.getOrElseUpdate(boost.boostType, ListBuffer[(AirportAsset, AirportBoost)]())
+        list.append((asset, boost))
+      }
+    }
+    assetBoostFactors = result.view.mapValues(_.toList).toMap
   }
 
   private[this] def getTransitModifiers() : List[TransitModifier] = {
@@ -429,15 +450,15 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   def computeFeatures() = {
     val newFeatures = ListBuffer[AirportFeature]()
-    assetBoosts.foreach {
+    assetBoostFactors.foreach {
       case(boostType, boosts) =>
         boostType match {
           case com.patson.model.AirportBoostType.INTERNATIONAL_HUB =>
-            newFeatures.append(InternationalHubFeature(0, boosts))
+            newFeatures.append(InternationalHubFeature(0, boosts.map(_._2)))
           case com.patson.model.AirportBoostType.VACATION_HUB =>
-            newFeatures.append(VacationHubFeature(0, boosts))
+            newFeatures.append(VacationHubFeature(0, boosts.map(_._2)))
           case com.patson.model.AirportBoostType.FINANCIAL_HUB =>
-            newFeatures.append(FinancialHubFeature(0, boosts))
+            newFeatures.append(FinancialHubFeature(0, boosts.map(_._2)))
           case _ =>
         }
     }
