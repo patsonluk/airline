@@ -86,7 +86,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     //but some older code would "innocently" reference citiesServed, while it used to be okay, since it was not a detailed load
     //but after the lazy loading conversion they got loaded all of the sudden. So we are using `shouldLoadCities` as
     //a flag to retain that behavior. Only fully loaded Airport will have ability to load (even thou lazily) the city served
-    if (shouldLoadCities || id == 0) {
+    if (!shouldLoadCities || id == 0) {
       ListBuffer.empty
     } else {
       AirportSource.loadCitiesServed(id).to(collection.mutable.ListBuffer)
