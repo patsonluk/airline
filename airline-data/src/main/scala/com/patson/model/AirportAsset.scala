@@ -493,7 +493,7 @@ abstract class AirportAsset() extends IdObject{
 
 
         val randomRatio = 0.8 + new Random(id).nextDouble() * 0.4   //20% fluctuation ie 0.8 - 1.2
-        (4 + featureRatio * 6) * incomeModifier * populationModifier * randomRatio
+        Math.max(0.2, (4 + featureRatio * 6) * incomeModifier * populationModifier * randomRatio)
     }
 
     def costModifier = costModifierConst
