@@ -182,10 +182,9 @@ object AirportAssetSource {
           val boosts = result.getOrElseUpdate(assetId, ListBuffer[AirportBoost]())
           boosts.append(boost)
         }
-        result.view.mapValues(_.toList).toMap
-
         resultSet.close()
         preparedStatement.close()
+        result.view.mapValues(_.toList).toMap
       } finally {
         connection.close()
       }
