@@ -89,6 +89,9 @@ object AirportAssetSource {
         assets += AirportAsset.getAirportAsset(id, airport, assetType, airline, name, level, Some(completionCycle), idToBoost.getOrElse(id, List.empty), revenue, expense, roi, upgradeApplied, idToProperties.getOrElse(id, Map.empty), currentCycle)
       }
 
+      resultSet.close()
+      preparedStatement.close()
+
       assets.toList
     } finally {
       connection.close()
@@ -143,6 +146,9 @@ object AirportAssetSource {
           idToOwnedAssets.getOrElse(id, AirportAsset.getAirportAsset(blueprint, airline = None, name = "", level = 0, completionCycle = None,  boosts = List.empty, revenue = 0, expense = 0, roi = blueprint.assetType.initRoi, upgradeApplied = false, properties = Map.empty, currentCycle))
       }
 
+      resultSet.close()
+      preparedStatement.close()
+
       result.toList
     } finally {
       connection.close()
@@ -178,6 +184,8 @@ object AirportAssetSource {
         }
         result.view.mapValues(_.toList).toMap
 
+        resultSet.close()
+        preparedStatement.close()
       } finally {
         connection.close()
       }
@@ -209,6 +217,8 @@ object AirportAssetSource {
           val property = result.getOrElseUpdate(assetId, mutable.Map[String, Long]())
           property.put(resultSet.getString("property"), resultSet.getLong("value"))
         }
+        resultSet.close()
+        preparedStatement.close()
         result.view.mapValues(_.toMap).toMap
 
       } finally {
@@ -355,6 +365,9 @@ object AirportAssetSource {
         result.append(AirportAssetBoostHistory(assetId, level, boostType, value, gain, upgradeFactor, cycle))
       }
 
+      resultSet.close()
+      preparedStatement.close()
+
       result.toList
     } finally {
       connection.close()
@@ -407,6 +420,9 @@ object AirportAssetSource {
         val cycleProperties = result.getOrElseUpdate((assetId, cycle), mutable.Map[String, String]())
         cycleProperties.put(propertyKey, value)
       }
+
+      resultSet.close()
+      preparedStatement.close()
 
       result.map {
         case((assetId, cycle), properties) => AirportAssetPropertiesHistory(assetId, properties.toMap, cycle)
