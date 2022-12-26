@@ -43,18 +43,17 @@ object IsolatedAirportPatcher {
       }
     }
 
-    val updatingAirports = isolationByAirport.map {
+    isolationByAirport.foreach {
       case (airport,isolationLevel) =>
         val existingFeatures = airport.getFeatures().filter(_.featureType != AirportFeatureType.ISOLATED_TOWN)
         val newFeatures = existingFeatures :+ AirportFeature(AirportFeatureType.ISOLATED_TOWN, isolationLevel)
-        airport.initFeatures(newFeatures)
-        println(newFeatures)
+        //airport.initFeatures(newFeatures) //CANNOT init features here, features can only be init once.
+        AirportSource.updateAirportFeatures(airport.id, newFeatures)
         println(s"$airport isolation level $isolationLevel features ${airport.getFeatures()}")
-        airport
-    }.toList
+    }
 
 
-    AirportSource.updateAirportFeatures(updatingAirports)
+
   }
 }  
   

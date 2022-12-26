@@ -858,31 +858,32 @@ object AirportSource {
     }
   }
 
-  def updateAirportFeatures(airports : List[Airport]) = {
+  def updateAirportFeatures(airportId : Int, features : List[AirportFeature]) = {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      airports.foreach { airport =>
-        val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
-        purgeStatement.setInt(1, airport.id)
-        purgeStatement.executeUpdate()
-        purgeStatement.close()
 
-        val featureStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_FEATURE_TABLE + "(airport, feature_type, strength) VALUES(?,?,?)")
-        airport.getFeatures().foreach { feature =>
-          featureStatement.setInt(1, airport.id)
-          featureStatement.setString(2, feature.featureType.toString())
-          featureStatement.setInt(3, feature.strength)
-          featureStatement.executeUpdate()
-        }
-        featureStatement.close()
-        AirportCache.invalidateAirport(airport.id)
+      val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRPORT_FEATURE_TABLE + " WHERE airport = ?")
+      purgeStatement.setInt(1, airportId)
+      purgeStatement.executeUpdate()
+      purgeStatement.close()
+
+      val featureStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_FEATURE_TABLE + "(airport, feature_type, strength) VALUES(?,?,?)")
+      features.foreach { feature =>
+        featureStatement.setInt(1, airportId)
+        featureStatement.setString(2, feature.featureType.toString())
+        featureStatement.setInt(3, feature.strength)
+        featureStatement.executeUpdate()
       }
+      featureStatement.close()
+      AirportCache.invalidateAirport(airportId)
+
       connection.commit()
     } finally {
       connection.close()
     }
   }
+
 
   def saveAirportFeature(airportId : Int, feature : AirportFeature) = {
     val connection = Meta.getConnection()

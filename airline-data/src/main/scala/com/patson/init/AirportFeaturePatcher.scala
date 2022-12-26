@@ -278,23 +278,15 @@ object AirportFeaturePatcher extends App {
     }
 
 
-
-    val updatingAirports = ListBuffer[Airport]()
-
     airportFeatures.toList.foreach {
         case (iata, features) =>
           AirportSource.loadAirportByIata(iata) match {
-            case Some(airport) => {
-              airport.initFeatures(features.toList)
-              updatingAirports.append(airport)
-            }
+            case Some(airport) =>
+              AirportSource.updateAirportFeatures(airport.id, features.toList)
             case None =>
               println(s"Cannot find airport with iata $iata to patch $features")
           }
       }
-
-    AirportSource.updateAirportFeatures(updatingAirports.toList)
-
     IsolatedAirportPatcher.patchIsolatedAirports()
   }
 
