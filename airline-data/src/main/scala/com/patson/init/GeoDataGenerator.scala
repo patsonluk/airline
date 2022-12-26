@@ -376,7 +376,14 @@ object GeoDataGenerator extends App {
       if (population == 0) {
         airport
       } else {
-        airport.copy(baseIncome = (power / population).toInt, basePopulation = population)
+        val airportCopy = airport.copy(baseIncome = (power / population).toInt, basePopulation = population)
+        //YIKE copy here does not copy everything, we need to manually look up what does updateAirport/saveAirport do and clone stuff here...
+        airportCopy.setRunways(airport.getRunways())
+        airport.citiesServed.foreach {
+          case (city, share) => airportCopy.addCityServed(city, share)
+        }
+        //don't have to copy feature here as they are generated later
+        airportCopy
       }
     }.sortBy { airport =>
       airport.baseIncome * airport.basePopulation
