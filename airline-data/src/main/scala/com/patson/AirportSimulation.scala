@@ -222,7 +222,7 @@ object AirportSimulation {
               //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
 
               if (link.distance != totalDistance) {
-                conversionRatio = conversionRatio * link.distance / totalDistance // proportional to the % of distance travel of the whole route
+                conversionRatio = conversionRatio * (0.5 / route.links.length  + 0.5 * link.distance / totalDistance) //half depends on # of leg, half proportional to the % of distance travel of the whole route
               }
 
               val loyalistDelta = (paxCount * conversionRatio).toInt
