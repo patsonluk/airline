@@ -983,7 +983,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
 
   def getBaseSpecializationInfo(airlineId: Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val base = AirportCache.getAirport(airportId, true).get.getAirlineBase(airlineId).get
+    val airport = AirportCache.getAirport(airportId, true).get
+    val base = airport.getAirlineBase(airlineId).get
     val activeSpecializations : List[AirlineBaseSpecialization.Value] = base.specializations
     val specializationByScaleRequirement : List[(Int, List[AirlineBaseSpecialization.Value])] = AirlineBaseSpecialization.values.toList.groupBy(_.scaleRequirement).toList.sortBy(_._1)
     val cooldown =
@@ -999,6 +1000,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
 
     var specializationJson = Json.arr()
+    implicit val specializationWrites = AirlineBaseSpecializationWrites(airport)
 
     specializationByScaleRequirement.foreach {
       case(scaleRequirement, specializations) =>

@@ -47,7 +47,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     case Some(boosts) => boosts.map(_.value).sum
     case None => 0
   }) + airlineBases.values.map { airlineBase =>
-    airlineBase.specializations.filter(_ == POWERHOUSE).map(_.asInstanceOf[PowerhouseSpecialization].incomeLevelBoost).sum
+    airlineBase.specializations.filter(_ == POWERHOUSE).map(_.asInstanceOf[PowerhouseSpecialization].incomeLevelBoost(this)).sum
   }.sum
   lazy val incomeLevel = baseIncomeLevel + incomeLevelBoost
   lazy val income = if (incomeLevelBoost == 0) baseIncome else Computation.fromIncomeLevel(incomeLevel) //have to deduce from income level (after boost)
