@@ -47,7 +47,7 @@ object IsolatedAirportPatcher {
       case (airport,isolationLevel) =>
         val existingFeatures = airport.getFeatures().filter(_.featureType != AirportFeatureType.ISOLATED_TOWN)
         airport.initFeatures(existingFeatures :+ AirportFeature(AirportFeatureType.ISOLATED_TOWN, isolationLevel))
-        println(s"$airport isolation level $isolationLevel")
+        println(s"$airport isolation level $isolationLevel features ${airport.getFeatures()}")
         airport
     }.toList
 
