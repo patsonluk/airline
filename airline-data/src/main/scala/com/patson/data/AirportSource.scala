@@ -347,23 +347,6 @@ object AirportSource {
 //          slotStatement.close()
           
           
-          val cityStatement = connection.prepareStatement("SELECT a.*, c.* FROM " + AIRPORT_CITY_SHARE_TABLE + " a LEFT JOIN " + CITY_TABLE + " c ON a.city = c.id WHERE airport = ?")
-          cityStatement.setInt(1, airport.id)
-          
-          val cityResultSet = cityStatement.executeQuery()
-          while (cityResultSet.next()) {
-             val city = City( 
-              cityResultSet.getString("name"),
-              cityResultSet.getDouble("latitude"),
-              cityResultSet.getDouble("longitude"),
-              cityResultSet.getString("country_code"),
-              cityResultSet.getInt("population"),
-              cityResultSet.getInt("income"),
-              cityResultSet.getInt("city"))
-            airport.addCityServed(city, cityResultSet.getDouble("share"))
-          }
-          cityStatement.close()
-          
           val lounges = AirlineSource.loadLoungesByAirport(airport)
           airport.initLounges(lounges)
           
@@ -1107,6 +1090,31 @@ object AirportSource {
       resultSet.close()
       preparedStatement.close()
 
+      result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadCitiesServed(airportId : Int) : List[(City,Double)] = {
+    val connection = Meta.getConnection()
+    try {
+      val cityStatement = connection.prepareStatement("SELECT a.*, c.* FROM " + AIRPORT_CITY_SHARE_TABLE + " a LEFT JOIN " + CITY_TABLE + " c ON a.city = c.id WHERE airport = ?")
+      cityStatement.setInt(1, airportId)
+      val result = ListBuffer[(City, Double)]()
+      val cityResultSet = cityStatement.executeQuery()
+      while (cityResultSet.next()) {
+        val city = City(
+          cityResultSet.getString("name"),
+          cityResultSet.getDouble("latitude"),
+          cityResultSet.getDouble("longitude"),
+          cityResultSet.getString("country_code"),
+          cityResultSet.getInt("population"),
+          cityResultSet.getInt("income"),
+          cityResultSet.getInt("city"))
+        result.append((city, cityResultSet.getDouble("share")))
+      }
+      cityStatement.close()
       result.toList
     } finally {
       connection.close()

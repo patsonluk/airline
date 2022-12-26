@@ -1,6 +1,6 @@
 package com.patson.model
 
-import com.patson.data.CountrySource
+import com.patson.data.{AirportSource, CountrySource}
 import com.patson.model.AirlineBaseSpecialization.{POWERHOUSE, PowerhouseSpecialization}
 import com.patson.model.AirportAssetType.{PassengerCostModifier, TransitModifier}
 import com.patson.model.airplane.Model
@@ -9,7 +9,8 @@ import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, baseIncome : Int, basePopulation : Long, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
-  val citiesServed = scala.collection.mutable.ListBuffer[(City, Double)]()
+  var explicitlyAddedCities = false
+  lazy val citiesServed = loadCitiesServed()
   private[this] val airlineBaseAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals
   private[this] val airlineAdjustedAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals + bonus
   private[this] val allAirlineBonuses = new java.util.HashMap[Int, List[AirlineBonus]]() //bonus appeals
@@ -76,7 +77,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   lazy val rating =  AirportRating.rateAirport(this)
 
   def addCityServed(city : City, share : Double) {
+    explicitlyAddedCities = true
     citiesServed += Tuple2(city, share)
+  }
+
+  def loadCitiesServed(): ListBuffer[(City, Double)] =  {
+    if (explicitlyAddedCities || id == 0) { //then do NOT load from DB, this is kinda hacky, should have just remove the part that build airport with Airport case class
+      ListBuffer.empty
+    } else {
+      AirportSource.loadCitiesServed(id).to(collection.mutable.ListBuffer)
+    }
   }
 
   def getAirlineAdjustedAppeals() : Map[Int, AirlineAppeal] = {
