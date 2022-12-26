@@ -284,12 +284,12 @@ package object controllers {
     }
   }
 
-  implicit object AirlineBaseSpecializationWrites extends OWrites[AirlineBaseSpecialization.Value] {
+  case class AirlineBaseSpecializationWrites(airport : Airport) extends OWrites[AirlineBaseSpecialization.Value] {
     override def writes(specialization : AirlineBaseSpecialization.Value) : JsObject = {
       Json.obj(
         "id" -> specialization.toString,
         "label" -> specialization.label,
-        "descriptions" -> specialization.descriptions,
+        "descriptions" -> specialization.descriptions(airport),
       )
     }
   }

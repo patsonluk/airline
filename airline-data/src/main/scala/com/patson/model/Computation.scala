@@ -143,6 +143,38 @@ object Computation {
     (Math.pow(Math.E, incomeLevel * Math.log(1.1)) * 500).toInt
   }
 
+  def computeIncomeLevelBoostFromPercentage(baseIncome : Int, minIncomeBoost : Int, boostPercentage : Int) = {
+    val incomeIncrement = baseIncome * boostPercentage / 100
+    val incomeBoost = Math.max(minIncomeBoost, incomeIncrement)
+
+    //10% would always be 1, but cannot make assumption of our income level calculation tho...
+    val baseIncomeLevel = getIncomeLevel(baseIncome)
+    BigDecimal(Computation.getIncomeLevel(baseIncome + incomeBoost) - baseIncomeLevel).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+  }
+
+  /**
+    * For low income base, use the boost level (which is MAX boost). For higher income base, down adjust it to certain
+    * percentage
+    * @param baseIncome
+    * @param boostLevel
+    * @return
+    */
+  def computeIncomeLevelBoostFromLevel(baseIncome : Int, boostLevel : Double) = {
+    val newIncomeLevel = getIncomeLevel(baseIncome) + boostLevel
+    val incomeIncrement = fromIncomeLevel(newIncomeLevel) - baseIncome
+    val maxIncomeBoost = (boostLevel * 10_000).toInt //a bit arbitrary
+    val minIncomeBoost = (boostLevel * 2_500).toInt
+    val finalBoostLevel =
+      if (incomeIncrement < minIncomeBoost) {
+        getIncomeLevel(baseIncome + minIncomeBoost) - getIncomeLevel(baseIncome)
+      } else if (incomeIncrement <= maxIncomeBoost) {
+        boostLevel
+      } else {
+        getIncomeLevel(baseIncome + maxIncomeBoost) - getIncomeLevel(baseIncome)
+      }
+
+    BigDecimal(finalBoostLevel).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+  }
 
   
   def getLinkCreationCost(from : Airport, to : Airport) : Int = {
