@@ -70,7 +70,7 @@ object AirportGeoPatcher extends App {
 
 
     AirportFeaturePatcher.patchFeatures()
-
+    IsolatedAirportPatcher.patchIsolatedAirports()
 
     val updatingCountries = ListBuffer[Country]()
     computedAirports.groupBy(_.countryCode).foreach {
