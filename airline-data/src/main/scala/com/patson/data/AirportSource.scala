@@ -383,6 +383,8 @@ object AirportSource {
           }
           runwayStatement.close()
           airport.setRunways(runways.toList)
+
+          airport.shouldLoadCities = true //set this flag so this airport can lazy load cities, which could be a lot of data
         }
       }
       

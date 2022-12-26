@@ -9,7 +9,7 @@ import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, baseIncome : Int, basePopulation : Long, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
-  var explicitlyAddedCities = false
+  var shouldLoadCities = false
   lazy val citiesServed = loadCitiesServed()
   private[this] val airlineBaseAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals
   private[this] val airlineAdjustedAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals + bonus
@@ -77,12 +77,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   lazy val rating =  AirportRating.rateAirport(this)
 
   def addCityServed(city : City, share : Double) {
-    explicitlyAddedCities = true
+    shouldLoadCities = true //do not lazy load city anymore, this is only used by Airport creation which later on should remove this method and that logic should just keep its own set of cities
     citiesServed += Tuple2(city, share)
   }
 
   def loadCitiesServed(): ListBuffer[(City, Double)] =  {
-    if (explicitlyAddedCities || id == 0) { //then do NOT load from DB, this is kinda hacky, should have just remove the part that build airport with Airport case class
+    //then do NOT load from DB, this is kinda hacky, this used to be controlled by DB load and converted to lazy loading
+    //but some older code would "innocently" reference citiesServed, while it used to be okay, since it was not a detailed load
+    //but after the lazy loading conversion they got loaded all of the sudden. So we are using `shouldLoadCities` as
+    //a flag to retain that behavior. Only fully loaded Airport will have ability to load (even thou lazily) the city served
+    if (shouldLoadCities || id == 0) {
       ListBuffer.empty
     } else {
       AirportSource.loadCitiesServed(id).to(collection.mutable.ListBuffer)
