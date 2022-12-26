@@ -919,6 +919,7 @@ object AirportSource {
 
         features += AirportFeature(featureType, strength)
       }
+      featureResultSet.close()
       featureStatement.close()
       features.toList
     } finally {
@@ -1114,6 +1115,7 @@ object AirportSource {
           cityResultSet.getInt("city"))
         result.append((city, cityResultSet.getDouble("share")))
       }
+      cityResultSet.close()
       cityStatement.close()
       result.toList
     } finally {
