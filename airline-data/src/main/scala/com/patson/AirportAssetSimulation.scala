@@ -233,7 +233,7 @@ object AirportAssetSimulation {
     */
   def simulateAssetBusiness(asset : AirportAsset, paxStats : PassengerStats) : AssetSimulationResult = {
     import com.patson.model.AirportAssetType._
-    if (asset.level == 1 && asset.status != AirportAssetStatus.COMPLETED) {
+    if (!asset.isOperational()) {
       AssetSimulationResult(0, 0, Map.empty)
     } else {
       val result : AssetSimulationResult = asset.assetType match {

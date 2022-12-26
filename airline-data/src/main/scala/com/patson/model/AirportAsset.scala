@@ -364,15 +364,20 @@ object AirportAssetType extends Enumeration {
         override def computeTransitDiscount(fromLinkConsideration : LinkConsideration, toLinkConsideration : LinkConsideration, paxGroup : PassengerGroup) : Double = {
             val fromLinkFreq = fromLinkConsideration.link.frequencyByClass(fromLinkConsideration.linkClass)
             val toLinkFreq = toLinkConsideration.link.frequencyByClass(fromLinkConsideration.linkClass)
-            computeTransitFreqDiscount(fromLinkFreq, toLinkFreq, paxGroup)
+            if (isOperational()) {
+                computeTransitFreqDiscount(fromLinkFreq, toLinkFreq, paxGroup)
+            } else {
+                0
+            }
         }
         def computeTransitFreqDiscount(arrivalLinkFreq : Int, departureLinkFreq : Int, paxGroup : PassengerGroup) : Double
+        def isOperational() : Boolean
     }
 
 
     trait PassengerCostAssetModifier extends PassengerCostModifier {
         override def computeDiscount(linkConsideration : LinkConsideration, paxGroup : PassengerGroup) : Option[Double] = {
-            if (paxGroup.preference.getPreferenceType == FlightPreferenceType.SPEED) {
+            if (paxGroup.preference.getPreferenceType == FlightPreferenceType.SPEED || !isOperational()) {
                 None
             } else if (Random.nextInt(100) < Math.max(1, probability * level / AirportAsset.MAX_LEVEL)){
                 Some(computeAssetDiscount(paxGroup))
@@ -395,6 +400,7 @@ object AirportAssetType extends Enumeration {
         def businessDiscount : Double //max discount to fromCost at max level for Passenger Type BUSINESS
 
         def level : Int
+        def isOperational() : Boolean
     }
 
 
@@ -506,6 +512,7 @@ abstract class AirportAsset() extends IdObject{
         case AirportAssetStatus.COMPLETED => level
     })
     val sellValue = (value * 0.5).toLong
+    def isOperational() = { level > 1 || status == AirportAssetStatus.COMPLETED }
 
 
     def levelUp(name : String) = {
