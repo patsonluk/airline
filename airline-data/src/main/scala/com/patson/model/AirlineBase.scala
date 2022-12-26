@@ -13,11 +13,6 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
       0
     } else {
       var baseCost = (1000000 + airport.rating.overallRating * 120000).toLong
-      //adjust if income has been boosted, we want to negate the boost effect
-      if (airport.baseIncome != airport.income) {
-        baseCost = baseCost * airport.baseIncome / airport.income
-      }
-
       (baseCost * airportSizeRatio * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) )).toLong
     }
   }
@@ -27,10 +22,6 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   lazy val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
     var baseUpkeep = (5000 + airport.rating.overallRating * 150).toLong
-    //adjust if income has been boosted, we want to negate the boost effect
-    if (airport.baseIncome != airport.income) {
-      baseUpkeep = baseUpkeep * airport.baseIncome / airport.income
-    }
 
     (baseUpkeep * airportSizeRatio * Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
   }
@@ -39,7 +30,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     if (airport.size > 6) {
       1.0
     } else { //discount for size < 6
-      0.2 + airport.size * 0.1
+      0.3 + airport.size * 0.1
     }
 
 //  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
