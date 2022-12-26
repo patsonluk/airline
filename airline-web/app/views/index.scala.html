@@ -3589,28 +3589,14 @@
 	  </div>
   </div>
 
-     <div style="display: none; width: 100%;" id="cityPopup" class="mapPopup">
+     <div style="display: none; width: 150px; height: 200px;" id="cityPopup" class="mapPopup">
     	<input type="hidden" id="cityPopupId">
-    	<div id="cityPopupName" class="header"></div>
+    	<div class="header"><span id="cityPopupName" ></span></div>
+		<div>(POP:&nbsp;<span id="cityPopupPopulation"></span>)</div>
     	<div id="cityIcons">
     		<!-- <img alt="Your Headquarter" title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon"><img alt="Your Base" title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon">  -->
     	</div>
-    	<div class="table" style="width: 100%">
-   			<div class="table-row">
-   				<div class="label"><h5>Country code:</h5></div>
-   				<div class="value" id="cityPopupCountryCode"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Population:</h5></div>
-   				<div class="value" id="cityPopupPopulation"></div>
-   			</div>
-   			<div class="table-row">
-   				<div class="label"><h5>Average income level:</h5></div>
-   				<div class="value" id="cityPopupIncomeLevel"></div>
-   			</div>
-		</div>
-
-		<div id="cityPie" style="height: 200px; width: 350px;"></div>
+		<div id="cityPie" style="height: 70px;"></div>
     </div>
     
     <div style="display: none; width: 350px;" id="linkHistoryPopup" class="mapPopup">

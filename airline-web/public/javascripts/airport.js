@@ -770,7 +770,7 @@ function addCityMarkers(airportMap, airport) {
 			  infoWindow.close();
 			  var city = this.cityInfo
 			  $("#cityPopupName").text(city.name)
-			  $("#cityPopupPopulation").text(city.population)
+			  $("#cityPopupPopulation").text(commaSeparateNumber(city.population))
 			  $("#cityPopupIncomeLevel").text(city.incomeLevel)
 			  $("#cityPopupCountryCode").text(city.countryCode)
 			  $("#cityPopupCountryCode").append("<img class='flag' src='assets/images/flags/" + city.countryCode + ".png' />")
