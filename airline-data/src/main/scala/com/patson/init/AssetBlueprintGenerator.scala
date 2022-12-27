@@ -1,20 +1,36 @@
 package com.patson.init
 
-import com.patson.data.AirportAssetSource
+import com.patson.data.{AirportAssetSource, AirportSource}
 import com.patson.model.{AirportAssetType, _}
 
 import java.math.BigInteger
 import java.security.SecureRandom
 import scala.collection.mutable.ListBuffer
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 
 object AssetBlueprintGenerator {
   val assetTypesByGroup : Map[GenerationGroup.Value, AirportAssetType.ValueSet] = AirportAssetType.values.groupBy(GenerationGroup.getGenerationGroup(_))
 
-  def main(airports : List[Airport]) : Unit = {
-    AirportAssetSource.deleteAllAirportAssetBlueprints()
+  def main(args : Array[String]) : Unit = {
+    val airports = AirportSource.loadAllAirports(true, true).sortBy(_.power).reverse
+    patchMissingAssets(airports)
+    Await.result(actorSystem.terminate(), Duration.Inf)
+  }
 
-    airports.foreach { airport =>
+  /**
+    * This deletes existing blueprints/assets!!
+    * @param airports
+    */
+  def generateAssets(airports : List[Airport]) : Unit = {
+    AirportAssetSource.deleteAllAirportAssetBlueprints()
+    val blueprints = generateBlueprints(airports)
+    AirportAssetSource.saveAirportAssetBlueprints(blueprints)
+  }
+
+  def generateBlueprints(airports: List[Airport]) : List[AirportAssetBlueprint] = {
+    airports.flatMap { airport =>
       //generate unique first
       val generatedAssetTypes = ListBuffer[AirportAssetType.Value]()
       generateUniqueBlueprints(airport, generatedAssetTypes)
@@ -24,8 +40,39 @@ object AssetBlueprintGenerator {
       println(s"$airport => $generatedAssetTypes")
 
       val blueprints = generatedAssetTypes.map(assetType => AirportAssetBlueprint(airport, assetType)).toList
-      AirportAssetSource.saveAirportAssetBlueprints(blueprints)
+      blueprints
     }
+  }
+
+  /**
+    * This fills airports with missing asset, do not touch existing ones!
+    * @param airports
+    */
+  def patchMissingAssets(airports : List[Airport]) = {
+    var patchedAirports = 0
+    var failedAirports = 0
+    generateBlueprints(airports).groupBy(_.airport).foreach {
+      case(airport, newBlueprints) =>
+        val existingBlueprints = AirportAssetSource.loadAirportAssetsByAirport(airport.id)
+        val countDiff = newBlueprints.length - existingBlueprints.length
+        if (countDiff > 0) {
+          //some matching, not perfect but should be good enough
+          val addingBlueprints = ListBuffer[AirportAssetBlueprint]()
+          addingBlueprints.addAll(newBlueprints)
+          existingBlueprints.foreach { existingBlueprints =>
+            addingBlueprints.find(_.assetType == existingBlueprints.assetType).foreach( alreadyAdded => addingBlueprints.-=(alreadyAdded))
+          }
+          if (addingBlueprints.length != countDiff) {
+            println(s"Failed to match for ${airport.displayText}. Existing blueprints $existingBlueprints vs new blueprints $newBlueprints")
+            failedAirports += 1
+          } else {
+            println(s"Adding blueprints for ${airport.displayText}. $addingBlueprints")
+            patchedAirports += 1
+            AirportAssetSource.saveAirportAssetBlueprints(addingBlueprints.toList)
+          }
+        }
+    }
+    println(s"Failed $failedAirports Patched $patchedAirports")
   }
 
 
@@ -40,7 +87,7 @@ object AssetBlueprintGenerator {
   }
 
   def generateGeneralBlueprints(airport : Airport, generatedBlueprints : ListBuffer[AirportAssetType.Value]) = {
-    generateBlueprints(airport, 5, airport.size, assetTypesByGroup(GenerationGroup.GENERAL), generatedBlueprints)
+    generateBlueprints(airport, 20, airport.size, assetTypesByGroup(GenerationGroup.GENERAL), generatedBlueprints)
   }
 
   def generateBlueprints(airport : Airport, iterationCount : Int, maxCount : Int, candidates : AirportAssetType.ValueSet, generatedBlueprints : ListBuffer[AirportAssetType.Value]) : Unit =  {
@@ -118,13 +165,13 @@ object AssetBlueprintGenerator {
       case RESTAURANT =>
         0.2
       case OFFICE_BUILDING_3 =>
-        if (airport.incomeLevel < 40) 0.01 * airport.incomeLevel else 0.7
+        if (airport.baseIncomeLevel < 40) 0.01 * airport.baseIncomeLevel else 0.7
       case SHOPPING_MALL =>
         0.3
       case LUXURIOUS_HOTEL =>
         0.3
       case OFFICE_BUILDING_4 =>
-        if (airport.incomeLevel < 45) 0.01 * airport.incomeLevel else 1
+        if (airport.baseIncomeLevel < 45) 0.01 * airport.baseIncomeLevel else 1
       case CITY_TRANSIT =>
         0.7
       case AIRPORT_HOTEL =>
@@ -178,35 +225,35 @@ object AssetBlueprintGenerator {
         case None => false
       }
     case TRAVEL_AGENCY =>
-      airport.basePopulation >= 300000 && airport.incomeLevel >= 25
+      airport.basePopulation >= 300000 && airport.baseIncomeLevel >= 25
     case SPORT_ARENA =>
-      airport.basePopulation >= 500000 && airport.incomeLevel >= 15
+      airport.basePopulation >= 500000 && airport.baseIncomeLevel >= 15
     case GAME_ARCADE =>
-      airport.basePopulation >= 100000 && airport.incomeLevel >= 20
+      airport.basePopulation >= 100000 && airport.baseIncomeLevel >= 20
     case CINEMA =>
-      airport.basePopulation >= 100000 && airport.incomeLevel >= 20
+      airport.basePopulation >= 100000 && airport.baseIncomeLevel >= 20
     case INN =>
       airport.basePopulation >= 10000
     case GOLF_COURSE =>
-      airport.basePopulation >= 100000 && airport.incomeLevel >= 40 && airport.size <= 5
+      airport.basePopulation >= 100000 && airport.baseIncomeLevel >= 40 && airport.size <= 5
     case OFFICE_BUILDING_1 =>
       airport.basePopulation >= 500000
     case HOTEL =>
-      airport.basePopulation >= 500000 && airport.incomeLevel >= 25
+      airport.basePopulation >= 500000 && airport.baseIncomeLevel >= 25
     case OFFICE_BUILDING_2 =>
       airport.basePopulation >= 1000000
     case RESTAURANT =>
-      airport.incomeLevel >= 20
+      airport.baseIncomeLevel >= 20
     case OFFICE_BUILDING_3 =>
-      airport.basePopulation >= 3000000 && airport.incomeLevel >= 30
+      airport.basePopulation >= 3000000 && airport.baseIncomeLevel >= 30
     case SHOPPING_MALL =>
-      airport.basePopulation >= 1000000 && airport.incomeLevel >= 25
+      airport.basePopulation >= 1000000 && airport.baseIncomeLevel >= 25
     case LUXURIOUS_HOTEL =>
-      airport.basePopulation >= 500000 && airport.incomeLevel >= 45
+      airport.basePopulation >= 500000 && airport.baseIncomeLevel >= 45
     case OFFICE_BUILDING_4 =>
-      airport.basePopulation >= 6000000 && airport.incomeLevel >= 35
+      airport.basePopulation >= 6000000 && airport.baseIncomeLevel >= 35
     case CITY_TRANSIT =>
-      airport.basePopulation >= 1000000 && airport.incomeLevel >= 10
+      airport.basePopulation >= 1000000 && airport.baseIncomeLevel >= 10
     case AIRPORT_HOTEL =>
       airport.basePopulation >= 100000 && airport.size >= 4
     case RESIDENTIAL_COMPLEX =>

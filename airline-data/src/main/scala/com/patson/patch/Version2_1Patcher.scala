@@ -53,7 +53,7 @@ object Version2_1Patcher extends App {
 
   def patchAssetBlueprints(): Unit = {
     val airports = AirportSource.loadAllAirports(true, true).sortBy(_.power).reverse
-    AssetBlueprintGenerator.main(airports)
+    AssetBlueprintGenerator.generateAssets(airports)
   }
   
 
