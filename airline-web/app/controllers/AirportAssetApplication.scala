@@ -240,7 +240,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
     }
   }
 
-  val MAX_NAME_LENGTH = 20
+  val MAX_NAME_LENGTH = 30
 
 
   def deleteAirportAsset(airlineId : Int, assetId : Int)= AuthenticatedAirline(airlineId) { request =>
