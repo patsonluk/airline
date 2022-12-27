@@ -74,7 +74,7 @@ object AllianceSimulation {
     * @return
     */
   def buildAllianceStats(cycle : Int, alliances : List[Alliance], flightLinkResult : List[LinkConsumptionDetails], loungeVisits : List[LoungeConsumptionDetails],  airportChampionInfo : List[AirportChampionInfo], countryChampionInfo : List[CountryChampionInfo]) : List[AllianceStats] = {
-    val linkResultByAllianceId : Map[Int, List[LinkConsumptionDetails]] = flightLinkResult.groupBy(_.link.airline.getAllianceId().get)
+    val linkResultByAllianceId : Map[Int, List[LinkConsumptionDetails]] = flightLinkResult.filter(_.link.airline.getAllianceId().isDefined).groupBy(_.link.airline.getAllianceId().get) //check isDefined in case something changed in between
     val linkRidershipByAllianceId = mutable.HashMap[Int, LinkClassValues]()
     val revenueByAllianceId =  mutable.HashMap[Int, Long]()
     linkResultByAllianceId.foreach {
@@ -86,23 +86,23 @@ object AllianceSimulation {
         revenueByAllianceId.put(allianceId, revenue)
     }
 
-    val loungeVisitsByAllianceId = loungeVisits.groupBy(_.lounge.allianceId.get).view.mapValues { consumptionEntries =>
+    val loungeVisitsByAllianceId = loungeVisits.filter(_.lounge.allianceId.isDefined).groupBy(_.lounge.allianceId.get).view.mapValues { consumptionEntries =>
       consumptionEntries.map(_.selfVisitors.toLong).sum + consumptionEntries.map(_.allianceVisitors.toLong).sum
     }
 
-    val airportRankingByAllianceId : MapView[Int, List[AirportRankingCount]] = airportChampionInfo.groupBy(_.loyalist.airline.getAllianceId().get).view.mapValues { entriesByAlliance =>
+    val airportRankingByAllianceId : MapView[Int, List[AirportRankingCount]] = airportChampionInfo.filter(_.loyalist.airline.getAllianceId().isDefined).groupBy(_.loyalist.airline.getAllianceId().get).view.mapValues { entriesByAlliance =>
       entriesByAlliance.groupBy(entry => (entry.loyalist.airport.size, entry.ranking)).map {
         case ((airportScale, ranking), championEntries) => AirportRankingCount(airportScale, ranking, championEntries.size)
       }.toList
     }
 
-    val countryRankingByAllianceId : MapView[Int, List[CountryRankingCount]] = countryChampionInfo.groupBy(_.airline.getAllianceId().get).view.mapValues { entriesByAlliance =>
+    val countryRankingByAllianceId : MapView[Int, List[CountryRankingCount]] = countryChampionInfo.filter(_.airline.getAllianceId().isDefined).groupBy(_.airline.getAllianceId().get).view.mapValues { entriesByAlliance =>
       entriesByAlliance.groupBy(entry => (getCountryPopulationThreshold(entry.country.airportPopulation), entry.ranking)).map {
         case ((populationThreshold, ranking), championEntries) => CountryRankingCount(populationThreshold, ranking, championEntries.size)
       }.toList
     }
 
-    val loyalistByAllianceId : MapView[Int, Long] = airportChampionInfo.groupBy(_.loyalist.airline.getAllianceId().get).view.mapValues { entriesByAlliance =>
+    val loyalistByAllianceId : MapView[Int, Long] = airportChampionInfo.filter(_.loyalist.airline.getAllianceId().isDefined).groupBy(_.loyalist.airline.getAllianceId().get).view.mapValues { entriesByAlliance =>
       entriesByAlliance.map(_.loyalist.amount.toLong).sum
     }
 
