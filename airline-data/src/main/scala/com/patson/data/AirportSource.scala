@@ -290,6 +290,9 @@ object AirportSource {
             //airlineAppeals.put(airlineId, AirlineAppeal(loyaltyResultSet.getDouble("loyalty"), loyaltyResultSet.getDouble("awareness")))
           }
 
+          loyaltyResultSet.close()
+          loyaltyStatement.close()
+
           val airlineBaseStatement = connection.prepareStatement("SELECT * FROM " + AIRLINE_BASE_TABLE + " WHERE airport = ?")
           airlineBaseStatement.setInt(1, airport.id)
 
@@ -328,8 +331,7 @@ object AirportSource {
           val airlineBonuses = airlineBonusesMutable.view.mapValues(_.toList).toMap
 
           airport.initAirlineAppealsComputeLoyalty(airlineBonuses, LoyalistSource.loadLoyalistsByAirportId(airport.id))
-          loyaltyStatement.close()
-          
+
 //          val slotAssignments = mutable.Map[Int, Int]()
 //
 //          //val slotStatement = connection.prepareStatement("SELECT airline, SUM(frequency) as total_frequency FROM " + LINK_TABLE + " WHERE (from_airport = ? OR to_airport = ?) GROUP BY airline")
@@ -389,7 +391,6 @@ object AirportSource {
       }
       
       resultSet.close()
-      preparedStatement.close()
       airportData.toList
     } finally {
       connection.close()
