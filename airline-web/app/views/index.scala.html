@@ -1078,11 +1078,11 @@
 				</div>
 	<!--  end links canvas -->
 
-				<div id="airportCanvas" class="canvas" style="display: none; min-width: 700px;">
+				<div id="airportCanvas" class="canvas" style="display: none; min-width: 500px;">
 					<!-- left panel -->
-					<div style="float:left" class="verticalGroup airportCanvasLeftGroup">
+					<div style="float:left; max-width: 100%" class="verticalGroup airportCanvasLeftGroup">
 						<div style="width: 100%; display: flex; flex-flow: row; flex-wrap: wrap;">
-							<div style="flex-basis: 35%; box-sizing:border-box; ">
+							<div style="flex-basis : 28%; flex-grow: 1; box-sizing:border-box; ">
 								<div class="section" style="box-sizing:border-box; size: 100%; margin-left: 0;">
 									<h4>Airport Rating</h4>
 									<div class="table" style="width: 100%">
@@ -1185,7 +1185,7 @@
 			<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
 								</div>
 							</div>
-							<div class="section loyalistDetails" style="flex-basis : 15%; box-sizing:border-box; ">
+							<div class="section loyalistDetails" style="flex-basis : 15%; flex-grow: 1; box-sizing:border-box; ">
 								<h4>
 									Loyalist Trend
 									<span class="tooltip">
@@ -1210,7 +1210,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="section" style="box-sizing:border-box; flex-grow: 1; flex-basis: 30%; margin-right:0px; min-width: 300px;">
+							<div class="section" style="box-sizing:border-box; flex-grow: 1; flex-basis: 50%; margin-right:0px; min-width: 300px;">
 								<h4>
 									Assets
 								</h4>
@@ -1353,7 +1353,7 @@
 						</div>
 						<div style="clear: both;"></div>
 	<!-- 		    		end main details -->
-						<div style="display: flex;">
+						<div style="display: flex; flex-wrap: wrap;">
 							<div class="section" style="box-sizing:border-box; width: 30%; min-width: 300px; margin-left: 0;">
 								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/crown.png")'></div><div style="float: left;"><h4>Rankings</h4></div>
 								<div id="airportDetailsChampionList" style="width: 100%; margin-bottom: 15px;" class="table data">
@@ -1366,7 +1366,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="section" style="box-sizing:border-box; width: 70%; min-width: 400px; margin:10px 0 10px 0;">
+							<div class="section" style="box-sizing:border-box; width: 60%; flex-grow: 1; min-width: 400px; margin:10px 0 10px 0;">
 								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
 								<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table data">
 									<div class="table-header">

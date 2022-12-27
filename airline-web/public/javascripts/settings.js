@@ -48,6 +48,9 @@ function refreshWallpaper() {
         var wallpaperIndex = 0
         if ($.cookie('wallpaperIndex')) {
             wallpaperIndex = parseInt($.cookie('wallpaperIndex'))
+            if (wallpaperIndex >= wallpaperTemplates.length) {
+                wallpaperIndex = 0
+            }
         }
         if (wallpaperIndex < wallpaperTemplates.length) {
             template = wallpaperTemplates[wallpaperIndex]
