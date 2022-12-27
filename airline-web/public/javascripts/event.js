@@ -313,8 +313,8 @@ function refreshCityVoteModalButtons() {
                 enableButton($("#olympicsVoteModal .revert"))
             }
         } else {
-            disableButton($("#olympicsVoteModal .confirm"), "Can only vote if airline's reputation is at least 40")
-            disableButton($("#olympicsVoteModal .revert"), "Can only vote if airline's reputation is at least 40")
+            disableButton($("#olympicsVoteModal .confirm"), "Can only vote if airline's reputation is at least 30")
+            disableButton($("#olympicsVoteModal .revert"), "Can only vote if airline's reputation is at least 30")
         }
     }
 }
