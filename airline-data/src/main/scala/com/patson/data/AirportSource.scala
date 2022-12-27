@@ -391,6 +391,7 @@ object AirportSource {
       }
       
       resultSet.close()
+      preparedStatement.close()
       airportData.toList
     } finally {
       connection.close()
