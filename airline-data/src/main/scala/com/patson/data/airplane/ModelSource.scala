@@ -136,6 +136,7 @@ object ModelSource {
         preparedStatement.setInt(12, model.runwayRequirement)
         preparedStatement.executeUpdate()
     }
+    preparedStatement.close()
     connection.commit()
     
     connection.close()
@@ -165,6 +166,7 @@ object ModelSource {
             preparedStatement.setInt(13, model.runwayRequirement)
             preparedStatement.executeUpdate()
         }
+        preparedStatement.close()
         connection.commit()
         
         connection.close()
@@ -181,6 +183,8 @@ object ModelSource {
     preparedStatement.setInt(3, startCycle)
 
     preparedStatement.executeUpdate()
+
+    preparedStatement.close()
     connection.commit()
     connection.close()
   }
@@ -239,6 +243,8 @@ object ModelSource {
 
 
     preparedStatement.executeUpdate()
+
+    preparedStatement.close()
     connection.commit()
     connection.close()
   }
@@ -253,6 +259,8 @@ object ModelSource {
     preparedStatement.setInt(2, modelId)
     preparedStatement.setInt(3, discountReason.id)
     preparedStatement.executeUpdate()
+
+    preparedStatement.close()
     connection.commit()
     connection.close()
   }
@@ -343,6 +351,7 @@ object ModelSource {
 
     val purgeStatement = connection.prepareStatement("DELETE FROM " + AIRPLANE_MODEL_DISCOUNT_TABLE)
     purgeStatement.executeUpdate()
+    purgeStatement.close()
     val preparedStatement = connection.prepareStatement("REPLACE INTO " + AIRPLANE_MODEL_DISCOUNT_TABLE + "(model, discount, discount_type, discount_reason, expiration_cycle) VALUES(?,?,?,?,?)")
 
     connection.setAutoCommit(false)
@@ -360,6 +369,7 @@ object ModelSource {
     }
     AirplaneModelDiscountCache.updateModelDiscounts(discounts)
 
+    preparedStatement.close()
     connection.commit()
     connection.close()
   }

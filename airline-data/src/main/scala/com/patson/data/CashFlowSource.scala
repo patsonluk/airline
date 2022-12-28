@@ -57,7 +57,8 @@ object CashFlowSource {
       deleteStatement.setInt(1, cycle)
       deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
-      
+
+      deleteStatement.close()
       connection.commit
     } finally {
       connection.close()
@@ -73,7 +74,8 @@ object CashFlowSource {
       deleteStatement.setInt(1, cycleAndBefore)
       deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
-      
+
+      deleteStatement.close()
       connection.commit
     } finally {
       connection.close()
