@@ -221,7 +221,6 @@ object AirportSource {
 
 
   def loadAirportsByQueryString(queryString : String, parameters : List[Any], fullLoad : Boolean = false, loadFeatures : Boolean = false) = {
-      //open the hsqldb
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement(queryString)
