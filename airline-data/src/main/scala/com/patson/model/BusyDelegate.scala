@@ -29,9 +29,8 @@ case class CampaignDelegateTask(startCycle : Int, campaign : Campaign) extends L
 
   override val LEVEL_CYCLE_THRESHOLDS = List(1, 4, 12, 52)
 
-
-
-  val cost = CampaignDelegateTask.cost(campaign.principalAirport.income)
+  lazy val cost = CampaignDelegateTask.cost(campaign.principalAirport.income) //TODO this is a hacky way to avoid deadlock on init
+  //This might deadlock if 2 airports are loaded and there are campaigns covering each other. Since the lazy income will lock the Airport object
 }
 
 object CampaignDelegateTask {
