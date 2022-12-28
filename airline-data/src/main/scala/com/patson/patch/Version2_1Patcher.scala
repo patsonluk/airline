@@ -22,9 +22,9 @@ object Version2_1Patcher extends App {
 
   def mainFlow() {
     patchSchema()
-    AirportGeoPatcher.main(Array.empty)
+    AirportGeoPatcher.mainFlow()
     patchAssetBlueprints()
-    AirplaneModelPatcher.main(Array.empty)
+    AirplaneModelPatcher.mainFlow()
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }
