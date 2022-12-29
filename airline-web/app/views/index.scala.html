@@ -2841,7 +2841,7 @@
 				</div>
 	<!--   			end rival canvas -->
 				<div id="allianceCanvas" class="canvas" style="height: 100%; display: none;">
-					<div class="verticalGroup allianceCanvasLeftGroup" style="float: left;">
+					<div class="verticalGroup allianceCanvasLeftGroup" style="float: left; height: 100%; display: flex; flex-direction: column;">
 						<div id="currentAirlineMemberDetails" style="width : 95%;" class="section">
 							<div style="width: 50%; float: left;">
 								<div style="margin-bottom: 15px;">
@@ -2963,7 +2963,7 @@
 						</div>
 
 
-						<div style="width : 95%; height: 70%" class="section">
+						<div style="width : 95%; flex: 1; display: flex; flex-direction: column; min-height: 0px" class="section">
 							<div id = "allianceTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 								<div class="table-header">
 									<div class="cell clickable" style="width: 30%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAllianceTableSortOrder($(this))">Alliance Name</div>
@@ -2972,7 +2972,7 @@
 									<div class="cell clickable selected" style="width: 20%" align="right" data-sort-property="championPointsValue" data-sort-order="descending" onclick="toggleAllianceTableSortOrder($(this))">Champion Points</div>
 								</div>
 							</div>
-							<div style="height: calc(100% - 20px); width: 100%; overflow: auto;">
+							<div style="width: 100%; flex: 1; overflow-y: auto;">
 								<div id="allianceTable" class="table data" style="width: 100%;">
 									<div class="table-header">
 										<div class="cell" style="width: 30%; border-bottom: none;"></div>
