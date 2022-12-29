@@ -211,7 +211,7 @@ object AirportAssetSimulation {
       if (AirportBoostType.getValueType(previousBoost.boostType) == classOf[Long]) {
         gain = gain.toLong
       } else {
-        gain = BigDecimal(gain).setScale(2, RoundingMode.HALF_UP).toDouble
+        gain = BigDecimal(gain).setScale(3, RoundingMode.HALF_UP).toDouble
       }
       var newValue = previousBoost.value + gain
       if (AirportBoostType.getValueType(previousBoost.boostType) == classOf[Long]) {
