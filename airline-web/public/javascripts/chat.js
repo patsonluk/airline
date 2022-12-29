@@ -233,7 +233,7 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
         }
 
     } else { //incoming message from broadcast
-        var atScrollBottom = ($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop === $activeHistory[0].clientHeight)
+        var atScrollBottom = (Math.round($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop) == $activeHistory[0].clientHeight)
 
         pushMessage(r_msg)
         if ($('.chat').is(':hidden')) {
