@@ -2056,7 +2056,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_ASSET_BOOST_TABLE + "(" +
       "asset INTEGER, " +
       "boost_type VARCHAR(256), " +
-      "value DECIMAL(12,2), " +
+      "value DECIMAL(12,3), " +
       "PRIMARY KEY (asset, boost_type)," +
       "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -2079,8 +2079,8 @@ object Meta {
       "boost_type VARCHAR(256), " +
       "level SMALLINT, " +
       "cycle INT, " + //not strictly necessary but nice for debugging
-      "value DECIMAL(12,2), " +
-      "gain DECIMAL(12,2), " +
+      "value DECIMAL(12,3), " +
+      "gain DECIMAL(12,3), " +
       "upgrade_factor DECIMAL(5,4), " +
       "PRIMARY KEY (asset, boost_type, level)," +
       "FOREIGN KEY(asset) REFERENCES " + AIRPORT_ASSET_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
