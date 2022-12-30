@@ -1782,8 +1782,8 @@
 				</div>
 	<!--   			end airplane canvas -->
 				<div id="officeCanvas" class="canvas" style="height: 100%; display: none; min-width: 400px;">
-					<div style="float: left;" class="verticalGroup officeCanvasLeftGroup">
-						<div class="section" style="width: 95%; float: left;">
+					<div style="float: left; padding-right: 10px; box-sizing: border-box;" class="verticalGroup officeCanvasLeftGroup">
+						<div class="section" style="width: 100%">
                             <div style="float: left;" class="verticalGroup">
                                 <h4>Airline Details</h4>
                                 <div class="table verticalGroup" style="float: left;">
@@ -1887,24 +1887,33 @@
 
                                 </div>
                             </div>
-                            <div class="table verticalGroup" style="float: left;">
+                            <div class="table verticalGroup" style="float: left; display: flex; flex-direction: column; max-height: 200px;">
                                 <h4>Airline Bases</h4>
-                                <div style="width: 100%; height: 150px; overflow-y:auto;">
-                                    <div style="width: 100%;" class="table data bases">
-                                        <div class="table-header">
-                                            <div class="cell" style="width: 15%">Scale</div>
-                                            <div class="cell" style="width: 25%">Airport</div>
-                                            <div class="cell" style="width: 20%">Office Staff Capacity</div>
-                                            <div class="cell" style="width: 20%">Office Staff Required</div>
-                                            <div class="cell" style="width: 20%">Overtime Comp.</div>
-                                        </div>
-                                    </div>
-                                </div>
+								<div style="width: 100%;" class="table">
+									<div class="table-header">
+										<div class="cell" style="width: 15%">Scale</div>
+										<div class="cell" style="width: 25%">Airport</div>
+										<div class="cell" style="width: 20%">Office Staff Capacity</div>
+										<div class="cell" style="width: 20%">Office Staff Required</div>
+										<div class="cell" style="width: 20%">Overtime Comp.</div>
+									</div>
+								</div>
+								<div style="width: 100%;  overflow-y:auto; flex: 1;">
+									<div style="width: 100%;" class="table data bases">
+										<div class="table-header">
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+											<div class="cell" style="width: 25%; border-bottom: none;"></div>
+											<div class="cell" style="width: 20%; border-bottom: none;"></div>
+											<div class="cell" style="width: 20%; border-bottom: none;"></div>
+											<div class="cell" style="width: 20%; border-bottom: none;"></div>
+										</div>
+									</div>
+								</div>
                             </div>
 							<div style="clear: both;"></div>
 						</div>
 
-						<div style="width : 95%; float: left;" class="section">
+						<div style="width : 100%;" class="section">
 <!--							<div style="float: left;" class="clickable selected selection" onclick="selectSheet($(this), $('#incomeSheet'))"><h4>Income Sheet</h4></div>-->
 <!--							<div style="float: left;"><h4>&nbsp;|&nbsp;</h4></div>-->
 <!--							<div style="float: left;" class="clickable selection" onclick="selectSheet($(this), $('#cashFlowSheet'))"><h4>Cash Flow Sheet</h4></div>-->
@@ -1932,10 +1941,10 @@
                             </div>
 
 							<div style="width : 100%;" id="incomeSheet" class="sheet">
-								<div id="totalProfitChart" style="width: 95%; height: 300px; margin: 0 auto;"></div>
+								<div id="totalProfitChart" style="width: 100%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
-								<div style="height: 100%; float: left;" class="verticalGroup">
-									<div class="table data section" style="width: 90%;">
+								<div style="height: 100%; float: left; padding-right: 10px; box-sizing: border-box;" class="verticalGroup">
+									<div class="table data section" style="width: 100%;">
 										<h4>Total Income</h4>
 										<div class="table-row">
 											<div class="cell">Total Revenue:</div>
@@ -1950,7 +1959,7 @@
 											<div id="totalProfit" class="cell" style="text-align: right;"></div>
 										</div>
 									</div>
-									<div class="table data section" style="width: 90%;">
+									<div class="table data section" style="width: 100%;">
 										<h4>Flights Income</h4>
 										<div class="table-row">
 											<div class="cell">Ticket Revenue:</div>
@@ -2007,8 +2016,8 @@
 									</div>
 								</div>
 			<!-- 					right column -->
-								<div style="height: 100%; float: right;" class="verticalGroup">
-									<div class="table data section" style="width: 90%;">
+								<div style="height: 100%; float: right; padding-right: 20px; box-sizing: border-box;" class="verticalGroup">
+									<div class="table data section" style="width: 100%;">
 										<h4>Transactions</h4>
 										<div class="table-row">
 											<div class="cell">
@@ -2039,7 +2048,7 @@
 										</div>
 									</div>
 
-									<div class="table data section" style="width: 90%;">
+									<div class="table data section" style="width: 100%;">
 										<h4>Other Income</h4>
 										<div class="table-row">
 											<div class="cell">Loan Interest:</div>
@@ -2108,14 +2117,15 @@
 									</div>
 								</div>
 			<!-- 					end right side -->
+								<div style="clear: both;"></div>
 							</div>
 			<!--          		end income statement -->
 							<div style="width : 100%; display: none;" id="cashFlowSheet" class="sheet">
-								<div id="totalCashFlowChart" style="width: 90%; height: 300px; margin: 0 auto;"></div>
+								<div id="totalCashFlowChart" style="width: 100%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
-								<div style="height: 100%; width: 100%; float: left;">
-									<div style="float: left;" class="verticalGroup">
-										<div class="table data section" style="width: 90%;">
+								<div style="height: 100%; width: 100%;">
+									<div style="float: left; padding-right: 10px; box-sizing: border-box;" class="verticalGroup">
+										<div class="table data section" style="width: 100%;">
                                             <h4>Total Cash Flow</h4>
 											<div class="table-row">
 												<div class="cell">Total Cash Flow:</div>
@@ -2123,8 +2133,8 @@
 											</div>
 										</div>
 									</div>
-									<div style="float: left;" class="verticalGroup">
-										<div class="table data section" style="width: 90%;">
+									<div style="float: left; padding-right: 20px; box-sizing: border-box;" class="verticalGroup">
+										<div class="table data section" style="width: 100%;">
                                             <h4>Cash Flow Details</h4>
 											<div class="table-row">
 												<div class="cell">Operation Cash Flow:</div>
@@ -2168,6 +2178,7 @@
 											</div>
 										</div>
 									</div>
+									<div style="clear: both;"></div>
 								</div>
 							</div>
 		<!--          		end cashflow sheet -->
