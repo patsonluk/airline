@@ -576,23 +576,29 @@ package object controllers {
         airportObject = airportObject + ("bonusList" -> bonusJson)
       }
       if (airport.isFeaturesLoaded) {
+        implicit val boostWriter = new Writes[(String, Double)] {
+          override def writes(o : (String, Double)) : JsValue = {
+            Json.obj("description" -> o._1, "boost" -> o._2)
+          }
+        }
+
         airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().sortBy(_.featureType.id).map { airportFeature =>
           var featureJson = Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> airportFeature.getDescription)
           airportFeature match {
-            case f : InternationalHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
-            case f : FinancialHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
-            case f : VacationHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(f.boosts))
+            case f : InternationalHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(airport.boostFactorsByType.get(AirportBoostType.INTERNATIONAL_HUB)))
+            case f : FinancialHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(airport.boostFactorsByType.get(AirportBoostType.FINANCIAL_HUB)))
+            case f : VacationHubFeature => featureJson = featureJson + ("boosts" -> Json.toJson(airport.boostFactorsByType.get(AirportBoostType.VACATION_HUB)))
             case _ =>
           }
           featureJson
         }
         ))
 
-        if (airport.populationBoostFactors.size > 0) {
-          airportObject = airportObject + ("populationBoost" -> Json.toJson(airport.populationBoostFactors))
+        if (airport.boostFactorsByType(AirportBoostType.POPULATION).size > 0) {
+          airportObject = airportObject + ("populationBoost" -> Json.toJson(airport.boostFactorsByType.get(AirportBoostType.POPULATION)))
         }
-        if (airport.incomeLevelBoostFactors.size > 0) {
-          airportObject = airportObject + ("incomeLevelBoost" -> Json.toJson(airport.incomeLevelBoostFactors))
+        if (airport.boostFactorsByType(AirportBoostType.INCOME).size > 0) {
+          airportObject = airportObject + ("incomeLevelBoost" -> Json.toJson(airport.boostFactorsByType.get(AirportBoostType.INCOME)))
         }
       }
       if (airport.isGateway()) {

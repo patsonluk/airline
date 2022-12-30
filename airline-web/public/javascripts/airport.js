@@ -931,11 +931,14 @@ function refreshAirportExtendedDetails(airport) {
 
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {
-        var $popupFeatureDiv = $("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'><span>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>").appendTo($("#airportPopup .airportFeatures"))
+        var $popupFeatureDiv = $("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'></div>").appendTo($("#airportPopup .airportFeatures"))
+        var $popupFeatureSpan
         if (feature.boosts && feature.boosts.length > 0) {
-            $popupFeatureDiv.css('color', '#41A14D')
+            $popupFeatureSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
+        } else {
+            $popupFeatureSpan = $('<span>' + feature.strength + '</span>')
         }
-
+        $popupFeatureDiv.append($popupFeatureSpan)
 
         var $featureDiv = $("<div class='feature'><img src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
         $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
@@ -947,7 +950,19 @@ function refreshAirportExtendedDetails(airport) {
                 featureText += " (strength: " + feature.strength + ")"
             }
         }
-        var $featureDescription = $('<span><span>').html(featureText)
+        var $featureDescription = $('<span><span>').text(feature.title)
+
+         if (feature.strength != 0) {
+            var $featureStrengthSpan = $('<span>(strength:&nbsp;</span>')
+            if (feature.boosts && feature.boosts.length > 0) {
+                var $boostSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
+                $featureStrengthSpan.append($boostSpan)
+                $featureStrengthSpan.append('<span>)</span>')
+            } else {
+                $featureStrengthSpan.append('<span>' + feature.strength + ')</span>')
+            }
+            $featureDescription.append($featureStrengthSpan)
+        }
 
         $featureDiv.append($featureDescription)
         $("#airportCanvas .airportFeatures").append($featureDiv)
