@@ -49,7 +49,7 @@ $( document ).ready(function() {
 function showOfficeCanvas() {
 	setActiveDiv($("#officeCanvas"))
 	highlightTab($('.officeCanvasTab'))
-	
+
 	updateAirlineDetails()
 	loadSheets();
 	//updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
@@ -154,7 +154,7 @@ function updateAirlineBases() {
     	    dataType: 'json',
     	    success: function(officeCapacity) {
     	    	 $(activeAirline.baseAirports).each(function(index, base) {
-                    var row = $("<div class='table-row'></div>")
+                    var row = $("<div class='table-row clickable' data-link='airport' onclick='showAirportDetails(" + base.airportId+ ")'></div>")
                     if (base.headquarter) {
                         row.append($("<div class='cell'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
 
@@ -193,6 +193,7 @@ function updateAirlineBases() {
                 if (!activeAirline.baseAirports || activeAirline.baseAirports.length == 0) {
                     $('#officeCanvas .bases').append("<div class='table-row'><div class='cell'></div></div>")
                 }
+                populateNavigation($('#officeCanvas .bases'))
     	    },
             error: function(jqXHR, textStatus, errorThrown) {
     	            console.log(JSON.stringify(jqXHR));
