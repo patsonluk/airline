@@ -594,10 +594,10 @@ package object controllers {
         }
         ))
 
-        if (airport.boostFactorsByType(AirportBoostType.POPULATION).size > 0) {
+        if (airport.boostFactorsByType.get(AirportBoostType.POPULATION).size > 0) {
           airportObject = airportObject + ("populationBoost" -> Json.toJson(airport.boostFactorsByType.get(AirportBoostType.POPULATION)))
         }
-        if (airport.boostFactorsByType(AirportBoostType.INCOME).size > 0) {
+        if (airport.boostFactorsByType.get(AirportBoostType.INCOME).size > 0) {
           airportObject = airportObject + ("incomeLevelBoost" -> Json.toJson(airport.boostFactorsByType.get(AirportBoostType.INCOME)))
         }
       }
