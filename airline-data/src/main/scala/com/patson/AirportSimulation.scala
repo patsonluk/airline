@@ -219,7 +219,11 @@ object AirportSimulation {
                   val multiplier = Math.min(MAX_LOYALIST_FLIP_RATIO, passengerGroup.preference.loyaltySensitivity + 0.3)
                   (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
                 }
-              //println(s"${linkConsideration.cost} vs standard price $standardPrice. Conversion Ratio : ${conversionRatio}")
+              //adjust with income level. Since lower income country has less pax to start with. Up to 3 times
+              if (fromAirport.incomeLevel < Country.HIGH_INCOME_THRESHOLD) {
+                val multiplier = 1 + 2 * (Country.HIGH_INCOME_THRESHOLD - fromAirport.incomeLevel) / Country.HIGH_INCOME_THRESHOLD
+                conversionRatio *= multiplier
+              }
 
               if (link.distance != totalDistance) {
                 conversionRatio = conversionRatio * (0.5 / route.links.length  + 0.5 * link.distance / totalDistance) //half depends on # of leg, half proportional to the % of distance travel of the whole route
