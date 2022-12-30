@@ -6,10 +6,16 @@ $( document ).ready(function() {
 	loadAllAlliances()
 })
 
-function showAllianceCanvas() {
+function showAllianceCanvas(selectedAllianceId) {
 	setActiveDiv($("#allianceCanvas"))
 	highlightTab($('.allianceCanvasTab'))
-	loadAllAlliances()
+	if (!selectedAllianceId) {
+        if (activeAirline) {
+            selectedAllianceId = activeAirline.allianceId
+        }
+    }
+
+	loadAllAlliances(selectedAllianceId)
 	if (!activeAirline) {
 		$('#currentAirlineMemberDetails').hide()
 	} else {
@@ -159,7 +165,7 @@ function updateAllianceMission(current, previous, isAdmin) {
     }
 }
 
-function loadAllAlliances() {
+function loadAllAlliances(selectedAllianceId) {
 	var getUrl = "alliances"
 	if (activeAirline) {
 	    getUrl += "?airlineId=" + activeAirline.id
@@ -199,14 +205,16 @@ function loadAllAlliances() {
 	    	updateAllianceTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'))
 	    	
 	    	if (selectedAlliance) {
-	    		if (loadedAlliancesById[selectedAlliance.id]) {
-	    			loadAllianceDetails(selectedAlliance.id)
-	    		} else { //alliance was just deleted
+	    		if (!loadedAlliancesById[selectedAlliance.id]) { //alliance was just deleted
 	    			selectedAlliance = undefined
 	    			$('#allianceDetails').hide()
 	    		}
 			} else {
 				$('#allianceDetails').hide()
+			}
+
+			if (selectedAllianceId) {
+                selectAlliance(selectedAllianceId, true)
 			}
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -264,12 +272,16 @@ function toggleAllianceTableSortOrder(sortHeader) {
 	updateAllianceTable(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
-function selectAlliance(allianceId) {
+function selectAlliance(allianceId, isScrollToRow) {
 	//update table
 	var $row = $("#allianceCanvas #allianceTable .table-row[data-alliance-id='" + allianceId + "']")
 	$row.siblings().removeClass("selected")
 	$row.addClass("selected")
 	loadAllianceDetails(allianceId)
+
+    if (isScrollToRow) {
+        scrollToRow($row, $("#allianceCanvas #allianceTableContainer"))
+    }
 }
 
 function loadAllianceDetails(allianceId) {

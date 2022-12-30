@@ -242,8 +242,7 @@ function updateRivalBasicsDetails(airlineId) {
 		$("#rivalsCanvas .alliance").text(rival.allianceName)
 		$("#rivalsCanvas .alliance").addClass("clickable")
 		$("#rivalsCanvas .alliance").on("click.showAlliance", function() {
-		    showAllianceCanvas()
-		    selectAlliance(rival.allianceId)
+		    showAllianceCanvas(rival.allianceId)
 		})
 	} else {
 		$("#rivalsCanvas .alliance").text('-')

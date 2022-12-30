@@ -388,6 +388,14 @@ function getOpennessSpan(openness) {
 	
 }
 
+function scrollToRow($matchingRow, $container) {
+    var row = $matchingRow[0]
+    var baseOffset = $container.find(".table-row")[0].offsetTop //somehow first row is not 0...
+    var realOffset = row.offsetTop - baseOffset
+    $container.stop(true, true) //stop previous animation
+    $container.animate ({scrollTop: realOffset}, "fast");
+}
+
 /*
 Get a span with value and a tool tip of breakdown
 */
@@ -507,9 +515,8 @@ function setActiveDiv(activeDiv, callback) {
 	if (existingActiveDiv.length > 0){
 	    existingActiveDiv.removeClass('active')
 	    activeDiv.addClass('active')
-	    existingActiveDiv.fadeOut(200, function() {
-		    activeDiv.fadeIn(200, callback)
-        })
+        existingActiveDiv.hide()
+        activeDiv.fadeIn(400, callback)
 	} else {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
 		    if (callback) {

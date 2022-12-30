@@ -188,7 +188,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     
     val history = AllianceSource.loadAllianceHistoryByAirline(airlineId)
     if (!history.isEmpty) {
-      result = result + ("history" -> Json.toJson(history))
+      result = result + ("history" -> Json.toJson(history.sortBy(_.cycle)(Ordering.Int.reverse)))
     }
 
 
@@ -262,7 +262,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         
         
         val historyEntries : List[AllianceHistory] = AllianceSource.loadAllianceHistoryByAllianceName(alliance.name)
-        allianceJson = allianceJson + ("history" -> Json.toJson(historyEntries))
+        allianceJson = allianceJson + ("history" -> Json.toJson(historyEntries.sortBy(_.cycle)(Ordering.Int.reverse)))
         result = result.append(allianceJson)
     }
     

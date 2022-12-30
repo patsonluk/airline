@@ -1931,11 +1931,7 @@ function showLinkEventHistory(linkId) {
             var $matchingRows = $linkEventTableContainer.find(".table-row[data-cycle='" + hoverCycle + "']")
             $matchingRows.addClass('selected')
             if ($matchingRows.length > 0) {
-                var row = $matchingRows[0]
-                var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
-                var realOffset = row.offsetTop - baseOffset
-                $linkEventTableContainer.stop(true, true) //stop previous animation
-                $linkEventTableContainer.animate ({scrollTop: realOffset}, "fast");
+                scrollToRow($matchingRows[0], $linkEventTableContainer)
             }
         },
         function() { //chartout
