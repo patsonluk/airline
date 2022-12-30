@@ -29,9 +29,9 @@ object DemandGenerator {
   
   val MIN_DISTANCE = 50
   
-  val defaultTotalWorldPower = {
-    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
-  }
+//  val defaultTotalWorldPower = {
+//    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
+//  }
 //  mainFlow
 //  
 //  def mainFlow() = {
@@ -115,7 +115,7 @@ object DemandGenerator {
     } else {
       import FlightType._
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-      
+
       //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
       //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
       //we are using income level for to airport as destination income difference should have less impact on demand compared to origination airport (and income level is log(income))
