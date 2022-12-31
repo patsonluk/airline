@@ -826,6 +826,10 @@ function refreshBaseAfterAirplaneUpdate() {
     loadAirplaneModelOwnerInfoByModelId(selectedModelId) //refresh the loaded airplanes on the selected model
     updateAirplaneModelTable()
     showAirplaneBase(selectedModelId)
+
+    if ($('#airplaneCanvas .hangar').is(':visible')) {
+        populateHangerModels()
+    }
 }
 
 function refreshAllAirplaneInventoryAfterAirplaneUpdate() {
@@ -1343,6 +1347,10 @@ function selectAirplaneTab($selectedTab) {
 function showAirplaneHangar() {
     populateMaintenanceFactor()
     populatePreferredSuppliers()
+    populateHangerModels()
+}
+
+function populateHangerModels() {
     var $container = $('#airplaneCanvas .hangar .sectionContainer')
     $container.empty()
     populateHangarByModel($container)
@@ -1444,7 +1452,13 @@ function populatePreferredSuppliers() {
       });
 }
 function populateHangarByModel($container) {
-    $.each(loadedModelsOwnerInfo, function(index, modelOwnerInfo) {
+    const sorted = [...loadedModelsOwnerInfo].sort(
+        function(a, b) {
+            return a.capacity - b.capacity;
+        }
+    )
+
+    $.each(sorted, function(index, modelOwnerInfo) {
         if (modelOwnerInfo.totalOwned > 0) {
             var modelId = modelOwnerInfo.id
             var $inventoryDiv = $("<div style='min-width : 300px; min-height : 85px; flex: 1;' class='section clickable'></div>")
