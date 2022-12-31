@@ -2799,6 +2799,7 @@ function getLinkNegotiation(callback) {
                         $('#linkConfirmationModal .negotiationInfo .error').show();
                     } else {
                         $('#linkConfirmationModal .negotiationInfo .error').hide();
+                        $('#linkConfirmationModal .negotiationInfo img.info').show();
                     }
 
                     $('#negotiationDifficultyModal .negotiationInfo .negotiationDifficultyTotal').text(difficultyTotalText)
