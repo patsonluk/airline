@@ -221,7 +221,14 @@ function promptBuyUsedAirplane(airplane) {
 
 function promptBuyNewAirplane(modelId, fromPlanLink, explicitHomeAirportId) {
     var buyAirplaneFunction = function(quantity, homeAirportId, selectedConfigurationId) {
-        buyAirplane(modelId, quantity, homeAirportId, selectedConfigurationId, fromPlanLink)
+        var callback
+        if (fromPlanLink) {
+            callback = function() {
+                planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+                $("#planLinkModelSelect").data('explicitId', modelId) //force the plan link to use this value after buying a plane
+            }
+        }
+        buyAirplane(modelId, quantity, homeAirportId, selectedConfigurationId, callback)
     }
 
     promptBuyAirplane(modelId, 100, loadedModelsById[modelId].price, loadedModelsById[modelId].constructionTime, explicitHomeAirportId, true, buyAirplaneFunction)
@@ -392,8 +399,7 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
 }
 
 
-function buyAirplane(modelId, quantity, homeAirportId, configurationId, fromPlanLink) {
-	fromPlanLink = fromPlanLink || false
+function buyAirplane(modelId, quantity, homeAirportId, configurationId, callback) {
 	var airlineId = activeAirline.id
 	var url = "airlines/" + airlineId + "/airplanes?modelId=" + modelId + "&quantity=" + quantity + "&airlineId=" + airlineId + "&homeAirportId=" + homeAirportId + "&configurationId=" + configurationId
 	$.ajax({
@@ -404,9 +410,8 @@ function buyAirplane(modelId, quantity, homeAirportId, configurationId, fromPlan
 	    dataType: 'json',
 	    success: function(response) {
 	    	refreshPanels(airlineId)
-	    	if (fromPlanLink) {
-	    		planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
-	    		$("#planLinkModelSelect").data('explicitId', modelId) //force the plan link to use this value after buying a plane
+	    	if (callback) {
+	    		callback()
 	    	} else {
 	    		showAirplaneCanvas()
 	    	}
@@ -731,6 +736,14 @@ function toggleCondition(container, checkbox) {
     } else {
         container.find('.condition').hide()
     }
+}
+
+function showAirplaneBaseFromPlanLink(modelId) {
+    showAirplaneBase(modelId)
+    $('#airplaneBaseModal').data('closeCallback', function() {
+        planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+    })
+    //console.log("Added " + $('#airplaneBaseModal').data('closeCallback'))
 }
 
 function showAirplaneBase(modelId) {

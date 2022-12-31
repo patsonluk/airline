@@ -1,3 +1,10 @@
+function showAirplaneModelConfigurationsFromPlanLink(modelId) {
+    showAirplaneModelConfigurations(modelId)
+    $('#modelConfigurationModal').data('closeCallback', function() {
+        planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+    })
+}
+
 function showAirplaneModelConfigurations(modelId) {
     var airlineId = activeAirline.id
     $.ajax({

@@ -870,38 +870,49 @@ function planToAirport(toAirportId, toAirportName) {
 function planLink(fromAirport, toAirport) {
     checkTutorial("planLink")
 	var airlineId = activeAirline.id
+	var isRefresh = $("#planLinkFromAirportId").val() == fromAirport && $("#planLinkToAirportId").val() == toAirport && $('#planLinkDetails').hasClass('active')
+
 	$("#planLinkFromAirportId").val(fromAirport)
 	$("#planLinkToAirportId").val(toAirport)
 	
 	if (fromAirport && toAirport) {
 		setActiveDiv($('#planLinkDetails'))
 		$('#planLinkDetails .warning').hide()
-		$('#sidePanel').fadeOut(200, function() {
-		var url = "airlines/" + airlineId + "/plan-link"
-			$.ajax({
-				type: 'POST',
-				url: url,
-				data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
-	//			contentType: 'application/json; charset=utf-8',
-				dataType: 'json',
-			    success: function(linkInfo) {
-			    	updatePlanLinkInfo(linkInfo)
-			    	$('#sidePanel').fadeIn(200);
-			    },
-		        error: function(jqXHR, textStatus, errorThrown) {
-			            console.log(JSON.stringify(jqXHR));
-			            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-			    },
-			    beforeSend: function() {
+
+		var loadPlanLink = function() {
+            var url = "airlines/" + airlineId + "/plan-link"
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
+    //			contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function(linkInfo) {
+                    updatePlanLinkInfo(linkInfo, isRefresh)
+                    if (!isRefresh) {
+                        $('#sidePanel').fadeIn(200);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(JSON.stringify(jqXHR));
+                        console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                },
+                beforeSend: function() {
                     $('body .loadingSpinner').show()
                 },
                 complete: function(){
                     $('body .loadingSpinner').hide()
                 }
-			});
-		//hide existing info
-		//$("#planLinkDetails div.value").hide()
-		});
+            });
+            //hide existing info
+            //$("#planLinkDetails div.value").hide()
+        }
+
+        if (!isRefresh) {
+            $('#sidePanel').fadeOut(200, loadPlanLink)
+        } else {
+            loadPlanLink()
+        }
 	}
 	
 	
@@ -913,7 +924,7 @@ var spaceMultipliers = null
 var existingLink
 //var existingLinkModelId = 0
 
-function updatePlanLinkInfo(linkInfo) {
+function updatePlanLinkInfo(linkInfo, isRefresh) {
 	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportCode))
 	if (activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
@@ -1178,7 +1189,7 @@ function updatePlanLinkInfo(linkInfo) {
 		setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 	}
 	
-	updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId)
+	updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId, isRefresh)
 	$("#planLinkDetails div.value").show()
 }
 
@@ -1221,14 +1232,13 @@ function updateFrequencyBar(frequencyBar, valueContainer, airplane, currentFrequ
     generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequency, frequencyBar, valueContainer, null, null, updateTotalValues)
 }
 
-function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
+function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId, isRefresh) {
     selectedModelId = newModelId //modify the global one
     selectedModel = loadedModelsById[newModelId]
 	if (selectedModelId) {
 		var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
 		
-		$('#planLinkAirplaneSelect').empty()
-		
+
 //		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('airplane.condition', true))
 //		thisModelPlanLinkInfo.airplanes = sortPreserveOrder(thisModelPlanLinkInfo.airplanes, 'frequency', false) //higher frequency first
 		
@@ -1245,9 +1255,19 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 		    return a.airplane.condition - b.airplane.condition //otherwise: both assigned or both not assigned, then return lowest condition ones first
 		})
 
+        $('#planLinkAirplaneSelect').empty()
+
 		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplaneEntry) {
 //			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
 //			option.appendTo($("#planLinkAirplaneSelect"))
+
+			//check existing UI changes if just a refresh
+			if (isRefresh) {
+			    var $existingAirplaneRow = $("#planLinkDetails .frequencyDetail .airplaneRow[data-airplaneId='" + airplaneEntry.airplane.id + "']")
+			    //UI values merge into the airplane/frequency info as we want to preserve previously UI change on refresh
+    			mergeAirplaneEntry(airplaneEntry, $existingAirplaneRow)
+			}
+
 			var airplane = airplaneEntry.airplane
 			airplane.isAssigned = airplaneEntry.frequency >  0
 			var div =  $('<div class="clickable airplaneButton" onclick="toggleAssignedAirplane(this)" style="float: left;"></div>')
@@ -1267,8 +1287,10 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 
 
 		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))
-		
-		existingLink = planLinkInfo.existingLink
+
+		if (!isRefresh) { //for refresh, do not reload the existing link, otherwise refresh on config change would show the new values in confirmation dialog etc
+		    existingLink = planLinkInfo.existingLink
+        }
 		
 		if (existingLink) {
 			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
@@ -1284,6 +1306,17 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 	} else {
 		$("#planLinkExtendedDetails").hide()
 	}
+}
+//Merge UI change (though temp) to the data loaded from api service
+//This is used for refresh which we want to reload but keep temp changes from UI
+function mergeAirplaneEntry(airplaneEntry, $airplaneRow) {
+    var frequencyFromUi = $airplaneRow.length ? parseInt($airplaneRow.find(".frequency").val()) : 0
+    var frequencyDelta = frequencyFromUi - airplaneEntry.frequency
+    if (frequencyDelta != 0) { //then UI value is not the same as the original. Do adjustments
+        airplaneEntry.frequency = frequencyFromUi
+        var airplane = airplaneEntry.airplane
+        airplane.availableFlightMinutes = airplane.availableFlightMinutes - (planLinkInfoByModel[airplane.modelId].flightMinutesRequired * frequencyDelta)
+    }
 }
 
 function updateFrequencyDetail(info) {
@@ -1377,6 +1410,7 @@ function addAirplaneRow(container, airplane, frequency) {
     valueContainer.val(frequency)
     airplaneRow.append(valueContainer)
     airplaneRow.data("airplane", airplane)
+    airplaneRow.attr('data-airplaneId', airplane.id) //for easier jquery selector
 
     container.append(airplaneRow)
     updateFrequencyBar(frequencyBar, valueContainer, airplane, frequency)
@@ -1411,6 +1445,8 @@ function removeAirplaneFromLink(airplaneId) {
     })
 }
 
+
+//Get capacity based on current UI status
 function getPlanLinkCapacity() {
     var currentFrequency = 0 //airplanes that are ready
     var currentCapacity = { "economy" : 0, "business" : 0, "first" : 0}
