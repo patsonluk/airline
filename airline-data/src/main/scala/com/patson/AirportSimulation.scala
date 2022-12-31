@@ -194,6 +194,7 @@ object AirportSimulation {
   private[patson] def computeLoyalists(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) = {
     val result = ListBuffer[Loyalist]() //airlineId, amount
 
+    val highIncomeLevel = Computation.getIncomeLevel(Country.HIGH_INCOME_THRESHOLD)
     linkRidershipDetails.groupBy(_._1._1.fromAirport).foreach {
       case ((fromAirport, passengersFromThisAirport)) =>
         val loyalistIncrementOfAirlines = Map[Int, Int]() //airlineId, delta
@@ -220,8 +221,8 @@ object AirportSimulation {
                   (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
                 }
               //adjust with income level. Since lower income country has less pax to start with. Up to 3 times
-              if (fromAirport.incomeLevel < Country.HIGH_INCOME_THRESHOLD) {
-                val multiplier = 1 + 2 * (Country.HIGH_INCOME_THRESHOLD - fromAirport.incomeLevel) / Country.HIGH_INCOME_THRESHOLD
+              if (fromAirport.incomeLevel < highIncomeLevel) {
+                val multiplier = 1 + 2 * (highIncomeLevel - fromAirport.incomeLevel) / highIncomeLevel
                 conversionRatio *= multiplier
               }
 
