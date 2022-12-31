@@ -194,6 +194,7 @@ function loadUser(isLogin) {
               initPrompts()
 		  }
 		  updateAirlineLabelColors()
+		  $('.button.login').removeClass('loading')
 
 	  },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -208,6 +209,7 @@ function loadUser(isLogin) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    	}
+	    	$('.button.login').removeClass('loading')
 	    }
 	}
 	if (isLogin) {
