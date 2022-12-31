@@ -4679,8 +4679,8 @@
 						<div class="cell">
 							<div class="homeView" style="display: flex; align-items: center;">
 								<div class="home" style="width: 80%;  float: left;" ></div>
-								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button edit' style="vertical-align: middle;" onclick="toggleAirplaneHome()" title="Change home airport"/></div>
-								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;" title="Cannot change home airport with active route(s)"/></div>
+								<div style="float: left;"  data-tooltip-text="Change home airport"><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button edit' style="vertical-align: middle;" onclick="toggleAirplaneHome()"/></div>
+								<div style="float: left;"  data-tooltip-text="Cannot change home airport with active route(s)"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;"/></div>
 							</div>
 							<div class="homeEdit"; style="display:none">
 								<select class="homeOptions select-css"></select>
@@ -4694,7 +4694,8 @@
 						<div class="cell configuration-view" style="display: flex; align-items: center;">
 							<div class="configurationBar" style="width: 80%; float: left"></div>
 							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button edit' style="vertical-align: middle;" onclick="toggleAirplaneConfiguration()" title="Pick configuration"/></div>
-							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;" title="Need at least 2 configurations for changes"/></div>
+							<div style="float: left;"  data-tooltip-text="Need at least 2 configurations for changes"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;"/></div>
+							<div style="clear:both;"></div>
 						</div>
 						<div class="cell configuration-edit"; style="display:none">
 							<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption($('#ownedAirplaneDetail'), -1)"/>
