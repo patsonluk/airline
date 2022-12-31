@@ -931,7 +931,7 @@ function refreshAirportExtendedDetails(airport) {
 
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {
-        var $popupFeatureDiv = $("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'></div>").appendTo($("#airportPopup .airportFeatures"))
+        var $popupFeatureDiv = $("<div class='feature' style='display:inline-flex'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'></div>").appendTo($("#airportPopup .airportFeatures"))
         var $popupFeatureSpan
         if (feature.boosts && feature.boosts.length > 0) {
             $popupFeatureSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
