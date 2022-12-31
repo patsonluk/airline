@@ -870,7 +870,7 @@ function planToAirport(toAirportId, toAirportName) {
 function planLink(fromAirport, toAirport) {
     checkTutorial("planLink")
 	var airlineId = activeAirline.id
-	var isRefresh = $("#planLinkFromAirportId").val() == fromAirport && $("#planLinkToAirportId").val() == toAirport && $('#planLinkDetails').hasClass('active')
+	var isRefresh = $("#planLinkFromAirportId").val() == fromAirport && $("#planLinkToAirportId").val() == toAirport && $('#planLinkDetails').is(":visible")
 
 	$("#planLinkFromAirportId").val(fromAirport)
 	$("#planLinkToAirportId").val(toAirport)
@@ -1099,6 +1099,12 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	//populate airplane model drop down
 	var explicitlySelectedModelId = $("#planLinkModelSelect").data('explicitId')
 	$("#planLinkModelSelect").removeData('explicitId')
+
+	//or if refresh, just use whatever selected previously
+	if (isRefresh) {
+	    explicitlySelectedModelId = $('#planLinkModelSelect').find(":selected").attr('value')
+    }
+
 	$("#planLinkModelSelect").children('option').remove()
 
 	planLinkInfo = linkInfo
