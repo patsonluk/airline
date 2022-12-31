@@ -936,7 +936,7 @@ function refreshAirportExtendedDetails(airport) {
         if (feature.boosts && feature.boosts.length > 0) {
             $popupFeatureSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
         } else {
-            $popupFeatureSpan = $('<span>' + feature.strength + '</span>')
+            $popupFeatureSpan = $('<span>' + (feature.strength > 0 ? feature.strength : '') + '</span>')
         }
         $popupFeatureDiv.append($popupFeatureSpan)
 
