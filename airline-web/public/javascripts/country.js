@@ -210,7 +210,10 @@ function loadCountryDetails(countryCode) {
     		$("#countryCanvas .nationalAirlines").empty()
             if (country.nationalAirlines && country.nationalAirlines.length > 0) {
                 $.each(country.nationalAirlines, function(index, nationalAirline) {
-                    var championRow = $("<div class='table-row'><div class='cell'><img src='assets/images/icons/star.png' style='vertical-align:middle;'>" + getAirlineLogoImg(nationalAirline.airlineId) + "<span style='font-weight: bold;'>" + getAirlineLabelSpan(nationalAirline.airlineId, nationalAirline.airlineName) + "</span> (" + nationalAirline.passengerCount + " passengers, " + nationalAirline.loyaltyBonus + " loyalty bonus)</div></div>")
+                    var championRow = $("<div class='table-row clickable' data-link='rival'><div class='cell'><img src='assets/images/icons/star.png' style='vertical-align:middle;'>" + getAirlineLogoImg(nationalAirline.airlineId) + "<span style='font-weight: bold;'>" + getAirlineLabelSpan(nationalAirline.airlineId, nationalAirline.airlineName) + "</span> (" + nationalAirline.passengerCount + " passengers, " + nationalAirline.loyaltyBonus + " loyalty bonus)</div></div>")
+                    championRow.click(function() {
+                        showRivalsCanvas(nationalAirline.airlineId)
+                    })
                     $("#countryCanvas .nationalAirlines").append(championRow)
                 })
             } else {
@@ -220,7 +223,10 @@ function loadCountryDetails(countryCode) {
             $("#countryCanvas .partneredAirlines").empty()
             if (country.partneredAirlines && country.partneredAirlines.length > 0) {
                 $.each(country.partneredAirlines, function(index, partneredAirline) {
-                    var championRow = $("<div class='table-row'><div class='cell'><img src='assets/images/icons/hand-shake.png' style='vertical-align:middle;'>" + getAirlineLogoImg(partneredAirline.airlineId) + "<span style='font-weight: bold;'>" + getAirlineLabelSpan(partneredAirline.airlineId, partneredAirline.airlineName) + "</span> (" + partneredAirline.passengerCount + " passengers, " + partneredAirline.loyaltyBonus + " loyalty bonus)</div></div>")
+                    var championRow = $("<div class='table-row clickable' data-link='rival'><div class='cell'><img src='assets/images/icons/hand-shake.png' style='vertical-align:middle;'>" + getAirlineLogoImg(partneredAirline.airlineId) + "<span style='font-weight: bold;'>" + getAirlineLabelSpan(partneredAirline.airlineId, partneredAirline.airlineName) + "</span> (" + partneredAirline.passengerCount + " passengers, " + partneredAirline.loyaltyBonus + " loyalty bonus)</div></div>")
+                    championRow.click(function() {
+                        showRivalsCanvas(partneredAirline.airlineId)
+                    })
                     $("#countryCanvas .partneredAirlines").append(championRow)
                 })
             } else {
@@ -230,7 +236,10 @@ function loadCountryDetails(countryCode) {
             $("#countryCanvas .countryDetailsChampion").empty()
 	    	if (country.champions) {
 	    		$.each(country.champions, function(index, champion) {
-	    		    var championRow = $("<div class='table-row'><div class='cell'>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airlineId) + "<span style='font-weight: bold;'>" + getAirlineLabelSpan(champion.airlineId, champion.airlineName) + "</span> (" + champion.passengerCount + " passengers)</div></div>")
+	    		    var championRow = $("<div class='table-row clickable' data-link='rival'><div class='cell'>" + getRankingImg(champion.ranking) + getAirlineLogoImg(champion.airlineId) + "<span style='font-weight: bold;'>" + getAirlineLabelSpan(champion.airlineId, champion.airlineName) + "</span> (" + champion.passengerCount + " passengers)</div></div>")
+	    		    championRow.click(function() {
+                        showRivalsCanvas(champion.airlineId)
+                    })
     				$("#countryCanvas .countryDetailsChampion").append(championRow)
     			})
 	    	} else {
@@ -239,6 +248,7 @@ function loadCountryDetails(countryCode) {
 
 	    	assignAirlineColors(country.marketShares, "airlineId")
 	    	plotPie(country.marketShares, activeAirline ? activeAirline.name : null , $("#countryDetailsSharesChart"), "airlineName", "passengerCount")
+	    	populateNavigation($('#countryCanvas'))
 	    	$("#countryDetailsSharesChart").show()
 
 	    	$("#countryCanvas .sidePanel").fadeIn(200);
