@@ -901,11 +901,10 @@ function refreshAirportExtendedDetails(airport) {
 
                 var fullHeartSource = "assets/images/icons/heart.png"
                 var halfHeartSource = "assets/images/icons/heart-half.png"
-                var fullStarSource = "assets/images/icons/star.png"
-                var halfStarSource = "assets/images/icons/star-half.png"
+                var emptyHeartSource = "assets/images/icons/heart-empty.png"
 
                 $(".airportLoyalty").empty()
-                getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, appeal.loyalty).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportLoyalty"))
+                getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, appeal.loyalty).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportLoyalty"))
 
                 $(".airportLoyalty").append(appeal.loyalty)
 

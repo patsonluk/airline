@@ -2183,8 +2183,9 @@ function getLoungeIconSpan(lounge) {
 function updateRivalTables(result) {
     var appealTable = $("#rivalAppealTable")
     var networkCapacityTable = $("#networkCapacity")
+    appealTable.children(".table-row").remove()
     networkCapacityTable.children(".table-row").remove()
-	var fromAirportText = getAirportText(result.fromCity, result.fromAirportCode)
+    var fromAirportText = getAirportText(result.fromCity, result.fromAirportCode)
     var toAirportText = getAirportText(result.toCity, result.toAirportCode)
     $("#linkRivalDetailsModal .fromAirportText").text(fromAirportText)
     $("#linkRivalDetailsModal .toAirportText").text(toAirportText)
@@ -2220,8 +2221,7 @@ function updateRivalTables(result) {
 
     var fullHeartSource = "assets/images/icons/heart.png"
     var halfHeartSource = "assets/images/icons/heart-half.png"
-    var fullStarSource = "assets/images/icons/star.png"
-    var halfStarSource = "assets/images/icons/star-half.png"
+    var emptyHeartSource = "assets/images/icons/heart-empty.png"
     var greenManSource = "assets/images/icons/man-green.png"
     var blueManSource = "assets/images/icons/man-blue.png"
     var yellowManSource = "assets/images/icons/man-yellow.png"
@@ -2236,8 +2236,8 @@ function updateRivalTables(result) {
         }
         var $airlineCell = $("<div class='cell' align='left'></div>").append($airlineSpan)
 		row.append($airlineCell)
-		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, fromAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, toAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+		getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, fromAirportLoyalty[airlineId].toFixed(2)).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+		getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, toAirportLoyalty[airlineId].toFixed(2)).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
 		appealTable.append(row)
 
 		row = $("<div class='table-row'></div>")
@@ -2255,7 +2255,7 @@ function updateRivalTables(result) {
 
 }
 
-function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStepAmount, value) {
+function getPaddedHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, emptyStepImageSrc, halfStepAmount, value) {
     var containerDiv = $("<div>")
 	containerDiv.prop("title", value)
 
@@ -2270,8 +2270,16 @@ function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStep
         var image = $("<img src='" + halfStepImageSrc + "'>")
     	containerDiv.append(image)
     }
+    if (emptyStepImageSrc && halfSteps == 0 && fullSteps == 0) {
+        var image = $("<img src='" + emptyStepImageSrc + "'>")
+        containerDiv.append(image)
+    }
 
     return containerDiv
+}
+
+function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStepAmount, value) {
+    return getPaddedHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, null, halfStepAmount, value)
 }
 
 function getCapacityImageBar(imageSrc, value, linkClass) {
