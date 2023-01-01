@@ -224,7 +224,7 @@ function promptBuyNewAirplane(modelId, fromPlanLink, explicitHomeAirportId) {
         var callback
         if (fromPlanLink) {
             callback = function() {
-                planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+                planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), true)
                 $("#planLinkModelSelect").data('explicitId', modelId) //force the plan link to use this value after buying a plane
             }
         }
@@ -741,7 +741,7 @@ function toggleCondition(container, checkbox) {
 function showAirplaneBaseFromPlanLink(modelId) {
     showAirplaneBase(modelId)
     $('#airplaneBaseModal').data('closeCallback', function() {
-        planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+        planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), true)
     })
     //console.log("Added " + $('#airplaneBaseModal').data('closeCallback'))
 }

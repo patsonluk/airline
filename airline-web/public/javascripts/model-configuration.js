@@ -1,7 +1,7 @@
 function showAirplaneModelConfigurationsFromPlanLink(modelId) {
     showAirplaneModelConfigurations(modelId)
     $('#modelConfigurationModal').data('closeCallback', function() {
-        planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
+        planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), true)
     })
 }
 

@@ -867,10 +867,9 @@ function planToAirport(toAirportId, toAirportName) {
 	}
 }
 
-function planLink(fromAirport, toAirport) {
+function planLink(fromAirport, toAirport, isRefresh) {
     checkTutorial("planLink")
 	var airlineId = activeAirline.id
-	var isRefresh = $("#planLinkFromAirportId").val() == fromAirport && $("#planLinkToAirportId").val() == toAirport && $('#planLinkDetails').is(":visible")
 
 	$("#planLinkFromAirportId").val(fromAirport)
 	$("#planLinkToAirportId").val(toAirport)
