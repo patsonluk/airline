@@ -1,6 +1,8 @@
 package com.patson.model
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.collection.concurrent.TrieMap
+import scala.collection.mutable
 
 abstract class Transport extends IdObject{
   var id : Int
@@ -21,7 +23,7 @@ abstract class Transport extends IdObject{
 
   @volatile var soldSeats : LinkClassValues = LinkClassValues.getInstance()
   @volatile var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
-  private val standardPrice : ConcurrentHashMap[LinkClass, Int] = new ConcurrentHashMap[LinkClass, Int]()
+  private val standardPrice = TrieMap[LinkClass, Int]()
 
   val cost: LinkClassValues //the cost of taking this transport, could just be the price, or with the hidden cost of taking it
 
@@ -55,13 +57,10 @@ abstract class Transport extends IdObject{
   }
 
   def standardPrice(linkClass : LinkClass) : Int = {
-    var price = standardPrice.get(linkClass)
-    if (price == null.asInstanceOf[Int]) {
-      price = Pricing.computeStandardPrice(distance, flightType, linkClass)
-      standardPrice.put(linkClass, price)
-    }
-    price
+    standardPrice.getOrElseUpdate(linkClass, Pricing.computeStandardPrice(distance, flightType, linkClass))
   }
+
+
 
   import FlightType._
   /**
