@@ -25,10 +25,10 @@ object Computation {
   lazy val MAX_INCOME = MAX_VALUES._4
 
   val MAX_COMPUTED_DISTANCE = 20000
-  val standardFlightDurationCache : Array[Int] = {
+  lazy val standardFlightDurationCache : Array[Int] = {
     val result = new Array[Int](MAX_COMPUTED_DISTANCE + 1)
     for (i <- 0 to MAX_COMPUTED_DISTANCE) { //should cover everything...
-      standardFlightDurationCache(i) =  Computation.internalComputeStandardFlightDuration(i)
+      result(i) =  Computation.internalComputeStandardFlightDuration(i)
     }
     result
   }
