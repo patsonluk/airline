@@ -24,15 +24,6 @@ object Computation {
   lazy val MAX_POPULATION = MAX_VALUES._3
   lazy val MAX_INCOME = MAX_VALUES._4
 
-  val MAX_COMPUTED_DISTANCE = 20000
-  val standardFlightDurationCache : Array[Int] = {
-    val result = new Array[Int](MAX_COMPUTED_DISTANCE + 1)
-    for (i <- 0 to MAX_COMPUTED_DISTANCE) { //should cover everything...
-      standardFlightDurationCache(i) =  Computation.internalComputeStandardFlightDuration(i)
-    }
-    result
-  }
-
   def getMaxValues(): (Long, Double, Long, Long) = {
     val allAirports = AirportSource.loadAllAirports()
     //take note that below should NOT use boosted values, should use base, otherwise it will incorrectly load some lazy vals of the Airport that is MAX
@@ -84,7 +75,16 @@ object Computation {
       (Airplane.MAX_FLIGHT_MINUTES / roundTripTime).toInt
     }
   }
-  
+
+
+  val MAX_COMPUTED_DISTANCE = 20000
+  lazy val standardFlightDurationCache : Array[Int] = {
+    val result = new Array[Int](MAX_COMPUTED_DISTANCE + 1)
+    for (i <- 0 to MAX_COMPUTED_DISTANCE) { //should cover everything...
+      result(i) = Computation.internalComputeStandardFlightDuration(i)
+    }
+    result
+  }
 
   val SELL_RATE = 0.8
   
