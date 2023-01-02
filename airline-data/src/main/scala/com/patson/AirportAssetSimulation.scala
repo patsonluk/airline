@@ -578,9 +578,9 @@ object AirportAssetSimulation {
       paxStats.arrivalTourist.toDouble / boundaryPaxStats.arrivalTourist +
       paxStats.arrivalBusiness.toDouble / boundaryPaxStats.arrivalBusiness +
       paxStats.departureTourist.toDouble / boundaryPaxStats.departureTourist +
-      paxStats.departureBusiness.toDouble / boundaryPaxStats.departureBusiness) / asset.level * Util.getBellRandom(1, 0.1)
+      paxStats.departureBusiness.toDouble / boundaryPaxStats.departureBusiness) / asset.level
 
-    performanceFactor = Math.min(1, performanceFactor)
+    performanceFactor = Math.min(1, performanceFactor) * Util.getBellRandom(1, 0.1)
 
     //from profit, deduce expense by considering revenue = 0 at performanceFactor = 0.
     val expense = asset.value * asset.roi / 52 * (0 - neutralProfitFactor) / (1 - neutralProfitFactor) * -1
