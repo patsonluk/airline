@@ -224,7 +224,7 @@ object AirportAssetSimulation {
   def computeNewRoi(asset : AirportAsset, upgradeFactor : Double) = {
     val maxGrowth = (asset.assetType.maxRoi - asset.assetType.initRoi) / AirportAsset.MAX_LEVEL
     val delta = (upgradeFactor - 0.3) / (1 - 0.3) * maxGrowth // < 0.3 -> decrease, at 1 -> max Growth
-    asset.roi + delta
+    Math.max(asset.assetType.minRoi, asset.roi + delta)
   }
 
   /**
