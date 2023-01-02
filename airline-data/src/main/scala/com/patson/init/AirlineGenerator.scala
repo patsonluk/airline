@@ -6,8 +6,8 @@ import com.patson.data._
 import com.patson.data.Constants._
 import com.patson.model._
 import com.patson.model.airplane._
-import java.util.Calendar
 
+import java.util.Calendar
 import com.patson.Authentication
 
 import scala.util.Random
@@ -17,8 +17,9 @@ import com.patson.data.airplane._
 
 import scala.collection.mutable.ArrayBuffer
 import com.patson.util.LogoGenerator
-import java.awt.Color
 
+import java.awt.Color
+import java.util.concurrent.ThreadLocalRandom
 import scala.collection.mutable
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -167,7 +168,7 @@ object AirlineGenerator extends App {
       val probably = 0.3
       val result = Set[Airport]() 
       while (result.size < drawSize) {
-        if (Random.nextDouble() <= 0.3) {
+        if (ThreadLocalRandom.current().nextDouble() <= 0.3) {
           result += poolTopFirst(walker)
         }
         walker = (walker + 1) % poolTopFirst.size

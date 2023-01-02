@@ -6,6 +6,7 @@ import com.patson.model._
 import com.patson.model.alliance.{AllianceMission, AllianceMissionPropertiesHistory, AllianceMissionReward, AllianceMissionStatus, AllianceMissionType, AllianceStats, TotalLoungeVisitMission, TotalPaxMission}
 import com.patson.util.AllianceCache
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.collection.mutable.ListBuffer
 import scala.collection.{MapView, mutable}
 import scala.util.Random
@@ -117,7 +118,7 @@ object AllianceMissionSimulation {
 
     //randomly pick 3 mission types, and pick one for each type
     candidateMissions = Random.shuffle(candidateMissions.groupBy(_.missionType).toList.filter(_._2.length > 0)).take(MAX_MISSION_CANDIDATES).map {
-      case(_, missionsByType) =>  missionsByType(Random.nextInt(missionsByType.length))
+      case(_, missionsByType) =>  missionsByType(ThreadLocalRandom.current().nextInt(missionsByType.length))
     }
 
     AllianceMissionSource.saveAllianceMissions(candidateMissions)

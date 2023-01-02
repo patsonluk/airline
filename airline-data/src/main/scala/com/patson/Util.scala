@@ -1,20 +1,19 @@
 package com.patson
 
-import scala.util.Random
+import java.util.concurrent.ThreadLocalRandom
 import scala.annotation.tailrec
-import scala.collection.mutable.ListBuffer
 
 
 object Util {
-  private[this] val GUASSIAN_POOL_SIZE : Int= 1000000
-  private[this] val gaussianPool : Array[Double] = new Array(GUASSIAN_POOL_SIZE) 
+  private[this] val GAUSSIAN_POOL_SIZE : Int= 1000000
+  private[this] val gaussianPool : Array[Double] = new Array(GAUSSIAN_POOL_SIZE)
   
-  println("Generating Guassian pool...")
-  for (i <- 0 until GUASSIAN_POOL_SIZE) {
-    gaussianPool(i) = Random.nextGaussian()
+  println("Generating Gaussian pool...")
+  for (i <- 0 until GAUSSIAN_POOL_SIZE) {
+    gaussianPool(i) = ThreadLocalRandom.current().nextGaussian()
   }
   
-  println("Finished generating pool of " + GUASSIAN_POOL_SIZE)
+  println("Finished generating pool of " + GAUSSIAN_POOL_SIZE)
   
   def calculateDistance(lat1InDegree : Double, lon1InDegree: Double, lat2InDegree : Double, lon2InDegree : Double) = {
     val lat1 = Math.toRadians(lat1InDegree)
@@ -43,13 +42,11 @@ object Util {
     //squeeze it to cutoff as boundary : from (-cutoff,cutoff) to (-0.5, 0.5), then shift center from 0.0 to center, such that boundary is (cutoff - 0.5, cutoff + 0.5)
     //val value = Random.nextGaussian() / (2 * cutoff)  + center
     //val randomGaussian = Random.nextGaussian();
-    val randomGaussian = gaussianPool(index.fold(Random.nextInt(GUASSIAN_POOL_SIZE))(value => Math.abs(value % GUASSIAN_POOL_SIZE)))
+    val randomGaussian = gaussianPool(index.fold(ThreadLocalRandom.current().nextInt(GAUSSIAN_POOL_SIZE))(value => Math.abs(value % GAUSSIAN_POOL_SIZE)))
     if (randomGaussian < -1 * cutoff || randomGaussian > cutoff) { //regen
       getBellRandom(center, boundaryFromCenter, index.map(_ + 1))
     } else { //within cutoff, now scale and shift to desired value
       randomGaussian / cutoff * boundaryFromCenter + center //divide by cutoff : scale boundary to (-1.0, 1.0), then times boundaryFrom center : scale boundary to (-boundaryFromCenter, boundaryFromCenter), lastly shift the center
     }
   }
-
-
 }
