@@ -4,6 +4,8 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 import com.patson.Util
+
+import java.util.concurrent.ThreadLocalRandom
 /**
  * Flight preference has a computeCost method that convert the existing price of a link to a "perceived price". The "perceived price" will be refer to "cost" here
  * 
@@ -144,8 +146,8 @@ abstract class FlightPreference(homeAirport : Airport) {
   /**
    *	flattop bell random centered at 0
    */
-  def getFlatTopBellRandom(topWidth : Double, bellExtenstion : Double) = {
-    topWidth / 2 - Math.random * topWidth + Util.getBellRandom(0) * bellExtenstion
+  def getFlatTopBellRandom(topWidth : Double, bellExtension : Double) = {
+    topWidth / 2 - Math.random() * topWidth + Util.getBellRandom(0) * bellExtension
   }
 
   val priceAdjustedByLinkClassDiff = (link : Transport, linkClass : LinkClass) => {
@@ -412,7 +414,7 @@ class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]
   def draw(linkClass: LinkClass, fromAirport : Airport, toAirport : Airport) : FlightPreference = {
     //Random.shuffle(pool).apply(0)
     val poolForClass = pool(linkClass).filter(_.isApplicable(fromAirport, toAirport))
-    poolForClass(Random.nextInt(poolForClass.length))
+    poolForClass(ThreadLocalRandom.current().nextInt(poolForClass.length))
   }
 }
 

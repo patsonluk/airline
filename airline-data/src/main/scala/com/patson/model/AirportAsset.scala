@@ -4,6 +4,7 @@ import com.patson.data.{AirportAssetSource, AirportSource, CycleSource}
 import com.patson.model.AirportAssetType.{PassengerCostAssetModifier, TransitWaitTimeModifier}
 import com.patson.model.Country.CountryCode
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -379,7 +380,7 @@ object AirportAssetType extends Enumeration {
         override def computeDiscount(linkConsideration : LinkConsideration, paxGroup : PassengerGroup) : Option[Double] = {
             if (paxGroup.preference.getPreferenceType == FlightPreferenceType.SPEED || !isOperational()) {
                 None
-            } else if (Random.nextInt(100) < Math.max(1, probability * level / AirportAsset.MAX_LEVEL)){
+            } else if (ThreadLocalRandom.current().nextInt(100) < Math.max(1, probability * level / AirportAsset.MAX_LEVEL)){
                 Some(computeAssetDiscount(paxGroup))
             } else {
                 None

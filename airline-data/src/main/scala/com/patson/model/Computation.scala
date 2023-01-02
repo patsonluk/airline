@@ -24,6 +24,14 @@ object Computation {
   lazy val MAX_POPULATION = MAX_VALUES._3
   lazy val MAX_INCOME = MAX_VALUES._4
 
+  val MAX_COMPUTED_DISTANCE = 20000
+  val standardFlightDurationCache : Array[Int] = {
+    val result = new Array[Int](MAX_COMPUTED_DISTANCE + 1)
+    for (i <- 0 to MAX_COMPUTED_DISTANCE) { //should cover everything...
+      standardFlightDurationCache(i) =  Computation.internalComputeStandardFlightDuration(i)
+    }
+    result
+  }
 
   def getMaxValues(): (Long, Double, Long, Long) = {
     val allAirports = AirportSource.loadAllAirports()
@@ -299,7 +307,15 @@ object Computation {
     satisfaction
   }
 
-  def computeStandardFlightDuration(distance : Int) = {
+  val computeStandardFlightDuration = (distance: Int) => {
+    if (distance <= MAX_COMPUTED_DISTANCE) {
+      standardFlightDurationCache(distance)
+    } else {
+      println(s"Unexpected distance $distance")
+      internalComputeStandardFlightDuration(distance) //just in case
+    }
+  }
+  private def internalComputeStandardFlightDuration(distance : Int) = {
     val standardSpeed =
       if (distance <= 1000) {
         400

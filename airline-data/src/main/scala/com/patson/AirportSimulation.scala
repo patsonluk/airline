@@ -5,6 +5,7 @@ import com.patson.data._
 import com.patson.model._
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo, ChampionUtil}
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.collection.{MapView, immutable, mutable}
 import scala.collection.mutable.{ListBuffer, Map, Set}
 import scala.math.BigDecimal.RoundingMode
@@ -52,7 +53,6 @@ object AirportSimulation {
     championInfo
   }
 
-  val random = new Random()
   val LOYALIST_HISTORY_SAVE_INTERVAL = 10 //every 10 cycles
   val LOYALIST_HISTORY_ENTRY_MAX = 50
 
@@ -262,7 +262,7 @@ object AirportSimulation {
               var remainingIncrement = increment
               while (remainingIncrement > 0) {
                 val chunk = if (remainingIncrement <= CHUNK_SIZE) remainingIncrement else CHUNK_SIZE
-                val flipTrigger = random.nextInt(fromAirport.population.toInt)
+                val flipTrigger = ThreadLocalRandom.current().nextInt(fromAirport.population.toInt)
 
                 val flippedAirlineIdOption = loyalistDistribution.find {
                   case (airlineId : Int, threshold : Int) => flipTrigger < threshold

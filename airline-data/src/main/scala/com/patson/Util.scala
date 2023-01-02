@@ -1,5 +1,6 @@
 package com.patson
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.util.Random
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
@@ -11,7 +12,7 @@ object Util {
   
   println("Generating Guassian pool...")
   for (i <- 0 until GUASSIAN_POOL_SIZE) {
-    gaussianPool(i) = Random.nextGaussian()
+    gaussianPool(i) = ThreadLocalRandom.current().nextGaussian()
   }
   
   println("Finished generating pool of " + GUASSIAN_POOL_SIZE)
@@ -43,13 +44,11 @@ object Util {
     //squeeze it to cutoff as boundary : from (-cutoff,cutoff) to (-0.5, 0.5), then shift center from 0.0 to center, such that boundary is (cutoff - 0.5, cutoff + 0.5)
     //val value = Random.nextGaussian() / (2 * cutoff)  + center
     //val randomGaussian = Random.nextGaussian();
-    val randomGaussian = gaussianPool(index.fold(Random.nextInt(GUASSIAN_POOL_SIZE))(value => Math.abs(value % GUASSIAN_POOL_SIZE)))
+    val randomGaussian = gaussianPool(index.fold(ThreadLocalRandom.current().nextInt(GUASSIAN_POOL_SIZE))(value => Math.abs(value % GUASSIAN_POOL_SIZE)))
     if (randomGaussian < -1 * cutoff || randomGaussian > cutoff) { //regen
       getBellRandom(center, boundaryFromCenter, index.map(_ + 1))
     } else { //within cutoff, now scale and shift to desired value
       randomGaussian / cutoff * boundaryFromCenter + center //divide by cutoff : scale boundary to (-1.0, 1.0), then times boundaryFrom center : scale boundary to (-boundaryFromCenter, boundaryFromCenter), lastly shift the center
     }
   }
-
-
 }

@@ -14,6 +14,8 @@ import com.patson.model.event.Olympics
 import scala.util.Random
 import com.patson.model.oil.OilPrice
 
+import java.util.concurrent.ThreadLocalRandom
+
 object LinkSimulation {
 
 
@@ -168,7 +170,7 @@ object LinkSimulation {
           var airplaneCount : Int = assignedInServiceAirplanes.size
           if (airplaneCount > 0) {
             val airplane = assignedInServiceAirplanes.toList.map(_._1)(i % airplaneCount)           //round robin
-            val errorValue = Random.nextDouble()
+            val errorValue = ThreadLocalRandom.current().nextDouble()
             val conditionMultiplier = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
 
             if (airplane.condition > Airplane.CRITICAL_CONDITION) { //small chance of delay and cancellation

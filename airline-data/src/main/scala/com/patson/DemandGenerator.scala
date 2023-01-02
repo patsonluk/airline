@@ -1,11 +1,11 @@
 package com.patson
 
 import java.util.{ArrayList, Collections}
-
 import com.patson.data.{AirportSource, CountrySource, EventSource}
 import com.patson.model.event.{EventType, Olympics}
 import com.patson.model.{PassengerType, _}
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.collection.immutable.Map
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -89,11 +89,11 @@ object DemandGenerator {
             LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
-                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
+                var demandChunkSize = baseDemandChunkSize + ThreadLocalRandom.current().nextInt(baseDemandChunkSize)
                 while (remainingDemand > demandChunkSize) {
                   allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, demandChunkSize))
                   remainingDemand -= demandChunkSize
-                  demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
+                  demandChunkSize = baseDemandChunkSize + ThreadLocalRandom.current().nextInt(baseDemandChunkSize)
                 }
                 allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
               }
