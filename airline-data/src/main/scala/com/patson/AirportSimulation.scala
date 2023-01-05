@@ -254,15 +254,18 @@ object AirportSimulation {
         val CHUNK_SIZE = 5
         val updatingLoyalists = mutable.HashMap[Int, Int]() //airlineId, amount
 
+        val totalLoyalist = existingLoyalistOfThisAirport.values.sum
         //now with delta, see what the flips are
         loyalistIncrementOfAirlines.foreach {
           case (gainAirlineId, increment) => //split into chunks for better randomness
             if (increment > 0) {
-              var unclaimedLoyalist = (fromAirport.population - existingLoyalistOfThisAirport.values.sum).toInt
+              var unclaimedLoyalist = (fromAirport.population - totalLoyalist).toInt
               var remainingIncrement = increment
               while (remainingIncrement > 0) {
                 val chunk = if (remainingIncrement <= CHUNK_SIZE) remainingIncrement else CHUNK_SIZE
-                val flipTrigger = ThreadLocalRandom.current().nextInt(fromAirport.population.toInt)
+
+                //Has to compare pop vs total, as  in rare scenario fromAirport.population < existingLoyalistOfThisAirport.values.sum, for example demolished property that +pop
+                val flipTrigger = ThreadLocalRandom.current().nextInt(Math.max(fromAirport.population, totalLoyalist).toInt)
 
                 val flippedAirlineIdOption = loyalistDistribution.find {
                   case (airlineId : Int, threshold : Int) => flipTrigger < threshold
@@ -294,7 +297,7 @@ object AirportSimulation {
                       }
                     }
                   case None => //flip from unclaimed
-                    if (unclaimedLoyalist == 0) { //ignore, can no longer draw loyalist
+                    if (unclaimedLoyalist <= 0) { //ignore, can no longer draw loyalist
 
                     } else {
                       val finalChunk =
