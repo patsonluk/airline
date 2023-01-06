@@ -630,9 +630,8 @@ function disableButton(button, reason) {
         }
     } else {
         if (reason) {
-    //        $(button).attr("title", reason)
-    //        $(button).data("replacedTitle", true)
-
+            //remove any existing tooltip
+            $(button).find('.tooltiptext').remove()
             //add tooltip
             $(button).addClass("tooltip")
             var $descriptionSpan = $('<span class="tooltiptext below alignLeft" style="width: 400px;  text-transform: none;">')
