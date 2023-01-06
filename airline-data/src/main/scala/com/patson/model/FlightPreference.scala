@@ -147,7 +147,7 @@ abstract class FlightPreference(homeAirport : Airport) {
    *	flattop bell random centered at 0
    */
   def getFlatTopBellRandom(topWidth : Double, bellExtension : Double) = {
-    topWidth / 2 - Math.random() * topWidth + Util.getBellRandom(0) * bellExtension
+    topWidth / 2 - ThreadLocalRandom.current().nextDouble() * topWidth + Util.getBellRandom(0) * bellExtension
   }
 
   val priceAdjustedByLinkClassDiff = (link : Transport, linkClass : LinkClass) => {
