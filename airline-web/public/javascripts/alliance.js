@@ -146,14 +146,16 @@ function updateAllianceMission(current, previous, isAdmin) {
         $('#currentAirlineMemberDetails .mission .value').text('-')
     }
 
-    if (current && current.missionCandidates && current.missionCandidates.length > 0) {
-        $('#currentAirlineMemberDetails .button.currentMission').show()
-        $('#currentAirlineMemberDetails .button.currentMission').unbind('click').bind('click', function() {
-            showAllianceMissionModal(current.missionCandidates, current.selectedMission, isAdmin)
-        })
-    } else {
-        $('#currentAirlineMemberDetails .button.currentMission').hide()
-    }
+//    if (current && current.missionCandidates && current.missionCandidates.length > 0) {
+//        $('#currentAirlineMemberDetails .button.currentMission').show()
+//        $('#currentAirlineMemberDetails .button.currentMission').unbind('click').bind('click', function() {
+//            showAllianceMissionModal(current.missionCandidates, current.selectedMission, isAdmin)
+//        })
+//    } else {
+//        $('#currentAirlineMemberDetails .button.currentMission').hide()
+//    }
+    $('#currentAirlineMemberDetails .button.currentMission').show()
+    disableButton($('#currentAirlineMemberDetails .button.currentMission'), "Alliance mission is disabled for now. Stay tuned!")
 
     if (previous && previous.missionCandidates && previous.selectedMission) {
         $('#currentAirlineMemberDetails .button.previousMission').show()
