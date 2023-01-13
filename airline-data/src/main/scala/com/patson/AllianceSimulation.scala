@@ -47,21 +47,21 @@ object AllianceSimulation {
 
     val eligibleStats = buildAllianceStats(cycle, eligibleAlliances, eligibleFlightLinkResult, eligibleLoungeVisit, eligibleAirportChampionInfo, eligibleCountryChampionInfo)
 
-    val missionAirlineIds = missionAirlines.map(_.id)
-    val missionFlightLinkResult = flightLinkResult.filter(linkResult => missionAirlineIds.contains(linkResult.link.airline.id))
-    val missionLoungeVisit = loungeResult.filter {
-      case (lounge, _) => missionAirlineIds.contains(lounge.airline.id)
-    }.map(_._2).toList
-    val missionAirportChampionInfo = airportChampionInfo.filter(entry => missionAirlineIds.contains(entry.loyalist.airline.id))
-    val missionCountryChampionInfo = countryChampionInfo.filter(entry => missionAirlineIds.contains(entry.airline.id))
+//    val missionAirlineIds = missionAirlines.map(_.id)
+//    val missionFlightLinkResult = flightLinkResult.filter(linkResult => missionAirlineIds.contains(linkResult.link.airline.id))
+//    val missionLoungeVisit = loungeResult.filter {
+//      case (lounge, _) => missionAirlineIds.contains(lounge.airline.id)
+//    }.map(_._2).toList
+//    val missionAirportChampionInfo = airportChampionInfo.filter(entry => missionAirlineIds.contains(entry.loyalist.airline.id))
+//    val missionCountryChampionInfo = countryChampionInfo.filter(entry => missionAirlineIds.contains(entry.airline.id))
 
-    val missionStats = buildAllianceStats(cycle, missionAlliances, missionFlightLinkResult, missionLoungeVisit, missionAirportChampionInfo, missionCountryChampionInfo)
+//    val missionStats = buildAllianceStats(cycle, missionAlliances, missionFlightLinkResult, missionLoungeVisit, missionAirportChampionInfo, missionCountryChampionInfo)
 
     AllianceSource.saveAllianceStats(eligibleStats)
-    AllianceSource.saveAllianceMissionStats(missionStats)
+//    AllianceSource.saveAllianceMissionStats(missionStats)
 
-    println("Alliance mission simulation")
-    AllianceMissionSimulation.simulate(cycle, eligibleStats.map(entry => (entry.alliance.id, entry)).toMap, missionStats.map(entry => (entry.alliance.id, entry)).toMap)
+//    println("Alliance mission simulation")
+//    AllianceMissionSimulation.simulate(cycle, eligibleStats.map(entry => (entry.alliance.id, entry)).toMap, missionStats.map(entry => (entry.alliance.id, entry)).toMap)
   }
 
   /**
