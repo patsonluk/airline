@@ -240,6 +240,18 @@ function updateAirlineDetails() {
             reputationHtml.append("<div>Next Grade: " + airlineGradeLookup[airline.gradeValue] + "</div>")
             addTooltipHtml(infoIcon, reputationHtml, {'width' : '350px'})
 
+            $('#officeCanvas .airlineName').text(airline.name)
+            cancelAirlineRename()
+            if (isPremium()) {
+                if (airline.renameCooldown) {
+                    disableButton($('#officeCanvas .airlineNameDisplaySpan .editButton'), "Cannot rename yet. Cooldown: " + toReadableDuration(airline.renameCooldown))
+                } else {
+                    enableButton($('#officeCanvas .airlineNameDisplaySpan .editButton'))
+                }
+            } else {
+                disableButton($('#officeCanvas .airlineNameDisplaySpan .editButton'), "Airline rename is only available to Patreon members")
+            }
+
 	    	$('#airlineCode').text(airline.airlineCode)
 	    	$('#airlineCodeInput').val(airline.airlineCode)
 	    	$('#destinations').text(airline.destinations)
@@ -559,6 +571,76 @@ function setAirlineCode(airlineCode) {
 	    }
 	});
 }
+
+
+function editAirlineName() {
+	$('#officeCanvas .airlineNameDisplaySpan').hide()
+	$('#officeCanvas .airlineNameInput').val(activeAirline.name)
+	validateAirlineName(activeAirline.name)
+	$('#officeCanvas .airlineNameInputSpan').show()
+}
+
+function validateAirlineName(airlineName) {
+    $.ajax({
+        type: 'GET',
+        url: "signup/airline-name-check?airlineName=" + airlineName,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            if (result.ok) {
+                enableButton('#officeCanvas .airlineNameInputSpan .confirm')
+                $('#officeCanvas .airlineNameInputSpan .warning').hide()
+            } else {
+                disableButton('#officeCanvas .airlineNameInputSpan .confirm')
+                $('#officeCanvas .airlineNameInputSpan .warning').text(result.rejection)
+                $('#officeCanvas .airlineNameInputSpan .warning').show()
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    })
+}
+
+function confirmAirlineRename(airlineName) {
+    promptConfirm("Change airline name to " + airlineName + " ? Can only rename every 30 days.", function() {
+        var airlineId = activeAirline.id
+        	var url = "airlines/" + airlineId + "/airline-name"
+            var data = { "airlineName" : airlineName }
+        	$.ajax({
+        		type: 'PUT',
+        		url: url,
+        	    data: JSON.stringify(data),
+        	    contentType: 'application/json; charset=utf-8',
+        	    dataType: 'json',
+        	    success: function(airline) {
+        	    	loadUser(false)
+        	    	showOfficeCanvas()
+        	    },
+                error: function(jqXHR, textStatus, errorThrown) {
+        	            console.log(JSON.stringify(jqXHR));
+        	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        	    },
+                beforeSend: function() {
+                    $('body .loadingSpinner').show()
+                },
+                complete: function(){
+                    $('body .loadingSpinner').hide()
+                }
+
+        	});
+    })
+}
+
+function cancelAirlineRename() {
+    $('#officeCanvas .airlineNameDisplaySpan').show()
+	$('#officeCanvas .airlineNameInputSpan').hide()
+}
+
+
+
+
 
 function loadLogoTemplates() {
 	$('#logoTemplates').empty()

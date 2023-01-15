@@ -275,6 +275,7 @@ object Meta {
     createAirlineLogo(connection)
     createAirlineLivery(connection)
     createAirlineSlogan(connection)
+    createAirlineNameHistory(connection)
     createUserWallpaper(connection)
     createAirplaneRenewal(connection)
     createAirplaneConfiguration(connection)
@@ -734,6 +735,22 @@ object Meta {
       "airline INTEGER, " +
       "slogan VARCHAR(256), " +
       "PRIMARY KEY (airline)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirlineNameHistory(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_NAME_HISTORY_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_NAME_HISTORY_TABLE + "(" +
+      "airline INTEGER, " +
+      "name VARCHAR(256), " +
+      "update_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP," +
+      "PRIMARY KEY (airline,name,update_timestamp)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()

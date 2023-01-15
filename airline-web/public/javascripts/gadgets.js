@@ -774,3 +774,21 @@ function bindEnter(bindToElement, actionFunction) {
        }
    });
 }
+
+function isPremium() {
+    return activeUser && activeUser.level > 0
+}
+
+//from millisec
+function toReadableDuration(duration) {
+  var hours = Math.floor((duration / (1000 * 60 * 60)) % 24),
+  days = Math.floor((duration / (1000 * 60 * 60 * 24)));
+  var result = ""
+  if (days > 0) {
+    result += (days == 1 ? "1 day" : days + " days")
+  }
+  if (hours > 0) {
+    result += " " + (hours == 1 ? "1 hour" : hours + " hours")
+  }
+  return result.trim()
+}

@@ -1788,6 +1788,23 @@
                                 <h4>Airline Details</h4>
                                 <div class="table verticalGroup" style="float: left;">
 									<div class="table-row">
+										<div class="cell label">Airline Name:</div>
+										<div class="cell value">
+                                            <span class="airlineNameDisplaySpan">
+                                                <span class="airlineName"></span>
+												<span class="clickable editButton">
+													<img src='@routes.Assets.versioned("images/icons/gear.png")'style="vertical-align: middle;" onclick="editAirlineName()"/>
+												</span>
+                                            </span>
+											<span class="airlineNameInputSpan" style="display: none;">
+                                                <input class="airlineNameInput" type="text" oninput="validateAirlineName($(this).val())"/>
+                                                <span class="button confirm"><img src='@routes.Assets.versioned("images/icons/tick.png")' style="vertical-align: middle;" onclick="confirmAirlineRename($('#officeCanvas .airlineNameInput').val())"/></span>
+												<img src='@routes.Assets.versioned("images/icons/cross.png")' class='button cancel' style="vertical-align: middle;" onclick="cancelAirlineRename()"/>
+                                                <div class="warning" style="display:none;"></div>
+                                            </span>
+										</div>
+									</div>
+									<div class="table-row">
 										<div class="cell label">Reputation/Level:</div>
 										<div class="cell value">
 											<span style="display: flex; align-items: center">
@@ -2716,6 +2733,13 @@
 									<div class="table-row">
 										<div class="label"><h5>Alliance:</h5></div>
 										<div class="value alliance"></div>
+									</div>
+									<div class="table-row formerNameRow">
+										<div class="label"><h5>Former Names:</h5></div>
+										<div class="value">
+											<div class="table data formerNames" style="width: 100%; max-height: 50px; overflow: auto;">
+											</div>
+										</div>
 									</div>
 								</div>
 								<div class="button" onclick="showRivalMap()">Flight Map</div>

@@ -10,7 +10,7 @@ $( document ).ready(function() {
     	    	if (result.ok) {
                     $('.airlineName dd.error').text('')
     	    	} else {
-    	    	    $('.airlineName dd.error').text('This airline name is not available')
+    	    	    $('.airlineName dd.error').text(result.rejection)
     	    	}
     	    },
             error: function(jqXHR, textStatus, errorThrown) {
@@ -25,7 +25,8 @@ function signup(form) {
 	grecaptcha.ready(function() {
 		grecaptcha.execute('6LespV8UAAAAAJkCUpR8_uNC3P-wZGq7vnTNKEZe', {action: 'signup'})
 			.then(function(token) {
-				form.append('<input type="hidden" name="recaptchaToken" value="' + token + '" />');
+			    $('body .loadingSpinner').show()
+             	form.append('<input type="hidden" name="recaptchaToken" value="' + token + '" />');
 				form.submit()
 			});
 		});

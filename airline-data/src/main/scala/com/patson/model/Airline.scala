@@ -137,6 +137,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   }
 
   lazy val slogan = AirlineSource.loadSlogan(id)
+  lazy val previousNames = AirlineSource.loadPreviousNameHistory(id).sortBy(_.updateTimestamp.getTime)(Ordering.Long.reverse).map(_.name)
 
   def getDelegateInfo() : DelegateInfo = {
     val busyDelegates = DelegateSource.loadBusyDelegatesByAirline(id)
@@ -481,3 +482,5 @@ object AirlineModifierPropertyType extends Enumeration {
   type AirlineModifierPropertyType = Value
   val STRENGTH, DURATION = Value
 }
+
+case class NameHistory(name : String, updateTimestamp : Date)

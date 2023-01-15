@@ -11,6 +11,8 @@ import java.sql.{Blob, Date, Statement}
 import java.io.ByteArrayInputStream
 import com.patson.util.{AirlineCache, AirportCache}
 
+import java.util.Date
+
 
 object AirlineSource {
   private[this] val BASE_QUERY = "SELECT a.id AS id, a.name AS name, a.is_generated AS is_generated, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "
@@ -896,15 +898,67 @@ object AirlineSource {
       val preparedStatement = connection.prepareStatement(s"SELECT * FROM $AIRLINE_SLOGAN_TABLE WHERE airline = ?")
       preparedStatement.setInt(1, airlineId)
       val resultSet = preparedStatement.executeQuery()
-      if (resultSet.next()) {
-        Some(resultSet.getString("slogan"))
-      } else {
-        None
-      }
+      val result =
+        if (resultSet.next()) {
+          Some(resultSet.getString("slogan"))
+        } else {
+          None
+        }
+      preparedStatement.close()
+      result
     } finally {
       connection.close()
     }
   }
+
+  def updateAirlineName(airlineId : Int, newName : String) : Unit = {
+    val connection = Meta.getConnection()
+
+    try {
+      val setNameStatement = connection.prepareStatement(s"UPDATE ${AIRLINE_TABLE} SET name = ? WHERE id = ?")
+
+      setNameStatement.setString(1, newName)
+      setNameStatement.setInt(2, airlineId)
+
+      setNameStatement.executeUpdate()
+      setNameStatement.close()
+
+      val nameHistoryStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_NAME_HISTORY_TABLE + "(airline, name) VALUES(?, ?)")
+
+      nameHistoryStatement.setInt(1, airlineId)
+      nameHistoryStatement.setString(2, newName)
+
+      nameHistoryStatement.executeUpdate()
+
+      nameHistoryStatement.close()
+      AirlineCache.invalidateAirline(airlineId)
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadPreviousNameHistory(airlineId : Int) : List[NameHistory] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $AIRLINE_NAME_HISTORY_TABLE WHERE airline = ?")
+      preparedStatement.setInt(1, airlineId)
+      val resultSet = preparedStatement.executeQuery()
+      val result = ListBuffer[NameHistory]()
+
+      while (resultSet.next()) {
+        result.append(NameHistory(resultSet.getString("name"), new java.util.Date(resultSet.getTimestamp("update_timestamp").getTime)))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+
   
   def saveColor(airlineId : Int, color : String) = {
     val connection = Meta.getConnection()

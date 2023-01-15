@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
 )
 
 // https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-client
-libraryDependencies += "org.elasticsearch.client" % "elasticsearch-rest-high-level-client" % "7.6.2"
+libraryDependencies += "org.elasticsearch.client" % "elasticsearch-rest-high-level-client" % "7.17.2"
 
 
 

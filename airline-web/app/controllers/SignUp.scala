@@ -31,6 +31,8 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
   private[this] val recaptchaAction = "signup"
   private[this] val recaptchaSecret = "6LespV8UAAAAAErZ7LWP51SWmYaYrnAz6Z61jKBC"
   private[this] val recaptchaScoreThreshold = 0.5
+  val MIN_AIRLINE_NAME_LENGTH = 1
+  val MAX_AIRLINE_NAME_LENGTH = 50
   /**
    * Sign Up Form definition.
    *
@@ -50,14 +52,14 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
       "email" -> email,
       // Create a tuple mapping for the password/confirm
       "password" -> tuple(
-        "main" -> text(minLength = 4),
+        "main" -> text(minLength = 6),
         "confirm" -> text
       ).verifying(
         // Add an additional constraint: both passwords must match
         "Passwords don't match", passwords => passwords._1 == passwords._2
       ),
       "recaptchaToken" -> text,
-      "airlineName" -> text(minLength = 1, maxLength = 50).verifying(
+      "airlineName" -> text(minLength = MIN_AIRLINE_NAME_LENGTH, maxLength = MAX_AIRLINE_NAME_LENGTH).verifying(
         "Airline name can only contain space and characters",
         airlineName => airlineName.forall(char => (char.isLetter && char <= 'z')  || char == ' ') && !"".equals(airlineName.trim())).verifying(
         "This airline name is not available",
@@ -92,8 +94,16 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
 //  }
 
   def airlineNameCheck(airlineName : String)= Action { implicit request =>
-    val ok = AirlineSource.loadAirlinesByCriteria(List(("name", airlineName))).length == 0
-    Ok(Json.obj("ok" -> ok))
+    val length = airlineName.length
+    if (length < MIN_AIRLINE_NAME_LENGTH || length > MAX_AIRLINE_NAME_LENGTH) {
+      Ok(Json.obj("rejection" -> s"Length should be $MIN_AIRLINE_NAME_LENGTH - $MAX_AIRLINE_NAME_LENGTH"))
+    } else if (!airlineName.forall(char => (char.isLetter && char <= 'z') || char == ' ')) {
+      Ok(Json.obj("rejection" -> s"Contains invalid character(s)"))
+    } else if (AirlineSource.loadAirlinesByCriteria(List(("name", airlineName.trim))).length > 0) {
+      Ok(Json.obj("rejection" -> s"Airline name is already taken"))
+    } else {
+      Ok(Json.obj("ok" -> true))
+    }
   }
 
    /**

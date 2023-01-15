@@ -101,6 +101,7 @@ DELETE	 /airlines/:airlineId/livery	controllers.AirlineApplication.deleteLivery(
 GET		 /airlines/:airlineId/slogan	controllers.AirlineApplication.getSlogan(airlineId : Int)
 PUT	     /airlines/:airlineId/slogan	controllers.AirlineApplication.saveSlogan(airlineId : Int)
 PUT		 /airlines/:airlineId/airline-code	   controllers.AirlineApplication.setAirlineCode(airlineId : Int)
+PUT		 /airlines/:airlineId/airline-name	   controllers.AirlineApplication.setAirlineName(airlineId : Int)
 GET		 /colors			  controllers.AirlineApplication.getColors()
 GET		 /airlines/:airlineId/set-color			  controllers.AirlineApplication.setColor(airlineId : Int, color : String)
 GET		 /airlines/:airlineId/alliance-details  controllers.AllianceApplication.getAirlineAllianceDetails(airlineId : Int)
@@ -149,6 +150,7 @@ DELETE	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAss
 GET	 	 /airlines/:airlineId/select-alliance-mission/:missionId	      controllers.AllianceMissionApplication.selectAllianceMission(airlineId : Int, missionId : Int)
 GET      /airlines/:airlineId/mission-stats/:missionId      controllers.AllianceMissionApplication.getAllianceMissionStats(airlineId : Int, missionId : Int)
 GET	 	 /airlines/:airlineId/select-alliance-mission-reward/:missionId/:rewardId	      controllers.AllianceMissionApplication.selectAllianceMissionReward(airlineId : Int, missionId : Int, rewardId : Int)
+GET      /airlines/:airlineId/former-names  controllers.AirlineApplication.getAirlineFormerNames(airlineId : Int)
 
 GET	 	 /airport-asset/:assetId	      controllers.AirportAssetApplication.getAirportAssetDetailsWithoutAirline(assetId : Int)
 

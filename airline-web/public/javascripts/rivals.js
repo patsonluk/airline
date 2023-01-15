@@ -152,6 +152,7 @@ function loadRivalDetails(row, airlineId) {
 	
 	
 	updateRivalBasicsDetails(airlineId)
+	updateRivalFormerNames(airlineId)
 	updateRivalFleet(airlineId)
 	updateRivalCountriesAirlineTitles(airlineId)
 	updateRivalChampionedAirportsDetails(airlineId)
@@ -160,7 +161,10 @@ function loadRivalDetails(row, airlineId) {
 	
 	updateRivalBaseList(airlineId)
 
-	showAdminActions(loadedRivalsById[airlineId])
+    if (isAdmin()) {
+        showAdminActions(loadedRivalsById[airlineId])
+    }
+
 	$('#rivalDetails').data("airlineId", airlineId)
 
 	$('#rivalDetails').fadeIn(200)
@@ -249,6 +253,34 @@ function updateRivalBasicsDetails(airlineId) {
 		$("#rivalsCanvas .alliance").removeClass("clickable")
 		$("#rivalsCanvas .alliance").off("click.showAlliance")
 	}
+
+}
+
+function updateRivalFormerNames(airlineId) {
+    $('#rivalDetails .formerNames').children('div.table-row').remove()
+
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + airlineId + "/former-names",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	$(result).each(function(index, formerName) {
+                var row = $("<div class='table-row'></div>")
+                row.append("<div class='cell'>" + formerName + "</div>")
+                $('#rivalDetails .formerNames').append(row)
+            })
+            if (result.length == 0) {
+                $('#rivalDetails .formerNameRow').hide()
+            } else {
+                $('#rivalDetails .formerNameRow').show()
+            }
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 
 }
 
