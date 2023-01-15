@@ -663,7 +663,7 @@ function confirmSelection(input) {
             displayVal = getZoneTextEntry(selected)
             selectedId = selected.zone
         } else if (searchType === "airline") {
-            displayVal = getAirlineTextEntry(selected)
+            displayVal = getAirlineTextEntry(selected, false)
             selectedId = selected.airlineId
         } else if (searchType === "alliance") {
             displayVal = getAllianceTextEntry(selected)
@@ -753,7 +753,7 @@ function search(event, input, retry) {
                     } else if (searchType === "zone") {
                         textEntry = getZoneTextEntry(entry)
                     } else if (searchType === "airline") {
-                        textEntry = getAirlineTextEntry(entry)
+                        textEntry = getAirlineTextEntry(entry, true)
                     } else if (searchType === "alliance") {
                         textEntry = getAllianceTextEntry(entry)
                     }
@@ -882,9 +882,9 @@ function getZoneTextEntry(zone) {
     return zone.zoneName + "(" + zone.zone + ")"
 }
 
-function getAirlineTextEntry(airline) {
+function getAirlineTextEntry(airline, showPreviousNames) {
     var result = airline.airlineName + "(" + airline.airlineCode + ")"
-    if (airline.previousNames) {
+    if (showPreviousNames && airline.previousNames && airline.previousNames.length > 0) {
         result += (" formerly: " + airline.previousNames.join(", "))
     }
     return result

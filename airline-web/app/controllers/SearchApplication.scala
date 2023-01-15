@@ -60,7 +60,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       if (result.isPreviousNameMatch) {
         var namesJson = Json.arr()
         result.getAirline.previousNames.foreach { previousName =>
-          if (previousName.toLowerCase().contains(searchString.toLowerCase())) {
+          if (!previousName.equalsIgnoreCase(result.getAirline.name) && previousName.toLowerCase().contains(searchString.toLowerCase())) {
             namesJson = namesJson.append(JsString(previousName))
           }
         }
