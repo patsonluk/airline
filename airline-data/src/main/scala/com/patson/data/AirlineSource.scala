@@ -911,7 +911,7 @@ object AirlineSource {
     }
   }
 
-  def updateAirlineName(airlineId : Int, newName : String) : Unit = {
+  def updateAirlineName(airlineId : Int, oldName: String, newName : String) : Unit = {
     val connection = Meta.getConnection()
 
     try {
@@ -926,7 +926,7 @@ object AirlineSource {
       val nameHistoryStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_NAME_HISTORY_TABLE + "(airline, name) VALUES(?, ?)")
 
       nameHistoryStatement.setInt(1, airlineId)
-      nameHistoryStatement.setString(2, newName)
+      nameHistoryStatement.setString(2, oldName)
 
       nameHistoryStatement.executeUpdate()
 

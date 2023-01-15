@@ -197,6 +197,7 @@ public class SearchUtil {
 			jsonMap.put("airlineCode", airline.getAirlineCode());
 			jsonMap.put("previousNames", JavaConverters.asJava(airline.previousNames()));
 			IndexRequest indexRequest = new IndexRequest("airlines").source(jsonMap);
+			logger.info("Indexing new doc " + jsonMap);
 			client.index(indexRequest, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -222,6 +223,7 @@ public class SearchUtil {
 					jsonMap.put("previousNames", JavaConverters.asJava(airline.previousNames()));
 					request.doc(jsonMap);
 					client.update(request, RequestOptions.DEFAULT);
+					logger.info("Updated to " + jsonMap);
 				} else {
 					logger.warn("Hit " + hit.getSourceAsMap() + " is not a match to airline ID " + airline.id());
 				}

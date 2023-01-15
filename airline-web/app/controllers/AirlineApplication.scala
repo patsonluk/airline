@@ -852,7 +852,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       getRenameRejection(request.user, newName) match {
         case Some(rejection) => BadRequest(Json.obj("reason"-> rejection))
         case None =>
-          AirlineSource.updateAirlineName(airlineId, newName)
+          AirlineSource.updateAirlineName(airlineId, request.user.name, newName)
           SearchUtil.updateAirline(AirlineCache.getAirline(airlineId).get)
           Ok(Json.obj("name" -> newName))
       }
