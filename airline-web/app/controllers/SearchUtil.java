@@ -222,6 +222,8 @@ public class SearchUtil {
 					jsonMap.put("previousNames", JavaConverters.asJava(airline.previousNames()));
 					request.doc(jsonMap);
 					client.update(request, RequestOptions.DEFAULT);
+				} else {
+					logger.warn("Hit " + hit.getSourceAsMap() + " is not a match to airline ID " + airline.id());
 				}
 			}
 		} catch (IOException e) {
