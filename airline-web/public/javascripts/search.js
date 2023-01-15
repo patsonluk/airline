@@ -883,7 +883,11 @@ function getZoneTextEntry(zone) {
 }
 
 function getAirlineTextEntry(airline) {
-    return airline.airlineName + "(" + airline.airlineCode + ")"
+    var result = airline.airlineName + "(" + airline.airlineCode + ")"
+    if (airline.previousNames) {
+        result += (" formerly: " + airline.previousNames.join(", "))
+    }
+    return result
 }
 
 function getAllianceTextEntry(alliance) {
