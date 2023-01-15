@@ -213,7 +213,7 @@ public class SearchUtil {
 			searchRequest.source(searchSourceBuilder);
 			SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
 			for (SearchHit hit : response.getHits()) {
-				if (Integer.valueOf(airline.id()) == hit.getSourceAsMap().get("airlineId")) { //double check
+				if (Integer.valueOf(airline.id()).equals(hit.getSourceAsMap().get("airlineId"))) { //double check
 					logger.info("Updating airline " + hit);
 					UpdateRequest request = new UpdateRequest("airlines", hit.getId());
 					Map<String, Object> jsonMap = new HashMap<>();
