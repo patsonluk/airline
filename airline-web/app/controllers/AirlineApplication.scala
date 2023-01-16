@@ -577,7 +577,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                 val updateBase = base.copy(scale = base.scale - 1)
                 AirlineSource.saveAirlineBase(updateBase)
 
-                val (updatingSpecs, purgingSpecs) = base.specializations.partition(_.scaleRequirement <= updateBase.scale) //remove spec that no longer able to support
+                val (updatingSpecs, purgingSpecs) = base.specializations.filter(!_.free).partition(_.scaleRequirement <= updateBase.scale) //remove spec that no longer able to support
                 AirportSource.updateAirportBaseSpecializations(airportId, airlineId, updatingSpecs)
                 purgingSpecs.foreach(_.unapply(request.user, base.airport))
 
