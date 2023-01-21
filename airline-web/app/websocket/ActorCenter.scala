@@ -99,6 +99,8 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
   val resetTimeout = 10000
   var pendingResetTask : Option[ResetTask] = None
   val timer = new Timer()
+  val configFactory = ConfigFactory.load()
+  val bannerEnabled = if (configFactory.hasPath("bannerEnabled")) configFactory.getBoolean("bannerEnabled") else false
 
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
@@ -112,7 +114,10 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
           AirplaneOwnershipCache.invalidateAll()
           AirportUtil.refreshAirports()
           SearchUtil.refreshAlliances() //as sim might have deleted alliances
-          GooglePhotoUtil.refreshBanners()
+          if (bannerEnabled) {
+            println("Banner is enabled. Refreshing banner on cycle complete")
+            GooglePhotoUtil.refreshBanners()
+          }
           println(s"${self.path} invalidated cache")
       }
 
