@@ -423,6 +423,11 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        }
      }
 
+     AirportAssetSource.loadAirportAssetsByAirport(base.airport.id).filter(asset => asset.airline.isDefined && asset.airline.get.id == base.airline.id).foreach { ownedAsset =>
+       if (ownedAsset.blueprint.assetType.baseRequirement > base.scale - 1) {
+         return Some(s"This cannot be downgraded as asset ${ownedAsset.name} requires base level ${ownedAsset.blueprint.assetType.baseRequirement}")
+       }
+     }
 
      return None
   }
