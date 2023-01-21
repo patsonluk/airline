@@ -82,7 +82,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>").appendTo(row)
 		addAirlineTooltip($nameDiv, airline.id, airline.slogan, airline.name)
 		if (airline.headquartersAirportName) {
-			row.append("<div class='cell'>" + getAirportText(airline.headquartersCity, airline.headquartersAirportIata) + "</div>")
+			row.append("<div class='cell'>" + getCountryFlagImg(airline.countryCode) + getAirportText(airline.headquartersCity, airline.headquartersAirportIata) + "</div>")
 		} else {
 			row.append("<div class='cell'>-</div>")
 		}
