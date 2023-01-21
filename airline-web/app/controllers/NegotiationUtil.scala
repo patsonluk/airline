@@ -470,7 +470,10 @@ object NegotiationUtil {
   def getNextNegotiationDiscount(link : Link, negotiationResult: NegotiationResult) = {
     if (!negotiationResult.isSuccessful) { //only gives discount if it was unsuccessful
       val ratio = negotiationResult.result / negotiationResult.threshold
-      val discount = BigDecimal.valueOf(ratio * MAX_NEXT_NEGOTIATION_DISCOUNT).setScale(2, BigDecimal.RoundingMode.HALF_UP)
+      var discount = BigDecimal.valueOf(ratio * MAX_NEXT_NEGOTIATION_DISCOUNT).setScale(2, BigDecimal.RoundingMode.HALF_UP)
+      if (discount == 0) { //at least 1%
+        discount = BigDecimal(0.01)
+      }
       Some(LinkNegotiationDiscount(link.airline, link.from, link.to, discount, CycleSource.loadCycle() + LinkNegotiationDiscount.DURATION))
     } else {
       None
