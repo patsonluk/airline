@@ -29,7 +29,7 @@ import play.api.libs.json.JsString
 class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractController(cc) with play.api.i18n.I18nSupport {
   private[this] val recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify"
   private[this] val recaptchaAction = "signup"
-  private[this] val recaptchaSecret = "6LespV8UAAAAAErZ7LWP51SWmYaYrnAz6Z61jKBC"
+  private[this] val recaptchaSecret = "6Ldno_YjAAAAAGRG1o_eJZQkSQ97TxDHgR9r2_hQ"
   private[this] val recaptchaScoreThreshold = 0.5
   val MIN_AIRLINE_NAME_LENGTH = 1
   val MAX_AIRLINE_NAME_LENGTH = 50

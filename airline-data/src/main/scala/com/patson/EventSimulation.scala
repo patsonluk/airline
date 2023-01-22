@@ -89,14 +89,14 @@ object EventSimulation {
   }
 
   val MAX_CANDIDATES_COUNT = 6
-  val CANDIDATE_MIN_SIZE = 5
-  val CANDIDATE_MIN_POPULATION = 1000000
+  val CANDIDATE_MIN_SIZE = 4
+  val CANDIDATE_MIN_POPULATION = 500000
 
   def selectCandidates() : List[Airport] = {
     selectCandidates(AirportSource.loadAllAirports())
   }
 
-  val HOST_COUNTRY_COOLDOWN = 4 //should not be hosting it in the last 4 times
+  val HOST_COUNTRY_COOLDOWN = 6 //should not be hosting it in the last 4 times
   val HOST_ZONE_COOLDOWN = 2 //should not be hosting it in last 2 times
   def selectCandidates(allAirports : List[Airport]) : List[Airport] = {
     val previousOlympics = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).sortBy(_.startCycle).dropRight(1) //drop the current one
