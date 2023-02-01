@@ -562,7 +562,7 @@ object AirportAssetSimulation {
       case com.patson.model.AirportAssetType.SOLAR_POWER_PLANT =>
         (200000, 40, PassengerStats(20000, 20000, 20000, 5000, 5000), 0.8)
       case com.patson.model.AirportAssetType.TRAVEL_AGENCY =>
-        (500000, 40, PassengerStats(0, 0, 0, 10000, 10000), 0.4)
+        (500000, 40, PassengerStats(Long.MaxValue, Long.MaxValue, Long.MaxValue, 10000, 10000), 0.4)
       case com.patson.model.AirportAssetType.GAME_ARCADE =>
         (150000, 40, PassengerStats(10000, 5000, 5000, 5000, 5000), 0.4)
       case com.patson.model.AirportAssetType.RESTAURANT =>
