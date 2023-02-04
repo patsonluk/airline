@@ -245,6 +245,13 @@ function setBannerWinner() {
     })
 }
 
+function setUserLevel() {
+    adminActionWithData("set-user-level", $("#rivalDetails .adminActions").data("userId"),
+    {
+        "level" : parseInt($("#rivalDetails .setUserLevel").val()),
+    })
+}
+
 function adminSetUsers(action, $modal) {
     var targetUserIds = []
     $.each($modal.find('input:checked'), function(index, input) {
