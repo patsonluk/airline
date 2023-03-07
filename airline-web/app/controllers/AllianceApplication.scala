@@ -652,7 +652,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         message += getAirportText(overlappingBase) + "; "
       }
        
-      message+="\n"
+      message+=" Remove overlapping bases first\n"
     }
     
     else {
