@@ -619,7 +619,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
     
     if (approvedMembers.size >= Alliance.MAX_MEMBER_COUNT) {
-      message+="X: Alliance is full. Remove an existing member first before applying\n"
+      message+="X: Alliance is full Remove an existing member first before applying\n"
     }
     
     else{
@@ -652,7 +652,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         message += getAirportText(overlappingBase) + "; "
       }
        
-      message+=" Remove overlapping bases first\n"
+      message+=" Remove overlapping bases first before applying\n"
     }
     
     else {
@@ -662,7 +662,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
      AllianceSource.loadAllianceMemberByAirline(airline) match {
        case Some(allianceMember) =>
          if (allianceMember.allianceId != alliance.id) {
-           message+="X: Airline is already a member of another alliance " + AllianceCache.getAlliance(allianceMember.allianceId).get.name)
+           message+="X: Airline is already a member of another alliance " + "Leave " + AllianceCache.getAlliance(allianceMember.allianceId).get.name) "first before applying"
          }
        case None =>
            message+="✓: Airline not in another alliance"
