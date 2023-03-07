@@ -609,22 +609,35 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   def getApplyRejection(airline : Airline, alliance : Alliance) : Option[String] = {
     val approvedMembers = alliance.members.filter(_.role != AllianceRole.APPLICANT)
     
+    
+    var message = "";
     if (airline.getHeadQuarter.isEmpty) { 
-      return Some("Airline does not have headquarters")
+      message =  "X: Airline does not have headquarters\n"
+    }
+    else {
+      message = "✓: Airline headquarters established\n"
     }
     
     if (approvedMembers.size >= Alliance.MAX_MEMBER_COUNT) {
-      return Some("Alliance has reached max member size " + Alliance.MAX_MEMBER_COUNT + " already")
+      message+="X: Alliance is full. Remove an existing member first before applying\n"
     }
     
-    
+    else{
+      message+="✓: Alliance has available spot(s)\n"
+    }
     val allAllianceHeadquarters = approvedMembers.flatMap(_.airline.getHeadQuarter).map(_.airport)
 
     val airlineHeadquarters = airline.getHeadQuarter.get.airport
     
     if (allAllianceHeadquarters.contains(airlineHeadquarters)) {
-      return Some("One of the alliance members has Headquarters at " + getAirportText(airlineHeadquarters))
+      message+="X: One of the alliance members already has Headquarters at " + getAirportText(airlineHeadquarters)) + "\n"
     }
+    
+    else{
+      message+="✓: No Overlapping Headquarters\n"
+    }
+    
+      
     
     val allAllianceBases = approvedMembers.flatMap { _.airline.getBases().filter( !_.headquarter) }.map(_.airport)
     val airlineBases = airline.getBases.filter(!_.headquarter).map(_.airport) 
@@ -634,23 +647,27 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 //     println("YOURS " + airlineHeadquarters)
     
     if (!overlappingBases.isEmpty) {
-      var message = "Alliance members have overlapping airport bases: "
+      message += "Alliance members have overlapping airport bases: "
       overlappingBases.foreach { overlappingBase =>
         message += getAirportText(overlappingBase) + "; "
       }
        
-      return Some(message)
+      message+="\n"
+    }
+    
+    else {
+      message+="✓: Alliance members have no overlapping airport bases\n"
     }
     
      AllianceSource.loadAllianceMemberByAirline(airline) match {
        case Some(allianceMember) =>
          if (allianceMember.allianceId != alliance.id) {
-           return Some("Airline is already a member of another alliance " + AllianceCache.getAlliance(allianceMember.allianceId).get.name)
+           message+="X: Airline is already a member of another alliance " + AllianceCache.getAlliance(allianceMember.allianceId).get.name)
          }
        case None =>
-
+           message+="✓: Airline not in another alliance"
      }
-    return None
+    return message
   }
   
   def getAirportText(airport : Airport) = {
