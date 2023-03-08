@@ -610,9 +610,11 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     val approvedMembers = alliance.members.filter(_.role != AllianceRole.APPLICANT)
     
     
-    var message = "";
+    var message = ""
+    var ok = true
     if (airline.getHeadQuarter.isEmpty) { 
       message =  "X: Airline does not have headquarters\n"
+      ok=false
     }
     else {
       message = "✓: Airline headquarters established\n"
@@ -620,6 +622,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     
     if (approvedMembers.size >= Alliance.MAX_MEMBER_COUNT) {
       message+="X: Alliance is full Remove an existing member first before applying\n"
+      ok=false
     }
     
     else{
@@ -631,6 +634,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     
     if (allAllianceHeadquarters.contains(airlineHeadquarters)) {
       message+="X: One of the alliance members already has Headquarters at " + getAirportText(airlineHeadquarters)) + "\n"
+      ok=false
     }
     
     else{
@@ -653,6 +657,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       }
        
       message+=" Remove overlapping bases first before applying\n"
+      ok=false
     }
     
     else {
@@ -663,11 +668,15 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
        case Some(allianceMember) =>
          if (allianceMember.allianceId != alliance.id) {
            message+="X: Airline is already a member of another alliance " + "Leave " + AllianceCache.getAlliance(allianceMember.allianceId).get.name) "first before applying"
+           ok=false;
          }
        case None =>
            message+="✓: Airline not in another alliance"
      }
-    return message
+    if(ok) {
+      return None
+    }
+    return Some(message)
   }
   
   def getAirportText(airport : Airport) = {
