@@ -1,0 +1,52 @@
+div.button {
+  background-color: #4dd0e1;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  text-shadow: none;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+div.button:hover {
+  box-shadow: 0 0 10px #29b6f6, 0 0 20px #29b6f6, 0 0 30px #29b6f6;
+}
+
+
+div.button:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(41,182,246,0.5) 0%, rgba(255,255,255,0) 100%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+div.button:hover:before {
+  opacity: 1;
+  animation: electricGlow 2s infinite;
+}
+
+@keyframes electricGlow {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+
+body:not(.button) {
+  filter: hue-rotate(200deg) saturate(1.2) brightness(0.9);
+}
+
+
+body, h1, h2, h3, h4, h5, h6, div.button, .label {
+  font-family: 'Orbitron', sans-serif;
+}
