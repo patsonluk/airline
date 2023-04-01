@@ -1,4 +1,4 @@
-div.button {
+div.button, .mapPopup div.button {
   background-color: #4dd0e1;
   color: #ffffff;
   border: none;
