@@ -42,11 +42,6 @@ div.button:hover:before {
 }
 
 
-body:not(.button) {
-  filter: hue-rotate(200deg) saturate(1.2) brightness(0.9);
-}
-
-
 body, h1, h2, h3, h4, h5, h6, div.button, .label {
   font-family: 'Orbitron', sans-serif;
 }
