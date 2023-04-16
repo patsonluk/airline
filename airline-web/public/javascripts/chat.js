@@ -234,6 +234,8 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
     } else if (r_msg.type === 'linkEvent') { //reactive link consumption event
     //"linkId" "fromAirportText"  "fromCountryCode" "soldSeats" "linkClass" "amount"
        console.log(r_msg.linkId + " pax " + r_msg.amount)
+       showIncomeLabel(map, r_msg.lat, r_msg.long, r_msg.amount)
+
     } else { //incoming message from broadcast
         var atScrollBottom = (Math.round($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop) == $activeHistory[0].clientHeight)
 

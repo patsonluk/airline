@@ -218,7 +218,7 @@ object PassengerSimulation {
                            //                     println("EXHAUSED!! = " + link)
                            //                   }
                            if (LinkEventHandler.isLinkWatched(linkConsideration.link.id)) {
-                             LinkEventHandler.handleLinkEvent(linkConsideration.link.asInstanceOf[Link], actualLinkClass, consumptionSize)
+                             LinkEventHandler.handleLinkEvent(linkConsideration.link.asInstanceOf[Link], fromAirport, actualLinkClass, consumptionSize)
                            }
                          }
                          consumptionResult.add((passengerGroup, toAirport, consumptionSize, pickedRoute))

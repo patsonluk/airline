@@ -1,6 +1,6 @@
 package com.patson.stream
 
-import com.patson.model.{Link, LinkClass}
+import com.patson.model.{Airport, Link, LinkClass}
 
 object LinkEventHandler {
   var watchedLinkIds : Set[Int] = Set.empty
@@ -16,8 +16,8 @@ object LinkEventHandler {
     watchedLinkIds.contains(linkId)
   }
 
-  def handleLinkEvent(link : Link, linkClass: LinkClass, amount: Int) = {
-    SimulationEventStream.mainActor ! LinkConsumptionEvent(link.id, link.from.id, linkClass.code, amount, link.soldSeats.toMap().map {
+  def handleLinkEvent(link : Link, fromAirport : Airport, linkClass: LinkClass, paxCount: Int) = {
+    SimulationEventStream.mainActor ! LinkConsumptionEvent(link.id, fromAirport.id, linkClass.code, paxCount * link.price(linkClass), link.soldSeats.toMap().map {
       case (linkClass, amount) => (linkClass.code, amount)
     })
   }

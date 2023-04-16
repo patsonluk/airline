@@ -702,7 +702,7 @@ function refreshLinkDetails(linkId) {
 	    	    }
 	    	});
 
-	    	$('#linkEventModal').data('link', link)
+	    	$('#linkDetails').data('link', link)
 	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -1952,7 +1952,7 @@ function showLinkEventHistory(linkId) {
     $("#switchLinkEventRival").prop('checked', true)
     $("#switchLinkEventSelf").prop('checked', false)
 
-    var link = $("#linkEventModal").data("link")
+    var link = $("#linkDetails").data("link")
     $("#linkEventModal .title").html("<div style='display: inline-flex; align-items: center;'>"
     + getCountryFlagImg(link.fromCountryCode)
     + getAirportText(link.fromAirportCity, link.fromAirportCode)
@@ -3061,3 +3061,46 @@ function addAirlineTooltip($target, airlineId, slogan, airlineName) {
     addTooltipHtml($target, $airlineTooltip, {'top' : '100%'})
 }
 
+
+function showWatchLinkModal(linkId) {
+//    $('#linkProgressModal').data('closeCallback', function() {
+//        unwatchLinkEvent(linkId)
+//    });
+    watchLinkEvent(linkId)
+
+    var link = $('#linkDetails').data('link')
+
+    $("#linkProgressModal .title").html("<div style='display: inline-flex; align-items: center;'>"
+        + getCountryFlagImg(link.fromCountryCode)
+        + getAirportText(link.fromAirportCity, link.fromAirportCode)
+        + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>"
+        + getCountryFlagImg(link.toCountryCode)
+        + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+
+
+    $('#linkProgressModal').fadeIn(200)
+}
+
+function showIncomeLabel(map, lat, lng, income) {
+  var incomeLabel = document.createElement('div')
+  incomeLabel.classList.add('income-label')
+  incomeLabel.innerHTML = '$' + income.toFixed(2)
+
+  var incomeLabelOverlay = new google.maps.OverlayView()
+  incomeLabelOverlay.onAdd = function() {
+    var panes = this.getPanes()
+    panes.floatPane.appendChild(incomeLabel)
+  }
+  incomeLabelOverlay.draw = function() {
+    var projection = this.getProjection()
+    var position = projection.fromLatLngToDivPixel(new google.maps.LatLng(lat, lng))
+    incomeLabel.style.left = position.x + 'px'
+    incomeLabel.style.top = position.y + 'px'
+  }
+  incomeLabelOverlay.setMap(map)
+
+  setTimeout(function() {
+    incomeLabel.parentNode.removeChild(incomeLabel)
+    incomeLabelOverlay.setMap(null)
+  }, 1000)
+}

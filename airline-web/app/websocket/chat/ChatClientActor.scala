@@ -146,7 +146,15 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
 
     case event : LinkConsumptionEvent =>
       AirportCache.getAirport(event.fromAirportId, false).foreach { fromAirport =>
-        out ! Json.obj("type" -> "linkEvent", "linkId" -> event.linkId, "fromAirportText" -> fromAirport.displayText, "fromCountryCode" -> fromAirport.countryCode, "soldSeats" -> Json.toJson(event.soldSeats), "linkClass" -> event.linkClassCode, "amount" -> event.amount).toString
+        out ! Json.obj("type" -> "linkEvent",
+          "linkId" -> event.linkId,
+          "fromAirportText" -> fromAirport.displayText,
+          "fromCountryCode" -> fromAirport.countryCode,
+          "long" -> fromAirport.longitude,
+          "lat" -> fromAirport.latitude,
+          "soldSeats" -> Json.toJson(event.soldSeats),
+          "linkClass" -> event.linkClassCode,
+          "amount" -> event.amount).toString
       }
   }
 

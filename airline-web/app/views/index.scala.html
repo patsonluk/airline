@@ -567,7 +567,7 @@
 									<input type="hidden" id="linkToAirportId">
 									<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
 									<div class="button" onclick="deselectLink()">Cancel</div>
-									<div class="button" onclick="watchLinkEvent($('#actionLinkId').val())">Watch</div>
+									<div class="button" onclick="showWatchLinkModal($('#actionLinkId').val())">Watch</div>
 
 									<div class="divider"></div>
 									<div class="table" id="linkHistoryDetails" style="width: 100%">
@@ -5408,6 +5408,15 @@
 			  <div class="button" onclick="adminSetUsers('nerf', $('#airlinesByUuidModal'))">Nerf</div>
 			  <div class="button" onclick="adminSetUsers('restore', $('#airlinesByUuidModal'))">Restore</div>
 		  </div>
+	  </div>
+  </div>
+
+
+  <div id="linkProgressModal" class="modal">
+	  <div class="modal-content"  style="width : 700px;">
+		  <span class="close" onclick="closeModal($('#linkProgressModal'))">&times;</span>
+		  <h4 style="margin-bottom: 10px;" class="title"></h4>
+
 	  </div>
   </div>
 
