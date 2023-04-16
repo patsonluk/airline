@@ -106,7 +106,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     getOfficeStaffRequired(from, to, frequency, capacity)
   }
 
-  val loadedFrequencyByClass = HashMap[LinkClass, Int]()
+  var loadedFrequencyByClass : LinkClassValues = LinkClassValues.getInstance()
   var frequencyByClassLoaded = false
 
   /**
@@ -115,8 +115,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   private def recomputeCapacityAndFrequency() = {
     var newCapacity = LinkClassValues.getInstance()
     var newFrequency = 0
+    val newFrequencyByClass = HashMap[LinkClass, Int]()
 
-    LinkClass.values.foreach(loadedFrequencyByClass.put(_, 0))
     inServiceAirplanes.foreach {
       case(airplane, assignment) =>
         newCapacity = newCapacity + (LinkClassValues(airplane.configuration.economyVal, airplane.configuration.businessVal, airplane.configuration.firstVal) * assignment.frequency)
@@ -124,13 +124,14 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 
         LinkClass.values.foreach { linkClass =>
           if (airplane.configuration(linkClass) > 0) {
-            loadedFrequencyByClass.put(linkClass, loadedFrequencyByClass(linkClass) + assignment.frequency)
+            newFrequencyByClass.put(linkClass, newFrequencyByClass.getOrElse(linkClass, 0) + assignment.frequency)
           }
         }
     }
-    frequencyByClassLoaded = true
     capacity = newCapacity
     frequency = newFrequency
+    loadedFrequencyByClass = LinkClassValues.getInstanceByMap(newFrequencyByClass.toMap)
+    frequencyByClassLoaded = true
   }
 
   def futureCapacity() = {
