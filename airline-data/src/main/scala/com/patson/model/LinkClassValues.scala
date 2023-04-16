@@ -53,6 +53,12 @@ abstract class AbstractLinkClassValues(economyVal : Int, businessVal : Int, firs
     //    LinkClassValues(map.mapValues { value => value / divider })
     LinkClassValues(economyVal / divider, businessVal / divider, firstVal / divider)
   }
+
+  def toMap() : Map[LinkClass, Int] = {
+    LinkClass.values.map { linkClass =>
+      (linkClass, apply(linkClass))
+    }.toMap
+  }
 }
 
 object LinkClassValues {

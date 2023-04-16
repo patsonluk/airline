@@ -39,7 +39,7 @@ class ChatApplication @Inject()(cc: ControllerComponents)(implicit actorSystem: 
           case Some(user) =>
             logger.info("Chatsocket, client connected with userId " + userId)
             Right(ActorFlow.actorRef(
-              props = { out => Props(new ChatClientActor(out, chatControllerActor, user))},
+              props = { out => Props(new ChatClientActor(out, chatControllerActor, user, user.getAccessibleAirlines()(0)))},
               bufferSize = 1024 //otherwise it drops the message when it couldn't send fast enough...
             ))
         }

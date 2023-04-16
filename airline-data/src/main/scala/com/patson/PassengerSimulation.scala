@@ -8,12 +8,13 @@ import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CountrySou
 import com.patson.model.AirlineBaseSpecialization.BrandSpecialization
 import com.patson.model.FlightType.Value
 import com.patson.model._
+import com.patson.stream.{LinkConsumptionEvent, LinkEventHandler}
 
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Set}
 import scala.util.Random
 import scala.collection.parallel.CollectionConverters._
-import  scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters._
 
 object PassengerSimulation {
 
@@ -216,9 +217,12 @@ object PassengerSimulation {
                            //                   if (link.availableSeats == 0) {
                            //                     println("EXHAUSED!! = " + link)
                            //                   }
+                           if (LinkEventHandler.isLinkWatched(linkConsideration.link.id)) {
+                             LinkEventHandler.handleLinkEvent(linkConsideration.link.asInstanceOf[Link], actualLinkClass, consumptionSize)
+                           }
                          }
-
                          consumptionResult.add((passengerGroup, toAirport, consumptionSize, pickedRoute))
+
                        }
                        //update the remaining demand chunk list
                        if (consumptionSize < chunkSize) { //not totally satisfied
@@ -226,6 +230,8 @@ object PassengerSimulation {
                          remainingDemandChunks.add((passengerGroup, toAirport, chunkSize - consumptionSize));
                        }
                      }
+
+
                    case Some(rejection) =>
                     import RouteRejectionReason._
                     rejection match {

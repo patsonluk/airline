@@ -5,30 +5,38 @@ import akka.actor._
 import java.util.Calendar
 import java.text.SimpleDateFormat
 import play.api.libs.json._
-import com.patson.data.{AllianceSource, ChatSource, UserSource}
-import com.patson.model.{AllianceRole, User}
+import com.patson.data.{AllianceSource, ChatSource, LinkSource, UserSource}
+import com.patson.model.{Airline, AllianceRole, User}
 import com.patson.model.chat.ChatMessage
-import com.patson.util.UserCache
+import com.patson.stream.{LinkConsumptionEvent, UnwatchLink, WatchLink}
+import com.patson.util.{AirportCache, UserCache}
+import org.apache.lucene.util.packed.PackedInts.Mutable
 import play.api.Logger
 import play.api.libs.json.JsValue.jsValueToJsLookup
 import play.api.libs.json.Json.toJsFieldJsValueWrapper
+import websocket.ActorCenter
 
+import scala.collection.mutable
 import scala.math.BigDecimal.int2bigDecimal
 
 /**
  * Actor that receives message from websocket and send message out
  */
-class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : User) extends Actor {
+class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : User, airline : Airline) extends Actor {
   val logger = Logger(this.getClass)
   chatControllerActor ! Join(user)
 
   override def postStop() = {
-    logger.info("Stopping chat client on user " + user.userName + " id " + user.id)
+    logger.info("Stopping chat client on user " + user.userName + " id " + user.id + " " + airline.name)
+    watchedLinkIds.foreach { linkId =>
+      ActorCenter.localMainActor ! UnwatchLink(linkId)
+    }
+
   }
   
   val allianceIdOption = getAllianceId(user)
   
-  val sdf = new SimpleDateFormat("HH:mm:ss")
+  val watchedLinkIds = mutable.HashSet[Int]()
 
 
   implicit object ChatMessageWrites extends Writes[ChatMessage] {
@@ -64,6 +72,22 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
                 }
               } else if (callType == "previous") {
                 chatControllerActor ! PreviousMessagesRequest(airline, json_text.\("firstMessageId").as[Long], json_text.\("roomId").as[Int])
+              } else if (callType == "watchLink") {
+                LinkSource.loadFlightLinkById(json_text.\("link").as[Int], LinkSource.SIMPLE_LOAD).foreach { link =>
+                  if (link.airline.id == airlineId) {
+                    logger.info(s"Watching link $link")
+                    watchedLinkIds.add(link.id)
+                    ActorCenter.localMainActor ! WatchLink(link.id)
+                  }
+                }
+              } else if (callType == "unwatchLink") {
+                LinkSource.loadFlightLinkById(json_text.\("link").as[Int], LinkSource.SIMPLE_LOAD).foreach { link =>
+                  if (link.airline.id == airlineId) {
+                    logger.info(s"Stop watching link $link")
+                    watchedLinkIds.remove(link.id)
+                    ActorCenter.localMainActor ! UnwatchLink(link.id)
+                  }
+                }
               }
 
             case None =>  //normal message
@@ -119,8 +143,14 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
     case TriggerPing => {
       out ! "ping"
     }
+
+    case event : LinkConsumptionEvent =>
+      AirportCache.getAirport(event.fromAirportId, false).foreach { fromAirport =>
+        out ! Json.obj("type" -> "linkEvent", "linkId" -> event.linkId, "fromAirportText" -> fromAirport.displayText, "fromCountryCode" -> fromAirport.countryCode, "soldSeats" -> Json.toJson(event.soldSeats), "linkClass" -> event.linkClassCode, "amount" -> event.amount).toString
+      }
   }
-  
+
+
   def getAllianceId(user : User) : Option[Int] = {
     if (user.getAccessibleAirlines().isEmpty) {
       None

@@ -10,6 +10,7 @@ import com.patson.model.chat.ChatMessage
 import com.patson.model.{Airline, AllianceRole, User}
 import play.api.Logger
 import play.api.libs.ws.ahc.StandaloneAhcWSClient
+import websocket.ActorCenter
 
 import java.util.Date
 import scala.collection.mutable
@@ -160,6 +161,7 @@ class ChatControllerActor extends Actor {
     //	    logger.info("Chat socket disconnected " + sender)
     //    }
     case Terminated(chatClientActor) => {
+
       context.unwatch(chatClientActor)
       clientActors -= chatClientActor
       ChatControllerActor.removeActiveUser(chatClientActor)

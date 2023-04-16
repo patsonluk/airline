@@ -231,7 +231,9 @@ angular.module("ChatApp", []).controller("ChatController", function($scope, $tim
             $activeHistory.find('ul').prepend('<li class="message"><b>No more previous messages</b></li>')
             $activeHistory.data("historyExhausted", true)
         }
-
+    } else if (r_msg.type === 'linkEvent') { //reactive link consumption event
+    //"linkId" "fromAirportText"  "fromCountryCode" "soldSeats" "linkClass" "amount"
+       console.log(r_msg.linkId + " pax " + r_msg.amount)
     } else { //incoming message from broadcast
         var atScrollBottom = (Math.round($activeHistory[0].scrollHeight - $activeHistory[0].scrollTop) == $activeHistory[0].clientHeight)
 
@@ -407,6 +409,22 @@ function ackChatId() {
           ws.send(JSON.stringify(text));
       }
   }
+
+function watchLinkEvent(link) {
+  if (activeAirline) {
+      var text = { airlineId: activeAirline.id, link : parseInt(link), type : "watchLink" };
+      // send it to the server through websockets
+      ws.send(JSON.stringify(text));
+  }
+}
+
+function unwatchLinkEvent(link) {
+  if (activeAirline) {
+      var text = { airlineId: activeAirline.id, link : parseInt(link), type : "unwatchLink" };
+      // send it to the server through websockets
+      ws.send(JSON.stringify(text));
+  }
+}
 
 
 

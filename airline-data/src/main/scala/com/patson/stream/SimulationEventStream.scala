@@ -2,6 +2,9 @@ package com.patson.stream
 
 import akka.actor._
 import com.patson.MainSimulation
+import com.patson.data.LinkSource
+import com.patson.model.{LinkClass, LinkClassValues}
+import com.patson.util.UserCache
 import com.typesafe.config.ConfigFactory
 
 import scala.collection.mutable
@@ -34,7 +37,7 @@ object SimulationEventStream{
 
     //keep stats of all the cycles so far
 
-//    Instead of maintaining a new actor connection whenever someone logs in, we will only maintain one connnection between sim and web app, once sim finishes a cycle, it will send one message the the web app actor, and the web app actor will relay the message in an event stream, which is subscribed by each login section.
+//    Instead of maintaining a new actor connection whenever someone logs in, we will only maintain one connection between sim and web app, once sim finishes a cycle, it will send one message the the web app actor, and the web app actor will relay the message in an event stream, which is subscribed by each login section.
 //
 //      For new login, the web app local actor will directly send one message to the remote actor, and the remote actor will in this case reply directly to the web app local actor - this is the ONLY time that the 2 talks directly
     def receive = {
@@ -56,7 +59,21 @@ object SimulationEventStream{
         }
         println(s"Return cycle info to ${sender()}")
         sender() ! (CycleInfo(currentCycle, elapsedFraction, cycleDurationAverage), None)
-      case Terminated(actor) =>
+      case WatchLink(linkId) =>
+        LinkSource.loadFlightLinkById(linkId, LinkSource.SIMPLE_LOAD).foreach { link =>
+          println(s"Watching link ${link}")
+          LinkEventHandler.addWatchedLinkId(linkId)
+        }
+      case UnwatchLink(linkId) =>
+        LinkSource.loadFlightLinkById(linkId, LinkSource.SIMPLE_LOAD).foreach { link =>
+          println(s"Unwatching link ${link}")
+          LinkEventHandler.removeWatchedLinkId(linkId)
+        }
+      case event: LinkConsumptionEvent =>
+        registeredActor.foreach { registeredActor => //send it back to the main actor in the front-end
+          registeredActor ! event
+        }
+      case Terminated(actor) => //this is the singleton front-end actor for now
         println("Watched actor is terminated " + sender().path)
         context.unwatch(actor)
         registeredActor = Set.empty
@@ -112,3 +129,6 @@ case class ReconnectPing()
 case class KeepAlivePing()
 case class KeepAlivePong()
 
+case class WatchLink(linkId : Int)
+case class UnwatchLink(linkId : Int)
+case class LinkConsumptionEvent(linkId : Int, fromAirportId : Int, linkClassCode: String, amount : Int, soldSeats : Map[String, Int])

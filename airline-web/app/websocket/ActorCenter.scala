@@ -4,11 +4,12 @@ import akka.actor.{Actor, ActorRef, ActorSelection, Props, Terminated}
 import akka.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import com.patson.model.Airline
 import com.patson.model.notice.{AirlineNotice, NoticeCategory}
-import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
+import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, LinkConsumptionEvent, ReconnectPing, SimulationEvent, UnwatchLink, WatchLink}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
 import com.typesafe.config.ConfigFactory
 import controllers.{AirlineTutorial, AirportUtil, GooglePhotoUtil, SearchUtil}
 import models.PendingAction
+import play.api.Logger
 import play.api.libs.json.{JsNumber, Json}
 import websocket.chat.TriggerPing
 
@@ -91,6 +92,7 @@ class ResetTask(localActor : ActorRef, remoteActor : ActorSelection) extends Tim
 //only 1 locally, fan out message to all local actors to reduce connections required
 //also manage the broadcast actor
 sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
+  val logger = Logger(this.getClass)
   //also create BroadcastActor
 //  val broadcastActor = context.actorOf(Props(classOf[BroadcastActor]).withDispatcher("my-pinned-dispatcher"), "broadcast-actor")
 //  context.watch(broadcastActor)
@@ -101,6 +103,8 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
   val timer = new Timer()
   val configFactory = ConfigFactory.load()
   val bannerEnabled = if (configFactory.hasPath("bannerEnabled")) configFactory.getBoolean("bannerEnabled") else false
+  val linkWatchers = mutable.HashMap[Int, ActorRef]() //key is link id
+  val watchedLinksByAirlineId = mutable.HashMap[Int, ActorRef]()
 
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
@@ -138,6 +142,23 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
     case KeepAlivePong => //diffuse the reset!
       println("Connection to sim is healthy!")
       pendingResetTask.foreach( _.cancel() )
+
+    case WatchLink(linkId) => //this is from the websocket actor (ChatClientActor for now)
+      linkWatchers.put(linkId, sender())
+      logger.info(s"Link watcher count (+1) : ${linkWatchers.size}")
+      remoteActor ! WatchLink(linkId) //relay it to remote actors (on sim side)
+
+    case UnwatchLink(linkId) => //this is from the websocket actor (ChatClientActor for now)
+      linkWatchers.remove(linkId)
+      logger.info(s"Link watcher count (-1) : ${linkWatchers.size}")
+      remoteActor ! UnwatchLink(linkId) //relay it to remote actors (on sim side)
+
+    case event : LinkConsumptionEvent =>
+      linkWatchers.get(event.linkId) match {
+        case Some(watcher) => watcher ! event
+        case None => remoteActor ! UnwatchLink(event.linkId) //noone is watching it anymore, tell the remote actor too
+      }
+
     case unknown : Any => println(s"Unknown message for local main actor : $unknown")
   }
 
@@ -223,8 +244,6 @@ object ActorCenter {
 
   val reconnectActor = system.actorOf(Props(classOf[ReconnectActor], remoteMainActor), "reconnect-actor")
   reconnectActor ! remoteMainActor //why?
-
-
 
 
 //  sealed class PingActor extends Actor {
