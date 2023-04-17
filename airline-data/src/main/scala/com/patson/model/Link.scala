@@ -269,8 +269,8 @@ case class LinkConsideration(link : Transport,
                              modifier : Option[CostModifier],
                              costProvider : CostProvider,
                              var id : Int = 0) extends IdObject {
-    def from : Airport = if (inverted) link.to else link.from
-    def to : Airport = if (inverted) link.from else link.to
+    lazy val from : Airport = if (inverted) link.to else link.from
+    lazy val to : Airport = if (inverted) link.from else link.to
     
     override def toString() : String = {
       s"Consideration [${linkClass} -  Flight $id; ${link.airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); capacity ${link.capacity}; price ${link.price}; cost: $cost]"
