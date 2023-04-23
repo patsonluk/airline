@@ -467,7 +467,7 @@ object AirportAssetSimulation {
             asset.airport.incomeLevel / 80
           }) * asset.airport.population / 52 / 1.5).toInt
       case com.patson.model.AirportAssetType.LANDMARK =>
-        (paxStats.arrivalTourist * 0.5 + paxStats.arrivalTourist * 0.2 +
+        (paxStats.arrivalTourist * 0.5 + paxStats.arrivalBusiness * 0.2 +
           (if (asset.airport.incomeLevel >= 25) {
             1
           } else {

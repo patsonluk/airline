@@ -68,7 +68,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
   }
 
 
-  val iterations = 10000
+  val iterations = 100000
   //  val airline1Link = Link(fromAirport, toAirport, testAirline1, 100, 10000, 10000, 0, 600, 1)
   //  val airline2Link = Link(fromAirport, toAirport, testAirline2, 100, 10000, 10000, 0, 600, 1)
   val passengerGroup = PassengerGroup(fromAirport, SimplePreference(homeAirport = fromAirport, priceSensitivity = 1, preferredLinkClass = ECONOMY), PassengerType.BUSINESS)
@@ -274,14 +274,14 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         }
       }
 
-      assert(economyViaAsset.toDouble / iterations > 0.5)
-      assert(economyViaAsset.toDouble / iterations < 0.6)
+      assert(economyViaAsset.toDouble / iterations > 0.6)
+      assert(economyViaAsset.toDouble / iterations < 0.7)
 
-      assert(businessViaAsset.toDouble / iterations > 0.5)
-      assert(businessViaAsset.toDouble / iterations < 0.6)
+      assert(businessViaAsset.toDouble / iterations > 0.6)
+      assert(businessViaAsset.toDouble / iterations < 0.7)
 
-      assert(firstViaAsset.toDouble / iterations > 0.5)
-      assert(firstViaAsset.toDouble / iterations < 0.6)
+      assert(firstViaAsset.toDouble / iterations > 0.6)
+      assert(firstViaAsset.toDouble / iterations < 0.7)
 
       println(economyViaAsset.toDouble / iterations)
       println(businessViaAsset.toDouble / iterations)
@@ -338,8 +338,8 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         }
       }
 
-      assert(economyViaAsset.toDouble / iterations > 0.57)
-      assert(economyViaAsset.toDouble / iterations < 0.6)
+      assert(economyViaAsset.toDouble / iterations > 0.6)
+      assert(economyViaAsset.toDouble / iterations < 0.7)
     }
 
     "asset effect on short haul + long haul, should have weaker effect" in {
@@ -392,8 +392,8 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         }
       }
 
-      assert(economyViaAsset.toDouble / iterations > 0.5)
-      assert(economyViaAsset.toDouble / iterations < 0.55)
+      assert(economyViaAsset.toDouble / iterations > 0.52)
+      assert(economyViaAsset.toDouble / iterations < 0.6)
     }
 
     "some pax might stop-over an airport if it's on the way and has attractive asset after a long trip" in {
@@ -459,9 +459,9 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         }
       }
 
-      assert(transitAsset.toDouble / iterations > 0.15 && transitAsset.toDouble / iterations < 0.25)
+      assert(transitAsset.toDouble / iterations > 0.25 && transitAsset.toDouble / iterations < 0.4)
       assert(transitNoAsset.toDouble / iterations < 0.1)
-      assert(direct.toDouble / iterations > 0.7)
+      assert(direct.toDouble / iterations > 0.5)
     }
 
 
@@ -603,7 +603,7 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
         }
       }
 
-      assert(transitAsset.toDouble /iterations < 0.1 && transitAsset.toDouble / iterations > transitNoAsset.toDouble / iterations)
+      assert(transitAsset.toDouble /iterations < 0.2 && transitAsset.toDouble / iterations > transitNoAsset.toDouble / iterations)
       assert(transitNoAsset.toDouble / iterations < 0.1)
       assert(direct.toDouble / iterations > 0.7)
     }
@@ -611,28 +611,28 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
 
     "general asset effect on pax" when {
       "amusement park" in {
-        assertAssetEffect(AirportAssetType.AMUSEMENT_PARK, EffectBoundary(0.54, 0.57, 0.49, 0.51))
+        assertAssetEffect(AirportAssetType.AMUSEMENT_PARK, EffectBoundary(0.6, 0.64, 0.49, 0.51))
       }
       "SkiResortAssetType" in {
-        assertAssetEffect(AirportAssetType.SKI_RESORT, EffectBoundary(0.58, 0.61, 0.5, 0.52))
+        assertAssetEffect(AirportAssetType.SKI_RESORT, EffectBoundary(0.6, 0.64, 0.53, 0.57))
       }
       "BeachResortAssetType" in {
-        assertAssetEffect(AirportAssetType.BEACH_RESORT, EffectBoundary(0.53, 0.56, 0.5, 0.52))
+        assertAssetEffect(AirportAssetType.BEACH_RESORT, EffectBoundary(0.58, 0.62, 0.54, 0.57))
       }
       "ConventionCenterAssetType" in {
-        assertAssetEffect(AirportAssetType.CONVENTION_CENTER, EffectBoundary(0.49, 0.51, 0.58, 0.61))
+        assertAssetEffect(AirportAssetType.CONVENTION_CENTER, EffectBoundary(0.49, 0.51, 0.65, 0.72))
       }
       "MuseumAssetType" in {
-        assertAssetEffect(AirportAssetType.MUSEUM, EffectBoundary(0.52, 0.54, 0.50, 0.525))
+        assertAssetEffect(AirportAssetType.MUSEUM, EffectBoundary(0.57, 0.61, 0.53, 0.55))
       }
       "StadiumAssetType" in {
-        assertAssetEffect(AirportAssetType.STADIUM, EffectBoundary(0.51, 0.53, 0.5, 0.52))
+        assertAssetEffect(AirportAssetType.STADIUM, EffectBoundary(0.53, 0.55, 0.51, 0.53))
       }
       "LandmarkAssetType" in {
-        assertAssetEffect(AirportAssetType.LANDMARK, EffectBoundary(0.53, 0.56, 0.53, 0.56))
+        assertAssetEffect(AirportAssetType.LANDMARK, EffectBoundary(0.63, 0.66, 0.55, 0.58))
       }
       "GolfCourseAssetType" in {
-        assertAssetEffect(AirportAssetType.GOLF_COURSE, EffectBoundary(0.5, 0.52, 0.5, 0.52))
+        assertAssetEffect(AirportAssetType.GOLF_COURSE, EffectBoundary(0.52, 0.54, 0.52, 0.55))
       }
     }
   }
@@ -652,8 +652,10 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
 
     airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0)))
 
+    airport1.initAssets(List.empty)
     airport2a.initAssets(List(AirportAsset.getAirportAsset(AirportAssetBlueprint(airport2a, assetType, 0), Some(airline1), "Test Asset", AirportAsset.MAX_LEVEL, Some(0), List.empty, 0, 0, 0, true, Map.empty, 0)))
     airport2b.initAssets(List.empty)
+    airport3.initAssets(List.empty)
 
     val countryOpenness = Map[String, Int](
       "C1" -> 10,
