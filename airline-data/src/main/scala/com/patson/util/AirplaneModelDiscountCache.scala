@@ -32,6 +32,7 @@ object AirplaneModelDiscountCache {
   }
 
   def updateModelDiscounts(modelDiscounts : List[ModelDiscount]) = {
+    simpleCache.invalidateAll()
     modelDiscounts.groupBy(_.modelId).foreach {
       case (modelId, discounts) => simpleCache.put(modelId, discounts)
     }
