@@ -146,6 +146,7 @@ GET 	 /airlines/:airlineId/campaign-airports/:airportId         controllers.Camp
 GET	 	 /airlines/:airlineId/airport-assets	      controllers.AirportAssetApplication.getAirportAssetsWithAirline(airlineId : Int)
 GET	 	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.getAirportAssetDetailsWithAirline(airlineId : Int, assetId : Int)
 PUT	 	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.putAirportAsset(airlineId : Int, assetId : Int)
+PUT	 	 /airlines/:airlineId/airport-asset/downgrade/:assetId	      controllers.AirportAssetApplication.downgradeAirportAsset(airlineId : Int, assetId : Int)
 DELETE	 /airlines/:airlineId/airport-asset/:assetId	      controllers.AirportAssetApplication.deleteAirportAsset(airlineId : Int, assetId : Int)
 GET	 	 /airlines/:airlineId/select-alliance-mission/:missionId	      controllers.AllianceMissionApplication.selectAllianceMission(airlineId : Int, missionId : Int)
 GET      /airlines/:airlineId/mission-stats/:missionId      controllers.AllianceMissionApplication.getAllianceMissionStats(airlineId : Int, missionId : Int)

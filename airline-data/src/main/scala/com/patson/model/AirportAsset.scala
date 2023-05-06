@@ -518,6 +518,17 @@ abstract class AirportAsset() extends IdObject{
         AirportAsset.getAirportAsset(blueprint, airline, name, level + 1, Some(completionCycle), boosts, revenue, expense, roi, false, properties, currentCycle)
     }
 
+    def levelDown(name : String) = {
+        val currentCycle = CycleSource.loadCycle()
+        AirportAssetSource.deleteAirportBoostHistoryByLevel(id, level)
+        //find previous level boost
+        val newBoosts = boostHistory.filter(_.level == level - 1).map(history => AirportBoost(history.boostType, history.value))
+
+        val roiDeltaPerLevel = (roi - blueprint.assetType.initRoi) / level
+        val newRoi = roi - roiDeltaPerLevel
+        AirportAsset.getAirportAsset(blueprint, airline, name, level - 1, Some(currentCycle), newBoosts, revenue, expense, newRoi, true, properties, currentCycle)
+    }
+
     lazy val boostHistory : List[AirportAssetBoostHistory] = {
         AirportAssetSource.loadAirportBoostHistoryByAssetId(id)
     }

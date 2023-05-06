@@ -457,6 +457,20 @@ object AirportAssetSource {
     }
   }
 
+  def deleteAirportBoostHistoryByLevel(assetId : Int, level : Int) = {
+    val queryString = s"DELETE FROM $AIRPORT_ASSET_BOOST_HISTORY_TABLE WHERE asset = ? AND level = ?"
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(queryString)
+      preparedStatement.setInt(1, assetId)
+      preparedStatement.setInt(2, level)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
 
   def saveAirportPropertiesHistory(entries : List[AirportAssetPropertiesHistory]) = {
     val queryString = s"REPLACE INTO $AIRPORT_ASSET_PROPERTY_HISTORY_TABLE (asset, property, cycle, value) VALUES(?,?,?,?)";

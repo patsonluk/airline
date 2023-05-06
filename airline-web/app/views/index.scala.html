@@ -5298,8 +5298,9 @@
 
 
 
-		  <div class="button buildButton" onclick="promptConfirm('Build this Asset?', buildOrUpgradeAsset, $('#airportAssetDetailsModal').data('asset'))">Build</div>
-		  <div class="button upgradeButton" onclick="promptConfirm('Upgrade this Asset?', buildOrUpgradeAsset, $('#airportAssetDetailsModal').data('asset'))">Upgrade</div>
+		  <div class="button buildButton" onclick="promptConfirm('Build this Asset?', buildOrModifyAsset, $('#airportAssetDetailsModal').data('asset'))">Build</div>
+		  <div class="button upgradeButton" onclick="promptConfirm('Upgrade this Asset?', buildOrModifyAsset, $('#airportAssetDetailsModal').data('asset'))">Upgrade</div>
+		  <div class="button downgradeButton" onclick="promptConfirm('Downgrade this Asset?', downgradeAsset, $('#airportAssetDetailsModal').data('asset'))">Downgrade</div>
 		  <div class="button sellButton" onclick="promptConfirm('Sell this Asset?', sellAsset, $('#airportAssetDetailsModal').data('asset'))">Sell</div>
 	  </div>
   </div>
