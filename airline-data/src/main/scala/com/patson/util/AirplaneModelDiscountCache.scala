@@ -21,6 +21,10 @@ object AirplaneModelDiscountCache {
     simpleCache.get(modelId)
   }
 
+  def invalidateAll() = {
+    simpleCache.invalidateAll()
+  }
+
   class SimpleLoader() extends CacheLoader[Int, List[ModelDiscount]] {
     override def load(modelId : Int) : List[ModelDiscount] = {
       ModelSource.loadModelDiscountsByModelId(modelId)

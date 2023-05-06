@@ -5,7 +5,7 @@ import akka.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import com.patson.model.Airline
 import com.patson.model.notice.{AirlineNotice, NoticeCategory}
 import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
-import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
+import com.patson.util.{AirlineCache, AirplaneModelDiscountCache, AirplaneOwnershipCache, AirportCache}
 import com.typesafe.config.ConfigFactory
 import controllers.{AirlineTutorial, AirportUtil, GooglePhotoUtil, SearchUtil}
 import models.PendingAction
@@ -112,6 +112,7 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
           AirlineCache.invalidateAll()
           AirportCache.invalidateAll()
           AirplaneOwnershipCache.invalidateAll()
+          AirplaneModelDiscountCache.invalidateAll()
           AirportUtil.refreshAirports()
           SearchUtil.refreshAlliances() //as sim might have deleted alliances
           if (bannerEnabled) {
