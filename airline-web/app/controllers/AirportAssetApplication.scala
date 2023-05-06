@@ -165,9 +165,13 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
                 Json.toJson(asset).asInstanceOf[JsObject]
               } else {
                 var ownerResult = Json.toJson(asset)(OwnedAirportAssetWrites).asInstanceOf[JsObject]
-                getRejection(airlineOption.get, asset).foreach { rejection =>
+                getUpgradeRejection(airlineOption.get, asset).foreach { rejection =>
                   ownerResult = ownerResult + ("rejection" -> JsString(rejection))
                 }
+                getDowngradeRejection(airlineOption.get, asset).foreach { rejection =>
+                  ownerResult = ownerResult + ("downgradeRejection" -> JsString(rejection))
+                }
+
                 ownerResult
               }
             //load boost history
@@ -177,7 +181,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
           case None =>
             var result = Json.toJson(asset).asInstanceOf[JsObject]
             airlineOption.foreach { airline =>
-              getRejection(airline, asset).foreach { rejection =>
+              getUpgradeRejection(airline, asset).foreach { rejection =>
                 result = result + ("rejection" -> JsString(rejection))
               }
             }
@@ -193,7 +197,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
    * @param asset
    * @return
    */
-  def getRejection(airline : Airline, asset : AirportAsset) : Option[String] = {
+  def getUpgradeRejection(airline : Airline, asset : AirportAsset) : Option[String] = {
     asset.airline match {
       case Some(owner) =>
         if (owner.id != airline.id) {
@@ -230,6 +234,21 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
         }
     }
   }
+
+
+  def getDowngradeRejection(airline : Airline, asset : AirportAsset) : Option[String] = {
+    val owner = asset.airline.get
+    if (owner.id != airline.id) {
+      Some(s"Your airline does not own ${asset.name}")
+    } else if (asset.status != AirportAssetStatus.COMPLETED) {
+      Some(s"Cannot downgrade while asset is under construction")
+    } else if (asset.level <= 1) {
+      Some(s"Cannot downgrade any further")
+    } else {
+      None
+    }
+  }
+
   def getNameRejection(name : String) : Option[String] = {
     if (name.length() < 1 || name.length() > MAX_NAME_LENGTH) {
       Some("Name should be between 1 - " + MAX_NAME_LENGTH + " characters")
@@ -265,11 +284,40 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
     }
   }
 
+  def downgradeAirportAsset(airlineId : Int, assetId : Int) = AuthenticatedAirline(airlineId) { request =>
+    val airline : Airline = request.user
+    AirportAssetSource.loadAirportAssetByAssetId(assetId) match {
+      case Some(asset) =>
+        asset.airline match {
+          case Some(owner) =>
+            if (owner.id != airline.id) {
+              Forbidden(s"Airline $airline does not own $asset")
+            } else  {
+              getDowngradeRejection(airline, asset) match {
+                case Some(rejection) => BadRequest(s"Rejected: $rejection")
+                case None => //OK
+                  val name = request.body.asInstanceOf[AnyContentAsJson].json.asInstanceOf[JsObject].value("name").as[String]
+                  getNameRejection(name) match {
+                    case Some(nameRejection) => Ok(Json.obj("nameRejection" -> nameRejection))
+                    case None => //OK
+                      val newAsset = asset.levelDown(name)
+                      AirportAssetSource.updateAirportAsset(newAsset)
+                      Ok(Json.toJson(newAsset)(OwnedAirportAssetWrites))
+                  }
+              }
+            }
+          case None =>
+            Forbidden(s"Airline $airline cannot sell blueprint $asset")
+        }
+      case None => NotFound(s"Asset $assetId is not found")
+    }
+  }
+
   def putAirportAsset(airlineId : Int, assetId : Int)= AuthenticatedAirline(airlineId) { request =>
     val airline : Airline = request.user
     AirportAssetSource.loadAirportAssetByAssetId(assetId) match {
       case Some(asset) =>
-        getRejection(airline, asset) match {
+        getUpgradeRejection(airline, asset) match {
           case Some(rejection) => BadRequest(s"Cannot put $asset by $airline : $rejection")
           case None =>
 

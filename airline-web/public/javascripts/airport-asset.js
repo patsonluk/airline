@@ -84,8 +84,12 @@ function showAirportAssets(airport) {
   	});
 }
 
-function buildOrUpgradeAsset(asset) {
-	var url = "airlines/" + activeAirline.id + "/airport-asset/" + asset.id
+function downgradeAsset(asset) {
+    buildOrModifyAsset(asset, true)
+}
+
+function buildOrModifyAsset(asset, downgrade) {
+	var url = "airlines/" + activeAirline.id + (downgrade ? "/airport-asset/downgrade/" : "/airport-asset/") + asset.id
 	var assetData = {
 			"name" : $("#airportAssetDetailsModal .assetNameInput").val(),
 			}
@@ -120,6 +124,7 @@ function buildOrUpgradeAsset(asset) {
         }
 	});
 }
+
 
 function sellAsset(asset) {
 	var url = "airlines/" + activeAirline.id + "/airport-asset/" + asset.id
@@ -233,6 +238,7 @@ function showAssetModal(asset) {
     //hide all action button until the ajax call finishes
     $('#airportAssetDetailsModal .buildButton').hide()
     $('#airportAssetDetailsModal .upgradeButton').hide()
+    $('#airportAssetDetailsModal .downgradeButton').hide()
     $('#airportAssetDetailsModal .sellButton').hide()
 
     var url
@@ -249,6 +255,7 @@ function showAssetModal(asset) {
         success: function(assetDetails) {
             if (owned) {
                 $('#airportAssetDetailsModal .upgradeButton').show()
+                $('#airportAssetDetailsModal .downgradeButton').show()
                 $('#airportAssetDetailsModal .sellButton').show()
             }
             if (!asset.airline) {
@@ -262,6 +269,12 @@ function showAssetModal(asset) {
                 enableButton($('#airportAssetDetailsModal .upgradeButton'))
                 enableButton($('#airportAssetDetailsModal .buildButton'))
             }
+            if (assetDetails.downgradeRejection) {
+                disableButton($('#airportAssetDetailsModal .downgradeButton'), assetDetails.downgradeRejection)
+            } else {
+                enableButton($('#airportAssetDetailsModal .downgradeButton'))
+            }
+
 
             if (assetDetails.boosts && assetDetails.boosts.length > 0) {
                 $('#airportAssetDetailsModal .assetBoosts').empty()
