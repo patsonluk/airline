@@ -39,12 +39,12 @@ object ModelDiscount {
   def getAllCombinedDiscountsByAirlineId(airlineId : Int) : Map[Int, List[ModelDiscount]] = {
     val airlineDiscountByModelId : Map[Int, List[ModelDiscount]] = ModelSource.loadAirlineDiscountsByAirlineId(airlineId).groupBy(_.modelId)
     val supplierDiscountInfoByCategory : Map[Model.Category.Value, PreferredSupplierDiscountInfo] = getPreferredSupplierDiscounts(airlineId)
-    val blanketModelDiscountByModelId = AirplaneModelDiscountCache.getAllModelDiscounts()
+
     AirplaneModelCache.allModels.values.map { model =>
       val discounts = ListBuffer[ModelDiscount]()
       airlineDiscountByModelId.get(model.id).foreach(discounts.appendAll(_))
       getPreferredSupplierDiscountByModelId(supplierDiscountInfoByCategory, model.id).foreach(discounts.append(_))
-      blanketModelDiscountByModelId.get(model.id).foreach(discounts.appendAll(_))
+      discounts.appendAll(AirplaneModelDiscountCache.getModelDiscount(model.id)) //blanket discount
       (model.id, discounts.toList)
     }.toMap
   }

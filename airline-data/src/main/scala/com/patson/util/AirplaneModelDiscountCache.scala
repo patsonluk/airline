@@ -10,12 +10,6 @@ object AirplaneModelDiscountCache {
 
   val simpleCache: LoadingCache[Int, List[ModelDiscount]] = CacheBuilder.newBuilder.maximumSize(1000).build(new SimpleLoader())
 
-  simpleCache.putAll(ModelSource.loadAllModelDiscounts().groupBy(_.modelId).asJava) //load everything once
-
-
-  def getAllModelDiscounts() = {
-    simpleCache.asMap().asScala
-  }
 
   def getModelDiscount(modelId : Int) = {
     simpleCache.get(modelId)
