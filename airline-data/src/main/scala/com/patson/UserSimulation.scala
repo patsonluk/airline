@@ -6,7 +6,7 @@ import com.patson.data._
 import com.patson.model._
 
 object UserSimulation {
-  val LARGE_AIRLINE_PURGE_USER_THRESHOLD = 150 //in days
+  val LARGE_AIRLINE_PURGE_USER_THRESHOLD = 30 //in days
   val SMALL_AIRLINE_PURGE_USER_THRESHOLD = 30 //in days
 
 

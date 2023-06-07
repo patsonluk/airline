@@ -20,7 +20,7 @@ object LinkSimulation {
 
 
   private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
-  private val CREW_UNIT_COST = 12 //for now...
+  private val CREW_UNIT_COST = 20 //for now...
   
   private[this] val VIP_COUNT = 5
 
@@ -338,11 +338,11 @@ object LinkSimulation {
       } else if (star == 2) {
         4
       } else if (star == 3) {
-        8
+        9
       } else if (star == 4) {
-        13
+        16
       } else {
-        20
+        25
       }
 
     val costPerPassenger = BASE_INFLIGHT_COST + durationCostPerHour * link.duration.toDouble / 60
