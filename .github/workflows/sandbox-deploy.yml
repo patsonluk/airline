@@ -45,6 +45,19 @@ jobs:
           username: ${{ secrets.sandbox_user }}
           password: ${{ secrets.sandbox_pass }}
           port: ${{ secrets.sandbox_port }}
+          script_stop: true
           source: "."
           strip_components: 2
           target: "/var/www/sandbox.myfly.club/airline/"
+      - name: Build java, restart server
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.sandbox_host }}
+          username: ${{ secrets.sandbox_user }}
+          key: ${{ secrets.sandbox_pass }}
+          port: ${{ secrets.sandbox_port }}
+          script_stop: true
+          script: |
+            cd /var/www/sandbox.myfly.club/airline/airline-data/
+            killall -9 java
+            ./activator publishLocal
