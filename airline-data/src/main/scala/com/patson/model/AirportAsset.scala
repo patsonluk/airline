@@ -731,9 +731,9 @@ case class AirportHotelAsset(override val blueprint : AirportAssetBlueprint, ove
     override def computeTransitFreqDiscount(arrivalLinkFreq : Int, departureLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
         val minFrequency = Math.min(arrivalLinkFreq,departureLinkFreq)
         var discountPercentage = {
-          if (minFrequency <= 7) { //very helpful
+          if (minFrequency <= 13) { //very helpful
             0.3 + (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.2 //30% - 50% off
-          } else if (minFrequency <= 14) {
+          } else if (minFrequency <= 21) {
             0.2 + (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.1 //20% - 30% off
           } else {
             level * 1.0 / AirportAsset.MAX_LEVEL * 0.1 //<10% off
