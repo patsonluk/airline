@@ -54,7 +54,7 @@ jobs:
         with:
           host: ${{ secrets.sandbox_host }}
           username: ${{ secrets.sandbox_user }}
-          key: ${{ secrets.sandbox_pass }}
+          password: ${{ secrets.sandbox_pass }}
           port: ${{ secrets.sandbox_port }}
           script_stop: true
           script: |
