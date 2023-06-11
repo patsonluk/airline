@@ -79,12 +79,17 @@ sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBo
       val goFactor = { //out of how many people, will there be 1 going to this spot per year
         if (flightType == SHORT_HAUL_DOMESTIC) {
           50
-        } else if (flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_DOMESTIC) {
-          150  
-        } else if (flightType == SHORT_HAUL_INTERNATIONAL) {
+        } else if (flightType == MEDIUM_HAUL_DOMESTIC) {
+          75
+        } else if (flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL) {
           100
+        } else if (flightType == MEDIUM_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL) {
+          150
+        } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL) {
+          500
         } else {
-          250
+          // i.e. ULTRA_LONG_HAUL_INTERCONTINENTAL
+          700
         }
       }
       (fromAirport.population / goFactor / 52 * fromAirport.income / 50000  * strengthFactor).toInt //assume in a city of 50k income out of goFactor people, 1 will visit this spot at full strength (10)
@@ -142,7 +147,7 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
         if (base >= 1) {
           val distanceMultiplier = {
             if (flightType == FlightType.SHORT_HAUL_INTERNATIONAL) {
-              6
+              4
             } else if (flightType ==  FlightType.SHORT_HAUL_INTERCONTINENTAL ||
               flightType ==  FlightType.MEDIUM_HAUL_INTERNATIONAL
             ) {

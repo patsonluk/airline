@@ -106,7 +106,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     getOfficeStaffRequired(from, to, frequency, capacity)
   }
 
-  var loadedFrequencyByClass : LinkClassValues = LinkClassValues.getInstance()
+  val loadedFrequencyByClass = HashMap[LinkClass, Int]()
   var frequencyByClassLoaded = false
 
   /**
@@ -115,8 +115,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   private def recomputeCapacityAndFrequency() = {
     var newCapacity = LinkClassValues.getInstance()
     var newFrequency = 0
-    val newFrequencyByClass = HashMap[LinkClass, Int]()
 
+    LinkClass.values.foreach(loadedFrequencyByClass.put(_, 0))
     inServiceAirplanes.foreach {
       case(airplane, assignment) =>
         newCapacity = newCapacity + (LinkClassValues(airplane.configuration.economyVal, airplane.configuration.businessVal, airplane.configuration.firstVal) * assignment.frequency)
@@ -124,14 +124,13 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 
         LinkClass.values.foreach { linkClass =>
           if (airplane.configuration(linkClass) > 0) {
-            newFrequencyByClass.put(linkClass, newFrequencyByClass.getOrElse(linkClass, 0) + assignment.frequency)
+            loadedFrequencyByClass.put(linkClass, loadedFrequencyByClass(linkClass) + assignment.frequency)
           }
         }
     }
+    frequencyByClassLoaded = true
     capacity = newCapacity
     frequency = newFrequency
-    loadedFrequencyByClass = LinkClassValues.getInstanceByMap(newFrequencyByClass.toMap)
-    frequencyByClassLoaded = true
   }
 
   def futureCapacity() = {
@@ -201,10 +200,10 @@ object Link {
 //  }
   val staffScheme : Map[model.FlightType.Value, StaffSchemeBreakdown] = {
       val basicLookup = Map(
-        SHORT_HAUL_DOMESTIC -> 8,
+        SHORT_HAUL_DOMESTIC -> 4,
         MEDIUM_HAUL_DOMESTIC -> 10,
         LONG_HAUL_DOMESTIC -> 12,
-        SHORT_HAUL_INTERNATIONAL -> 10,
+        SHORT_HAUL_INTERNATIONAL -> 6,
         MEDIUM_HAUL_INTERNATIONAL -> 15,
         LONG_HAUL_INTERNATIONAL -> 20,
         SHORT_HAUL_INTERCONTINENTAL -> 15,
@@ -269,8 +268,8 @@ case class LinkConsideration(link : Transport,
                              modifier : Option[CostModifier],
                              costProvider : CostProvider,
                              var id : Int = 0) extends IdObject {
-    lazy val from : Airport = if (inverted) link.to else link.from
-    lazy val to : Airport = if (inverted) link.from else link.to
+    def from : Airport = if (inverted) link.to else link.from
+    def to : Airport = if (inverted) link.from else link.to
     
     override def toString() : String = {
       s"Consideration [${linkClass} -  Flight $id; ${link.airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); capacity ${link.capacity}; price ${link.price}; cost: $cost]"
