@@ -59,10 +59,4 @@ jobs:
           script_stop: true
           script: |
             cd /var/www/sandbox.myfly.club/airline/airline-data/
-            tmux kill-server
-            killall -9 java
             ./activator publishLocal
-            tmux new -s airline-data
-            ./activator run
-            2
-            exit
