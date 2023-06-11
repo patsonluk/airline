@@ -98,7 +98,7 @@ function updateCustomWallpaperPanel() {
         $('#settingsModal .customWallpaper').show()
         $('#settingsModal .customWallpaper .warning').hide()
 
-        if (activeUser.level > 0) {
+        if (activeUser.level >= 0) {
             wallpaperUploaderObj = $("#settingsModal .customWallpaper .fileuploader").uploadFile({
                         url:"users/" + activeUser.id + "/wallpaper",
                         multiple:false,
