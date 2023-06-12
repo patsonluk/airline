@@ -4,6 +4,7 @@ import java.util.{ArrayList, Collections}
 import com.patson.data.{AirportSource, CountrySource, EventSource}
 import com.patson.model.event.{EventType, Olympics}
 import com.patson.model.{PassengerType, _}
+import com.patson.model.AirportFeatureType.{AirportFeatureType, DOMESTIC_AIRPORT, FINANCIAL_HUB, GATEWAY_AIRPORT, INTERNATIONAL_HUB, ISOLATED_TOWN, OLYMPICS_IN_PROGRESS, OLYMPICS_PREPARATIONS, UNKNOWN, VACATION_HUB}
 
 import java.util.concurrent.ThreadLocalRandom
 import scala.collection.immutable.Map
@@ -55,7 +56,6 @@ object DemandGenerator {
 	  airports.foreach {  fromAirport =>
 	    val demandList = Collections.synchronizedList(new ArrayList[(Airport, (PassengerType.Value, LinkClassValues))]())
 	    airports.par.foreach { toAirport =>
-//	      if (fromAirport != toAirport) {
           val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
           val businessDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.BUSINESS)
           val touristDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.TOURIST)
@@ -66,10 +66,9 @@ object DemandGenerator {
           if (touristDemand.total > 0) {
             demandList.add((toAirport, (PassengerType.TOURIST, touristDemand)))
           }
-//	      }
 	    }
 	    allDemands.add((fromAirport, demandList.asScala.toList))
-    }
+  }
 
     val allDemandsAsScala = allDemands.asScala
 
@@ -165,8 +164,9 @@ object DemandGenerator {
         case MEDIUM_HAUL_DOMESTIC => 8.0
         case LONG_HAUL_DOMESTIC => 7.0
         case SHORT_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL | MEDIUM_HAUL_INTERCONTINENTAL => 0
-        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -1
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -2.25
+        case LONG_HAUL_INTERNATIONAL => -0.5
+        case LONG_HAUL_INTERCONTINENTAL => -.75
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -1.5
       })
       
       
@@ -200,7 +200,7 @@ object DemandGenerator {
         val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType, relationship)
         adjustedDemand += adjustment
       }
-	    
+    	    
       //adjustments : diminished demand for close short routes
       if (adjustedDemand >= 50 && distance < 200) {
         adjustedDemand = 50 + Math.pow(adjustedDemand - 100, 0.4)
@@ -210,7 +210,7 @@ object DemandGenerator {
       val income = fromAirport.income
 
       val firstClassPercentage : Double = 
-        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == SHORT_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_DOMESTIC || flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
+        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
           if (income <= FIRST_CLASS_INCOME_MIN) {
             0 
           } else if (income >= FIRST_CLASS_INCOME_MAX) {
@@ -222,25 +222,31 @@ object DemandGenerator {
          0 
         }
       val businessClassPercentage : Double =
-          if (income <= BUSINESS_CLASS_INCOME_MIN) {
-            0 
-          } else if (income >= BUSINESS_CLASS_INCOME_MAX) {
-            BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) 
-          } else { 
-            BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * (income - BUSINESS_CLASS_INCOME_MIN) / (BUSINESS_CLASS_INCOME_MAX - BUSINESS_CLASS_INCOME_MIN)
-          }
+        if (income <= BUSINESS_CLASS_INCOME_MIN) {
+          0 
+        } else if (income >= BUSINESS_CLASS_INCOME_MAX) {
+          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) 
+        } else { 
+          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * (income - BUSINESS_CLASS_INCOME_MIN) / (BUSINESS_CLASS_INCOME_MAX - BUSINESS_CLASS_INCOME_MIN)
+        }
       var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
       var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
       val economyClassDemand = adjustedDemand.toInt - firstClassDemand - businessClassDemand
-	    
+
       //add extra business and first class for all high population airports to international features
       if (fromAirport.population >= 500000 && distance > 250) { 
         toAirport.getFeatures().foreach { feature =>
-	  if( feature.featureType == INTERNATIONAL_HUB ) {
-	    firstClassDemand += (fromAirport.population / 500000 * feature.strengthFactor).toInt
-	    businessClassDemand += (fromAirport.population / 100000 * feature.strengthFactor).toInt
-	  }
+          if( feature.featureType == AirportFeatureType.INTERNATIONAL_HUB ) {
+            firstClassDemand += (fromAirport.population / 500000 * feature.strengthFactor).toInt
+            businessClassDemand += (fromAirport.population / 100000 * feature.strengthFactor).toInt
+          }
         }
+      }
+      
+      //add extra business and first class demand from lounge for major airports
+      if (fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) { 
+        firstClassDemand = (firstClassDemand * 2.5).toInt
+        businessClassDemand = (businessClassDemand * 2.5).toInt
       }
       
       LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
