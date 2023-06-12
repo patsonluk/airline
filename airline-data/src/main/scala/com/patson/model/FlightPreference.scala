@@ -263,8 +263,8 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
 
   override val qualitySensitivity = 1.0 / 2
   override val loyaltySensitivity = 0
-  override val frequencyThreshold = 3
-  override val frequencySensitivity = 0.1
+  override val frequencyThreshold = 2
+  override val frequencySensitivity = 0.05
   override val flightDurationSensitivity = 0
 
 
@@ -289,6 +289,7 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
   override val frequencyThreshold = 14
   override val frequencySensitivity = 0.6
   override val flightDurationSensitivity = 1.0
+  override val loungeSensitivity : Double = 1
 
   def computeCost(baseCost : Double, link : Transport, linkClass : LinkClass) = {
     val noise = 0.9 + getFlatTopBellRandom(0.3, 0.25)
@@ -326,9 +327,10 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     var perceivedPrice = baseCost
 
-    if (getPreferenceType == ELITE && link.computedQuality() > 80) { //find luxurious flight attractive
-      val discount = 0.4 * (link.computedQuality() - 80) / 20.0
+    if (getPreferenceType == ELITE && link.computedQuality() > 75) { //find luxurious flight attractive
+      val discount = 0.5 * (link.computedQuality() - 75) / 20.0
       perceivedPrice = perceivedPrice * (1 - discount)
+      override val connectionCostRatio = 2.0
     }
 
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
