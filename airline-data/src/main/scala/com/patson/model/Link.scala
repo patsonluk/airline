@@ -178,7 +178,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
 
 object Link {
   val MAX_QUALITY = 100
-  val HIGH_FREQUENCY_THRESHOLD = 14
+  val HIGH_FREQUENCY_THRESHOLD = 28
   val LINK_NEGOTIATION_COOL_DOWN = 6
   def fromId(id : Int) : Link = {
     Link(from = Airport.fromId(0), to = Airport.fromId(0), Airline.fromId(0), price = LinkClassValues.getInstance(), distance = 0, capacity = LinkClassValues.getInstance(), rawQuality = 0, duration = 0, frequency = 0, flightType = FlightType.SHORT_HAUL_DOMESTIC, id = id)
@@ -200,14 +200,14 @@ object Link {
 //  }
   val staffScheme : Map[model.FlightType.Value, StaffSchemeBreakdown] = {
       val basicLookup = Map(
-        SHORT_HAUL_DOMESTIC -> 4,
-        MEDIUM_HAUL_DOMESTIC -> 10,
+        SHORT_HAUL_DOMESTIC -> 0,
+        MEDIUM_HAUL_DOMESTIC -> 5,
         LONG_HAUL_DOMESTIC -> 12,
-        SHORT_HAUL_INTERNATIONAL -> 6,
-        MEDIUM_HAUL_INTERNATIONAL -> 15,
+        SHORT_HAUL_INTERNATIONAL -> 2,
+        MEDIUM_HAUL_INTERNATIONAL -> 10,
         LONG_HAUL_INTERNATIONAL -> 20,
-        SHORT_HAUL_INTERCONTINENTAL -> 15,
-        MEDIUM_HAUL_INTERCONTINENTAL -> 25,
+        SHORT_HAUL_INTERCONTINENTAL -> 6,
+        MEDIUM_HAUL_INTERCONTINENTAL -> 16,
         LONG_HAUL_INTERCONTINENTAL -> 30,
         ULTRA_LONG_HAUL_INTERCONTINENTAL -> 30)
 

@@ -203,7 +203,7 @@ object DemandGenerator {
     	    
       //adjustments : diminished demand for close short routes
       if (adjustedDemand >= 50 && distance < 200) {
-        adjustedDemand = 50 + Math.pow(adjustedDemand - 100, 0.4)
+        adjustedDemand = 50 + Math.pow(adjustedDemand - 100, 0.3)
       }
       
       //compute demand composition. depends on from airport income
@@ -232,21 +232,22 @@ object DemandGenerator {
       var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
       var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
       val economyClassDemand = adjustedDemand.toInt - firstClassDemand - businessClassDemand
-
-      //add extra business and first class for all high population airports to international features
-      if (fromAirport.population >= 500000 && distance > 250) { 
-        toAirport.getFeatures().foreach { feature =>
-          if( feature.featureType == AirportFeatureType.INTERNATIONAL_HUB ) {
-            firstClassDemand += (fromAirport.population / 500000 * feature.strengthFactor).toInt
-            businessClassDemand += (fromAirport.population / 100000 * feature.strengthFactor).toInt
-          }
-        }
-      }
       
       //add extra business and first class demand from lounge for major airports
       if (fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) { 
         firstClassDemand = (firstClassDemand * 2.5).toInt
         businessClassDemand = (businessClassDemand * 2.5).toInt
+      }
+
+      //add extra business and first class for all high population airports to international features
+      //adding later to get around income calculation
+      if (fromAirport.population >= 500000 && distance > 250) { 
+        toAirport.getFeatures().foreach { feature =>
+          if( feature.featureType == AirportFeatureType.INTERNATIONAL_HUB ) {
+            firstClassDemand += (fromAirport.population / 500000 * feature.strengthFactor).toInt
+            businessClassDemand += (fromAirport.population / 200000 * feature.strengthFactor).toInt
+          }
+        }
       }
       
       LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
