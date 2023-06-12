@@ -257,14 +257,16 @@ object NegotiationUtil {
   }
   val getStaffRequired = (link : Link) => {
     Computation.getFlightType(link.from, link.to) match {
-      case SHORT_HAUL_DOMESTIC => 5
-      case LONG_HAUL_DOMESTIC => 8
-      case SHORT_HAUL_INTERNATIONAL => 10
-      case LONG_HAUL_INTERNATIONAL => 12
-      case SHORT_HAUL_INTERCONTINENTAL => 12
-      case MEDIUM_HAUL_INTERCONTINENTAL => 20
-      case LONG_HAUL_INTERCONTINENTAL => 30
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 30
+      case SHORT_HAUL_DOMESTIC => 0,
+      case MEDIUM_HAUL_DOMESTIC => 5,
+      case LONG_HAUL_DOMESTIC => 12,
+      case SHORT_HAUL_INTERNATIONAL => 2,
+      case MEDIUM_HAUL_INTERNATIONAL => 10,
+      case LONG_HAUL_INTERNATIONAL => 20,
+      case SHORT_HAUL_INTERCONTINENTAL => 6,
+      case MEDIUM_HAUL_INTERCONTINENTAL => 16,
+      case LONG_HAUL_INTERCONTINENTAL => 30,
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 40
     }
   }
 

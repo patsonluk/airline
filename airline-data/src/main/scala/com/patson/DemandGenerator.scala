@@ -23,11 +23,9 @@ object DemandGenerator {
 //  implicit val materializer = FlowMaterializer()
   private[this] val FIRST_CLASS_INCOME_MIN = 15000
   private[this] val FIRST_CLASS_INCOME_MAX = 100_000
-  private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.1, PassengerType.TOURIST -> 0.07, PassengerType.OLYMPICS -> 0.03) //max 10% first (Business passenger), 7% first (Tourist)
-  private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
+  private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)  private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
-  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.4, PassengerType.TOURIST -> 0.12, PassengerType.OLYMPICS -> 0.15) //max 40% business (Business passenger), 12% business (Tourist)
-  
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.35, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 35% business (Business passenger), 10% business (Tourist)  
   val MIN_DISTANCE = 50
   
 //  val defaultTotalWorldPower = {
@@ -163,10 +161,10 @@ object DemandGenerator {
         case SHORT_HAUL_DOMESTIC => 4.0 //people would just drive or take other transit
         case MEDIUM_HAUL_DOMESTIC => 8.0
         case LONG_HAUL_DOMESTIC => 7.0
-        case SHORT_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL | MEDIUM_HAUL_INTERCONTINENTAL => 0
-        case LONG_HAUL_INTERNATIONAL => -0.5
-        case LONG_HAUL_INTERCONTINENTAL => -.75
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -1.5
+        case SHORT_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
+        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => -0.5
+        case LONG_HAUL_INTERCONTINENTAL => -1
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -2
       })
       
       
@@ -341,10 +339,10 @@ object DemandGenerator {
       }
     
     for (i <- 0 until budgetTravelerMultiplier) {
-      flightPreferences.append((SimplePreference(homeAirport, 1.2, ECONOMY), 2))
-      flightPreferences.append((SimplePreference(homeAirport, 1.3, ECONOMY), 2)) //quite sensitive to price
-      flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 1)) //very sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 1.3, ECONOMY), 2))
+      flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 2)) //quite sensitive to price
       flightPreferences.append((SimplePreference(homeAirport, 1.5, ECONOMY), 1)) //very sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 1.6, ECONOMY), 1)) //very sensitive to price
     }
     
     flightPreferences.append((SpeedPreference(homeAirport, ECONOMY), 2))
