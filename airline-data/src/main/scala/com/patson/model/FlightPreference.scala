@@ -231,7 +231,7 @@ object FlightPreferenceType extends Enumeration {
   implicit def valueToFlightPreferenceTypeVal(x: Value) = x.asInstanceOf[Val] 
 
   val BUDGET = Val("Budget", "") 
-  val SIMPLE  = Val("Carefree", "")
+  val SIMPLE  = Val("Carefree", "") //disabled
   val SPEED = Val("Swift", "")
   val APPEAL   = Val("Comprehensive", "") 
   val LOYAL   = Val("Brand Conscious", "")
@@ -309,14 +309,10 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
 
 }
 
-case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, override val loungeLevelRequired : Int, loyaltyRatio : Double, id : Int)  extends FlightPreference(homeAirport) {
+case class ElitePreference(homeAirport : Airport, preferredLinkClass : LinkClass, override val loungeLevelRequired : Int)  extends FlightPreference(homeAirport) {
   override val priceSensitivity = preferredLinkClass.priceSensitivity
-  override val qualitySensitivity = getPreferenceType match {
-    case ELITE => 2.0
-    case LOYAL => 1
-    case APPEAL => 1.5
-  }
-  override val loyaltySensitivity = loyaltyRatio
+  override val qualitySensitivity = 2.0 
+  override val loyaltySensitivity = 1.0
   override val frequencyThreshold = 7
   override val frequencySensitivity = 0.2
   override val flightDurationSensitivity = preferredLinkClass match {
@@ -325,46 +321,25 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
     case ECONOMY => 0.25
   }
   override val loungeSensitivity : Double = 1
-  override val connectionCostRatio = getPreferenceType match {
-    case ELITE => 2.0
-    case LOYAL => 0.75
-    case APPEAL => 1.5
-  }
-
+  override val connectionCostRatio = 2.0
 
   def computeCost(baseCost: Double, link : Transport, linkClass : LinkClass) : Double = {
-    //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     var perceivedPrice = baseCost
 
-    if (getPreferenceType == ELITE && link.computedQuality() > 75) { //find luxurious flight attractive
-      val discount = 0.5 * (link.computedQuality() - 75) / 20.0
+    //find luxurious flight attractive
+    if ( link.computedQuality() > 70) {
+      val discount = 0.5 * (link.computedQuality() - 70) / 20.0
       perceivedPrice = perceivedPrice * (1 - discount)
     }
-
-//    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
-    val noise = 0.9 + getFlatTopBellRandom(0.3, 0.25)
-
-    //NOISE?
-    val finalCost = perceivedPrice * noise
     
-    if (finalCost >= 0) {
-      return finalCost  
+    if (perceivedPrice >= 0) {
+      return perceivedPrice  
     } else { //just to play safe - do NOT allow negative cost link
       return 0
     }
   }
 
-  val getPreferenceType = {
-    if (loungeLevelRequired > 0) {
-      ELITE
-    } else {
-      if (loyaltyRatio > 1) {
-        LOYAL
-      } else {
-        APPEAL
-      }
-    }
-  }
+  val getPreferenceType = ELITE
   
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = {
     if (loungeLevelRequired > 0) {
@@ -374,6 +349,42 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
       true
     }
   }
+}
+
+//is the ID being used?
+case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClass, override val loungeLevelRequired : Int, loyaltyRatio : Double, id : Int)  extends FlightPreference(homeAirport) {
+  override val priceSensitivity = preferredLinkClass.priceSensitivity
+  override val qualitySensitivity = 1.25
+  override val loyaltySensitivity = loyaltyRatio
+  override val frequencyThreshold = 7
+  override val frequencySensitivity = 0.2
+  override val flightDurationSensitivity = preferredLinkClass match {
+    case FIRST => 0.55
+    case BUSINESS => 0.4
+    case ECONOMY => 0.25
+  }
+  override val loungeSensitivity : Double = 1
+  override val connectionCostRatio = 1.0
+
+  def computeCost(baseCost: Double, link : Transport, linkClass : LinkClass) : Double = {
+    if (baseCost >= 0) {
+      return baseCost  
+    } else { //just to play safe - do NOT allow negative cost link
+      return 0
+    }
+  }
+
+  val getPreferenceType = {
+   if (loyaltyRatio > 1) {
+      //BRAND
+      LOYAL
+    } else {
+      //COMPREHENSIVE
+      APPEAL
+    }
+  }
+  
+  def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
 }
 
 object AppealPreference {

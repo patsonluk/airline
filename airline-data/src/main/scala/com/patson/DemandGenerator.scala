@@ -340,15 +340,18 @@ object DemandGenerator {
       }
     
     for (i <- 0 until budgetTravelerMultiplier) {
-      flightPreferences.append((SimplePreference(homeAirport, 1.3, ECONOMY), 2))
+      flightPreferences.append((SimplePreference(homeAirport, 1.3, ECONOMY), 3))
       flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 2)) //quite sensitive to price
       flightPreferences.append((SimplePreference(homeAirport, 1.5, ECONOMY), 1)) //very sensitive to price
       flightPreferences.append((SimplePreference(homeAirport, 1.6, ECONOMY), 1)) //very sensitive to price
     }
     
+    //Swift
     flightPreferences.append((SpeedPreference(homeAirport, ECONOMY), 2))
+    //Comprehensive
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 3))
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4))
+    //Brand
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.1), 2))
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.2), 1))
     
@@ -356,19 +359,24 @@ object DemandGenerator {
     //BUSINESS prefs
     for (i <- 0 until 2) { //bit more randomness - set variation per group
       flightPreferences.append((SpeedPreference(homeAirport, BUSINESS), 3))
+      //Comprehensive
       flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0), 2))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1), 2))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 1, loyaltyRatio = 1.1), 1))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 2, loyaltyRatio = 1.1), 1))
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 3, loyaltyRatio = 1.2), 1))
+      //Brand
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 1, loyaltyRatio = 1.2), 2))
+      //Elite
+      flightPreferences.append((ElitePreference(homeAirport, BUSINESS, loungeLevelRequired = 1), 1))
+      flightPreferences.append((ElitePreference(homeAirport, BUSINESS, loungeLevelRequired = 2), 1))
+      flightPreferences.append((ElitePreference(homeAirport, BUSINESS, loungeLevelRequired = 3), 1))
     }
     
     //FIRST prefs 
     flightPreferences.append((SpeedPreference(homeAirport, FIRST), 1))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 0, loyaltyRatio = 1), 2))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 1, loyaltyRatio = 1.1), 1))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 2, loyaltyRatio = 1.1), 1))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 3, loyaltyRatio = 1.2), 1))
+    //Brand
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 2, loyaltyRatio = 1.2), 2))
+    //Elite
+    flightPreferences.append((ElitePreference(homeAirport, FIRST, loungeLevelRequired = 1), 1))
+    flightPreferences.append((ElitePreference(homeAirport, FIRST, loungeLevelRequired = 2), 1))
+    flightPreferences.append((ElitePreference(homeAirport, FIRST, loungeLevelRequired = 3), 1))
     
     
     new FlightPreferencePool(flightPreferences.toList)
