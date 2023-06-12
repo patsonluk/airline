@@ -262,11 +262,9 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
   }
   override val qualitySensitivity = 1.0 / 2
   override val loyaltySensitivity = 0
-  override val frequencyThreshold = 2
-  override val frequencySensitivity = 0.05
+  override val frequencyThreshold = 3
+  override val frequencySensitivity = 0.1
   override val flightDurationSensitivity = 0
-
-
 
   val getPreferenceType = {
     if (priceSensitivity >= 1) {
@@ -282,11 +280,11 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
 }
 
 case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass) extends FlightPreference(homeAirport = homeAirport) {
-  override val priceSensitivity = 0.8
+  override val priceSensitivity = 0.7
   override val qualitySensitivity = 0.75
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 14
-  override val frequencySensitivity = 0.6
+  override val frequencySensitivity = 0.5
   override val flightDurationSensitivity = 1.0
   override val loungeSensitivity : Double = 1
 

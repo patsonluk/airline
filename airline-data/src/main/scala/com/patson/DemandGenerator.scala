@@ -26,7 +26,7 @@ object DemandGenerator {
   private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)  private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
-  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.35, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 35% business (Business passenger), 10% business (Tourist)  
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.4, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 40% business (Business passenger), 10% business (Tourist)  
   val MIN_DISTANCE = 50
   
 //  val defaultTotalWorldPower = {
@@ -178,16 +178,27 @@ object DemandGenerator {
       if (fromAirport.zone == toAirport.zone) {
         if (fromAirport.zone == "AF") {
           adjustedDemand +=  baseDemand * 2
-        } else if (fromAirport.zone == "OC" || fromAirport.zone == "SA") {
+        } else if (fromAirport.zone == "SA") {
           adjustedDemand +=  baseDemand * 1
         } else if (fromAirport.zone == "NA") {
-          adjustedDemand +=  baseDemand * 0.5
+          adjustedDemand += baseDemand * 0.5
         }
+      }
+
+      //they travel a lot
+      if (fromAirport.countryCode == "AU" || fromAirport.countryCode == "NZ") {
+        adjustedDemand += baseDemand * 1
       }
       
       //adjustments : China has very extensive highspeed rail network
       if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN") {
         adjustedDemand *= 0.6
+      }
+
+      //also interconnected by HSR
+      if (fromAirport.countryCode == "FR" || fromAirport.countryCode == "LU" || fromAirport.countryCode == "BE" || fromAirport.countryCode == "NL"
+      && toAirport.countryCode == "FR" || toAirport.countryCode == "LU" || toAirport.countryCode == "BE" || toAirport.countryCode == "NL" ) {
+        adjustedDemand *= 0.5
       }
 
       //adjust by features
@@ -200,7 +211,7 @@ object DemandGenerator {
         adjustedDemand += adjustment
       }
     	    
-      //adjustments : diminished demand for close short routes
+      //adjustments : diminished demand for short routes
       if (adjustedDemand >= 50 && distance < 200) {
         adjustedDemand = 50 + Math.pow(adjustedDemand - 100, 0.3)
       }
@@ -340,9 +351,9 @@ object DemandGenerator {
       }
     
     for (i <- 0 until budgetTravelerMultiplier) {
-      flightPreferences.append((SimplePreference(homeAirport, 1.3, ECONOMY), 3))
-      flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 2)) //quite sensitive to price
-      flightPreferences.append((SimplePreference(homeAirport, 1.5, ECONOMY), 1)) //very sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 1.2, ECONOMY), 3))
+      flightPreferences.append((SimplePreference(homeAirport, 1.3, ECONOMY), 2)) //quite sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 1))
       flightPreferences.append((SimplePreference(homeAirport, 1.6, ECONOMY), 1)) //very sensitive to price
     }
     
