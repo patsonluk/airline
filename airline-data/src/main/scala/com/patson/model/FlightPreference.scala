@@ -165,7 +165,7 @@ abstract class FlightPreference(homeAirport : Airport) {
   //flightDurationMultiplier => how does wait time and speed affect ratio, 0 = no effect, 0.1 = 10%
   val tripDurationAdjustRatio = (link : Transport, linkClass : LinkClass) => {
     //shorter duration flights care much more about flight frequency
-    val frequencyImportance = Math.max(1, 60 * 5 / linkduration) * (frequencySensitivity / 2).toDouble
+    val frequencyImportance = Math.max(1, 60 * 5 / link.duration) * (frequencySensitivity / 2).toDouble
     val frequencyRatioDelta = (frequencyThreshold - 7).toDouble / frequencyThreshold * frequencyImportance
 
     val flightDurationRatioDelta =
