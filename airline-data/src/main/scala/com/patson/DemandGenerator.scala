@@ -24,6 +24,7 @@ object DemandGenerator {
   private[this] val FIRST_CLASS_INCOME_MIN = 15000
   private[this] val FIRST_CLASS_INCOME_MAX = 100_000
   private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)  private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
+  private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.35, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 35% business (Business passenger), 10% business (Tourist)  
   val MIN_DISTANCE = 50
