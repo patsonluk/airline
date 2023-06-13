@@ -544,7 +544,7 @@ object Airport {
   val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
   val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
   val NON_BASE_MAX_SLOT = 70
-  val MIN_RUNWAY_LENGTH = 750
+  val MIN_RUNWAY_LENGTH = 0
 
   import FlightType._
   val qualityExpectationFlightTypeAdjust =
@@ -564,7 +564,7 @@ case class Runway(length : Int, code : String, runwayType : RunwayType.Value, li
 
 object RunwayType extends Enumeration {
     type RunwayType = Value
-    val Asphalt, Concrete, Gravel, Unknown = Value
+    val Asphalt, Concrete, Grass, Bitumen, Clay, Chipseal, Composite, Coral, Rock, Dirt, Hardcore, Laterite, Paved, Pavement, Sand, Sealed, Soil, Tarmac, Turf, Unpaved, Water, Cement, MarstonMat, Grout, Steel, Gravel, Unknown, abandoned, military, old, closed = Value
 }
 
 //case class AssetDiscount(waitTimeDiscount : Double, stopOverDiscount : Double)

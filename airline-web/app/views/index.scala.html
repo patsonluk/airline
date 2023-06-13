@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Airline Club</title>
+    <title>MyFly.Club | A Fork of Airline Club</title>
 <!--   	<meta name="google-signin-client_id" content="526466847284-mmk6qg2bc4su9ihgqippccaha28edn81.apps.googleusercontent.com"> -->
-    <meta name="description" content="A free and open source Airline Management Simulation Game. Realistic simulation of air travel demand between 4k+ airports with virtual passengers making unique travel choices. ">
+    <meta name="description" content="MyFly.Club, a free airline management game. Build your own airline, manage it's profits, create routes to over 4000 airports from a choice of 150+ aircraft.">
     <meta name="keywords" content="Airline Simulation Game,Airline Strategy Game,Airline Management Game,Free Online Game,Open Source">
-	<meta name="author" content="Patson Luk">
+	<meta name="author" content="Paces Creative">
 	<meta name="google-site-verification" content="EyjPyE3kaprSp7umZW58OuLwb-viMRBYx1lUh50ozAk" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -255,12 +255,12 @@
 <!--				</a>-->
 <!--			</div>-->
 			<div class="topBarItem no-highlight" id="discordDiv">
-				<a href="https://discord.gg/NHqamFp8hr"  target="_blank">
+				<a href="https://discord.gg/e6VgGswVep"  target="_blank">
 					<img src='@routes.Assets.versioned("images/buttons/Discord-Logo-Color.png")' style="max-height: 30px; vertical-align: middle;" title="Official Discord">
 				</a>
 			</div>
 			<div class="topBarItem" id="patreonDiv">
-				<a href="https://www.patreon.com/bePatron?u=13283790"  target="_blank">
+				<a href="https://www.patreon.com/myflyclub/"  target="_blank">
 					<img class="desktopOnly" src='@routes.Assets.versioned("images/buttons/become_a_patron_button.png")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
 					<img class="mobileOnly" src='@routes.Assets.versioned("images/buttons/patreon_mark_coral.jpg")' style="max-height: 30px; vertical-align: middle;" title="Become a Patreon to support this project!">
 				</a>
@@ -4448,13 +4448,13 @@
 	  <div class="modal-content" style="width : 520px; max-width : 95vw;">
 <!--		  <span class="close" onclick="closeModal($('#negotiationAnimation'))">&times;</span>-->
 		  <h4 class="modalHeader" style="margin-bottom: 10px; text-align: center;">Negotiation in progress... Success Rate:&nbsp;<span class="successRate"></span>%</h4>
-		  <div class="clipContainer desktopOnly">
+<!--		  <div class="clipContainer desktopOnly">
 		  	<iframe class="clip" width="480" height="270" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 			<div style="float: left;"><input type="checkbox" class="autoplay" onclick="toggleAutoplay()">&nbsp;Autoplay</div>
 			<div style="float: right;" class="animationLabel label"></div>
 		  	<div style="clear: both;"></div>
 		  </div>
-
+-->
 		  <div class="negotiationIcons" style="width: 260px; height: 35px; margin: auto;"></div>
 		  <div class="negotiationDescriptions" style="height: 15px; text-align: center;"></div>
 		  <div class="negotiationBar progressbar" style="margin: auto;">
@@ -5439,7 +5439,7 @@
 
     <script src="@routes.Assets.versioned("javascripts/chat-popup.js")"></script>
 
-    <script src='https://maps.googleapis.com/maps/api/js?v=3.43&key=@configuration.get[String]("google.mapKey")&libraries=geometry,drawing,visualization&callback=initMap'>
+    <script src='https://maps.googleapis.com/maps/api/js?v=weekly&key=@configuration.get[String]("google.mapKey")&libraries=geometry,drawing,visualization&callback=initMap'>
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->
   <script src='/assets/firework/fscreen.js'></script>

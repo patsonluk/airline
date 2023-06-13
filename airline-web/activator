@@ -303,26 +303,6 @@ declare -r activator_user_home_dir="${userhome}/.activator"
 declare -r java_opts_config_home="${activator_user_home_dir}/activatorconfig.txt"
 declare -r java_opts_config_version="${activator_user_home_dir}/${app_version}/activatorconfig.txt"
 
-# Now check to see if it's a good enough version
-declare -r java_version=$("$java_cmd" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-if [[ "$java_version" == "" ]]; then
-  echo
-  echo No java installations was detected.
-  echo Please go to http://www.java.com/getjava/ and download
-  echo
-  exit 1
-elif [[ ! "$java_version" > "1.6" ]]; then
-  echo
-  echo The java installation you have is not up to date
-  echo Activator requires at least version 1.6+, you have
-  echo version $java_version
-  echo
-  echo Please go to http://www.java.com/getjava/ and download
-  echo a valid Java Runtime and install before running Activator.
-  echo
-  exit 1
-fi
-
 # if configuration files exist, prepend their contents to the java args so it can be processed by this runner
 # a "versioned" config trumps one on the top level
 if [[ -f "$java_opts_config_version" ]]; then
