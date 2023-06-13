@@ -309,7 +309,7 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
 case class ElitePreference(homeAirport : Airport, preferredLinkClass : LinkClass, override val loungeLevelRequired : Int)  extends FlightPreference(homeAirport) {
   override val priceSensitivity = 0.6
   override val qualitySensitivity = 2.0
-  override val loyaltySensitivity = 1.0
+  override val loyaltySensitivity = 0
   override val frequencyThreshold = 7
   override val frequencySensitivity = 0.2
   override val flightDurationSensitivity = preferredLinkClass match {
