@@ -4,8 +4,8 @@ import com.patson.util.{AirplaneOwnershipCache, AirplaneOwnershipInfo}
 
 object AirplaneMaintenanceUtil {
   val BASE_MAINTENANCE_FACTOR = 0.4
-  val PER_FAMILY_MAINTENANCE_FACTOR = 0.10
-  val PER_MODEL_MAINTENANCE_FACTOR = 0.03
+  val PER_FAMILY_MAINTENANCE_FACTOR = 0.1
+  val PER_MODEL_MAINTENANCE_FACTOR = 0.02
 
   def getMaintenanceFactor(airlineId : Int) : Double = {
     testFactor.getOrElse(computeMaintenanceFactor(AirplaneOwnershipCache.getOwnershipInfo(airlineId)))
