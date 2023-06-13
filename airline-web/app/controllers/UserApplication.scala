@@ -44,11 +44,6 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
   // then in a controller
   def login = Authenticated { implicit request =>
-    UserSource.updateUserLastActive(request.user)
-    if (request.user.status == UserStatus.INACTIVE) {
-      UserSource.updateUser(request.user.copy(status = UserStatus.ACTIVE))
-    }
-
     var isSuperAdmin = false
     //check if it's super admin switching
     val adminTokenOption = request.session.get("adminToken")
@@ -56,13 +51,18 @@ class UserApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       SessionUtil.getUserId(adminToken).foreach { adminId =>
         UserSource.loadUserById(adminId).foreach { user =>
           isSuperAdmin = user.isSuperAdmin
-          println(s"Admin ${user.userName} is logging in on behave of ${request.user.userName}")
+          println(s"Admin ${user.userName} is logging in on behalf of ${request.user.userName}")
         }
       }
     }
 
     if (!isSuperAdmin) { //do not track if admin is switching, otherwise that would be confusing
       IpSource.saveUserIp(request.user.id, request.remoteAddress)
+
+      UserSource.updateUserLastActive(request.user)
+      if (request.user.status == UserStatus.INACTIVE) {
+        UserSource.updateUser(request.user.copy(status = UserStatus.ACTIVE))
+      }
     }
 
 

@@ -10,15 +10,13 @@ object AirplaneModelDiscountCache {
 
   val simpleCache: LoadingCache[Int, List[ModelDiscount]] = CacheBuilder.newBuilder.maximumSize(1000).build(new SimpleLoader())
 
-  simpleCache.putAll(ModelSource.loadAllModelDiscounts().groupBy(_.modelId).asJava) //load everything once
-
-
-  def getAllModelDiscounts() = {
-    simpleCache.asMap().asScala
-  }
 
   def getModelDiscount(modelId : Int) = {
     simpleCache.get(modelId)
+  }
+
+  def invalidateAll() = {
+    simpleCache.invalidateAll()
   }
 
   class SimpleLoader() extends CacheLoader[Int, List[ModelDiscount]] {
@@ -28,6 +26,7 @@ object AirplaneModelDiscountCache {
   }
 
   def updateModelDiscounts(modelDiscounts : List[ModelDiscount]) = {
+    simpleCache.invalidateAll()
     modelDiscounts.groupBy(_.modelId).foreach {
       case (modelId, discounts) => simpleCache.put(modelId, discounts)
     }

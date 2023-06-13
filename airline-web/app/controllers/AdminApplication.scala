@@ -97,6 +97,17 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
                 removeAirlineModifier(AirlineModifierType.NERFED, targetUser.getAccessibleAirlines())
                 //unbanUserIp(targetUserId)
                 Right(Ok(Json.obj("action" -> action)))
+              case "set-user-level" =>
+                if (!adminUser.isSuperAdmin) {
+                  Left(BadRequest(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the current user is ${adminUser.adminStatus}"))
+                }
+
+                //add the new one
+                val inputJson = request.body.asJson.get.asInstanceOf[JsObject]
+                val level = inputJson("level").as[Int]
+
+                UserSource.updateUser(targetUser.copy(level = level))
+                Right(Ok(Json.obj("action" -> action)))
               case "set-banner-winner" =>
                 if (!adminUser.isSuperAdmin) {
                   Left(BadRequest(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the current user is ${adminUser.adminStatus}"))

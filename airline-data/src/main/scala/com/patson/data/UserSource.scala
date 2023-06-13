@@ -182,10 +182,11 @@ object UserSource {
   def updateUser(user: User) : Boolean = {
     val connection = Meta.getConnection()
     try {    
-        val preparedStatement = connection.prepareStatement("UPDATE " + USER_TABLE + " SET email = ?, status = ? WHERE id = ?")
+        val preparedStatement = connection.prepareStatement("UPDATE " + USER_TABLE + " SET email = ?, status = ?, level = ? WHERE id = ?")
         preparedStatement.setString(1, user.email)
         preparedStatement.setString(2, user.status.toString)
-        preparedStatement.setInt(3, user.id)
+        preparedStatement.setInt(3, user.level)
+        preparedStatement.setInt(4, user.id)
         val updateCount = preparedStatement.executeUpdate()
         
         preparedStatement.close()
