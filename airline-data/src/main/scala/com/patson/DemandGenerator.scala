@@ -23,7 +23,7 @@ object DemandGenerator {
 //  implicit val materializer = FlowMaterializer()
   private[this] val FIRST_CLASS_INCOME_MIN = 15000
   private[this] val FIRST_CLASS_INCOME_MAX = 100_000
-  private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)  private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
+  private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.4, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 40% business (Business passenger), 10% business (Tourist)  
@@ -212,15 +212,15 @@ object DemandGenerator {
       }
     	    
       //adjustments : diminished demand for short routes
-      if (adjustedDemand >= 50 && distance < 200) {
-        adjustedDemand = 50 + Math.pow(adjustedDemand - 100, 0.3)
+      if (adjustedDemand >= 75 && distance < 200) {
+        adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.3)
       }
       
       //compute demand composition. depends on from airport income
       val income = fromAirport.income
 
       val firstClassPercentage : Double = 
-        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
+        if (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
           if (income <= FIRST_CLASS_INCOME_MIN) {
             0 
           } else if (income >= FIRST_CLASS_INCOME_MAX) {
