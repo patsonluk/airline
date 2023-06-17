@@ -16,8 +16,9 @@ Designed & Handcrafted by Zan from ninetofive.me
 /******************************************************************
 	Fonts
 ******************************************************************/
-@import url(https://fonts.googleapis.com/css?family=Open+Sans:300,400,700);								
-									
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+
 /******************************************************************
 	This is the CSS Reset
 ******************************************************************/
@@ -79,7 +80,7 @@ a {
 	General
 ******************************************************************/								
 a {
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	font-family: "Inter", Verdana, Arial, sans-serif;
 	text-decoration: none;
 	font-size: 8pt;
 	color: #616161;
@@ -91,27 +92,27 @@ b {
 	font-weight: bold;
 }
 p {
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	font-family: "Inter", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #848484;*/
 	font-size: 12px;
 }
 h1 {
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	font-family: "Inter", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #454544;*/
 	text-decoration: none;
 	font-size: 30px;
 }
 h2 {
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	font-family: "Inter", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #454544;*/
 	text-decoration: none;
 	font-size: 18px;
 }
 h3 {
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	font-family: "Inter", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #454544;*/
 	text-decoration: none;
@@ -119,24 +120,25 @@ h3 {
 }
 
 h4 {
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	font-family: "Inter", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	text-decoration: none;
-	font: bold 15px Arial, sans-serif;
+	font-weight: bold;
+	font-size: 15px;
 	color: var(--text-color);
     text-shadow: var(--text-shadow);
     margin-bottom: 5px;
 }
 
 h5 {
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	font-family: "Inter", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #454544;*/
 	text-decoration: none;
 	font-size: 13px;
 }
 h6 {
-	font-family: "Open Sans", Verdana, Arial, sans-serif;
+	font-family: "Inter", Verdana, Arial, sans-serif;
 	line-height: 1.6em;
 	/*color: #454544;*/
 	text-decoration: none;
