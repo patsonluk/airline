@@ -375,7 +375,10 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                                       .view.mapValues(_.map(_._2).flatten) //this gives Map[Airline, List[LinkStatistics]]
                                       .mapValues(_.map(_.passengers.toLong).sum).toMap
 
-    val sortedPassengersOnThisAirport : List[(Airline, Long)] = passengersOnThisAirport.toList.sortBy(_._2)
+    val airlineIdsWithBase = airport.getAirlineBases().keys.toList
+    val sortedPassengersOnThisAirport : List[(Airline, Long)] = passengersOnThisAirport.toList.filter{
+      case(airline, _) => airlineIdsWithBase.contains(airline.id) //only count airlines that has a base here
+    }.sortBy(_._2)
     val eligibleAirlines : List[(Airline, Long)] = sortedPassengersOnThisAirport.takeRight(newLounge.getActiveRankingThreshold)
 
     if (levelChange > 0) { //upgrade - has to consider ranking
@@ -387,7 +390,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           sortedPassengersOnThisAirport.reverse.foreach {
             case (rankedAirline, passengers) =>
               if (rankedAirline.id == airline.id) {
-                return Consideration(cost, newLounge, Some("Your passenger volume of " + passengers + " is ranked as number " + currentRank + ". Has to be top " + newLounge.getActiveRankingThreshold + " to build lounge in this airport"))
+                return Consideration(cost, newLounge, Some("Your passenger volume of " + passengers + " is ranked as number " + currentRank + " (of airlines with base here). Has to be top " + newLounge.getActiveRankingThreshold + " to build lounge in this airport"))
               }
               currentRank += 1
           }
