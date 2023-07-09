@@ -1,2 +1,3 @@
 *.gz
 *.DS_Store
+*.metals

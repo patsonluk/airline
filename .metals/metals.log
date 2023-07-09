@@ -47,3 +47,7 @@ WARNING: Unmatched cancel notification for request id 80
 Jul 09, 2023 12:25:00 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
 WARNING: Unmatched cancel notification for request id 199
 2023.07.09 12:25:03 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:25:33 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:27:48 INFO  Shutting down server
+2023.07.09 12:27:48 INFO  shutting down Metals
+2023.07.09 12:27:48 INFO  Exiting server
