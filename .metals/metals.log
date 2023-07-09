@@ -1,0 +1,49 @@
+2023.07.09 12:21:43 INFO  Started: Metals version 0.11.12 in workspace 'C:\Users\kurti\airline' for client Visual Studio Code 1.80.0.
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.license.VersionPrinter printVersionOnly
+INFO: Flyway Community Edition 9.16.3 by Redgate
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.license.VersionPrinter printVersion
+INFO: See release notes here: https://rd.gt/416ObMi
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.license.VersionPrinter printVersion
+INFO: 
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.database.base.BaseDatabaseType createDatabase
+INFO: Database: jdbc:h2:file:C:\Users\kurti\airline\.metals\metals (H2 2.1)
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory allAppliedMigrations
+INFO: Schema history table "PUBLIC"."flyway_schema_history" does not exist yet
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.command.DbValidate validate
+INFO: Successfully validated 4 migrations (execution time 00:00.015s)
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory create
+INFO: Creating Schema History table "PUBLIC"."flyway_schema_history" ...
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.command.DbMigrate migrateGroup
+INFO: Current version of schema "PUBLIC": << Empty Schema >>
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.command.DbMigrate doMigrateGroup
+INFO: Migrating schema "PUBLIC" to version "1 - Create tables"
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.command.DbMigrate doMigrateGroup
+INFO: Migrating schema "PUBLIC" to version "2 - Server discovery"
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.command.DbMigrate doMigrateGroup
+INFO: Migrating schema "PUBLIC" to version "3 - Jar symbols"
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.command.DbMigrate doMigrateGroup
+INFO: Migrating schema "PUBLIC" to version "4 - Fingerprints"
+Jul 09, 2023 12:21:43 PM org.flywaydb.core.internal.command.DbMigrate logSummary
+INFO: Successfully applied 4 migrations to schema "PUBLIC", now at version v4 (execution time 00:00.056s)
+2023.07.09 12:21:43 INFO  time: initialize in 0.57s
+2023.07.09 12:21:46 WARN  Build server is not auto-connectable.
+2023.07.09 12:21:46 WARN  no build tool detected in workspace 'C:\Users\kurti\airline'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2023.07.09 12:21:46 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:21:50 INFO  no build target found for C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala. Using presentation compiler with project's scala-library version: 3.2.2
+2023.07.09 12:21:52 INFO  time: code lens generation in 6.39s
+2023.07.09 12:23:49 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:23:52 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:23:55 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:23:58 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:24:03 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+Jul 09, 2023 12:24:04 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 80
+2023.07.09 12:24:12 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:24:20 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:24:26 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:24:43 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:24:45 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 12:25:00 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+Jul 09, 2023 12:25:00 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 199
+2023.07.09 12:25:03 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
