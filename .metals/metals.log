@@ -51,3 +51,27 @@ WARNING: Unmatched cancel notification for request id 199
 2023.07.09 12:27:48 INFO  Shutting down server
 2023.07.09 12:27:48 INFO  shutting down Metals
 2023.07.09 12:27:48 INFO  Exiting server
+2023.07.09 14:02:25 INFO  Started: Metals version 0.11.12 in workspace 'C:\Users\kurti\airline' for client Visual Studio Code 1.80.0.
+Jul 09, 2023 2:02:25 PM org.flywaydb.core.internal.license.VersionPrinter printVersionOnly
+INFO: Flyway Community Edition 9.16.3 by Redgate
+Jul 09, 2023 2:02:25 PM org.flywaydb.core.internal.license.VersionPrinter printVersion
+INFO: See release notes here: https://rd.gt/416ObMi
+Jul 09, 2023 2:02:25 PM org.flywaydb.core.internal.license.VersionPrinter printVersion
+INFO: 
+Jul 09, 2023 2:02:25 PM org.flywaydb.core.internal.database.base.BaseDatabaseType createDatabase
+INFO: Database: jdbc:h2:file:C:\Users\kurti\airline\.metals\metals (H2 2.1)
+Jul 09, 2023 2:02:25 PM org.flywaydb.core.internal.command.DbValidate validate
+INFO: Successfully validated 4 migrations (execution time 00:00.019s)
+Jul 09, 2023 2:02:25 PM org.flywaydb.core.internal.command.DbMigrate migrateGroup
+INFO: Current version of schema "PUBLIC": 4
+Jul 09, 2023 2:02:25 PM org.flywaydb.core.internal.command.DbMigrate logSummary
+INFO: Schema "PUBLIC" is up to date. No migration necessary.
+2023.07.09 14:02:26 INFO  time: initialize in 0.49s
+2023.07.09 14:02:27 WARN  Build server is not auto-connectable.
+2023.07.09 14:02:27 WARN  no build tool detected in workspace 'C:\Users\kurti\airline'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2023.07.09 14:02:27 WARN  no build target for: C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala
+2023.07.09 14:02:30 INFO  no build target found for C:\Users\kurti\airline\airline-web\app\controllers\NegotiationUtil.scala. Using presentation compiler with project's scala-library version: 3.2.2
+2023.07.09 14:02:33 INFO  time: code lens generation in 6.24s
+2023.07.09 18:50:23 INFO  Shutting down server
+2023.07.09 18:50:23 INFO  shutting down Metals
+2023.07.09 18:50:23 INFO  Exiting server
