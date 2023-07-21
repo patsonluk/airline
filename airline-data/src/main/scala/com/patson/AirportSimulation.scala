@@ -343,8 +343,11 @@ object AirportSimulation {
 
     allAirports.foreach { airport =>
       if (!airport.getLounges().isEmpty) {
+        val airlineIdsWithBase = airport.getAirlineBases().keys.toList
         //println(s"AIRPORT $airport : ${passengersByAirport.get(airport).map(_.toList)}")
-        val airlinesByPassengers : List[(Airline, Int)] = passengersByAirport.get(airport).map(_.toList).getOrElse(List.empty)
+        val airlinesByPassengers : List[(Airline, Int)] = passengersByAirport.get(airport).map(_.toList).getOrElse(List.empty).filter {
+          case (airline, _) => airlineIdsWithBase.contains(airline.id) //only count airlines that has a base here
+        }
 
         val eligibleAirlines = airlinesByPassengers.sortBy(_._2).takeRight(airport.getLounges()(0).getActiveRankingThreshold).map(_._1)
         airport.getLounges().foreach { lounge =>
