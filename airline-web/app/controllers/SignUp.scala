@@ -29,7 +29,7 @@ import play.api.libs.json.JsString
 class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractController(cc) with play.api.i18n.I18nSupport {
   private[this] val recaptchaUrl = "https://www.google.com/recaptcha/api/siteverify"
   private[this] val recaptchaAction = "signup"
-  private[this] val recaptchaSecret = "6Ldno_YjAAAAAGRG1o_eJZQkSQ97TxDHgR9r2_hQ"
+  private[this] val recaptchaSecret = "6LefN0MnAAAAAF58zLqHe7sDsfJ2q7AFUl1FP9ls"
   private[this] val recaptchaScoreThreshold = 0.5
   val MIN_AIRLINE_NAME_LENGTH = 1
   val MAX_AIRLINE_NAME_LENGTH = 50
@@ -114,7 +114,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
       // Form has errors, redisplay it
       errors => BadRequest(html.signup(errors)), { userInput =>
         
-        if (isValidRecaptcha(userInput.recaptchaToken)) {
+        // if (isValidRecaptcha(userInput.recaptchaToken)) {
           // We got a valid User value, display the summary
           val user = User(userInput.username, userInput.email, Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
           UserSource.saveUser(user)
@@ -132,9 +132,9 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
 //          val profile = StartupProfile.profilesById(userInput.profileId)
 //          profile.initializeAirline(newAirline)
           Redirect("/").withCookies(Cookie("sessionActive", "true", httpOnly = false)).withSession("userToken" -> SessionUtil.addUserId(user.id))
-        } else {
-          BadRequest("Recaptcha check failed!")
-        }
+        // } else {
+        //   BadRequest("Recaptcha check failed!")
+        // }
         //Ok(html.index("User " + user.userName + " created! Please log in"))
       }
     )
