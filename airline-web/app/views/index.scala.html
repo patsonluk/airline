@@ -31,6 +31,7 @@
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/emojify/emojify.min.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")'>
+	  <link rel="stylesheet" type="text/css" href='/assets/stylesheets/classic.css' id="cssTheme">
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/mobile.css")'> <!-- this has to be last so it overrides the CSS if mobile-->
 
 
@@ -101,6 +102,7 @@
 	<script src='@routes.Assets.versioned("javascripts/pending-action.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/map-style.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/color-scheme.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/ui-theme.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/color.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/mobile.js")' defer></script>
     <script>
@@ -5334,6 +5336,17 @@
 							  <span class="switch-selection"></span>
 						  </div>
 					  </fieldset>
+				  </div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell">
+					  <h5>UI Theme</h5>
+				  </div>
+				  <div class="cell" style="vertical-align:middle; text-align:center;">
+					<select class="select-css" id="UIThemeSelecct" onchange="changeUITheme($(this).val());" style="margin: auto;">
+					  <option value="classic">Classic</option>
+					  <option value="modern">Modern</option>
+					</select>
 				  </div>
 			  </div>
 			  <div class="table-row">
