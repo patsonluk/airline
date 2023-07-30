@@ -383,3 +383,7 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	display: block !important;
 	position: fixed !important;
 }/**/
+select option {
+	background: var(--background-1);
+	color: var(--color-1)
+}
