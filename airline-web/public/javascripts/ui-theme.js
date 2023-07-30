@@ -17,3 +17,8 @@ function loadTheme() {
 }
 
 loadTheme();
+
+$( document ).ready(function() {
+    // preset the theme option in the dropdown
+    $("option[value=\"" + localStorage.getItem("UITheme") + "\"]").attr("selected", "selected")
+})
