@@ -46,11 +46,11 @@ html[data-theme="dark"] {
 	src: local("Segoe UI Variable"), local("Segoe UI")
 }
 	
-.section, div.modal-content, div#topBar, div.tab-icon, #live-chat header, .chat, input, .gm-style .gm-style-iw-c, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails {
+.section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, .gm-style .gm-style-iw-c, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext {
 	backdrop-filter: var(--backdrop-blur) !important;
 }
 div.section {
-	border-radius: 8px !important;
+	border-radius: 8px;
 }
 /* sections broken with backdrop-filter */
 /* broken tooltips */
@@ -87,7 +87,10 @@ div.button:active:not([class*="disabled"]) {
 	background-color: var(--background-1);
 }
 .gm-style-iw .gm-style-iw-d {
-	overflow: clip !important;
+    overflow: clip !important;
+}
+.gm-style-iw[style*="padding-bottom: 0px"] {
+    padding-bottom: 12px !important
 }
 /**/
 #patreonDiv a img {
@@ -102,7 +105,7 @@ div.button:active:not([class*="disabled"]) {
 }
 #topBar > :last-child {
 	background-color: var(--background-1);
-	position: absolute !important;
+	position: absolute;
 	top: 3px;
 	right: 3px;
 	padding-left: 5px;
@@ -111,7 +114,7 @@ div.button:active:not([class*="disabled"]) {
 }
 #topBar > :first-child {
 	background-color: var(--background-1);
-	position: absolute !important;
+	position: absolute;
 	top: 3px;
 	left: 3px;
 	padding-right: 10px;
@@ -128,7 +131,7 @@ div#topBar {
 	backdrop-filter: none !important;
 }
 #live-chat {
-	left: 50px !important;
+	left: 50px;
 	box-shadow: var(--shadow-1);
 }
 /* disable screen dimming on some modals */
@@ -152,9 +155,13 @@ div#topBar {
 }
 /**/
 /* back button for when you place the google maps man */
-div[jstcache="0"] > div:is([style="z-index: 24601; position: absolute; left: 0px; top: 0px;"], [style="position: absolute; left: 28px; top: 0px;"]) {
+div[jstcache="0"] > div:is([style="z-index: 24601; position: absolute; left: 0px; top: 0px;"]) {
 	top: 50px !important;
 	left: 50px !important
+}
+div[jstcache="0"] > :has(> .gm-iv-address) {
+	top: 50px !important;
+	left: 78px !important;
 }
 #mainContainer {
 	padding-top: 40px;
@@ -166,7 +173,7 @@ div[jstcache="0"] > div:is([style="z-index: 24601; position: absolute; left: 0px
 	color: var(--color-1);
 }
 html[data-theme="dark"] [title="Close"] > span {
-	filter: invert(1) !important
+	filter: invert(1)
 }
 .tooltip .tooltiptext {
 	box-shadow: var(--shadow-1);
@@ -182,9 +189,9 @@ html[data-theme="dark"] [title="Close"] > span {
 	box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.4) inset !important;
 }
 #map .gmnoprint[role="menubar"] {
-	background: var(--background-1) !important;
+	background: var(--background-1);
 	border-radius: 8px;
-	box-shadow: var(--shadow-1) !important;
+	box-shadow: var(--shadow-1);
 }
 /* top-left map type selector */
 .gm-style-mtc > button, .gm-style-mtc {
@@ -228,7 +235,7 @@ input, .select-css {
 html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button img) {
 	filter: invert(1)
 }
-/*==left icons, should be disabled in js or whatever==*/
+/*==left icons, should be disabled in js but i don't really like adding js to 'themes'==*/
 #tabGroup {
 	display: block !important;
 	opacity: 1 !important
@@ -365,7 +372,7 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 		margin-top: 50vh
 	}
 }
-/* Always show map *
+/* Always show map, kinda broken *
 #worldMapCanvas {
 	opacity: 1 !important
 }
