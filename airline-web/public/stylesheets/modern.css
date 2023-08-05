@@ -323,9 +323,10 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	margin-left: 2px !important
 }
 #map .googleMapIcon {
-	position: fixed !important;
-	border-radius: 8px;
-	box-shadow: var(--shadow-2) !important;
+    position: fixed !important;
+    border-radius: 8px;
+    box-shadow: var(--shadow-2) !important;
+    left: 40px !important
 }
 #map #toggleMapHeatmapButton {
 	top: 183px
