@@ -46,7 +46,7 @@ html[data-theme="dark"] {
 	src: local("Segoe UI Variable"), local("Segoe UI")
 }
 	
-.section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, .gm-style .gm-style-iw-c, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext {
+.section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, .gm-style .gm-style-iw-c, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
 	backdrop-filter: var(--backdrop-blur) !important;
 }
 div.section {
@@ -131,7 +131,7 @@ div#topBar {
 	backdrop-filter: none !important;
 }
 #live-chat {
-	left: 50px;
+	left: 50px !important;
 	box-shadow: var(--shadow-1);
 }
 /* disable screen dimming on some modals */
@@ -241,7 +241,15 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	opacity: 1 !important
 }
 .tab-icon {
-	transition: all 0.1s
+    transition: all 0.1s;
+    background: var(--background-1) !important;
+    box-shadow: var(--shadow-1) !important
+}
+.tab-icon:is(.selected, :hover) {
+    background: var(--background-2) !important;
+}
+.tab-icon:hover:active {
+    background: var(--background-3) !important;
 }
 .canvas {
 	padding-left: 40px
@@ -348,30 +356,42 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	border-radius: 8px !important
 }
 /* Mobile */
+/* Mobile */
 .extendedTopBarDetails {
-	position: absolute;
-	z-index: 100000;
-	height: 40px;
+    position: absolute;
+    z-index: 100000;
+    height: 40px;
+    box-shadow: var(--shadow-1)
 }
 #topBar > .mobileOnly {
-	background-color: var(--background-1);
-	border-bottom-right-radius: 6px;
-	height: 40px;
+    background-color: var(--background-1);
+    border-bottom-right-radius: 6px;
+    height: 40px;
+}
+#moreTopBarTab li {
+    border: none !important;
+    box-shadow: var(--shadow-1) !important;
+}
+#map {
+	height: 100% !important;
 }
 @media screen and (max-width: 640px) {
-	#topBar {
-		height: 40px
-	}
-	#topBar > :last-child {
-		top: 0px;
-		right: 0px;
-		border-radius: 0 0 0 6px;
-		padding-block: 5px
-	}
-	#sidePanel {
-		width: calc(100vw - 73px);
-		margin-top: 50vh
-	}
+    #topBar {
+        height: 40px
+    }
+    #topBar > :last-child {
+        top: 0px;
+        right: 0px;
+        border-radius: 0 0 0 6px;
+        padding-block: 5px
+    }
+    #sidePanel {
+        width: calc(100vw - 73px);
+        margin-top: 50vh
+    }
+    #live-chat {
+        left: 0% !important;
+    }
 }
 /* Always show map, kinda broken *
 #worldMapCanvas {
@@ -387,4 +407,30 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 select option {
 	background: var(--background-1);
 	color: var(--color-1)
+}
+/* chat */
+.chat-history ul > :last-child {
+    border-radius: 0 0 6px 6px;
+    box-shadow: var(--shadow-1);
+}
+.chat-history ul > :first-child {
+    border-radius: 6px 6px 0 0
+}
+.chat-history {
+    font-family: Segoe UI, Helvetica, serif
+}
+.ctabs > li {
+    box-shadow: var(--shadow-1) !important;
+    border: none !important;
+    background: var(--background-2) !important
+}
+.ctabs > li.current {
+    background: var(--background-1) !important
+}
+#live-chat header {
+    border: none
+}
+#chat-box {
+    background: var(--background-1);
+    padding-top: 8px;
 }
