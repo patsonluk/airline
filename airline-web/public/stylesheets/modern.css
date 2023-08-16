@@ -34,16 +34,16 @@ html[data-theme="dark"] {
 
 /* fonts */
 @font-face {
-	font-family: "Open Sans";
-	src: local("Segoe UI")
+    font-family: "Open Sans";
+    src: local("Segoe UI"), local("Tahoma")
 }
 @font-face {
-	font-family: "Verdana";
-	src: local("Segoe UI Variable"), local("Segoe UI")
+    font-family: "Verdana";
+    src: local("Segoe UI Variable"), local("Segoe UI"), local("Verdana")
 }
 @font-face {
-	font-family: "Arial";
-	src: local("Segoe UI Variable"), local("Segoe UI")
+    font-family: "Arial";
+    src: local("Segoe UI Variable"), local("Segoe UI"), local("Arial")
 }
 	
 .section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, .gm-style .gm-style-iw-c, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
