@@ -14,7 +14,9 @@ html {
     --input-background: #aaa;
     
     --color-1: #111;
-    
+	
+	--placeholderBlurColorLight: #fff;
+	--placeholderBlurColorDark: #202020;
 }
 html[data-theme="dark"] {
     --modal-background-color: #0003;
