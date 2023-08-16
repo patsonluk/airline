@@ -1,53 +1,56 @@
 html {
-	--shadow-1: 0px 5px 5px 0px rgba(0, 0, 0, 0.3);
-	--shadow-2: 0px 5px 5px 0px rgba(0, 0, 0, 0.5);
-	
-	--backdrop-blur: blur(48px) saturate(1.25);
-	
-	--modal-background-color: #0003;
-	--section-background-image: linear-gradient(#fffa, #fffa);
-	--modal-content-background-image: linear-gradient(#fffa, #fffa);
-	
-	--background-1: #fffa;
-	--background-2: #ccc5;
-	--background-3: #fffc;
-	--input-background: #aaa3;
-	
-	--color-1: #111;
-	
-	--placeholderBlurColorLight: #c0c5d0;
-	--placeholderBlurColorDark: #111518;
+    --shadow-1: 0px 5px 5px 0px rgba(0, 0, 0, 0.3);
+    --shadow-2: 0px 5px 5px 0px rgba(0, 0, 0, 0.5);
+    
+    --backdrop-blur: none;
+    
+    --modal-background-color: #0003;
+    --section-background-image: linear-gradient(#fff, #fff);
+    --modal-content-background-image: linear-gradient(#fff, #fff);
+    
+    --background-1: #fff;
+    --background-2: #ccc;
+    --background-3: #eee;
+    --input-background: #aaa;
+    
+    --color-1: #111;
+    
 }
 html[data-theme="dark"] {
-	--modal-background-color: #0003;
-	--section-background-image: linear-gradient(#111a, #111a);
-	--modal-content-background-image: linear-gradient(#111a, #111a);
-	
-	--background-1: #111a;
-	--background-2: #1115;
-	--background-3: #202020aa;
-	--input-background: #aaa3;
-	
-	--color-1: #ccc;
-	
+    --modal-background-color: #0003;
+    --section-background-image: linear-gradient(#202020, #202020);
+    --modal-content-background-image: linear-gradient(#202020, #202020);
+    
+    --background-1: #202020;
+    --background-2: #2a2a2a;
+    --background-3: #333;
+    --input-background: #aaa3;
+    
+    --color-1: #ccc;
+    
 }
 
 /* fonts */
 @font-face {
-	font-family: "Open Sans";
-	src: local("Segoe UI")
+    font-family: "Open Sans";
+    src: local("Segoe UI"), local("Tahoma")
 }
 @font-face {
-	font-family: "Verdana";
-	src: local("Segoe UI Variable"), local("Segoe UI")
+    font-family: "Verdana";
+    src: local("Segoe UI Variable"), local("Segoe UI"), local("Verdana")
 }
 @font-face {
-	font-family: "Arial";
-	src: local("Segoe UI Variable"), local("Segoe UI")
+    font-family: "Arial";
+    src: local("Segoe UI Variable"), local("Segoe UI"), local("Arial")
 }
 	
 .section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, .gm-style .gm-style-iw-c, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
 	backdrop-filter: var(--backdrop-blur) !important;
+}
+
+.tooltiptext, .label {
+    background-color: var(--background-1) !important;
+    color: var(--color-1) !important
 }
 div.section {
 	border-radius: 8px;
@@ -354,6 +357,9 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	left: 50px !important;
 	box-shadow: var(--shadow-2) !important;
 	border-radius: 8px !important
+}
+div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"] {
+    opacity: 0
 }
 /* Mobile */
 .extendedTopBarDetails {

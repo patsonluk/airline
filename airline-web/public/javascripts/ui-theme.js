@@ -1,4 +1,4 @@
-var themeList = ["classic", "modern"]
+var themeList = ["classic", "modern", "modern-lite"]
 
 function changeUITheme(theme){
 	if (!themeList.includes(theme)) {
