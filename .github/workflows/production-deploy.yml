@@ -47,7 +47,7 @@ jobs:
           port: ${{ secrets.sandbox_port }}
           script_stop: true
           source: "."
-          strip_components: 2
+          strip_components: 0
           target: "/var/www/myfly.club/airline/"
       - name: Build java, restart server
         uses: appleboy/ssh-action@v0.1.10
