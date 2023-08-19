@@ -625,6 +625,12 @@ function highlightLink(linkId, refocus) {
 //	selectedListItem.addClass("selected")
 }
 
+function toHoursAndMinutes(totalMinutes) {
+	const hours = Math.floor(totalMinutes / 60);
+	const minutes = totalMinutes % 60;
+	return { hours, minutes };
+}
+
 function refreshLinkDetails(linkId) {
 	var airlineId = activeAirline.id
 	
@@ -650,6 +656,7 @@ function refreshLinkDetails(linkId) {
 	    	}
 	    	$("#linkCurrentPrice").text(toLinkClassValueString(link.price, "$"))
 	    	$("#linkDistance").text(link.distance + " km (" + link.flightType + ")")
+	    	$("#linkDuration").text(toHoursAndMinutes(link.duration).hours + ":" + toHoursAndMinutes(link.duration).minutes)
 	    	$("#linkQuality").html(getGradeStarsImgs(Math.round(link.computedQuality / 10)) + link.computedQuality)
 	    	$("#linkCurrentCapacity").text(toLinkClassValueString(link.capacity))
 	    	if (link.future) {

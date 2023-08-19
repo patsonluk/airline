@@ -10,6 +10,6 @@ object MainInit extends App {
   GeoDataGenerator.mainFlow()
   AirplaneModelInitializer.mainFlow()
   GenericTransitGenerator.generateGenericTransit()
-  //AirlineGenerator.mainFlow()
+  AirlineGenerator.mainFlow()
  // AirportProfilePicturePatcher.patchProfilePictures()
 }

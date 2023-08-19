@@ -406,31 +406,32 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   def slotFee(airplaneModel : Model, airline : Airline) : Int = {
     val baseSlotFee = size match {
-      case 1 => 50 //small
-      case 2 => 50 //medium
-      case 3 => 80 //large
-      case 4 => 150  //international class
-      case 5 => 250
-      case 6 => 350
-      case _ => 500 //mega airports - not suitable for tiny jets
+      case 1 => 10 //small
+      case 2 => 20 
+      case 3 => 40
+      case 4 => 80 
+      case 5 => 160
+      case 6 => 320
+      case 7 => 480
+      case _ => 640 //mega
     }
 
     import Model.Type._
     val multiplier = airplaneModel.airplaneType match {
       case LIGHT => 1
       case SMALL => 1
-      case REGIONAL => 3
-      case MEDIUM => 8
-      case LARGE => 12
-      case X_LARGE => 15
-      case JUMBO => 18
-      case SUPERSONIC => 12
+      case REGIONAL => 2
+      case MEDIUM => 4
+      case LARGE => 8
+      case X_LARGE => 16
+      case JUMBO => 24
+      case SUPERSONIC => 16
     }
 
     //apply discount if it's a base
     val discount = getAirlineBase(airline.id) match {
       case Some(airlineBase) =>
-        if (airlineBase.headquarter) 0.5 else 0.8 //headquarter 50% off, base 20% off
+        if (airlineBase.headquarter) 0.7 else 0.9 //headquarter 30% off, base 10% off
       case None =>
         1 //no discount
     }
@@ -440,8 +441,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   def landingFee(airplaneModel : Model) : Int = {
     val perSeat =
-      if (size <= 3) {
-        3
+      if (size <= 2) {
+        2
       } else {
         size
       }
@@ -544,7 +545,7 @@ object Airport {
   val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
   val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
   val NON_BASE_MAX_SLOT = 70
-  val MIN_RUNWAY_LENGTH = 0
+  val MIN_RUNWAY_LENGTH = 750
 
   import FlightType._
   val qualityExpectationFlightTypeAdjust =

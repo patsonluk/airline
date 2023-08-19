@@ -1,6 +1,7 @@
 name := """airline-data"""
 
 version := "2.1"
+isSnapshot := true
 
 scalaVersion := "2.13.0"
 

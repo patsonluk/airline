@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} sandbox deploy 🚀
 on:
   push:
     branches:
-      - sandbox
+      - master
 
 jobs:
   build:
@@ -41,24 +41,24 @@ jobs:
       - name: SCP to Contabo
         uses: appleboy/scp-action@master
         with:
-          host: ${{ secrets.sandbox_host }}
-          username: ${{ secrets.sandbox_user }}
-          password: ${{ secrets.sandbox_pass }}
+          host: ${{ secrets.production_host }}
+          username: ${{ secrets.production_user }}
+          password: ${{ secrets.production_pass }}
           port: ${{ secrets.sandbox_port }}
           script_stop: true
           source: "."
           strip_components: 2
-          target: "/var/www/sandbox.myfly.club/airline/"
+          target: "/var/www/myfly.club/airline/"
       - name: Build java, restart server
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.sandbox_host }}
-          username: ${{ secrets.sandbox_user }}
-          password: ${{ secrets.sandbox_pass }}
+          host: ${{ secrets.production_host }}
+          username: ${{ secrets.production_user }}
+          password: ${{ secrets.production_pass }}
           port: ${{ secrets.sandbox_port }}
           script_stop: true
           script: |
-            cd /var/www/sandbox.myfly.club/airline/airline-data/
+            cd /var/www/myfly.club/airline/
             ./activator publishLocal
       # killall -9 java
 

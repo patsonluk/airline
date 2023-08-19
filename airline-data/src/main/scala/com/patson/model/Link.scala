@@ -201,14 +201,14 @@ object Link {
 //  }
   val staffScheme : Map[model.FlightType.Value, StaffSchemeBreakdown] = {
       val basicLookup = Map(
-        SHORT_HAUL_DOMESTIC -> 8,
-        MEDIUM_HAUL_DOMESTIC -> 10,
+        SHORT_HAUL_DOMESTIC -> 0,
+        MEDIUM_HAUL_DOMESTIC -> 5,
         LONG_HAUL_DOMESTIC -> 12,
-        SHORT_HAUL_INTERNATIONAL -> 10,
-        MEDIUM_HAUL_INTERNATIONAL -> 15,
+        SHORT_HAUL_INTERNATIONAL -> 2,
+        MEDIUM_HAUL_INTERNATIONAL -> 10,
         LONG_HAUL_INTERNATIONAL -> 20,
-        SHORT_HAUL_INTERCONTINENTAL -> 15,
-        MEDIUM_HAUL_INTERCONTINENTAL -> 25,
+        SHORT_HAUL_INTERCONTINENTAL -> 6,
+        MEDIUM_HAUL_INTERCONTINENTAL -> 16,
         LONG_HAUL_INTERCONTINENTAL -> 30,
         ULTRA_LONG_HAUL_INTERCONTINENTAL -> 30)
 
@@ -315,10 +315,10 @@ case class CostStoreProvider() extends CostProvider {
 sealed abstract class LinkClass(val code : String, val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val priceSensitivity : Double, val level : Int) {
   def label : String //level for sorting/comparison purpose
 }
-case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 3, priceMultiplier = 9, priceSensitivity = 0.8, level = 3) {
+case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 3, priceMultiplier = 9, priceSensitivity = 0.65, level = 3) {
   override def label = "first"
 }
-case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 2, priceMultiplier = 3, priceSensitivity = 0.9, level = 2) {
+case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 2, priceMultiplier = 3, priceSensitivity = 0.85, level = 2) {
   override def label = "business"
 }
 case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, priceSensitivity = 1, level =1) {
