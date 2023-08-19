@@ -136,20 +136,6 @@ for /f "tokens=3" %%g in ('java -version 2^>^&1 ^| findstr /i "version"') do (
 rem Strips away the " characters
 set JAVA_VERSION=%JAVA_VERSION:"=%
 
-rem TODO Check if there are existing mem settings in JAVA_OPTS/CFG_OPTS and use those instead of the below
-for /f "delims=. tokens=1-3" %%v in ("%JAVA_VERSION%") do (
-    set MAJOR=%%v
-    set MINOR=%%w
-    set BUILD=%%x
-
-    set META_SIZE=-XX:MetaspaceSize=64M -XX:MaxMetaspaceSize=256M
-    if "!MINOR!" LSS "8" (
-      set META_SIZE=-XX:PermSize=64M -XX:MaxPermSize=256M
-    )
-
-    set MEM_OPTS=!META_SIZE!
- )
-
 rem We use the value of the JAVA_OPTS environment variable if defined, rather than the config.
 set _JAVA_OPTS=%JAVA_OPTS%
 if "%_JAVA_OPTS%"=="" set _JAVA_OPTS=%CFG_OPTS%
