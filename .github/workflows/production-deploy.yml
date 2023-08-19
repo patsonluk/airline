@@ -1,5 +1,5 @@
-name: Sandbox Deploy
-run-name: ${{ github.actor }} sandbox deploy 🚀
+name: Production Deploy
+run-name: ${{ github.actor }} prod deploy 🚀
 on:
   push:
     branches:
@@ -48,7 +48,7 @@ jobs:
           script_stop: true
           source: "."
           strip_components: 0
-          target: "/var/www/myfly.club/airline/"
+          target: "/var/www/myfly.club/airline_v2.2/"
       - name: Build java, restart server
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -58,7 +58,7 @@ jobs:
           port: ${{ secrets.sandbox_port }}
           script_stop: true
           script: |
-            cd /var/www/myfly.club/airline/
+            cd /var/www/myfly.club/airline_v2.2/
             ./activator publishLocal
       # killall -9 java
 
