@@ -66,7 +66,7 @@ function loadCurrentAirlineMemberDetails() {
     		}
     		
     		if (alliance.status == 'Forming') {
-				$("#currentAirlineMemberDetails .allianceStatus").text(alliance.status + " - need 3 approved members")
+				$("#currentAirlineMemberDetails .allianceStatus").text(alliance.status + " - need 2 approved members")
 			} else {
 				$("#currentAirlineMemberDetails .allianceStatus").text(alliance.status)
 			}

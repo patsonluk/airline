@@ -1,6 +1,6 @@
 package com.patson.model.airplane
 
-import com.patson.model.{AbstractLinkClassValues, Airline}
+import com.patson.model.{AbstractLinkClassValues, Airline, Link}
 
 case class AirplaneConfiguration(economyVal : Int, businessVal : Int, firstVal : Int, airline : Airline, model : Model, isDefault : Boolean, var id : Int = 0) extends AbstractLinkClassValues(economyVal, businessVal, firstVal) {
 }
@@ -8,5 +8,6 @@ case class AirplaneConfiguration(economyVal : Int, businessVal : Int, firstVal :
 object AirplaneConfiguration {
   val empty = AirplaneConfiguration(0, 0, 0, Airline.fromId(0), Model.fromId(0), true)
   val default : ((Airline, Model) => AirplaneConfiguration) = (airline, model) => AirplaneConfiguration(economyVal = model.capacity, 0 ,0, airline, model, true)
+  val legacy :  ((Airline, Model) => AirplaneConfiguration) = (airline, model) => AirplaneConfiguration(economyVal = model.capacity - (30 * 2.5 + 8 * 6).toInt, 30, 6, airline, model, true)
   val MAX_CONFIGURATION_TEMPLATE_COUNT = 5 //per model and airline
 }

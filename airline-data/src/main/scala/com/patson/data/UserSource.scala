@@ -226,11 +226,11 @@ object UserSource {
     }        
   }
 
-  def deleteGeneratedUsers(fromId : Int) = {
+  def deleteGeneratedUsers() = {
     val connection = Meta.getConnection()
     try {    
-        val preparedStatement = connection.prepareStatement("DELETE FROM " + USER_TABLE + " WHERE id >= ?")
-        preparedStatement.setInt(1, fromId)
+        val preparedStatement = connection.prepareStatement("DELETE FROM " + USER_TABLE + " WHERE email = ?")
+        preparedStatement.setString(1, "bot")
         val updateCount = preparedStatement.executeUpdate()
         
         preparedStatement.close()

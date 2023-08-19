@@ -565,7 +565,7 @@ case class Runway(length : Int, code : String, runwayType : RunwayType.Value, li
 
 object RunwayType extends Enumeration {
     type RunwayType = Value
-    val Asphalt, Concrete, Gravel, Unknown = Value
+    val Asphalt, Concrete, Grass, Bitumen, Clay, Chipseal, Composite, Coral, Rock, Dirt, Hardcore, Laterite, Paved, Pavement, Sand, Sealed, Soil, Tarmac, Turf, Unpaved, Water, Cement, MarstonMat, Grout, Steel, Gravel, Unknown, abandoned, military, old, closed = Value
 }
 
 //case class AssetDiscount(waitTimeDiscount : Double, stopOverDiscount : Double)

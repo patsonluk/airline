@@ -27,11 +27,14 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
     assignDefaultConfiguration()
   }
 
-  def assignDefaultConfiguration() = {
+  def assignDefaultConfiguration(default: Boolean = true) = {
     val configurationOptions = AirplaneSource.loadAirplaneConfigurationsByCriteria(List(("airline", owner.id), ("model", model.id)))
     val pickedConfiguration =
       if (configurationOptions.isEmpty) { //create one for this airline
-        val newConfiguration = AirplaneConfiguration.default(owner, model)
+        val newConfiguration = default match {
+          case true => AirplaneConfiguration.default(owner, model)
+          case false => AirplaneConfiguration.legacy(owner, model)
+        }
         AirplaneSource.saveAirplaneConfigurations(List(newConfiguration))
         newConfiguration
       } else {

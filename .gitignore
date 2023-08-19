@@ -1,3 +1,6 @@
 *.gz
 *.DS_Store
 *.metals
+*.scala-build
+.vscode
+.idea
