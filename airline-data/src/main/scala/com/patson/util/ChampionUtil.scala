@@ -86,7 +86,7 @@ object ChampionUtil {
         case GATEWAY_AIRPORT => 3
         case INTERNATIONAL_HUB => feature.strengthFactor * 25
         case FINANCIAL_HUB => feature.strengthFactor * 15
-        case VACATION_HUB => feature.strengthFactor * 10
+        case VACATION_HUB => feature.strengthFactor * 15
         case _ => 0
       }
 
