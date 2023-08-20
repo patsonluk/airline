@@ -26,7 +26,7 @@ object DemandGenerator {
   private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
-  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.4, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 40% business (Business passenger), 10% business (Tourist)  
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.3, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
   val MIN_DISTANCE = 50
   
 //  val defaultTotalWorldPower = {
@@ -160,12 +160,13 @@ object DemandGenerator {
       //bonus for domestic and short-haul flight
       adjustedDemand += baseDemand * (flightType match {
         case SHORT_HAUL_DOMESTIC => 4.0 //people would just drive or take other transit
-        case MEDIUM_HAUL_DOMESTIC => 8.0
+        case MEDIUM_HAUL_DOMESTIC => 9.0
         case LONG_HAUL_DOMESTIC => 7.0
-        case SHORT_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
+        case SHORT_HAUL_INTERNATIONAL => 2.0
+        case MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
         case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => -0.5
         case LONG_HAUL_INTERCONTINENTAL => -1
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -2
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -1.5
       })
       
       
@@ -241,7 +242,7 @@ object DemandGenerator {
         }
       var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
       var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
-      val economyClassDemand = adjustedDemand.toInt - firstClassDemand - businessClassDemand
+      val economyClassDemand = (adjustedDemand - firstClassDemand - businessClassDemand).toInt
       
       //add extra business and first class demand from lounge for major airports
       if (fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) { 
