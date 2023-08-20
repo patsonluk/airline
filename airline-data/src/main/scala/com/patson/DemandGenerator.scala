@@ -168,7 +168,10 @@ object DemandGenerator {
         case LONG_HAUL_INTERCONTINENTAL => -1
         case ULTRA_LONG_HAUL_INTERCONTINENTAL => -1.5
       })
-      
+
+      if( adjustedDemand < 0) {
+        adjustedDemand = 0
+      }
       
       //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
       if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
