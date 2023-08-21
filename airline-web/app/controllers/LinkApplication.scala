@@ -330,9 +330,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       return BadRequest("Requested capacity exceed the allowed limit, invalid configuration!")
     }
 
-    if (incomingLink.from.id == incomingLink.to.id) {
-      return BadRequest("Same from and to airport!")
-    }
+    // if (incomingLink.from.id == incomingLink.to.id) {
+    //   return BadRequest("Same from and to airport!")
+    // }
     //validate price
     if (incomingLink.price(ECONOMY) < 0 ||
          incomingLink.price(BUSINESS) < 0 ||
@@ -495,7 +495,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val existingStaffRequired = existingLinks.map(_.getFutureOfficeStaffRequired).sum
         val newStaffRequired = existingStaffRequired - existingListOption.map(_.getFutureOfficeStaffRequired).getOrElse(0) + staffRequiredByThisLink
         val extraCompensation = base.getOvertimeCompensation(newStaffRequired) - base.getOvertimeCompensation(existingStaffRequired)
-        if (extraCompensation > 0) { //then we should prompt warning of over limit
+        if( airline.isGenerated ) {
+          0
+        } else if (extraCompensation > 0) { //then we should prompt warning of over limit
           extraCompensation
         } else {
           0
