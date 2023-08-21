@@ -90,7 +90,7 @@ object EventSimulation {
 
   val MAX_CANDIDATES_COUNT = 6
   val CANDIDATE_MIN_SIZE = 4
-  val CANDIDATE_MIN_POPULATION = 500000
+  val CANDIDATE_MIN_POPULATION = 250000
 
   def selectCandidates() : List[Airport] = {
     selectCandidates(AirportSource.loadAllAirports())

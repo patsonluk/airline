@@ -123,11 +123,11 @@ object Computation {
         LONG_HAUL_INTERNATIONAL
       }
     } else {
-      if (distance <= 2000) {
+      if (distance <= 2500) {
         SHORT_HAUL_INTERCONTINENTAL
       } else if (distance <= 5000) {
         MEDIUM_HAUL_INTERCONTINENTAL
-      } else if (distance <= 12000) {
+      } else if (distance <= 10000) {
         LONG_HAUL_INTERCONTINENTAL
       } else {
         ULTRA_LONG_HAUL_INTERCONTINENTAL

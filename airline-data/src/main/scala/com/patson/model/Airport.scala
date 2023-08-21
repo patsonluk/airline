@@ -412,8 +412,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case 4 => 80 
       case 5 => 160
       case 6 => 320
-      case 7 => 480
-      case _ => 640 //mega
+      case 7 => 640
+      case _ => 800 //mega
     }
 
     import Model.Type._
@@ -424,7 +424,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
       case MEDIUM => 4
       case LARGE => 8
       case X_LARGE => 16
-      case JUMBO => 24
+      case JUMBO => 32
       case SUPERSONIC => 16
     }
 

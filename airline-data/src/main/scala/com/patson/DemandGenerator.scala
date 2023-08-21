@@ -159,19 +159,15 @@ object DemandGenerator {
       
       //bonus for domestic and short-haul flight
       adjustedDemand += baseDemand * (flightType match {
-        case SHORT_HAUL_DOMESTIC => 4.0 //people would just drive or take other transit
+        case SHORT_HAUL_DOMESTIC => 7.0
         case MEDIUM_HAUL_DOMESTIC => 9.0
         case LONG_HAUL_DOMESTIC => 7.0
-        case SHORT_HAUL_INTERNATIONAL => 2.0
+        case SHORT_HAUL_INTERNATIONAL => 1.5
         case MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
-        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => -0.5
-        case LONG_HAUL_INTERCONTINENTAL => -1
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -1.5
+        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => -0.75
+        case LONG_HAUL_INTERCONTINENTAL => -1.4
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -2.5
       })
-
-      if( adjustedDemand < 0) {
-        adjustedDemand = 0
-      }
       
       //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
       if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
@@ -202,7 +198,13 @@ object DemandGenerator {
       //also interconnected by HSR
       if (fromAirport.countryCode == "FR" || fromAirport.countryCode == "LU" || fromAirport.countryCode == "BE" || fromAirport.countryCode == "NL"
       && toAirport.countryCode == "FR" || toAirport.countryCode == "LU" || toAirport.countryCode == "BE" || toAirport.countryCode == "NL" ) {
-        adjustedDemand *= 0.5
+        adjustedDemand *= 0.4
+      }
+      if (fromAirport.countryCode == "IT" && toAirport.countryCode == "IT" && distance < 600) {
+        adjustedDemand *= 0.6
+      }
+      if (fromAirport.countryCode == "ES" && toAirport.countryCode == "ES" && distance < 600) {
+        adjustedDemand *= 0.6
       }
 
       //adjust by features
@@ -216,8 +218,15 @@ object DemandGenerator {
       }
     	    
       //adjustments : diminished demand for short routes
-      if (adjustedDemand >= 75 && distance < 200) {
+      if (adjustedDemand >= 75 && distance < 275) {
+        adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.6)
+      }
+      if (adjustedDemand >= 75 && distance < 125) {
         adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.3)
+      }
+
+      if( adjustedDemand < 0) {
+        adjustedDemand = 0
       }
       
       //compute demand composition. depends on from airport income
