@@ -42,7 +42,6 @@ object AirlineGenerator extends App {
   def deleteAirlines() : Unit = {
     println("Deleting airlines...")
     UserSource.deleteGeneratedUsers()
-    AirportCache.invalidateAll()
     UserCache.invalidateAll()
     AirlineCache.invalidateAll()
     AirlineSource.deleteAirlinesByCriteria(List(("is_generated", true)))
@@ -65,14 +64,14 @@ object AirlineGenerator extends App {
       Authentication.createUserSecret(baseAirport.iata, "gidding")
       
       val newAirline = Airline("Rat Wings " + baseAirport.iata, isGenerated = true)
-      newAirline.setBalance(100000000)
+      newAirline.setBalance(1000000000)
       newAirline.setMaintenanceQuality(50)
       newAirline.setTargetServiceQuality(49)
       newAirline.setCurrentServiceQuality(70)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
       
-      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 10, 1, true)
+      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 9, 1, true)
       
       AirlineSource.saveAirlines(List(newAirline))
       
@@ -85,9 +84,9 @@ object AirlineGenerator extends App {
       println(i + " generated user " + user.userName)
                   
       //generate Local Links
-      generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 150, 24, modelsShort, true, 60)
+      generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 150, 22, modelsShort, true, 60)
       //generate Inter-zone links
-      generateLinks(newAirline, baseAirport, airports.filter { airport => airport.zone != baseAirport.zone }, 50, 5, modelsLong, false, 80)
+      generateLinks(newAirline, baseAirport, airports.filter { airport => airport.zone != baseAirport.zone }, 50, 4, modelsLong, false, 80)
     }
     
     Patchers.patchFlightNumber()
@@ -112,14 +111,14 @@ object AirlineGenerator extends App {
       Authentication.createUserSecret("K" + baseAirport.iata, "gidding")
       
       val newAirline = Airline("Koala Air " + baseAirport.countryCode, isGenerated = true)
-      newAirline.setBalance(100000000)
+      newAirline.setBalance(200000000)
       newAirline.setMaintenanceQuality(55)
       newAirline.setTargetServiceQuality(55)
       newAirline.setCurrentServiceQuality(70)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
       
-      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 10, 1, true)
+      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 8, 1, true)
       
       AirlineSource.saveAirlines(List(newAirline))
       
@@ -132,9 +131,9 @@ object AirlineGenerator extends App {
       println(i + " generated user " + user.userName)
                   
       //generate Local Links
-      generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 20, 5, models, false, 60)
+      generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 20, 7, models, false, 60)
       //generate Inter-zone links
-      generateLinks(newAirline, baseAirport, topAirports.filter { airport => airport.zone != baseAirport.zone }, 70, 12, models, false, 80)
+      generateLinks(newAirline, baseAirport, topAirports.filter { airport => airport.zone != baseAirport.zone }, 70, 15, models, false, 80)
     }
     
     Patchers.patchFlightNumber()
@@ -155,14 +154,14 @@ object AirlineGenerator extends App {
       Authentication.createUserSecret("A" + baseAirport.iata, "gidding")
       
       val newAirline = Airline("Ajwaa Airlines " + baseAirport.countryCode, isGenerated = true)
-      newAirline.setBalance(100000000)
+      newAirline.setBalance(200000000)
       newAirline.setMaintenanceQuality(55)
       newAirline.setTargetServiceQuality(55)
       newAirline.setCurrentServiceQuality(70)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
       
-      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 9, 1, true)
+      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 8, 1, true)
       
       AirlineSource.saveAirlines(List(newAirline))
       
@@ -175,7 +174,7 @@ object AirlineGenerator extends App {
       println(i + " generated user " + user.userName)
                   
       //generate Local Links
-      generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 100, 35, models, false, 40)
+      generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 100, 37, models, false, 40)
       //generate Inter-zone links
       generateLinks(newAirline, baseAirport, topAirports.filter { airport => airport.zone != baseAirport.zone }, 10, 2, models, false, 60)
     }

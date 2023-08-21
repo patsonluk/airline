@@ -75,7 +75,7 @@ object AllianceEvent extends Enumeration {
 }
 
 object Alliance {
-  val MAX_MEMBER_COUNT = 6
+  val MAX_MEMBER_COUNT = 8
   val ESTABLISH_MIN_MEMBER_COUNT = 2
 
   val getReputationBonus: (Int => Double) = { (ranking: Int) =>
