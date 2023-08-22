@@ -164,7 +164,7 @@ object DemandGenerator {
         case LONG_HAUL_DOMESTIC => 7.0
         case SHORT_HAUL_INTERNATIONAL => 1.5
         case MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
-        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => -0.75
+        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => -1.1
         case LONG_HAUL_INTERCONTINENTAL => -1.4
         case ULTRA_LONG_HAUL_INTERCONTINENTAL => -2.5
       })
@@ -190,21 +190,29 @@ object DemandGenerator {
         adjustedDemand += baseDemand * 1
       }
       
-      //adjustments : China has very extensive highspeed rail network
-      if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN") {
+      //adjustments : China has very extensive highspeed rail network (1100km is Beijing to Shanghai)
+      if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN" && distance < 1100) {
         adjustedDemand *= 0.6
       }
-
-      //also interconnected by HSR
-      if (fromAirport.countryCode == "FR" || fromAirport.countryCode == "LU" || fromAirport.countryCode == "BE" || fromAirport.countryCode == "NL"
-      && toAirport.countryCode == "FR" || toAirport.countryCode == "LU" || toAirport.countryCode == "BE" || toAirport.countryCode == "NL" ) {
+      //also interconnected by HSR / intercity rail
+      if (fromAirport == "FR" || fromAirport == "LU" || fromAirport == "BE" || fromAirport == "NL" || fromAirport == "CH"){
+        if (toAirport == "FR" || toAirport == "LU" || toAirport == "BE" || toAirport == "NL" || toAirport == "CH"){
+          adjustedDemand *= 0.3
+        }        
+      }
+      if (fromAirport == "DE" || fromAirport == "AT" || fromAirport == "CZ" || fromAirport == "NL" || fromAirport == "CH"){
+        if (toAirport == "DE" || toAirport == "AT" || toAirport == "CZ" || toAirport == "NL" || toAirport == "CH"){
+          adjustedDemand *= 0.5
+        }        
+      }
+      if (fromAirport.countryCode == "IT" && toAirport.countryCode == "IT" && distance < 500) {
+        adjustedDemand *= 0.2
+      }
+      if (fromAirport.countryCode == "ES" && toAirport.countryCode == "ES" && distance < 500) {
+        adjustedDemand *= 0.2
+      }
+      if (fromAirport.countryCode == "JP" && toAirport.countryCode == "JP" && distance < 500) {
         adjustedDemand *= 0.4
-      }
-      if (fromAirport.countryCode == "IT" && toAirport.countryCode == "IT" && distance < 600) {
-        adjustedDemand *= 0.6
-      }
-      if (fromAirport.countryCode == "ES" && toAirport.countryCode == "ES" && distance < 600) {
-        adjustedDemand *= 0.6
       }
 
       //adjust by features
@@ -217,11 +225,11 @@ object DemandGenerator {
         adjustedDemand += adjustment
       }
     	    
-      //adjustments : diminished demand for short routes
-      if (adjustedDemand >= 75 && distance < 275) {
+      //adjustments : diminished demand for short routes (290 so LGA-BOS works haha)
+      if (adjustedDemand >= 75 && distance < 290) {
         adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.6)
       }
-      if (adjustedDemand >= 75 && distance < 125) {
+      if (adjustedDemand >= 75 && distance < 150) {
         adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.3)
       }
 
