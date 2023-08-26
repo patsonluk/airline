@@ -75,6 +75,7 @@ GET      /airlines/:airlineId/link-related-event-history/:linkId		controllers.Li
 GET      /airlines/:airlineId/link-related-rival-history/:linkId		controllers.LinkApplication.getLinkRelatedRivalHistory(airlineId: Int, linkId: Int, cycleCount : Int ?= 1)
 PUT		 /airlines/:airlineId/target-service-quality			controllers.LinkApplication.setTargetServiceQuality(airlineId: Int)
 GET		 /airlines/:airlineId/service-funding-projection		    controllers.AirlineApplication.getServiceFundingProjection(airlineId: Int)
+PUT      /airlines/:airlineId/minimum-renewal-balance           controllers.LinkApplication.setMinimumRenewalBalance(airlineId: Int)
 GET		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.getAirplaneRenewal(airlineId: Int)
 PUT		 /airlines/:airlineId/airplane-renewal			controllers.AirlineApplication.updateAirplaneRenewal(airlineId: Int)
 PUT		 /airlines/:airlineId/maintenanceQuality			controllers.LinkApplication.updateMaintenanceQuality(airlineId: Int)

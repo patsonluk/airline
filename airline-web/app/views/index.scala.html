@@ -1902,6 +1902,20 @@
                                             </span>
                                         </div>
                                     </div>
+									<div class="table-row">
+										<div class="cell label">Minimum Renewal Balance:</div>
+										<div class="cell value">
+											<span id="minimumRenewalBalanceDisplaySpan">
+												<span id="minimumRenewalBalance"></span>
+												<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editMinimumRenewalBalance()"/>
+											</span>
+											<span id="minimumRenewalBalanceInputSpan" style="display:none;">
+												Minimum Renewal Balance&nbsp;<input id="minimumRenewalBalanceInput" type="text" maxlength="12" size="2" onkeyup="checkEditMinimumRenewalBalanceInput($(this).val())"/>
+												<span class="warning" style="display: none;">Value must be a positive integer less than 999,999,999,999</span>
+												<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setMinimumRenewalBalance($('#minimumRenewalBalanceInput').val())"/>
+										</span>
+										</div>
+									</div>
                                     <div class="button" onclick="promptConfirm('Reset all tutorials?', setSkipTutorial, false)">Reset Tutorials</div>
 
                                 </div>

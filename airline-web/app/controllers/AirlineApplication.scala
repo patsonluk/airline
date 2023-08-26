@@ -195,6 +195,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        val fleetSize = airplanes.length
        val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
        val assets = Bank.getAssets(airlineId)
+       val minimumRenewalBalance = airline.getMinimumRenewalBalance()
 
        airlineJson =
          airlineJson +
@@ -202,7 +203,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
            ("destinations"-> JsNumber(destinations)) +
            ("fleetSize"-> JsNumber(fleetSize)) +
            ("fleetAge"-> JsNumber(fleetAge)) +
-           ("assets"-> JsNumber(assets))
+           ("assets"-> JsNumber(assets)) +
+           ("minimumRenewalBalance" -> JsNumber(minimumRenewalBalance))
 
        val cooldown = getRenameCooldown(airline)
        if (getRenameCooldown(airline) > 0) {

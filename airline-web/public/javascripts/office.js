@@ -58,6 +58,7 @@ function showOfficeCanvas() {
 	updateChampionedCountriesDetails()
 	updateChampionedAirportsDetails()
 	updateServiceFundingDetails()
+	updateMinimumRenewalBalanceDetails()
 	updateAirplaneRenewalDetails()
 	updateAirlineBases()
 	updateMaintenanceLevelDetails()
@@ -259,6 +260,9 @@ function updateAirlineDetails() {
 	    	$('#fleetAge').text(getYearMonthText(airline.fleetAge))
 	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
 	    	$('#officeCanvas .linkCount').text(airline.linkCount)
+			$('#minimumRenewalBalance').text('$' + commaSeparateNumber(airline.minimumRenewalBalance))
+			console.log("OVER HERE")
+			console.log(airline.minimumRenewalBalance)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -506,6 +510,50 @@ function checkTargetServiceQualityInput(input) {
             return true;
         }
     }
+}
+
+function setMinimumRenewalBalance(minimumRenewalBalance) {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/minimum-renewal-balance"
+	if (!checkEditMinimumRenewalBalanceInput(minimumRenewalBalance)) { //if invalid, then return
+	    return;
+	}
+
+    var data = { "minimumRenewalBalance" : parseInt(minimumRenewalBalance) }
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	activeAirline.minimumRenewalBalance = result.minimumRenewalBalance
+	    	updateMinimumRenewalBalanceDetails()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function checkEditMinimumRenewalBalanceInput(input) {
+
+	var value = parseInt(input)
+
+	if (Number.isNaN(value)) {
+		$("#minimumRenewalBalanceInputSpan .warning").show()
+		return false;
+	} else {
+		if (value > 999999999999 || value < 0) {
+            $("#minimumRenewalBalanceInputSpan .warning").show()
+            return false;
+		} else {
+            $("#minimumRenewalBalanceInputSpan .warning").hide()
+            return true;	
+		}
+	}
+
 }
 
 function setAirplaneRenewal(threshold) {
@@ -881,6 +929,11 @@ function editTargetServiceQuality() {
 	$('#serviceFundingInputSpan').show()
 }
 
+function editMinimumRenewalBalance() {
+	$('#minimumRenewalBalanceDisplaySpan').hide()
+	$('#minimumRenewalBalanceInputSpan').show()
+}
+
 
 function updateServiceFundingDetails() {
 	$('#currentServiceQuality').text(activeAirline.serviceQuality)
@@ -906,6 +959,14 @@ function updateServiceFundingDetails() {
 	    }
 	});
 	
+}
+
+function updateMinimumRenewalBalanceDetails() {
+	$('#minimumRenewalBalance').text('$' + commaSeparateNumber(activeAirline.minimumRenewalBalance))
+	$('#minimumRenewalBalanceInput').val(activeAirline.minimumRenewalBalance)
+
+	$('#minimumRenewalBalanceDisplaySpan').show()
+	$('#minimumRenewalBalanceInputSpan').hide()
 }
 
 function editAirplaneRenewal() {
