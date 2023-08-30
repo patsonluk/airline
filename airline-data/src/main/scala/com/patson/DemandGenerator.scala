@@ -46,7 +46,7 @@ object DemandGenerator {
   def computeDemand(cycle: Int) = {
     println("Loading airports")
     //val allAirports = AirportSource.loadAllAirports(true)
-    val airports: List[Airport] = AirportSource.loadAllAirports(true).filter { airport => airport.iata != "" && airport.power > 0 }
+    val airports: List[Airport] = AirportSource.loadAllAirports(true).filter { airport => (airport.iata != "" || airport.icao != "") && airport.power > 0 }
     println("Loaded " + airports.size + " airports")
     
     val allDemands = new ArrayList[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
