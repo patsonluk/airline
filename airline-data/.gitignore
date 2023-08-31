@@ -7,3 +7,6 @@
 /.project
 /.idea
 /logs
+.metals/
+.vscode/
+.scala-build/

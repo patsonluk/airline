@@ -7,7 +7,7 @@ import java.util.{Calendar, Date}
 import scala.collection.mutable.ListBuffer
 
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
-  val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
+  val airlineInfo = AirlineInfo(0, 0, 0, 0, 0, 0)
   var allianceId : Option[Int] = None
   var bases : List[AirlineBase] = List.empty
 
@@ -21,6 +21,10 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
 
   def setTargetServiceQuality(targetServiceQuality : Int) {
     airlineInfo.targetServiceQuality = targetServiceQuality
+  }
+
+  def setMinimumRenewalBalance(minimumRenewalBalance: Long) {
+    airlineInfo.minimumRenewalBalance = minimumRenewalBalance
   }
 
   def setReputation(reputation : Double) {
@@ -49,6 +53,10 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
 
   def getAirlineCode() = {
     airlineInfo.airlineCode
+  }
+
+  def getMinimumRenewalBalance() = {
+    airlineInfo.minimumRenewalBalance
   }
 
   def setSkipTutorial(value : Boolean) = {
@@ -163,7 +171,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
 
 case class DelegateInfo(availableCount : Int, boost : Int, busyDelegates: List[BusyDelegate])
 
-case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "", var skipTutorial : Boolean = false, var initialized : Boolean = false)
+case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var minimumRenewalBalance: Long, var countryCode : Option[String] = None, var airlineCode : String = "", var skipTutorial : Boolean = false, var initialized : Boolean = false)
 
 object TransactionType extends Enumeration {
   type TransactionType = Value
@@ -344,6 +352,8 @@ object Airline {
         //unset service investment
         airline.setTargetServiceQuality(0)
         airline.setCurrentServiceQuality(0)
+        //unset minimum renewal balance
+        airline.setMinimumRenewalBalance(0)
 
         if (resetExtendedInfo) {
           airline.setReputation(0)

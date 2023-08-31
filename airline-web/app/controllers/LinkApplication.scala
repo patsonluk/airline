@@ -989,6 +989,27 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
   }
 
+  def setMinimumRenewalBalance(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+     if (request.body.isInstanceOf[AnyContentAsJson]) {
+      Try(request.body.asInstanceOf[AnyContentAsJson].json.\("minimumRenewalBalance").as[Long]) match {
+        case Success(minimumRenewalBalance) =>
+          if (minimumRenewalBalance < 0) {
+            BadRequest("Cannot have negative minimumRenewalBalance")
+          } else {
+            val airline = request.user
+            airline.setMinimumRenewalBalance(minimumRenewalBalance)
+            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
+            Ok(Json.obj("minimumRenewalBalance" -> JsNumber(minimumRenewalBalance)))
+          }
+        case Failure(_) =>
+          BadRequest("Cannot Update minimum renewal balance - could not cast to long")
+      }
+
+    } else {
+      BadRequest("Cannot Update minimum renewal balance")
+    }
+  }
+
   def updateMaintenanceQuality(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
       val maintenanceQualityTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("maintenanceQuality").as[Int])

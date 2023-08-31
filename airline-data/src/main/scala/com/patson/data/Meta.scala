@@ -213,6 +213,7 @@ object Meta {
       "color CHAR(7)," +
       "skip_tutorial TINYINT," +
       "initialized TINYINT," +
+      "minimum_renewal_balance BIGINT DEFAULT 0," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
 
