@@ -58,7 +58,7 @@ jobs:
           port: ${{ secrets.sandbox_port }}
           script_stop: true
           script: |
-            cd /var/www/myfly.club/airline_v2.2/
+            cd /var/www/myfly.club/airline_v2.2/airline-data/
             ./activator publishLocal
       # killall -9 java
 

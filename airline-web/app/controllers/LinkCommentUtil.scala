@@ -189,7 +189,7 @@ object LinkCommentUtil {
     val adjustedExceptedFrequency = (expectedFrequency * com.patson.Util.getBellRandom(1, 0.7, Some(random.nextInt()))).toInt
 
     List(
-      LinkComment.frequencyComment(frequency, adjustedExceptedFrequency),
+      LinkComment.frequencyComment(frequency, adjustedExceptedFrequency, flightDuration),
       LinkComment.flightDurationComment(flightDuration, adjustedExpectedDuration)).flatten
    }
 
@@ -405,12 +405,12 @@ object LinkComment {
     }
   }
 
-  val frequencyComment = (frequency : Double, expectedFrequency : Double) => {
+  val frequencyComment = (frequency : Double, expectedFrequency : Double, duration : Int) => {
     val delta = frequency - expectedFrequency
     val comment =
-      if (delta < -5) {
+      if (delta < -5 && duration < 300) {
         Some("The flight is not frequent enough!")
-      } else if (delta > 5) {
+      } else if (delta > 5 && duration < 300) {
         Some("This flight suits my schedule well")
       } else {
         None

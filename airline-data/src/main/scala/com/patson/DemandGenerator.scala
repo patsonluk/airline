@@ -195,13 +195,13 @@ object DemandGenerator {
         adjustedDemand *= 0.6
       }
       //also interconnected by HSR / intercity rail
-      if (fromAirport == "FR" || fromAirport == "LU" || fromAirport == "BE" || fromAirport == "NL" || fromAirport == "CH"){
-        if (toAirport == "FR" || toAirport == "LU" || toAirport == "BE" || toAirport == "NL" || toAirport == "CH"){
+      if (fromAirport.countryCode == "FR" || fromAirport.countryCode == "LU" || fromAirport.countryCode == "BE" || fromAirport.countryCode == "NL" || fromAirport.countryCode == "CH"){
+        if (toAirport.countryCode == "FR" || toAirport.countryCode == "LU" || toAirport.countryCode == "BE" || toAirport.countryCode == "NL" || toAirport.countryCode == "CH"){
           adjustedDemand *= 0.3
         }        
       }
-      if (fromAirport == "DE" || fromAirport == "AT" || fromAirport == "CZ" || fromAirport == "NL" || fromAirport == "CH"){
-        if (toAirport == "DE" || toAirport == "AT" || toAirport == "CZ" || toAirport == "NL" || toAirport == "CH"){
+      if (fromAirport.countryCode == "DE" || fromAirport.countryCode == "AT" || fromAirport.countryCode == "CZ" || fromAirport.countryCode == "NL" || fromAirport.countryCode == "CH"){
+        if (toAirport.countryCode == "DE" || toAirport.countryCode == "AT" || toAirport.countryCode == "CZ" || toAirport.countryCode == "NL" || toAirport.countryCode == "CH"){
           adjustedDemand *= 0.5
         }        
       }
@@ -358,9 +358,9 @@ object DemandGenerator {
   
   def getFlightPreferencePoolOnAirport(homeAirport : Airport) : FlightPreferencePool = {
     val flightPreferences = ListBuffer[(FlightPreference, Int)]()
+    
     //ECONOMY prefs
-//    flightPreferences.append((SimplePreference(homeAirport, 0.7, ECONOMY), 1)) //someone that does not care much
-//    flightPreferences.append((SimplePreference(homeAirport, 0.9, ECONOMY), 1))
+    flightPreferences.append((SimplePreference(homeAirport, 0.8, ECONOMY), 2))
     
     val budgetTravelerMultiplier =
       if (homeAirport.income < Country.LOW_INCOME_THRESHOLD / 2) {
@@ -372,9 +372,8 @@ object DemandGenerator {
       }
     
     for (i <- 0 until budgetTravelerMultiplier) {
-      flightPreferences.append((SimplePreference(homeAirport, 1.2, ECONOMY), 3))
-      flightPreferences.append((SimplePreference(homeAirport, 1.3, ECONOMY), 2)) //quite sensitive to price
-      flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 1))
+      flightPreferences.append((SimplePreference(homeAirport, 1.2, ECONOMY), 3)) //quite sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 2))
       flightPreferences.append((SimplePreference(homeAirport, 1.6, ECONOMY), 1)) //very sensitive to price
     }
     
@@ -384,17 +383,17 @@ object DemandGenerator {
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 3))
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4))
     //Brand
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.1), 2))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.2), 1))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.1), 1))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.3), 2))
     
     
     //BUSINESS prefs
     for (i <- 0 until 2) { //bit more randomness - set variation per group
       flightPreferences.append((SpeedPreference(homeAirport, BUSINESS), 3))
       //Comprehensive
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 0.8), 2))
       //Brand
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 1, loyaltyRatio = 1.2), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1.2), 2))
       //Elite
       flightPreferences.append((ElitePreference(homeAirport, BUSINESS, loungeLevelRequired = 1), 1))
       flightPreferences.append((ElitePreference(homeAirport, BUSINESS, loungeLevelRequired = 2), 1))
@@ -404,7 +403,7 @@ object DemandGenerator {
     //FIRST prefs 
     flightPreferences.append((SpeedPreference(homeAirport, FIRST), 1))
     //Brand
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 2, loyaltyRatio = 1.2), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, loungeLevelRequired = 0, loyaltyRatio = 1.2), 2))
     //Elite
     flightPreferences.append((ElitePreference(homeAirport, FIRST, loungeLevelRequired = 1), 1))
     flightPreferences.append((ElitePreference(homeAirport, FIRST, loungeLevelRequired = 2), 1))

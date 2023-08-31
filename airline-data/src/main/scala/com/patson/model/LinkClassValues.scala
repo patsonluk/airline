@@ -22,6 +22,7 @@ abstract class AbstractLinkClassValues(economyVal : Int, businessVal : Int, firs
 
   //  val total = map.map(_._2).sum
   val total = economyVal + businessVal + firstVal
+  val totalwithSeatSize = economyVal + businessVal * BUSINESS.spaceMultiplier + firstVal * FIRST.spaceMultiplier
 
   def +(otherValue : LinkClassValues) : LinkClassValues = {
     //    LinkClassValues(map.map {

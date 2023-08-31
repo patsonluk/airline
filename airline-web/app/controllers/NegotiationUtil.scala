@@ -69,6 +69,7 @@ object NegotiationUtil {
       case FlightTypeGroup.GROUP_2 => 5 + (baseScale * 2).toInt
       case FlightTypeGroup.GROUP_3 => 6 + (baseScale * 1.5).toInt
     }
+    // NEGOTIATION_EXPERT bonus
     if (baseScale >= 8) {
       maxFrequency += (baseScale - 7) * 1
     }
@@ -263,7 +264,7 @@ object NegotiationUtil {
       case LONG_HAUL_DOMESTIC => 12
       case SHORT_HAUL_INTERNATIONAL => 2
       case MEDIUM_HAUL_INTERNATIONAL => 10
-      case LONG_HAUL_INTERNATIONAL => 20
+      case LONG_HAUL_INTERNATIONAL => 30
       case SHORT_HAUL_INTERCONTINENTAL => 6
       case MEDIUM_HAUL_INTERCONTINENTAL => 16
       case LONG_HAUL_INTERCONTINENTAL => 30
