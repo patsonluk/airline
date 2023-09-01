@@ -71,7 +71,7 @@ object NegotiationUtil {
     }
     // NEGOTIATION_EXPERT bonus
     if (baseScale >= 8) {
-      maxFrequency += (baseScale - 7) * 1
+      maxFrequency += (baseScale - 7) * 2
     }
     if (baseScale >= 13) { //accumulative with the >= 8 buff
       maxFrequency += (baseScale - 12) * 2
