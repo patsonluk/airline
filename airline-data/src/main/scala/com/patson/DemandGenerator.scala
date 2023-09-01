@@ -372,6 +372,9 @@ object DemandGenerator {
       }
     
     for (i <- 0 until budgetTravelerMultiplier) {
+      //Brand
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.2), 2))
+      //Budget
       flightPreferences.append((SimplePreference(homeAirport, 1.2, ECONOMY), 3)) //quite sensitive to price
       flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 2))
       flightPreferences.append((SimplePreference(homeAirport, 1.6, ECONOMY), 1)) //very sensitive to price
@@ -383,8 +386,7 @@ object DemandGenerator {
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 3))
     flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4))
     //Brand
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.1), 1))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.3), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.4), 2))
     
     
     //BUSINESS prefs

@@ -170,10 +170,10 @@ abstract class FlightPreference(homeAirport : Airport) {
         Math.min(flightDurationSensitivity, (link.duration - flightDurationThreshold).toFloat / flightDurationThreshold * flightDurationSensitivity)
       }
     }
-    val maxDiscount = (frequencySensitivity + 0.25) * -1
+    val maxDiscount = frequencySensitivity * -1
     val finalDelta = Math.max(maxDiscount, frequencyRatioDelta + flightDurationRatioDelta)
 
-    1 + finalDelta
+    Math.min(2.0, 1 + finalDelta) //max 2x penalty
   }
 
   def loungeAdjustRatio(link : Transport, loungeLevelRequired : Int, linkClass: LinkClass) = {
@@ -237,14 +237,20 @@ object FlightPreferenceType extends Enumeration {
 import FlightPreferenceType._
 
 case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, preferredLinkClass: LinkClass) extends FlightPreference(homeAirport : Airport) {
-  override val qualitySensitivity = 0.5
+  override val qualitySensitivity = {
+    if (priceSensitivity >= 1) {
+      0.25
+    } else {
+      0.5
+    }
+  }
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 3
   override val frequencySensitivity = 0.02
   override val flightDurationSensitivity = 0
 
   def computeCost(baseCost : Double, link : Transport, linkClass : LinkClass) = {
-    baseCost * 0.85
+    baseCost * 0.83
   }
 
   val getPreferenceType = {
@@ -261,11 +267,11 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
 }
 
 case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass) extends FlightPreference(homeAirport = homeAirport) {
-  override val priceSensitivity = 0.85 * preferredLinkClass.priceSensitivity
-  override val qualitySensitivity = 0.75
+  override val priceSensitivity = 0.8 * preferredLinkClass.priceSensitivity
+  override val qualitySensitivity = 1.0
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 21
-  override val frequencySensitivity = 0.5
+  override val frequencySensitivity = 0.75
   override val flightDurationSensitivity = 1.0
 
   def computeCost(baseCost : Double, link : Transport, linkClass : LinkClass) = {
@@ -285,25 +291,25 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
 }
 
 case class ElitePreference(homeAirport : Airport, preferredLinkClass : LinkClass, override val loungeLevelRequired : Int)  extends FlightPreference(homeAirport) {
-  override val priceSensitivity = 0.7
+  override val priceSensitivity = 0.8 * preferredLinkClass.priceSensitivity
   override val qualitySensitivity = 2.0
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 7
-  override val frequencySensitivity = 0.3
+  override val frequencySensitivity = 0.1
   override val flightDurationSensitivity = preferredLinkClass match {
-    case FIRST => 0.55
-    case BUSINESS => 0.4
+    case FIRST => 0.75
+    case BUSINESS => 0.5
     case ECONOMY => 0.25
   }
   override val loungeSensitivity : Double = 1
-  override val connectionCostRatio = 1.5
+  override val connectionCostRatio = 2.0
 
   def computeCost(baseCost: Double, link : Transport, linkClass : LinkClass) : Double = {
-    var perceivedPrice = baseCost
+    var perceivedPrice = baseCost + getFlatTopBellRandom(0.3, 0.25)
 
     //find luxurious flight attractive
     if ( link.computedQuality() > 75) {
-      val discount = 0.5 * (link.computedQuality() - 75) / 20.0
+      val discount = (link.computedQuality() - 75) / 25.0 * 0.5
       perceivedPrice = perceivedPrice * (1 - discount)
     }
     
@@ -341,6 +347,13 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
       5
     } else {
       14
+    }
+  }
+  override val connectionCostRatio = {
+    if (loyaltyRatio > 1) {
+      0.5
+    } else {
+      1.0
     }
   }
   val getPreferenceType = {
