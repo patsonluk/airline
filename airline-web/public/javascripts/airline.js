@@ -2701,6 +2701,30 @@ function changeAssignedDelegateCount(delta) {
     }
 }
 
+function addMinimumRequiredDelegates() {
+	var minimumRequiredDelegates = Object.keys(negotiationOddsLookup).length - 1
+	for (let i = minimumRequiredDelegates; i > 0; i--) {
+		if (negotiationOddsLookup[i] > 0) {
+			minimumRequiredDelegates = i
+		}
+	}
+	if (negotiationOddsLookup[minimumRequiredDelegates] > 0) {
+		updateAssignedDelegateCount(minimumRequiredDelegates)
+	}
+}
+
+function addMaximumRequiredDelegates() {
+	var maximumRequiredDelegates = 0
+	for (let i = 0; i <= Object.keys(negotiationOddsLookup).length; i++) {
+		if (negotiationOddsLookup[i] <= 1) {
+			maximumRequiredDelegates = i
+		}
+	}
+	if (negotiationOddsLookup[maximumRequiredDelegates] > 0) {
+		updateAssignedDelegateCount(maximumRequiredDelegates)
+	}
+}
+
 function updateAssignedDelegateCount(delegateCount) {
     assignedDelegates = delegateCount
     $('#linkConfirmationModal div.assignedDelegatesIcons').empty()
