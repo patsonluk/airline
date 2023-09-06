@@ -135,7 +135,7 @@ object DemandGenerator {
       val ADJUST_FACTOR = 0.35
 
       val population_adjusted = 
-	if (toAirport.population.doubleValue > 50000) toairport.population.doubleValue
+	if (toAirport.population.doubleValue > 50000) toAirport.population.doubleValue
 	else 50000
 	    
       var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (population_adjusted / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
