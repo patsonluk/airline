@@ -134,10 +134,17 @@ object DemandGenerator {
 
       val ADJUST_FACTOR = 0.35
 
-      var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
+      if (toAirport.population.doubleValue() > 50000) {
+        var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
         case PassengerType.BUSINESS => 6
         case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
-      }) * ADJUST_FACTOR
+        }) * ADJUST_FACTOR
+      } else {
+        var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (50000 / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
+        case PassengerType.BUSINESS => 6
+        case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
+        }) * ADJUST_FACTOR
+      }
       
       if (fromAirport.countryCode != toAirport.countryCode) {
         //baseDemand = baseDemand *
