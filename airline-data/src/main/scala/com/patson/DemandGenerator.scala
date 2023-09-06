@@ -130,7 +130,9 @@ object DemandGenerator {
         fromAirport.income
       }
         
-      val fromAirportAdjustedPower = fromAirportAdjustedIncome * fromAirport.population
+      val fromAirportAdjustedPower =
+	if (fromAirport.population > 50000) fromAirportAdjustedIncome * fromAirport.population
+	else fromAirportAdjustedIncome * 50000
 
       val ADJUST_FACTOR = 0.35
 
