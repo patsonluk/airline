@@ -74,6 +74,7 @@ object Constants {
   val AIRLINE_MODIFIER_PROPERTY_TABLE = "airline_modifier_property"
 
   
+  val AIRLINE_OPERATIONS_STRATEGY = "airline_operations_strategy"
   val INCOME_TABLE = "income"
   val CASH_FLOW_TABLE = "cash_flow"
   val AIRLINE_LOGO_TABLE = "airline_logo"
@@ -143,6 +144,7 @@ object Constants {
   val GOOGLE_RESOURCE_TABLE ="google_resource"
   val BUSY_DELEGATE_TABLE = "busy_delegate"
   val COUNTRY_DELEGATE_TASK_TABLE = "country_delegate_task"
+  val STRATEGY_DELEGATE_TASK_TABLE = "strategy_delegate_task"
   val LINK_NEGOTIATION_TASK_TABLE = "link_negotiation_delegate_task"
   val LINK_NEGOTIATION_COOL_DOWN_TABLE = "link_negotiation_cool_down"
   val LOYALIST_TABLE = "loyalist"
@@ -172,6 +174,7 @@ object Constants {
   val ALLIANCE_LABEL_COLOR_BY_ALLIANCE_TABLE = "alliance_label_color_by_alliance"
   val ALLIANCE_LABEL_COLOR_BY_AIRLINE_TABLE = "alliance_label_color_by_airline"
 
+
   //Christmas Event
   val SANTA_CLAUS_INFO_TABLE = "santa_claus_info"
   val SANTA_CLAUS_GUESS_TABLE = "santa_claus_guess"
@@ -188,8 +191,8 @@ object Constants {
   val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/" + SCHEMA_NAME +"?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8" + dbParams
   // val DATABASE_CONNECTION = "jdbc:mysql://localhost:3306/airline_v2_1?socket=/tmp/mysql_3306.sock?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
   val DB_DRIVER = "com.mysql.jdbc.Driver"
-  val DATABASE_USER = if (configFactory.hasPath("mysqldb.user")) configFactory.getString("mysqldb.user") else "mfc01"
-  val DATABASE_PASSWORD = if (configFactory.hasPath("mysqldb.password")) configFactory.getString("mysqldb.password") else "aPJdqW+5p("
+  val DATABASE_USER = if (configFactory.hasPath("mysqldb.user")) configFactory.getString("mysqldb.user") else "root"
+  val DATABASE_PASSWORD = if (configFactory.hasPath("mysqldb.password")) configFactory.getString("mysqldb.password") else ""
 
   println(s"!!!!!!!!!!!!!!!FINAL DB str $DATABASE_CONNECTION with user $DATABASE_USER")
   
