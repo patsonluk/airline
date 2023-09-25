@@ -43,22 +43,22 @@ jobs:
         with:
           host: ${{ secrets.production_host }}
           username: ${{ secrets.production_user }}
-          password: ${{ secrets.production_pass }}
-          port: ${{ secrets.sandbox_port }}
+          key: ${{ secrets.production_key }}
+          port: 22
           script_stop: true
           source: "."
           strip_components: 0
-          target: "/var/www/myfly.club/airline_v2.2/"
+          target: "/var/www/myfly.club/airline/"
       - name: Build java, restart server
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.production_host }}
           username: ${{ secrets.production_user }}
-          password: ${{ secrets.production_pass }}
-          port: ${{ secrets.sandbox_port }}
+          key: ${{ secrets.production_key }}
+          port: ${{ secrets.production_key }}
           script_stop: true
           script: |
-            cd /var/www/myfly.club/airline_v2.2/airline-data/
+            cd /var/www/myfly.club/airline/airline-data/
             ./activator publishLocal
       # killall -9 java
 
