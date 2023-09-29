@@ -55,10 +55,10 @@ jobs:
           host: ${{ secrets.production_host }}
           username: ${{ secrets.production_user }}
           key: ${{ secrets.production_key }}
-          port: ${{ secrets.production_key }}
+          port: 22
           script_stop: true
           script: |
             cd /var/www/myfly.club/airline/airline-data/
-            ./activator publishLocal
+            bash activator publishLocal
       # killall -9 java
 
