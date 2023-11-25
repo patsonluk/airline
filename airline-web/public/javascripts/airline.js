@@ -9,12 +9,13 @@ var currentAirlineAllianceMembers = []
 
 $( document ).ready(function() {
     $('#linkEventModal .filterCheckboxes input:checkbox').change(function() {
-        var filterType = $(this).data('filter')
-        if ($(this).prop('checked')) {
-            $("#linkEventModal .linkEventHistoryTable .table-row.filter-" + filterType).show()
-        } else {
-            $("#linkEventModal .linkEventHistoryTable .table-row.filter-" + filterType).hide()
-        }
+        $("#linkEventModal .linkEventHistoryTable .table-row").hide() //hide all first
+        $('#linkEventModal .filterCheckboxes input:checkbox').each(function() { //have to iterate them, as they are not mutually exclusive...
+           var filterType = $(this).data('filter')
+           if ($(this).prop('checked')) {
+               $("#linkEventModal .linkEventHistoryTable .table-row.filter-" + filterType).show()
+           }
+        });
     })
 })
 
@@ -1961,6 +1962,7 @@ function showLinkEventHistory(linkId) {
     + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
     $('#linkEventModal .fromAirportCode').text(link.fromAirportCode)
     $('#linkEventModal .toAirportCode').text(link.toAirportCode)
+    $('#linkEventModal .bothAirportCode').append(link.fromAirportCode + link.toAirportCode)
     $("#linkEventModal div.filterCheckboxes input:checkbox").prop('checked', true)
 
     var linkConsumptions = $($('#linkEventChart').data('linkConsumptions')).toArray().slice(0, 8 * 13)
@@ -2078,6 +2080,9 @@ function showLinkEventHistory(linkId) {
                     }
                     if (entry.matchTo) {
                         row.addClass('filter-toAirport')
+                    }
+                    if (entry.matchFrom && entry.matchTo) {
+                        row.addClass('filter-bothAirport')
                     }
                     if (!entry.matchFrom && !entry.matchTo) {
                         row.addClass('filter-other')
