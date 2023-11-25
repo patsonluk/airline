@@ -2691,6 +2691,15 @@ function changeAssignedDelegateCount(delta) {
     }
 }
 
+function changeAssignedDelegateCountToMax() {
+    for (i = availableDelegates; i >= 0 ; i --) {
+        if (!isNaN(negotiationOddsLookup[i])) {
+            updateAssignedDelegateCount(i)
+            break
+        }
+    }
+}
+
 function updateAssignedDelegateCount(delegateCount) {
     assignedDelegates = delegateCount
     $('#linkConfirmationModal div.assignedDelegatesIcons').empty()
