@@ -176,17 +176,19 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
         case (user, ipDetails) =>
           user.getAccessibleAirlines().foreach { airline =>
             val airlineModifiers = AirlineSource.loadAirlineModifierByAirlineId(airline.id)
-            result = result.append(Json.obj(
+            var userJson = Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
               "userId" -> user.id,
               "username" -> user.userName,
-              "userModifiers" -> user.modifiers,
               "userStatus" -> user.status,
+              "userModifiers" -> user.modifiers,
               "airlineModifiers" -> airlineModifiers.map(_.modifierType),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
               "occurrence" -> ipDetails.occurrence,
-            ))
+            )
+            airline.getHeadQuarter().foreach(hq => userJson = userJson + ("hqAirport" -> Json.toJson(hq.airport)))
+            result = result.append(userJson)
           }
 
       }
@@ -219,7 +221,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
         case (user, ipDetails) =>
           user.getAccessibleAirlines().foreach { airline =>
             val airlineModifiers = AirlineSource.loadAirlineModifierByAirlineId(airline.id)
-            result = result.append(Json.obj(
+            var userJson = Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
               "userId" -> user.id,
@@ -229,7 +231,9 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
               "airlineModifiers" -> airlineModifiers.map(_.modifierType),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
               "occurrence" -> ipDetails.occurrence,
-            ))
+            )
+            airline.getHeadQuarter().foreach(hq => userJson = userJson + ("hqAirport" -> Json.toJson(hq.airport)))
+            result = result.append(userJson)
           }
 
       }
