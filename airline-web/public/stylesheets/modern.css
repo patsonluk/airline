@@ -4,9 +4,7 @@ html {
 
 	--backdrop-blur: blur(12px) saturate(1.25);
 
-	--modal-background-color: #0003;
 	--section-background-image: linear-gradient(#fffa, #fffa);
-	--modal-content-background-image: linear-gradient(#fffa, #fffa);
 
 	--background-1: #fffa;
 	--background-2: #ccc5;
@@ -19,10 +17,7 @@ html {
 	--placeholderBlurColorDark: #111518;
 }
 html[data-theme="dark"] {
-	--modal-background-color: #0003;
 	--section-background-image: linear-gradient(#111a, #111a);
-	--modal-content-background-image: linear-gradient(#111a, #111a);
-
 
 	--shadow-1: inset 0 0 2px rgba(255, 255, 255, 0.6);
     --shadow-2: inset 0 0 2px rgba(255, 255, 255, 0.6);
