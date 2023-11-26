@@ -31,6 +31,7 @@
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/emojify/emojify.min.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")'>
+	  <link rel="stylesheet" type="text/css" href='/assets/stylesheets/classic.css' id="uiTheme">
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/mobile.css")'> <!-- this has to be last so it overrides the CSS if mobile-->
 
 
@@ -101,6 +102,7 @@
 	<script src='@routes.Assets.versioned("javascripts/pending-action.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/map-style.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/color-scheme.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/ui-theme.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/color.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/mobile.js")' defer></script>
     <script>
@@ -220,7 +222,7 @@
 					<span style="display: inline-block; margin-left: 5px;">
 						<span style="display: flex; flex-align: center;"><span class="reputationStars"></span></span>
 					</span>
-					<span style="display: inline-block; margin-left: 5px;" class="delegatesShortcut clickable" onclick="showDelegateStatusModal()">
+					<span style="display: inline-block; margin-left: 5px;" class="delegatesShortcut clickable" onclick="toggleDelegateStatusModal()">
 
 					</span>
 				</span>
@@ -230,11 +232,11 @@
 			<div class="topBarDetails">
 				<span class="currentAirline label" style="margin-left: 0px 5px; font-weight: bold"></span>
 				<span>$<span class="balance label"></span></span>
-				<span style="display: inline-block;" class="delegatesShortcut clickable" onclick="showDelegateStatusModal()">
+				<span style="display: inline-block;" class="delegatesShortcut clickable" onclick="toggleDelegateStatusModal()">
 			</div>
 		</div>
   		<div style="display: flex; align-items: center; flex-wrap: wrap;">
-			<span  style="padding: 0 4px;"><img class="clickable" src='@routes.Assets.versioned("images/icons/24px/equalizer.png")' onclick="showSettings()" title="Settings"></span>
+			<span  style="padding: 0 4px;"><img class="clickable" src='@routes.Assets.versioned("images/icons/24px/equalizer.png")' onclick="toggleSettings()" title="Settings"></span>
 			<div style="display: none; display: flex; align-items: center;" id="loginDiv" class="topBarItem">
 				<input type="text" id="loginUserName" placeholder="username" tabindex=1/>
 				<a href="/forgot-id"  target="_blank" style="margin-right: 4px">
@@ -5375,6 +5377,18 @@
 				  </div>
 				  <div class="cell" style="vertical-align:middle; text-align:center;">
 					<select class="select-css" id="UIThemeSelect" onchange="changeUITheme($(this).val());" style="margin: auto;">
+					  <option value="classic">Classic</option>
+					  <option value="modern">Modern</option>
+					  <option value="modern-lite">Modern Lite (For slow systems)</option>
+					</select>
+				  </div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell">
+					  <h5>UI Theme</h5>
+				  </div>
+				  <div class="cell" style="vertical-align:middle; text-align:center;">
+					<select class="select-css" id="UIThemeSelecct" onchange="changeUITheme($(this).val());" style="margin: auto;">
 					  <option value="classic">Classic</option>
 					  <option value="modern">Modern</option>
 					  <option value="modern-lite">Modern Lite (For slow systems)</option>

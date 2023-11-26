@@ -1,0 +1,457 @@
+html {
+	--shadow-1: 0px 0px 2px 0px rgba(0, 0, 0, 0.3);
+	--shadow-2: 0px 0px 2px 0px rgba(0, 0, 0, 0.5);
+
+	--backdrop-blur: blur(12px) saturate(1.25);
+
+	--modal-background-color: #0003;
+	--section-background-image: linear-gradient(#fffa, #fffa);
+	--modal-content-background-image: linear-gradient(#fffa, #fffa);
+
+	--background-1: #fffa;
+	--background-2: #ccc5;
+	--background-3: #ccc5;
+	--input-background: #aaa3;
+
+	--color-1: #111;
+
+	--placeholderBlurColorLight: #c0c5d0;
+	--placeholderBlurColorDark: #111518;
+}
+html[data-theme="dark"] {
+	--modal-background-color: #0003;
+	--section-background-image: linear-gradient(#111a, #111a);
+	--modal-content-background-image: linear-gradient(#111a, #111a);
+
+
+	--shadow-1: inset 0 0 2px rgba(255, 255, 255, 0.6);
+    --shadow-2: inset 0 0 2px rgba(255, 255, 255, 0.6);
+
+	--background-1: #101010A0;
+	--background-2: #505050A0;
+	--background-3: #505050A0;
+	--input-background: #aaa3;
+
+	--color-1: #ccc;
+
+}
+
+html[data-ui-light-mode="true"] {
+    --backdrop-blur: none;
+}
+
+/* fonts */
+@font-face {
+    font-family: "Open Sans";
+    src: local("Segoe UI"), local("Tahoma")
+}
+@font-face {
+    font-family: "Verdana";
+    src: local("Segoe UI Variable"), local("Segoe UI"), local("Verdana")
+}
+@font-face {
+    font-family: "Arial";
+    src: local("Segoe UI Variable"), local("Segoe UI"), local("Arial")
+}
+
+.section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
+    /*disable this for now...seems to have issues with blur for tooltip*/
+	/*backdrop-filter: var(--backdrop-blur) !important;*/
+}
+
+#detailsPanel { /*only enable it for details panel, we need this otherwise panel is hard to read with map beneath it*/
+    backdrop-filter: var(--backdrop-blur) !important;
+}
+
+
+div.section {
+	border-radius: 8px;
+}
+/* sections broken with backdrop-filter */
+/* broken tooltips */
+/*
+.airportCanvasLeftGroup > :first-child .section {
+	backdrop-filter: none !important;
+	background: var(--placeholderBlurColorLight)/* << This color should be taken from one of the sections that have backdrop-filter */
+}
+*/
+html[data-theme="dark"] .airportCanvasLeftGroup > :first-child .section {
+	background: var(--placeholderBlurColorDark)/* << This color should be taken from one of the sections that have backdrop-filter */
+}
+.tooltiptext:has(img[data-src="/assets/images/clips/flight-frequency.gif"]), .progressionItem .tooltiptext {
+	bottom: 125% !important;
+	top: unset !important
+}
+.tooltiptext[style="text-transform: none; top: 0px; width: 350px; white-space: nowrap;"] {
+	width: fit-content !important
+}
+/**/
+.tooltiptext::after {
+	display: none
+}
+div.section, #topBar > div {
+	box-shadow: var(--shadow-1);
+}
+div.button, .mapPopup div.button {
+	box-shadow: var(--shadow-1);
+	background-color: var(--background-1);
+	transition: all 0.2s;
+}
+div.button:hover:not([class*="disabled"]) {
+	background-color: var(--background-3);
+}
+div.button:active:not([class*="disabled"]) {
+	background-color: var(--background-1);
+}
+.gm-style-iw .gm-style-iw-d {
+    overflow: clip !important;
+}
+.gm-style-iw[style*="padding-bottom: 0px"] {
+    padding-bottom: 12px !important
+}
+/**/
+#patreonDiv a img {
+	height: 25px;
+	border-radius: 2px
+}
+#topBar {
+	pointer-events: none;
+}
+#topBar * {
+	pointer-events: auto;
+}
+#topBar > :last-child {
+	background-color: var(--background-1);
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	padding-left: 5px;
+	padding-right: 2px;
+	border-radius: 6px
+}
+#topBar > :first-child {
+	background-color: var(--background-1);
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	padding-right: 10px;
+	padding-left: 3px;
+	border-radius: 6px;
+	padding-block: 10px;
+}
+div#topBar {
+	box-shadow: none;
+	/* background: #111a;*/
+	border: none;
+	position: fixed !important;
+	background: none;
+	backdrop-filter: none !important;
+}
+#live-chat {
+	left: 50px !important;
+	box-shadow: var(--shadow-1);
+}
+/* disable screen dimming on some modals */
+@media screen and (min-width: 640px) {
+	#delegateStatusModal, #settingsModal {
+		background: none;
+		pointer-events: none;
+	}
+	#delegateStatusModal .modal-content, #settingsModal .modal-content {
+		pointer-events: auto;
+		position: absolute;
+		margin: 0;
+		top: 48px;
+	}
+	#delegateStatusModal .modal-content {
+		left: 300px
+	}
+	#settingsModal .modal-content {
+		right: 100px
+	}
+}
+/**/
+/* back button for when you place the google maps man */
+div[jstcache="0"] > div:is([style="z-index: 24601; position: absolute; left: 0px; top: 0px;"]) {
+	top: 50px !important;
+	left: 50px !important
+}
+div[jstcache="0"] > :has(> .gm-iv-address) {
+	top: 50px !important;
+	left: 78px !important;
+}
+#mainContainer {
+	padding-top: 40px;
+}
+.gm-style .gm-style-iw-c {
+	background: var(--background-1);
+	box-shadow: var(--shadow-1);
+}
+.mapPopup, .mapPopup > div > h4, .gm-style .gm-style-iw-c {
+	color: var(--color-1);
+}
+html[data-theme="dark"] [title="Close"] > span {
+	filter: invert(1)
+}
+.tooltip .tooltiptext {
+	box-shadow: var(--shadow-1);
+}
+.modal-content, #live-chat header, div.tab-icon, #main-tabs .left-tab div.tab-icon, input, .select-css {
+	box-shadow: var(--shadow-1);
+}
+.table .cell.detailsSelection {
+	box-shadow: var(--shadow-1) !important;
+}
+.table-header .cell {
+	box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.4) inset !important;
+}
+#map .gmnoprint[role="menubar"] {
+	background: var(--background-1);
+	border-radius: 8px;
+	box-shadow: var(--shadow-1);
+}
+/* top-left map type selector */
+.gm-style-mtc > button, .gm-style-mtc {
+	background-color: #0000 !important;
+	color: var(--color-1) !important;
+	box-shadow: none !important;
+}
+/* arrow that's part of the airport box */
+.gm-style .gm-style-iw-tc::after {
+	display: none
+}
+.gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active {
+	background: var(--background-1) !important;
+}
+/* this was the only way to select these that i could find */
+/* zoom buttons */
+div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"] {
+	background: var(--background-3) !important
+}
+div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"] {
+	background: none !important
+}
+input, .select-css {
+	background: var(--input-background);
+	border: none !important
+}
+.planLinkPrice {
+	width: 64px
+}
+.gm-ui-hover-effect {
+	top: 0 !important;
+	right: 0 !important
+}
+.mapPopup * {
+	color: var(--color-1) !important
+}
+.left-tab .label {
+	box-shadow: var(--shadow-1);
+	backdrop-filter: var(--backdrop-blur) !important;
+}
+html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button img) {
+	filter: invert(1)
+}
+/*==left icons, should be disabled in js but i don't really like adding js to 'themes'==*/
+#tabGroup {
+	display: block !important;
+	opacity: 1 !important
+}
+.tab-icon {
+    transition: all 0.1s;
+    background: var(--background-1) !important;
+    box-shadow: var(--shadow-1) !important
+}
+.tab-icon:is(.selected, :hover) {
+    background: var(--background-2) !important;
+}
+.tab-icon:hover:active {
+    background: var(--background-3) !important;
+}
+.canvas {
+	padding-left: 40px
+}
+/*===== vv fullscreen map vv =====*/
+#map {
+	width: 100%;
+	height: 100%;
+	top: 0px !important;
+	position: fixed !important
+}
+#hideRivalMapButton {
+	top: 48px !important
+}
+#linksCanvas .mainPanel {
+    width: 55%;
+}
+#sidePanel {
+	position: absolute;
+	padding-left: 10px;
+	padding-right: 32px;
+	box-sizing: border-box;
+	width: 45%;
+	pointer-events: none;
+	border-radius: 8px !important;
+	right: 0;
+}
+#sidePanel > * {
+	pointer-events: auto;
+}
+#map .gmnoprint[role="menubar"] {
+	position: fixed !important;
+	top: 40px !important;
+	left: 40px !important;
+	width: 100px
+}
+#map .gmnoprint[role="menubar"] > :first-child {
+	border-radius: 8px 8px 0 0 !important;
+}
+#map .gmnoprint[role="menubar"] > :last-child {
+	border-radius: 0 0 8px 8px !important;
+}
+#map .gmnoprint[role="menubar"] > * {
+	transition: all 0.2s !important;
+	width: 100px;
+	height: 40px !important
+}
+#map .gmnoprint[role="menubar"] > * button {
+	width: 100px;
+	padding: 0px !important
+}
+#map .gmnoprint[role="menubar"] > *:hover {
+	background: var(--background-2) !important
+}
+#map .gmnoprint[role="menubar"] > *:hover:active {
+	background: var(--background-1) !important
+}
+#map .gmnoprint[role="menubar"] ul:has(.ssQIHO-checkbox-menu-item) {
+	position: relative !important;
+	border-radius: 4px !important;
+	filter: invert(.9);
+	box-shadow: 0 5px 5px 0 #fff4 !important
+}
+#map .gmnoprint[role="menubar"] ul:has(.ssQIHO-checkbox-menu-item) {
+	left: 100% !important;
+	top: -100% !important;
+}
+.gm-fullscreen-control {
+	position: fixed !important;
+	top: 40px !important;
+	border-radius: 8px !important;
+	box-shadow: var(--shadow-2) !important;
+}
+#map div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"] {
+	position: fixed !important;
+	top: 96px !important;
+	border-radius: 8px !important;
+	box-shadow: var(--shadow-2) !important;
+}
+#map div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"] > * {
+	border-radius: 6px !important;
+	max-height: 36px !important;
+	max-width: 36px !important;
+	margin-top: 2px !important;
+	margin-left: 2px !important
+}
+#map .googleMapIcon {
+    position: fixed !important;
+    border-radius: 8px;
+    box-shadow: var(--shadow-2) !important;
+}
+#map #toggleMapHeatmapButton {
+	top: 183px
+}
+#map #toggleChampionButton {
+	top: 229px
+}
+#map #toggleMapAnimationButton {
+	top: 275px
+}
+#map #toggleMapLightButton {
+	top: 321px
+}
+#map .gm-svpc {
+	position: fixed !important;
+	top: 136px !important;
+	left: 50px !important;
+	box-shadow: var(--shadow-2) !important;
+	border-radius: 8px !important
+}
+/* Mobile */
+.extendedTopBarDetails {
+    position: absolute;
+    z-index: 100000;
+    height: 40px;
+    box-shadow: var(--shadow-1)
+}
+#topBar > .mobileOnly {
+    background-color: var(--background-1);
+    border-bottom-right-radius: 6px;
+    height: 40px;
+}
+#moreTopBarTab li {
+    border: none !important;
+    box-shadow: var(--shadow-1) !important;
+}
+#map {
+	height: 100% !important;
+}
+@media screen and (max-width: 640px) {
+    #topBar {
+        height: 40px
+    }
+    #topBar > :last-child {
+        top: 0px;
+        right: 0px;
+        border-radius: 0 0 0 6px;
+        padding-block: 5px
+    }
+    #sidePanel {
+        width: calc(100vw - 73px);
+        margin-top: 50vh
+    }
+    #live-chat {
+        left: 0% !important;
+    }
+}
+/* Always show map, kinda broken *
+#worldMapCanvas {
+	opacity: 1 !important
+}
+#worldMapCanvas.active {
+	position: unset !important;
+}
+#worldMapCanvas:not(.active) {
+	display: block !important;
+	position: fixed !important;
+}/**/
+select option {
+	background: var(--background-1);
+	color: var(--color-1)
+}
+/* chat */
+.chat-history ul > :last-child {
+    border-radius: 0 0 6px 6px;
+    box-shadow: var(--shadow-1);
+}
+.chat-history ul > :first-child {
+    border-radius: 6px 6px 0 0
+}
+.chat-history {
+    font-family: Segoe UI, Helvetica, serif
+}
+.ctabs > li {
+    box-shadow: var(--shadow-1) !important;
+    border: none !important;
+    background: var(--background-2) !important
+}
+.ctabs > li.current {
+    background: var(--background-1) !important
+}
+#live-chat header {
+    border: none
+}
+#chat-box {
+    background: var(--background-1);
+    padding-top: 8px;
+}
