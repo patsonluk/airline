@@ -1,12 +1,18 @@
-var themeList = ["classic", "modern", "modern-lite"]
+var uiThemeList = ["classic", "modern", "modern-lite"]
 
 function changeUITheme(theme){
-	if (!themeList.includes(theme)) {
+	if (!uiThemeList.includes(theme)) {
 		return;
 	}	
 
 	localStorage.setItem("UITheme", theme)
-	$("#cssTheme").attr("href", "/assets/stylesheets/" + theme + ".css") // this currently only allows one stylesheet per theme
+	if (theme === "modern-lite") {
+	    $("#uiTheme").attr("href", "/assets/stylesheets/modern.css") // this currently only allows one stylesheet per theme
+	    document.documentElement.setAttribute('data-ui-light-mode', true);
+    } else {
+        $("#uiTheme").attr("href", "/assets/stylesheets/" + theme + ".css") // this currently only allows one stylesheet per theme
+        document.documentElement.removeAttribute('data-ui-light-mode');
+    }
 }
 
 function loadTheme() {

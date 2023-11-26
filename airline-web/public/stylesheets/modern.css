@@ -1,20 +1,20 @@
 html {
-	--shadow-1: 0px 5px 5px 0px rgba(0, 0, 0, 0.3);
-	--shadow-2: 0px 5px 5px 0px rgba(0, 0, 0, 0.5);
-	
-	--backdrop-blur: blur(48px) saturate(1.25);
-	
+	--shadow-1: 0px 0px 2px 0px rgba(0, 0, 0, 0.3);
+	--shadow-2: 0px 0px 2px 0px rgba(0, 0, 0, 0.5);
+
+	--backdrop-blur: blur(12px) saturate(1.25);
+
 	--modal-background-color: #0003;
 	--section-background-image: linear-gradient(#fffa, #fffa);
 	--modal-content-background-image: linear-gradient(#fffa, #fffa);
-	
+
 	--background-1: #fffa;
 	--background-2: #ccc5;
-	--background-3: #fffc;
+	--background-3: #ccc5;
 	--input-background: #aaa3;
-	
+
 	--color-1: #111;
-	
+
 	--placeholderBlurColorLight: #c0c5d0;
 	--placeholderBlurColorDark: #111518;
 }
@@ -22,14 +22,22 @@ html[data-theme="dark"] {
 	--modal-background-color: #0003;
 	--section-background-image: linear-gradient(#111a, #111a);
 	--modal-content-background-image: linear-gradient(#111a, #111a);
-	
-	--background-1: #111a;
-	--background-2: #1115;
-	--background-3: #202020aa;
+
+
+	--shadow-1: inset 0 0 2px rgba(255, 255, 255, 0.6);
+    --shadow-2: inset 0 0 2px rgba(255, 255, 255, 0.6);
+
+	--background-1: #101010A0;
+	--background-2: #505050A0;
+	--background-3: #505050A0;
 	--input-background: #aaa3;
-	
+
 	--color-1: #ccc;
-	
+
+}
+
+html[data-ui-light-mode="true"] {
+    --backdrop-blur: none;
 }
 
 /* fonts */
@@ -45,19 +53,28 @@ html[data-theme="dark"] {
     font-family: "Arial";
     src: local("Segoe UI Variable"), local("Segoe UI"), local("Arial")
 }
-	
-.section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, .gm-style .gm-style-iw-c, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
-	backdrop-filter: var(--backdrop-blur) !important;
+
+.section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
+    /*disable this for now...seems to have issues with blur for tooltip*/
+	/*backdrop-filter: var(--backdrop-blur) !important;*/
 }
+
+#detailsPanel { /*only enable it for details panel, we need this otherwise panel is hard to read with map beneath it*/
+    backdrop-filter: var(--backdrop-blur) !important;
+}
+
+
 div.section {
 	border-radius: 8px;
 }
 /* sections broken with backdrop-filter */
 /* broken tooltips */
+/*
 .airportCanvasLeftGroup > :first-child .section {
 	backdrop-filter: none !important;
 	background: var(--placeholderBlurColorLight)/* << This color should be taken from one of the sections that have backdrop-filter */
 }
+*/
 html[data-theme="dark"] .airportCanvasLeftGroup > :first-child .section {
 	background: var(--placeholderBlurColorDark)/* << This color should be taken from one of the sections that have backdrop-filter */
 }
@@ -168,6 +185,7 @@ div[jstcache="0"] > :has(> .gm-iv-address) {
 }
 .gm-style .gm-style-iw-c {
 	background: var(--background-1);
+	box-shadow: var(--shadow-1);
 }
 .mapPopup, .mapPopup > div > h4, .gm-style .gm-style-iw-c {
 	color: var(--color-1);
@@ -177,7 +195,6 @@ html[data-theme="dark"] [title="Close"] > span {
 }
 .tooltip .tooltiptext {
 	box-shadow: var(--shadow-1);
-	backdrop-filter: var(--backdrop-blur) !important;
 }
 .modal-content, #live-chat header, div.tab-icon, #main-tabs .left-tab div.tab-icon, input, .select-css {
 	box-shadow: var(--shadow-1);
@@ -264,12 +281,18 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 #hideRivalMapButton {
 	top: 48px !important
 }
+#linksCanvas .mainPanel {
+    width: 55%;
+}
 #sidePanel {
 	position: absolute;
-	right: 32px;
-	width: 40%;
+	padding-left: 10px;
+	padding-right: 32px;
+	box-sizing: border-box;
+	width: 45%;
 	pointer-events: none;
 	border-radius: 8px !important;
+	right: 0;
 }
 #sidePanel > * {
 	pointer-events: auto;
@@ -334,7 +357,6 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
     position: fixed !important;
     border-radius: 8px;
     box-shadow: var(--shadow-2) !important;
-    left: 40px !important
 }
 #map #toggleMapHeatmapButton {
 	top: 183px

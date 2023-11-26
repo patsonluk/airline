@@ -1,5 +1,5 @@
 //determines if the user has a set theme
-function showSettings() {
+function toggleSettings() {
     if (!$("#settingsModal").is(":visible")){
         updateCustomWallpaperPanel()
         $("#settingsModal").fadeIn(500)
