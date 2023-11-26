@@ -227,6 +227,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
               "airlineId" -> airline.id,
               "userId" -> user.id,
               "username" -> user.userName,
+              "userLevel" -> user.level,
               "userStatus" -> user.status,
               "userModifiers" -> user.modifiers,
               "airlineModifiers" -> airlineModifiers.map(_.modifierType),
