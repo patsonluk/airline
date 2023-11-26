@@ -182,6 +182,7 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
               "userId" -> user.id,
               "username" -> user.userName,
               "userStatus" -> user.status,
+              "userLevel" -> user.level,
               "userModifiers" -> user.modifiers,
               "airlineModifiers" -> airlineModifiers.map(_.modifierType),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
