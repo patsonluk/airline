@@ -155,7 +155,7 @@ function refreshTopBarDelegates(airline) {
 
 }
 
-function showDelegateStatusModal() {
+function toggleDelegateStatusModal() {
     if (!$("#delegateStatusModal").is(":visible")) {
         updateAirlineDelegateStatus($('#delegateStatusModal .delegateStatus'))
         $('#delegateStatusModal').fadeIn(500)
