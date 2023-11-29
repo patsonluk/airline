@@ -187,7 +187,7 @@ GET      /delegates/airline/:airlineId      controllers.DelegateApplication.getD
 GET      /delegates/airline/:airlineId/country/:countryCode      controllers.DelegateApplication.getCountryDelegates(countryCode : String, airlineId: Int)
 POST      /delegates/airline/:airlineId/country/:countryCode      controllers.DelegateApplication.updateCountryDelegates(countryCode : String, airlineId: Int)
 
-GET		 /santa-claus/guess/:airportId/:airlineId   controllers.ChristmasApplication.makeGuess(airportId : Int, airlineId : Int)
+GET		 /santa-claus/guess/:airportId/:airlineId/:difficulty   controllers.ChristmasApplication.makeGuess(airportId : Int, airlineId : Int, difficulty : String)
 GET		 /santa-claus/attempt-status/:airportId/:airlineId  controllers.ChristmasApplication.getAttemptStatus(airportId : Int, airlineId : Int)
 GET		 /santa-claus/award-options/:airlineId  controllers.ChristmasApplication.getAwardOptions(airlineId : Int)
 GET      /santa-claus/pick-award/:airlineId/:optionId   controllers.ChristmasApplication.pickAwardOption(airlineId : Int, optionId : Int)
