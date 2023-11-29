@@ -1,11 +1,17 @@
 package com.patson.model.christmas
 
 import com.patson.data.{AirlineSource, AirportSource, ChristmasSource, CycleSource}
+import com.patson.model.christmas.SantaClausAward.{Difficulty, getDifficultyLevel}
 import com.patson.model.{Airline, AirlineAppeal, AirlineBonus, BonusType, DelegateBoostAirlineModifier}
 import com.patson.util.AirlineCache
 
 abstract class SantaClausAward(santaClausInfo: SantaClausInfo) {
   val getType : SantaClausAwardType.Value
+  val difficultyMultiplier : Int = getDifficultyLevel(santaClausInfo) match {
+    case Some(Difficulty.NORMAL) => 1
+    case Some(Difficulty.HARD) => 2
+    case _ => 1
+  }
   def apply: Unit = {
     applyAward()
     ChristmasSource.updateSantaClausInfo(santaClausInfo.copy(found = true, pickedAward = Some(getType)))
@@ -20,7 +26,7 @@ abstract class SantaClausAward(santaClausInfo: SantaClausInfo) {
 
 class CashAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.CASH
-  val CASH_AMOUNT = 20000000 //rich santa claus wow, 20M!
+  val CASH_AMOUNT = 20000000 * difficultyMultiplier //rich santa claus wow, 20M!
   override def applyAward(): Unit = {
     AirlineSource.adjustAirlineBalance(santaClausInfo.airline.id, CASH_AMOUNT)
   }
@@ -30,7 +36,7 @@ class CashAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaCla
 
 class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.SERVICE_QUALITY
-  val BONUS = 10
+  val BONUS = 10 * difficultyMultiplier
   override def applyAward(): Unit = {
     val newQuality = Math.min(santaClausInfo.airline.getCurrentServiceQuality() + BONUS, Airline.MAX_SERVICE_QUALITY)
 
@@ -42,7 +48,7 @@ class ServiceQualityAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
 
 class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.HQ_LOYALTY
-  val BONUS = 5
+  val BONUS = 5 * difficultyMultiplier
   val DURATION = 52
   override def applyAward(): Unit = {
     AirlineCache.getAirline(santaClausInfo.airline.id, fullLoad = true).foreach { airline =>
@@ -63,7 +69,7 @@ class HqLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(san
 
 class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.AIRPORT_LOYALTY
-  val BONUS = 20
+  val BONUS = 20 * difficultyMultiplier
   val DURATION = 52
   override def applyAward(): Unit = {
     val airline = santaClausInfo.airline
@@ -76,7 +82,7 @@ class AirportLoyaltyAward(santaClausInfo: SantaClausInfo) extends SantaClausAwar
 
 class ReputationAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(santaClausInfo) {
   override val getType: SantaClausAwardType.Value = SantaClausAwardType.REPUTATION
-  val BONUS = 10
+  val BONUS = 10 * difficultyMultiplier
   override def applyAward(): Unit = {
     val newReputation = santaClausInfo.airline.getReputation() + BONUS
 
@@ -93,7 +99,7 @@ class DelegateAward(santaClausInfo: SantaClausInfo) extends SantaClausAward(sant
   override def applyAward(): Unit = {
     AirlineSource.saveAirlineModifier(santaClausInfo.airline.id, DelegateBoostAirlineModifier(amount, duration, CycleSource.loadCycle()))
   }
-  val amount = 3
+  val amount = 3 * difficultyMultiplier
   val duration = 52
 
   override val description: String = s"Santa Claus dispatches his elves to help you! $amount extra delegates for $duration weeks"
@@ -121,5 +127,22 @@ object SantaClausAward {
       case SantaClausAwardType.REPUTATION => new ReputationAward(info)
       case SantaClausAwardType.DELEGATE => new DelegateAward(info)
     }
+  }
+
+  def getDifficultyLevel(santaClausInfo : SantaClausInfo) : Option[Difficulty.Value] = {
+    if (santaClausInfo.guesses.isEmpty) {
+      None
+    } else {
+      if (santaClausInfo.guesses.size + santaClausInfo.attemptsLeft == 5) {
+        Some(Difficulty.HARD)
+      } else {
+        Some(Difficulty.NORMAL)
+      }
+    }
+  }
+
+  object Difficulty extends Enumeration {
+    type Difficulty = Value
+    val NORMAL, HARD = Value
   }
 }

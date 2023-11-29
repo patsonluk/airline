@@ -1,4 +1,4 @@
-var christmasFlag = false
+var christmasFlag = true
 var santaFound = false
 
 function initSantaClaus() {
@@ -30,6 +30,18 @@ function updateSantaClausModal() {
     	        if ($.isEmptyObject(result)) { //not a valid target
     	            return
     	        }
+    	        $("#santaClausAttemptsLeft").text(result.attemptsLeft)
+                if (typeof result.difficulty === 'undefined') {
+                    // Enable both options
+                    $("#santaClausModal .difficultyOptions").show();
+                    $("#santaClausModal .difficultyPick").hide();
+                } else {
+                    // Check the first option and disable both
+                    $("#santaClausModal .difficultyOptions").hide();
+                    $("#santaClausModal .difficultyPick").show();
+                    $("#santaClausModal .difficultyLabel").text(result.difficulty)
+                }
+
     	        $.each(result.guesses, function(index, guess) {
                     var row = $("<div class='table-row'></div>")
                     row.append("<div class='cell label'>" + getAirportText(guess.city, guess.airportCode) + "</div>")
@@ -148,7 +160,7 @@ function pickSantaClassAward(optionId) {
 }
 
 function guessSantaClaus() {
-	var url = "santa-claus/guess/" + activeAirportId + "/" + activeAirline.id
+	var url = "santa-claus/guess/" + activeAirportId + "/" + activeAirline.id + "/" +  $("#santaClausModal .difficulty:checked").val()
 
 	$.ajax({
 		type: 'GET',

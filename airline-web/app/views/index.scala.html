@@ -3958,7 +3958,16 @@
 		<div class="modal-content"  style="width : 500px;">
 			<span class="close" onclick="closeSantaClausModal()">&times;</span>
 			<div style="margin-bottom: 30px"><h2>Santa, Where are you?</h2></div>
-			<h4 style="margin-bottom: 10px;">Search History</h4>
+			<h4 style="margin-bottom: 10px;">Difficulty</h4>
+			<div class="difficultyOptions">
+				<div class="remarks" style="margin-bottom: 15px; display: block;">Upon first attempt, the difficulty will be fixed!</div>
+				<div><input type="radio" name="difficulty" value="normal" class="difficulty" onchange="$('#santaClausAttemptsLeft').text('10')" checked>Normal (10 attempts)</div>
+				<div><input type="radio" name="difficulty" value="hard" class="difficulty" onchange="$('#santaClausAttemptsLeft').text('5')">Hard (5 attempts, double reward)</div>
+			</div>
+			<div class="difficultyPick">
+				<span class="difficultyLabel"></span>
+			</div>
+			<h4 style="margin-top: 10px; margin-bottom: 10px;">Search History</h4>
 			<div style="width: 100%;">
 				<div style="width: 100%; overflow: auto; float: left;">
 					<div class="table data"style="width: 100%">
