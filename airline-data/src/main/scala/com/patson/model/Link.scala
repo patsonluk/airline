@@ -142,6 +142,27 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     futureCapacity
   }
 
+  /**
+    * Future LinkValues based on configuration that can accommodate the max pax (ie single class configuration with lowest space multiplier).
+    *
+    * This is usually only used for negotiation calculations
+    * @return
+    */
+  def futureMaxCapacity(): LinkClassValues = {
+    //need to do all these calculations so we an support class with a non 1 lowest space multiplier...
+    val lowestClass = LinkClass.values.sortBy(_.spaceMultiplier).head
+    var maxCapacity = LinkClassValues.getInstance()
+    assignedAirplanes.foreach {
+      case (airplane, assignment) => {
+        val maxCapacityPerFlight = LinkClassValues.getInstanceByMap(Map(lowestClass -> (airplane.model.capacity / lowestClass.spaceMultiplier).toInt))
+        //not doing maxCapacityPerFlight * futureFrequency ...in case we allow mixed model in the future...
+        maxCapacity = maxCapacity + (maxCapacityPerFlight * assignment.frequency)
+      }
+    }
+
+    maxCapacity
+  }
+
   def futureFrequency() = {
     assignedAirplanes.values.map(_.frequency).sum
   }

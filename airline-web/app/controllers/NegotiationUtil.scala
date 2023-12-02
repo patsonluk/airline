@@ -96,15 +96,21 @@ object NegotiationUtil {
 
     val officeStaffCount : Int = baseOption.map(_.getOfficeStaffCapacity).getOrElse(0)
     val airlineLinksFromThisAirport = airlineLinks.filter(link => link.from.id == airport.id && (isNewLink || link.id != existingLinkOption.get.id))
-    val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getFutureOfficeStaffRequired).sum
-    val newOfficeStaffRequired = newLink.getFutureOfficeStaffRequired
+
+    /**
+     * Use futureMaxCapacity for calculating negotiation difficulty to avoid loophole of negotiating with first class and switch config
+     */
+    val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(link => link.getOfficeStaffRequired(link.from, link.to, link.futureFrequency(), link.futureMaxCapacity())).sum
+    val newOfficeStaffRequired : Int = {
+      newLink.getOfficeStaffRequired(newLink.from, newLink.to, newLink.futureFrequency(), newLink.futureMaxCapacity())
+    }
     val newTotal = currentOfficeStaffUsed + newOfficeStaffRequired
 
     if (newTotal < officeStaffCount) {
-      requirements.append(NegotiationRequirement(STAFF_CAP, 0, s"Requires ${newOfficeStaffRequired} office staff, within your base capacity : ${newTotal} / ${officeStaffCount}"))
+      requirements.append(NegotiationRequirement(STAFF_CAP, 0, s"Requires office staff within your base capacity : ${officeStaffCount}"))
     } else {
       val requirement = (newTotal - officeStaffCount).toDouble / 10
-      requirements.append(NegotiationRequirement(STAFF_CAP, requirement, s"Requires ${newOfficeStaffRequired} office staff, over your base capacity : ${newTotal} / ${officeStaffCount}"))
+      requirements.append(NegotiationRequirement(STAFF_CAP, requirement, s"Requires office staff close to or exceeding your current base capacity : ${officeStaffCount}"))
     }
 
     val mutualRelationship = CountrySource.getCountryMutualRelationship(newLink.from.countryCode, newLink.to.countryCode)
@@ -154,10 +160,11 @@ object NegotiationUtil {
   case class FrequencyRestrictionByModel(threshold : Int, frequencyRestriction : Int)
 
   def getToAirportRequirements(airline : Airline, newLink : Link, existingLinkOption : Option[Link], airlineLinks : List[Link]) = {
-    val newCapacity : LinkClassValues = newLink.futureCapacity()
+    //use futureMaxCapacity as calculation, to avoid cheat of changing config after negotiation
+    val newCapacity = newLink.futureMaxCapacity()
     val newFrequency = newLink.futureFrequency()
 
-    val existingCapacity = existingLinkOption.map(_.futureCapacity()).getOrElse(LinkClassValues.getInstance())
+    val existingCapacity = existingLinkOption.map(_.futureMaxCapacity()).getOrElse(LinkClassValues.getInstance())
     val existingFrequency = existingLinkOption.map(_.futureFrequency()).getOrElse(0)
 
     val capacityDelta = normalizedCapacity(newCapacity - existingCapacity)
