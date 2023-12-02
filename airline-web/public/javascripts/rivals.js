@@ -61,7 +61,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 	var displayRivals
 	if (hideInactive) {
 	    displayRivals = loadedRivals.filter(function(rival) {
-                                    	    		  return rival.loginStatus < 3
+                                    	    		  return rival.loginStatus < 3 || rival.id == selectedAirline
                                     	    	});
 	} else {
 	    displayRivals = loadedRivals
