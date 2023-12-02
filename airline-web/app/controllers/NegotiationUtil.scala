@@ -97,10 +97,10 @@ object NegotiationUtil {
     val officeStaffCount : Int = baseOption.map(_.getOfficeStaffCapacity).getOrElse(0)
     val airlineLinksFromThisAirport = airlineLinks.filter(link => link.from.id == airport.id && (isNewLink || link.id != existingLinkOption.get.id))
 
+    val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getFutureOfficeStaffRequired).sum
     /**
      * Use futureMaxCapacity for calculating negotiation difficulty to avoid loophole of negotiating with first class and switch config
      */
-    val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(link => link.getOfficeStaffRequired(link.from, link.to, link.futureFrequency(), link.futureMaxCapacity())).sum
     val newOfficeStaffRequired : Int = {
       newLink.getOfficeStaffRequired(newLink.from, newLink.to, newLink.futureFrequency(), newLink.futureMaxCapacity())
     }
