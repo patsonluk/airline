@@ -8,6 +8,7 @@ function showRivalsCanvas(selectedAirline) {
 	highlightTab($('.rivalsCanvasTab'))
 	$('#rivalDetails').hide()
 	loadAllRivals(selectedAirline)
+	populateNavigation($("#rivalsCanvas"))
 }
 
 function toggleHideInactive(flagValue) {
@@ -60,7 +61,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 	var displayRivals
 	if (hideInactive) {
 	    displayRivals = loadedRivals.filter(function(rival) {
-                                    	    		  return rival.loginStatus < 3
+                                    	    		  return rival.loginStatus < 3 || rival.id == selectedAirline
                                     	    	});
 	} else {
 	    displayRivals = loadedRivals
@@ -478,4 +479,9 @@ function hideRivalMap() {
 	updateAirportBaseMarkers([]) //revert base markers
 	rivalMapAirlineId = undefined
 	setActiveDiv($("#rivalsCanvas"))
+}
+
+function showRivalHistory() {
+    var airlineId = $('#rivalDetails').data("airlineId")
+    showSearchCanvas(loadedRivalsById[airlineId])
 }

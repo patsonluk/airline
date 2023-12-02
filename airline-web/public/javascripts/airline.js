@@ -291,6 +291,49 @@ function updateAirportChampionDetails(airport) {
 	    		row.append("<div class='cell' style='text-align: right'>-</div>")
 	    		$('#airportDetailsChampionList').append(row)
 	    	}
+	    	$("#linkCurrentDetails").show()
+	    	$("#linkToAirportId").val(link.toAirportId)
+	    	$("#linkFromAirportId").val(link.fromAirportId)
+	    	
+	    	//load competition
+	    	$.ajax({
+	    		type: 'GET',
+	    		url: "airports/" + link.fromAirportId + "/to/" + link.toAirportId,
+	    	    contentType: 'application/json; charset=utf-8',
+	    	    dataType: 'json',
+	    	    success: function(linkConsumptions) {
+	    	    	$("#linkCompetitons .data-row").remove()
+	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
+    	    			var row = $("<div class='table-row data-row clickable' onclick='showRivalsCanvas(" + linkConsumption.airlineId + ")' data-link='rival'><div style='display: table-cell;'>" + linkConsumption.airlineName
+                                  		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
+                                  		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity)
+                                  		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality
+                                  		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.frequency + "</div></div>")
+                        if (linkConsumption.airlineId == airlineId) {
+                            $("#linkCompetitons .table-header").after(row) //self is always on top
+                        } else {
+                            $("#linkCompetitons").append(row)
+                        }
+
+	    	    	})
+
+	    	    	populateNavigation($('#linkCompetitons'))
+	    	    	if ($("#linkCompetitons .data-row").length == 0) {
+	    	    		$("#linkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
+	    	    	}
+	    	    	$("#linkCompetitons").show()
+	    	    	
+	    	    	assignAirlineColors(linkConsumptions, "airlineId")
+	    	    	plotPie(linkConsumptions, null, $("#linkCompetitionsPie"), "airlineName", "soldSeats")
+	    	    },
+	            error: function(jqXHR, textStatus, errorThrown) {
+	    	            console.log(JSON.stringify(jqXHR));
+	    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    	    }
+	    	});
+
+	    	$('#linkEventModal').data('link', link)
+	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
