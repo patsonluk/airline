@@ -8,6 +8,7 @@ function showRivalsCanvas(selectedAirline) {
 	highlightTab($('.rivalsCanvasTab'))
 	$('#rivalDetails').hide()
 	loadAllRivals(selectedAirline)
+	populateNavigation($("#rivalsCanvas"))
 }
 
 function toggleHideInactive(flagValue) {
@@ -478,4 +479,9 @@ function hideRivalMap() {
 	updateAirportBaseMarkers([]) //revert base markers
 	rivalMapAirlineId = undefined
 	setActiveDiv($("#rivalsCanvas"))
+}
+
+function showRivalHistory() {
+    var airlineId = $('#rivalDetails').data("airlineId")
+    showSearchCanvas(loadedRivalsById[airlineId])
 }
