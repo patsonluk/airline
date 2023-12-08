@@ -443,6 +443,7 @@ var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 
 function updateTime(cycle, fraction, cycleDurationEstimation) {
+	$(".currentTime").attr("title", "Current Cycle: " + cycle)
 	currrentCycle = cycle
 	currentTime = (cycle + fraction) * totalmillisecPerWeek 
 	if (refreshIntervalTimer) {
