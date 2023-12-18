@@ -49,10 +49,11 @@ $( document ).ready(function() {
 function showOfficeCanvas() {
 	setActiveDiv($("#officeCanvas"))
 	highlightTab($('.officeCanvasTab'))
-	
+
 	updateAirlineDetails()
 	loadSheets();
-	updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
+	//updateAirlineDelegateStatus($('#officeCanvas .delegateStatus'))
+	updateAirlineAssets()
 	updateCampaignSummary()
 	updateChampionedCountriesDetails()
 	updateChampionedAirportsDetails()
@@ -95,6 +96,50 @@ function updateCampaignSummary() {
     });
 }
 
+function updateAirlineAssets() {
+    $.ajax({
+        type: 'GET',
+        url: "airlines/" + activeAirline.id + "/airport-assets",
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            var $assetList = $("#officeCanvas .assetList")
+            $assetList.children("div.table-row").remove()
+
+            $.each(result, function(index, asset) {
+                var profit = asset.revenue - asset.expense
+                var margin
+                if (asset.expense == 0) {
+                    margin = "-"
+                } else {
+                    margin = (profit * 100.0 / asset.revenue).toFixed(2)
+                }
+                var $row = $("<div class='table-row clickable'></div>")
+                $row.append("<div class='cell'>" + getCountryFlagImg(asset.airport.countryCode) + asset.airport.iata + "</div>")
+                $row.append("<div class='cell'>" + asset.name + "</div>")
+                $row.append("<div class='cell' style='text-align: right;'>" + asset.level + "</div>")
+                $row.append("<div class='cell' style='text-align: right;'>$" + commaSeparateNumber(profit) + "</div>")
+                $row.append("<div class='cell' style='text-align: right;'>" + margin  + "%</div>")
+
+                $row.click(function() {
+                    showAssetModal(asset)
+                    $("#airportAssetDetailsModal").data('postUpdateFunc', function() {
+                        updateAirlineAssets()
+                    })
+                })
+                $assetList.append($row)
+            });
+            if (result.length == 0) {
+                $assetList.append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+    });
+}
+
 
 
 function updateAirlineBases() {
@@ -109,7 +154,7 @@ function updateAirlineBases() {
     	    dataType: 'json',
     	    success: function(officeCapacity) {
     	    	 $(activeAirline.baseAirports).each(function(index, base) {
-                    var row = $("<div class='table-row'></div>")
+                    var row = $("<div class='table-row clickable' data-link='airport' onclick='showAirportDetails(" + base.airportId+ ")'></div>")
                     if (base.headquarter) {
                         row.append($("<div class='cell'><img src='assets/images/icons/building-hedge.png' style='vertical-align:middle;'><span>(" + base.scale + ")</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + getAirportText(base.city, base.airportCode) + "</div>"))
 
@@ -148,6 +193,7 @@ function updateAirlineBases() {
                 if (!activeAirline.baseAirports || activeAirline.baseAirports.length == 0) {
                     $('#officeCanvas .bases').append("<div class='table-row'><div class='cell'></div></div>")
                 }
+                populateNavigation($('#officeCanvas .bases'))
     	    },
             error: function(jqXHR, textStatus, errorThrown) {
     	            console.log(JSON.stringify(jqXHR));
@@ -193,6 +239,18 @@ function updateAirlineDetails() {
             reputationHtml.append("<div class='remarks'>Current reputation adjusts slowly towards the target reputation</div>")
             reputationHtml.append("<div>Next Grade: " + airlineGradeLookup[airline.gradeValue] + "</div>")
             addTooltipHtml(infoIcon, reputationHtml, {'width' : '350px'})
+
+            $('#officeCanvas .airlineName').text(airline.name)
+            cancelAirlineRename()
+            if (isPremium()) {
+                if (airline.renameCooldown) {
+                    disableButton($('#officeCanvas .airlineNameDisplaySpan .editButton'), "Cannot rename yet. Cooldown: " + toReadableDuration(airline.renameCooldown))
+                } else {
+                    enableButton($('#officeCanvas .airlineNameDisplaySpan .editButton'))
+                }
+            } else {
+                disableButton($('#officeCanvas .airlineNameDisplaySpan .editButton'), "Airline rename is only available to Patreon members")
+            }
 
 	    	$('#airlineCode').text(airline.airlineCode)
 	    	$('#airlineCodeInput').val(airline.airlineCode)
@@ -359,9 +417,9 @@ function updateIncomeSheet(airlineIncome) {
         $("#othersLoungeUpkeep").text('$' + commaSeparateNumber(airlineIncome.othersLoungeUpkeep))
         $("#othersLoungeCost").text('$' + commaSeparateNumber(airlineIncome.othersLoungeCost))
         $("#othersLoungeIncome").text('$' + commaSeparateNumber(airlineIncome.othersLoungeIncome))
-        //$("#othersShuttleCost").text('$' + commaSeparateNumber(airlineIncome.othersShuttleCost))
+        $("#othersAssetExpense").text('$' + commaSeparateNumber(airlineIncome.othersAssetExpense))
+        $("#othersAssetRevenue").text('$' + commaSeparateNumber(airlineIncome.othersAssetRevenue))
         $("#othersServiceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersServiceInvestment))
-        $("#othersMaintenanceInvestment").text('$' + commaSeparateNumber(airlineIncome.othersMaintenanceInvestment))
         $("#othersAdvertisement").text('$' + commaSeparateNumber(airlineIncome.othersAdvertisement))
         $("#othersFuelProfit").text('$' + commaSeparateNumber(airlineIncome.othersFuelProfit))
         $("#othersDepreciation").text('$' + commaSeparateNumber(airlineIncome.othersDepreciation))
@@ -405,6 +463,7 @@ function updateCashFlowSheet(airlineCashFlow) {
         $("#cashFlowSheet .createLink").text('$' + commaSeparateNumber(airlineCashFlow.createLink))
         $("#cashFlowSheet .facilityConstruction").text('$' + commaSeparateNumber(airlineCashFlow.facilityConstruction))
         $("#cashFlowSheet .oilContract").text('$' + commaSeparateNumber(airlineCashFlow.oilContract))
+        $("#cashFlowSheet .assetTransactions").text('$' + commaSeparateNumber(airlineCashFlow.assetTransactions))
 	}
 }
 
@@ -509,9 +568,84 @@ function setAirlineCode(airlineCode) {
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
+	    },
+        beforeSend: function() {
+            $('body .loadingSpinner').show()
+        },
+        complete: function(){
+            $('body .loadingSpinner').hide()
+        }
 	});
 }
+
+
+function editAirlineName() {
+	$('#officeCanvas .airlineNameDisplaySpan').hide()
+	$('#officeCanvas .airlineNameInput').val(activeAirline.name)
+	validateAirlineName(activeAirline.name)
+	$('#officeCanvas .airlineNameInputSpan').show()
+}
+
+function validateAirlineName(airlineName) {
+    $.ajax({
+        type: 'GET',
+        url: "signup/airline-name-check?airlineName=" + airlineName,
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(result) {
+            if (result.ok) {
+                enableButton('#officeCanvas .airlineNameInputSpan .confirm')
+                $('#officeCanvas .airlineNameInputSpan .warning').hide()
+            } else {
+                disableButton('#officeCanvas .airlineNameInputSpan .confirm')
+                $('#officeCanvas .airlineNameInputSpan .warning').text(result.rejection)
+                $('#officeCanvas .airlineNameInputSpan .warning').show()
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    })
+}
+
+function confirmAirlineRename(airlineName) {
+    promptConfirm("Change airline name to " + airlineName + " ? Can only rename every 30 days.", function() {
+        var airlineId = activeAirline.id
+        	var url = "airlines/" + airlineId + "/airline-name"
+            var data = { "airlineName" : airlineName }
+        	$.ajax({
+        		type: 'PUT',
+        		url: url,
+        	    data: JSON.stringify(data),
+        	    contentType: 'application/json; charset=utf-8',
+        	    dataType: 'json',
+        	    success: function(airline) {
+        	    	loadUser(false)
+        	    	showOfficeCanvas()
+        	    },
+                error: function(jqXHR, textStatus, errorThrown) {
+        	            console.log(JSON.stringify(jqXHR));
+        	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        	    },
+                beforeSend: function() {
+                    $('body .loadingSpinner').show()
+                },
+                complete: function(){
+                    $('body .loadingSpinner').hide()
+                }
+        	});
+    })
+}
+
+function cancelAirlineRename() {
+    $('#officeCanvas .airlineNameDisplaySpan').show()
+	$('#officeCanvas .airlineNameInputSpan').hide()
+}
+
+
+
+
 
 function loadLogoTemplates() {
 	$('#logoTemplates').empty()
@@ -963,6 +1097,7 @@ function updateResetAirlineInfo() {
 	    	
 	    	$('.resetTooltip .airplanes').text(commaSeparateNumber(result.airplanes))
 	    	$('.resetTooltip .bases').text(commaSeparateNumber(result.bases))
+	    	$('.resetTooltip .assets').text(commaSeparateNumber(result.assets))
 	    	$('.resetTooltip .loans').text(commaSeparateNumber(result.loans))
 	    	$('.resetTooltip .oilContracts').text(commaSeparateNumber(result.oilContracts))
 	    	$('.resetTooltip .cash').text(commaSeparateNumber(result.existingBalance))

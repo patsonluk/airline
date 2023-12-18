@@ -238,7 +238,7 @@ object ConsumptionHistorySource {
       }
 
       val result : Map[Route, (PassengerType.Value, Int)] = linkConsiderationsByRouteId.view.map {
-        case (routeId: Int, considerations: ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0, routeId), routeConsumptions(routeId))
+        case (routeId: Int, considerations: ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0, List.empty, routeId), routeConsumptions(routeId))
       }.toMap
 
       println(s"Loaded ${result.size} routes for airport pair ${fromAirportId} and ${toAirportId})")
@@ -317,7 +317,7 @@ object ConsumptionHistorySource {
               }
 
               val result = linkConsiderationsByRouteId.map {
-                case (routeId: Int, considerations: ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0, routeId), routeConsumptions(routeId))
+                case (routeId: Int, considerations: ListBuffer[LinkConsideration]) => (new Route(considerations.toList, 0, List.empty, routeId), routeConsumptions(routeId))
               }.toMap
 
               println("Loaded " + result.size + " routes related to link " + link)
@@ -352,6 +352,7 @@ object ConsumptionHistorySource {
             result += LinkConsumptionHistory(link = link, 
                 passengerCount = resultSet.getInt("passenger_count"), 
                 homeAirport = AirportCache.getAirport(resultSet.getInt("home_airport")).get,
+                destinationAirport = AirportCache.getAirport(resultSet.getInt("destination_airport")).get,
                 passengerType = PassengerType(resultSet.getInt("passenger_type")),
                 preferredLinkClass = preferredLinkClass,
                 preferenceType = FlightPreferenceType(resultSet.getInt("preference_type")),

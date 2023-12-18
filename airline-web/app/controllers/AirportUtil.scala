@@ -15,50 +15,46 @@ object AirportUtil {
 
   def getAirportChampions() : List[AirportWithChampion] = {
     val latestHistoryCycle = AirportSimulation.getHistoryCycle(MyWebSocketActor.lastSimulatedCycle, 0)
-    val compareToCycle = AirportSimulation.getHistoryCycle(MyWebSocketActor.lastSimulatedCycle, -1)
+    val compareToCycle = AirportSimulation.getHistoryCycle(MyWebSocketActor.lastSimulatedCycle, -2)
+    val cycleDelta = latestHistoryCycle - compareToCycle
     val allAirportsLatestLoyalists : MapView[Int, Map[Int, Int]] = LoyalistSource.loadLoyalistHistoryByCycle(latestHistoryCycle).groupBy(_.entry.airport.id).view.mapValues(_.map(history => (history.entry.airline.id, history.entry.amount)).toMap)
     val allAirportsPreviousLoyalists : MapView[Int, Map[Int, Int]] = LoyalistSource.loadLoyalistHistoryByCycle(compareToCycle).groupBy(_.entry.airport.id).view.mapValues(_.map(history => (history.entry.airline.id, history.entry.amount)).toMap)
-    val topLoyalistGainAirlineIdByAirportId : Map[Int, Option[Int]] = allAirportsLatestLoyalists.map {
-      case (airportId, latestLoyalistsByAirlineId) => {
-        val deltaByAirline : List[(Int, Int)] = latestLoyalistsByAirlineId.map {
-          case(airlineId, latestCount) =>
-            val previousCount = allAirportsPreviousLoyalists.get(airportId) match {
-              case Some(previousCountByAirlineId) => previousCountByAirlineId.getOrElse(airlineId, 0)
-              case None => 0
-            }
-            (airlineId, latestCount - previousCount)
-        }.toList
-        val topAirlineId : Option[Int] = deltaByAirline.sortBy(_._2).lastOption.map(_._1)
-
-        (airportId, topAirlineId)
-      }
-    }.toMap
-
     val loyalistByAirportId : Map[Int, List[AirportChampionInfo]] = ChampionUtil.loadAirportChampionInfo().groupBy(_.loyalist.airport.id)
 
     cachedAirportsByPower.map { airport =>
-      val championAirline : Option[Airline] = loyalistByAirportId.get(airport.id).map { loyalists =>
-        loyalists.sortBy(_.ranking).map(_.loyalist.airline).head
-      }
+      loyalistByAirportId.get(airport.id) match {
+        case Some(loyalists) =>
+          val airlinesSortByRank = loyalists.sortBy(_.ranking).map(_.loyalist.airline)
+          val championAirline = airlinesSortByRank.headOption
+          val contestingAirline = {
+            if (airlinesSortByRank.size < 2) {
+              None
+            } else {
+              val championCurrentLoyalistCount = getLoyalistCount(allAirportsLatestLoyalists, airport, airlinesSortByRank(0))
+              val contenderCurrentLoyalistCount = getLoyalistCount(allAirportsLatestLoyalists, airport, airlinesSortByRank(1))
+              val championLoyalistDeltaPerCycle = (championCurrentLoyalistCount - getLoyalistCount(allAirportsPreviousLoyalists, airport, airlinesSortByRank(0))).toDouble / cycleDelta
+              val contenderLoyalistDeltaPerCycle = (contenderCurrentLoyalistCount - getLoyalistCount(allAirportsPreviousLoyalists, airport, airlinesSortByRank(1))).toDouble / cycleDelta
 
-      val contestingAirline = championAirline match {
-        case None => None
-        case Some(championAirline) => topLoyalistGainAirlineIdByAirportId.get(airport.id) match {
-          case None => None
-          case Some(topLoyalistGainAirlineIdOption) => {
-            topLoyalistGainAirlineIdOption match {
-              case Some(topLoyalistGainAirlineId) =>
-                if (topLoyalistGainAirlineId != championAirline.id) {
-                  AirlineCache.getAirline(topLoyalistGainAirlineId)
-                } else {
-                  None
-                }
-              case None => None
+              val predictionDuration = 200 //what about 200 cycles from now?
+              val championPredictedLoyalistCount = championCurrentLoyalistCount + predictionDuration * championLoyalistDeltaPerCycle
+              val contenderPredictedLoyalistCount = contenderCurrentLoyalistCount + predictionDuration * contenderLoyalistDeltaPerCycle
+              if (contenderPredictedLoyalistCount > championPredictedLoyalistCount) {
+                Some(airlinesSortByRank(1))
+              } else {
+                None
+              }
             }
           }
-        }
+          AirportWithChampion(airport, championAirline, contestingAirline)
+        case None => AirportWithChampion(airport, None, None)
       }
-      AirportWithChampion(airport, championAirline, contestingAirline)
+    }
+  }
+
+  def getLoyalistCount(allAirportsLoyalists : MapView[Int, Map[Int, Int]], airport : Airport, airline : Airline) : Int = {
+    allAirportsLoyalists.get(airport.id) match {
+      case Some(loyalistsByAirline) => loyalistsByAirline.getOrElse(airline.id, 0)
+      case None => 0
     }
   }
 

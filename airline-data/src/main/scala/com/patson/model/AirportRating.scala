@@ -23,8 +23,8 @@ case class AirportRating(economicPowerRating : Int, competitionRating : Int, cou
 }
 
 object AirportRating {
-  val modelAirportPower : Long = AirportSource.loadAllAirports().map(_.power).sorted.last
-  val modelCountryPower : Long = CountrySource.loadAllCountries().map(country => country.airportPopulation.toLong * country.income).sorted.last
+  val modelAirportPower : Long = 26_475_285L * 36194 //Use static value here, HND before boost
+  val modelCountryPower : Long = 141_882_566L * 54629 //Use static value here, USA before boost
 
   val MAX_COMPETITION_RATIO = 0.0001 //ratio of departingPassenger / airport power. If the ratio reaches this ratio, competition rating is considered 100
 

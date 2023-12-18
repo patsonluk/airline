@@ -2,11 +2,11 @@ package controllers
 
 import com.patson.data.{AdminSource, AirlineSource, CycleSource, IpSource, UserSource, UserUuidSource}
 import com.patson.model.UserStatus.UserStatus
-import com.patson.model.{Airline, AirlineModifier, AirlineModifierType, User, UserModifier, UserStatus}
+import com.patson.model.{Airline, AirlineModifier, AirlineModifierType, BannerLoyaltyAirlineModifier, User, UserModifier, UserStatus}
 import com.patson.util.{AirlineCache, AirportCache}
 import controllers.AuthenticationObject.Authenticated
 import controllers.GoogleImageUtil.{AirportKey, CityKey}
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.{JsArray, JsObject, Json}
 import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
 import websocket.Broadcaster
@@ -97,6 +97,29 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
                 removeAirlineModifier(AirlineModifierType.NERFED, targetUser.getAccessibleAirlines())
                 //unbanUserIp(targetUserId)
                 Right(Ok(Json.obj("action" -> action)))
+              case "set-user-level" =>
+                if (!adminUser.isSuperAdmin) {
+                  Left(BadRequest(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the current user is ${adminUser.adminStatus}"))
+                }
+
+                //add the new one
+                val inputJson = request.body.asJson.get.asInstanceOf[JsObject]
+                val level = inputJson("level").as[Int]
+
+                UserSource.updateUser(targetUser.copy(level = level))
+                Right(Ok(Json.obj("action" -> action)))
+              case "set-banner-winner" =>
+                if (!adminUser.isSuperAdmin) {
+                  Left(BadRequest(s"ADMIN - Forbidden action $action user ${targetUser.userName} as the current user is ${adminUser.adminStatus}"))
+                }
+
+                //add the new one
+                val inputJson = request.body.asJson.get.asInstanceOf[JsObject]
+                val airlineId = inputJson("airlineId").as[Int]
+                val strength = inputJson("strength").as[Int]
+
+                AirlineSource.saveAirlineModifier(airlineId, BannerLoyaltyAirlineModifier(strength, CycleSource.loadCycle()))
+                Right(Ok(Json.obj("action" -> action)))
               case "switch" =>
                 if (adminUser.isSuperAdmin) {
 
@@ -153,17 +176,20 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
         case (user, ipDetails) =>
           user.getAccessibleAirlines().foreach { airline =>
             val airlineModifiers = AirlineSource.loadAirlineModifierByAirlineId(airline.id)
-            result = result.append(Json.obj(
+            var userJson = Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
               "userId" -> user.id,
               "username" -> user.userName,
-              "userModifiers" -> user.modifiers,
               "userStatus" -> user.status,
+              "userLevel" -> user.level,
+              "userModifiers" -> user.modifiers,
               "airlineModifiers" -> airlineModifiers.map(_.modifierType),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
               "occurrence" -> ipDetails.occurrence,
-            ))
+            )
+            airline.getHeadQuarter().foreach(hq => userJson = userJson + ("hqAirport" -> Json.toJson(hq.airport)))
+            result = result.append(userJson)
           }
 
       }
@@ -196,17 +222,20 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
         case (user, ipDetails) =>
           user.getAccessibleAirlines().foreach { airline =>
             val airlineModifiers = AirlineSource.loadAirlineModifierByAirlineId(airline.id)
-            result = result.append(Json.obj(
+            var userJson = Json.obj(
               "airlineName" -> airline.name,
               "airlineId" -> airline.id,
               "userId" -> user.id,
               "username" -> user.userName,
+              "userLevel" -> user.level,
               "userStatus" -> user.status,
               "userModifiers" -> user.modifiers,
               "airlineModifiers" -> airlineModifiers.map(_.modifierType),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
               "occurrence" -> ipDetails.occurrence,
-            ))
+            )
+            airline.getHeadQuarter().foreach(hq => userJson = userJson + ("hqAirport" -> Json.toJson(hq.airport)))
+            result = result.append(userJson)
           }
 
       }

@@ -2,13 +2,14 @@ package com.patson.model
 
 import FlightCategory._
 import com.patson.data.AirportSource
+import com.patson.util.AirportCache
 
 object AirlineBaseSpecialization extends Enumeration {
   abstract class Specialization() extends super.Val {
     val getType : BaseSpecializationType.Value
     val scaleRequirement : Int
     val label : String
-    val descriptions : List[String]
+    def descriptions(airport : Airport) : List[String]
     val free = false
     def apply(airline : Airline, airport : Airport) {}
     def unapply(airline: Airline, airport : Airport) {}
@@ -18,7 +19,7 @@ object AirlineBaseSpecialization extends Enumeration {
     override val label = "Negotiation Expert I"
     override val free = true
     override val scaleRequirement : Int = 8
-    override val descriptions = List(s"Increased frequency cap gain per scale")
+    override def descriptions(airport : Airport) = List(s"Increased frequency cap gain per scale")
   }
 
   case class NegotiationExpert2Specialization() extends Specialization {
@@ -26,7 +27,7 @@ object AirlineBaseSpecialization extends Enumeration {
     override val label = "Negotiation Expert II"
     override val free = true
     override val scaleRequirement : Int = 13
-    override val descriptions = List(s"Further increased frequency cap gain per scale")
+    override def descriptions(airport : Airport) = List(s"Further increased frequency cap gain per scale")
   }
 
   case class DelegateSpecialization() extends Specialization {
@@ -35,7 +36,30 @@ object AirlineBaseSpecialization extends Enumeration {
     val delegateBoost = 3
     override val free = true
     override val scaleRequirement : Int = 12
-    override val descriptions = List(s"$delegateBoost extra delegates")
+    override def descriptions(airport : Airport) = List(s"$delegateBoost extra delegates")
+  }
+
+  case class PowerhouseSpecialization() extends Specialization {
+    override val getType = BaseSpecializationType.AIRPORT_POWER
+    override val label = "Powerhouse"
+    override val free = true
+    override val scaleRequirement : Int = 14
+    val populationBoost = 30000
+    private[this] val minIncomeBoost = 3000 //should at least boost income by $3000
+    private[this] val percentageBoost = 20 //20% if lower than minIncomeBoost then minIncomeBoost
+
+    def incomeLevelBoost(airport : Airport) = {
+      Computation.computeIncomeLevelBoostFromPercentage(airport.baseIncome, minIncomeBoost, percentageBoost)
+    }
+    override def descriptions(airport : Airport) =  {
+      List(s"Increase population by $populationBoost", s"Increase income level by ${incomeLevelBoost(airport)}")
+    }
+    override def apply(airline: Airline, airport : Airport) = {
+      AirportCache.invalidateAirport(airport.id)
+    }
+    override def unapply(airline: Airline, airport : Airport) = {
+      AirportCache.invalidateAirport(airport.id)
+    }
   }
 
   case class LoyaltySpecialization() extends Specialization {
@@ -43,11 +67,11 @@ object AirlineBaseSpecialization extends Enumeration {
     override val label = "Sports Events Sponsorship"
     val loyaltyBoost = 10
     override val scaleRequirement : Int = 11
-    override val descriptions = List(s"Boost loyalty of this airport by $loyaltyBoost")
+    override def descriptions(airport : Airport) = List(s"Boost loyalty of this airport by $loyaltyBoost")
 
     override def apply(airline: Airline, airport : Airport) = {
       unapply(airline, airport) //unapply first to avoid duplicates
-      AirportSource.saveAirlineAppealBonus(airport.id, airline.id, AirlineBonus(BonusType.BASE_SPECIALIZATION_BONUS, AirlineAppeal(loyalty = loyaltyBoost, awareness = 0), None))
+      AirportSource.saveAirlineAppealBonus(airport.id, airline.id, AirlineBonus(BonusType.BASE_SPECIALIZATION_BONUS, AirlineAppeal(loyalty = loyaltyBoost), None))
     }
 
     override def unapply(airline: Airline, airport : Airport) = {
@@ -69,7 +93,7 @@ object AirlineBaseSpecialization extends Enumeration {
       case _ => 1.2
     }
     override val label = "Domestic Hub"
-    override val descriptions = List("Reduce staff required for domestic flight by 20%", "Increase staff required for international flight by 20%")
+    override def descriptions(airport : Airport) = List("Reduce staff required for domestic flight by 20%", "Increase staff required for international flight by 20%")
   }
 
   case class InternationalSpecialization() extends FlightTypeSpecialization {
@@ -80,7 +104,7 @@ object AirlineBaseSpecialization extends Enumeration {
     }
 
     override val label = "International Hub"
-    override val descriptions = List("Reduce staff required for international flight by 20%", "Increase staff required for domestic flight by 20%")
+    override def descriptions(airport : Airport) = List("Reduce staff required for international flight by 20%", "Increase staff required for domestic flight by 20%")
   }
 
   case class EfficiencySpecialization() extends FlightTypeSpecialization {
@@ -90,7 +114,7 @@ object AirlineBaseSpecialization extends Enumeration {
     }
 
     override val label = "Efficiency"
-    override val descriptions = List("Reduce staff required for all flights by additional 5%")
+    override def descriptions(airport : Airport) = List("Reduce staff required for all flights by additional 5%")
   }
 
   abstract class BrandSpecialization extends Specialization {
@@ -103,7 +127,7 @@ object AirlineBaseSpecialization extends Enumeration {
   case class BudgetAirlineSpecialization() extends BrandSpecialization {
     override val scaleRequirement : Int = 9
     override val label = "Branding: Budget"
-    override val descriptions = List("Your flights from/to this airport are slightly more appealing to Economy class PAX", "Your flights from/to this airport are slightly less appealing to Business and First class PAX")
+    override def descriptions(airport : Airport) = List("Your flights from/to this airport are slightly more appealing to Economy class PAX", "Your flights from/to this airport are slightly less appealing to Business and First class PAX")
     override val linkCostDeltaByClass : Map[LinkClass, Double] = Map(
       ECONOMY -> -0.05,
       BUSINESS -> 0.05,
@@ -114,7 +138,7 @@ object AirlineBaseSpecialization extends Enumeration {
   case class PremiumAirlineSpecialization() extends BrandSpecialization {
     override val scaleRequirement : Int = 9
     override val label = "Branding: Premium"
-    override val descriptions = List("Your flights from/to this airport are slightly less appealing to Economy class PAX", "Your flights from/to this airport are slightly more appealing to Business and First class PAX")
+    override def descriptions(airport : Airport) = List("Your flights from/to this airport are slightly less appealing to Economy class PAX", "Your flights from/to this airport are slightly more appealing to Business and First class PAX")
     override val linkCostDeltaByClass : Map[LinkClass, Double] = Map(
       ECONOMY -> 0.05,
       BUSINESS -> -0.05,
@@ -133,10 +157,11 @@ object AirlineBaseSpecialization extends Enumeration {
   val DELEGATE_RECRUITER = DelegateSpecialization()
   val BRANDING_BUDGET = BudgetAirlineSpecialization()
   val BRANDING_PREMIUM = PremiumAirlineSpecialization()
+  val POWERHOUSE = PowerhouseSpecialization()
 }
 
 object BaseSpecializationType extends Enumeration {
   type SpecializationType = Value
-  val FLIGHT_TYPE, DELEGATE, BRANDING, LOYALTY, NEGOTIATION = Value
+  val FLIGHT_TYPE, DELEGATE, BRANDING, LOYALTY, NEGOTIATION, AIRPORT_POWER = Value
   val COOLDOWN = 100 //change every 100 cycles
 }

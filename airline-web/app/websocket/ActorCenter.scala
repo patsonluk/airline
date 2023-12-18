@@ -5,7 +5,7 @@ import akka.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import com.patson.model.Airline
 import com.patson.model.notice.{AirlineNotice, NoticeCategory}
 import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
-import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache}
+import com.patson.util.{AirlineCache, AirplaneModelDiscountCache, AirplaneOwnershipCache, AirportCache}
 import com.typesafe.config.ConfigFactory
 import controllers.{AirlineTutorial, AirportUtil, GooglePhotoUtil, SearchUtil}
 import models.PendingAction
@@ -99,6 +99,8 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
   val resetTimeout = 10000
   var pendingResetTask : Option[ResetTask] = None
   val timer = new Timer()
+  val configFactory = ConfigFactory.load()
+  val bannerEnabled = if (configFactory.hasPath("bannerEnabled")) configFactory.getBoolean("bannerEnabled") else false
 
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
@@ -110,9 +112,13 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
           AirlineCache.invalidateAll()
           AirportCache.invalidateAll()
           AirplaneOwnershipCache.invalidateAll()
+          AirplaneModelDiscountCache.invalidateAll()
           AirportUtil.refreshAirports()
           SearchUtil.refreshAlliances() //as sim might have deleted alliances
-          GooglePhotoUtil.refreshBanners()
+          if (bannerEnabled) {
+            println("Banner is enabled. Refreshing banner on cycle complete")
+            GooglePhotoUtil.refreshBanners()
+          }
           println(s"${self.path} invalidated cache")
       }
 

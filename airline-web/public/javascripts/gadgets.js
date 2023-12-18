@@ -6,6 +6,17 @@ function htmlEncode(str){
   });
 }
 
+function generateSimpleImageBar(imageSrc, count) {
+    var containerDiv = $("<div>")
+
+    for (i = 0 ; i < count ; i ++) {
+		var image = $("<img src='" + imageSrc + "'>")
+		containerDiv.append(image)
+    }
+
+    return containerDiv
+}
+
 function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, callback) {
     generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, 10, callback)
 }
@@ -129,9 +140,14 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	}
 	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy : '-'
 	var businessValue = linkValues.hasOwnProperty('business') ? linkValues.business : '-'
-	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'	
-		
- 	return prefix + economyValue + suffix + " / " + prefix + businessValue + suffix + " / " + prefix + firstValue + suffix
+	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
+
+
+	if (economyValue >= 1_000_000 || businessValue >= 1_000_000 || firstValue >= 1_000_000) {
+ 	    return prefix + commaSeparateNumber(economyValue) + suffix + " / " + prefix + commaSeparateNumber(businessValue) + suffix + " / " + prefix + commaSeparateNumber(firstValue) + suffix
+    } else {
+        return prefix + economyValue + suffix + " / " + prefix + businessValue + suffix + " / " + prefix + firstValue + suffix
+    }
 }
 
 function changeColoredElementValue(element, newValue) {
@@ -298,9 +314,11 @@ function getAirlineModifiersSpan(modifiers) {
     $.each(modifiers, function(index, modifier) {
         if (modifier == "NERFED") {
            result += "<span><img src='assets/images/icons/ghost.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
+        } else if (modifier == "BANNER_LOYALTY_BOOST") {
+            result += "<span><img src='assets/images/icons/megaphone.png' title='Banner contest winner!' style='vertical-align:middle;'/></span>"
+        }
 //        } else { //let's no show modifiers that are not listed for now. since they could be common
 //           result += "<span>" + modifier + "</span>"
-        }
     })
     return result
 }
@@ -368,6 +386,55 @@ function getOpennessSpan(openness) {
 	}*/
 	return "<span>" + description + "(" + openness + ")&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
 	
+}
+
+function scrollToRow($matchingRow, $container) {
+    var row = $matchingRow[0]
+    var baseOffset = $container.find(".table-row")[0].offsetTop //somehow first row is not 0...
+    var realOffset = row.offsetTop - baseOffset
+    $container.stop(true, true) //stop previous animation
+    $container.animate ({scrollTop: realOffset}, "fast");
+}
+
+/*
+Get a span with value and a tool tip of breakdown
+*/
+function getBoostSpan(finalValue, boosts, $tooltip) {
+    var $valueSpan = $('<span>' + commaSeparateNumber(finalValue) + '</span>')
+    if (boosts) {
+        $valueSpan.css('color', '#41A14D')
+        $tooltip.find('.table .table-row').remove()
+        var $table = $tooltip.find('.table')
+        $.each(boosts, function(index, entry) {
+            var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 30%; text-align:right;">+' + commaSeparateNumber(entry.boost) + '</div></div>')
+            $row.css('color', 'white')
+            $table.append($row)
+        })
+
+        $valueSpan.hover( function() {
+             var yPos = $(this).offset().top - $(window).scrollTop() + $(this).height()
+             var xPos = $(this).offset().left - $(window).scrollLeft() + $(this).width() - $tooltip.width() / 2
+
+             $tooltip.css('top', yPos + 'px')
+             $tooltip.css('left', xPos + 'px')
+             $tooltip.show()
+        }, function() { $tooltip.hide() }
+        )
+    }
+    return $valueSpan
+}
+
+//clone from template if not exists, assign with new id; otherwise return the previously created object
+function createIfNotExist($template, id) {
+    var $target = $('#' + id)
+    if ($target.length) {
+        return $target
+    }
+    $target = $template.clone()
+    $target.prop('id', id)
+    $template.parent().append($target) //has to attach it somewhere
+
+    return $target
 }
 
 function sortPreserveOrder(array, property, ascending) {
@@ -461,9 +528,8 @@ function setActiveDiv(activeDiv, callback) {
 	if (existingActiveDiv.length > 0){
 	    existingActiveDiv.removeClass('active')
 	    activeDiv.addClass('active')
-	    existingActiveDiv.fadeOut(200, function() {
-		    activeDiv.fadeIn(200, callback)
-        })
+        existingActiveDiv.hide()
+        activeDiv.fadeIn(400, callback)
 	} else {
 		if (activeDiv.is(":visible")) { //do nothing. selecting the same div as before
 		    if (callback) {
@@ -564,9 +630,8 @@ function disableButton(button, reason) {
         }
     } else {
         if (reason) {
-    //        $(button).attr("title", reason)
-    //        $(button).data("replacedTitle", true)
-
+            //remove any existing tooltip
+            $(button).find('.tooltiptext').remove()
             //add tooltip
             $(button).addClass("tooltip")
             var $descriptionSpan = $('<span class="tooltiptext below alignLeft" style="width: 400px;  text-transform: none;">')
@@ -700,3 +765,30 @@ function isTouchDevice() {
   }
 }
 
+
+function bindEnter(bindToElement, actionFunction) {
+   $(bindToElement).keyup(function(ev) {
+       // 13 is ENTER
+       if (ev.which === 13) {
+          actionFunction()
+       }
+   });
+}
+
+function isPremium() {
+    return activeUser && activeUser.level > 0
+}
+
+//from millisec
+function toReadableDuration(duration) {
+  var hours = Math.floor((duration / (1000 * 60 * 60)) % 24),
+  days = Math.floor((duration / (1000 * 60 * 60 * 24)));
+  var result = ""
+  if (days > 0) {
+    result += (days == 1 ? "1 day" : days + " days")
+  }
+  if (hours > 0) {
+    result += " " + (hours == 1 ? "1 hour" : hours + " hours")
+  }
+  return result.trim()
+}

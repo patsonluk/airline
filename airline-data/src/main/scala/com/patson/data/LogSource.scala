@@ -96,6 +96,10 @@ object LogSource {
       while (resultSet.next()) {
         ids.append(resultSet.getInt("id"))
       }
+      if (ids.isEmpty) {
+        return List.empty
+      }
+
       resultSet.beforeFirst()
 
       val propertiesById = HashMap[Int, HashMap[String, String]]()

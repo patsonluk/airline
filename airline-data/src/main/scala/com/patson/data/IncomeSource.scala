@@ -31,7 +31,7 @@ object IncomeSource {
     val incomePreparedStatement = connection.prepareStatement("REPLACE INTO " + INCOME_TABLE + "(airline, profit, revenue, expense, period, cycle) VALUES(?,?,?,?,?,?)")
     val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     val transactionsPreparedStatement = connection.prepareStatement("REPLACE INTO " + TRANSACTIONS_INCOME_TABLE + "(airline, profit, revenue, expense, capital_gain, create_link, period, cycle) VALUES(?,?,?,?,?,?,?,?)")
-    val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, maintenance_investment, advertisement, lounge_upkeep, lounge_cost, lounge_income, shuttle_cost, fuel_profit, depreciation, overtime_compensation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, advertisement, lounge_upkeep, lounge_cost, lounge_income, asset_expense, asset_revenue, fuel_profit, depreciation, overtime_compensation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     
     try {
       connection.setAutoCommit(false)
@@ -82,12 +82,12 @@ object IncomeSource {
           othersPreparedStatement.setLong(5, income.others.loanInterest)
           othersPreparedStatement.setLong(6, income.others.baseUpkeep)
           othersPreparedStatement.setLong(7, income.others.serviceInvestment)
-          othersPreparedStatement.setLong(8, income.others.maintenanceInvestment)
-          othersPreparedStatement.setLong(9, income.others.advertisement)
-          othersPreparedStatement.setLong(10, income.others.loungeUpkeep)
-          othersPreparedStatement.setLong(11, income.others.loungeCost)
-          othersPreparedStatement.setLong(12, income.others.loungeIncome)
-          othersPreparedStatement.setLong(13, income.others.shuttleCost)
+          othersPreparedStatement.setLong(8, income.others.advertisement)
+          othersPreparedStatement.setLong(9, income.others.loungeUpkeep)
+          othersPreparedStatement.setLong(10, income.others.loungeCost)
+          othersPreparedStatement.setLong(11, income.others.loungeIncome)
+          othersPreparedStatement.setLong(12, income.others.assetExpense)
+          othersPreparedStatement.setLong(13, income.others.assetRevenue)
           othersPreparedStatement.setLong(14, income.others.fuelProfit)
           othersPreparedStatement.setLong(15, income.others.depreciation)
           othersPreparedStatement.setLong(16, income.others.overtimeCompensation)
@@ -135,7 +135,8 @@ object IncomeSource {
       deleteStatement.setInt(1, cycle)
       deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
-      
+
+      deleteStatement.close()
       connection.commit
     } finally {
       connection.close()
@@ -166,7 +167,8 @@ object IncomeSource {
       deleteStatement.setInt(1, cycleAndBefore)
       deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
-      
+
+      deleteStatement.close()
       connection.commit
     } finally {
       connection.close()
@@ -238,12 +240,12 @@ object IncomeSource {
                          baseUpkeep = resultSet.getLong("o.base_upkeep"),
                          overtimeCompensation = resultSet.getLong("o.overtime_compensation"),
                          serviceInvestment = resultSet.getLong("o.service_investment"), 
-                         maintenanceInvestment = resultSet.getLong("o.maintenance_investment"),
-                         advertisement = resultSet.getLong("o.advertisement"), 
+                         advertisement = resultSet.getLong("o.advertisement"),
                          loungeUpkeep = resultSet.getLong("o.lounge_upkeep"),
                          loungeCost = resultSet.getLong("o.lounge_cost"),
                          loungeIncome = resultSet.getLong("o.lounge_income"),
-                         shuttleCost = resultSet.getLong("o.shuttle_cost"),
+                         assetExpense = resultSet.getLong("o.asset_expense"),
+                         assetRevenue = resultSet.getLong("o.asset_revenue"),
                          fuelProfit = resultSet.getLong("o.fuel_profit"),
                          depreciation = resultSet.getLong("o.depreciation"),
                          period = Period(resultSet.getInt("o.period")),

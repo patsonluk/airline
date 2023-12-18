@@ -233,6 +233,8 @@ object DelegateSource {
 
             result.getOrElseUpdate(task.campaign, ListBuffer[BusyDelegate]()).append(delegate)
           }
+          delegateResultSet.close()
+          delegatePreparedStatement.close()
           result.view.mapValues(_.toList).toMap
         }
       } finally {

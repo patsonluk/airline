@@ -18,7 +18,7 @@ object CashFlowSource {
   def saveCashFlows(cashFlows: List[AirlineCashFlow]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val cashFlowPreparedStatement = connection.prepareStatement("REPLACE INTO " + CASH_FLOW_TABLE + "(airline, cash_flow, operation, loan_interest, loan_principle, base_construction, buy_airplane, sell_airplane, create_link, facility_construction, oil_contract, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val cashFlowPreparedStatement = connection.prepareStatement("REPLACE INTO " + CASH_FLOW_TABLE + "(airline, cash_flow, operation, loan_interest, loan_principle, base_construction, buy_airplane, sell_airplane, create_link, facility_construction, oil_contract, asset_transactions, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     
     try {
       connection.setAutoCommit(false)
@@ -35,8 +35,9 @@ object CashFlowSource {
           cashFlowPreparedStatement.setLong(9, cashFlow.createLink)
           cashFlowPreparedStatement.setLong(10, cashFlow.facilityConstruction)
           cashFlowPreparedStatement.setLong(11, cashFlow.oilContract)
-          cashFlowPreparedStatement.setInt(12, period.id)
-          cashFlowPreparedStatement.setInt(13, cashFlow.cycle)
+          cashFlowPreparedStatement.setLong(12, cashFlow.assetTransactions)
+          cashFlowPreparedStatement.setInt(13, period.id)
+          cashFlowPreparedStatement.setInt(14, cashFlow.cycle)
           cashFlowPreparedStatement.addBatch()
       }
       
@@ -56,7 +57,8 @@ object CashFlowSource {
       deleteStatement.setInt(1, cycle)
       deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
-      
+
+      deleteStatement.close()
       connection.commit
     } finally {
       connection.close()
@@ -72,7 +74,8 @@ object CashFlowSource {
       deleteStatement.setInt(1, cycleAndBefore)
       deleteStatement.setInt(2, period.id)
       deleteStatement.executeUpdate()
-      
+
+      deleteStatement.close()
       connection.commit
     } finally {
       connection.close()
@@ -112,11 +115,12 @@ object CashFlowSource {
           val createLink= resultSet.getLong("i.create_link")
           val facilityConstruction = resultSet.getLong("i.facility_construction")
           val oilContract = resultSet.getLong("i.oil_contract")
+          val assetTransactions = resultSet.getLong("i.asset_transactions")
           val period = Period(resultSet.getInt("i.period"))
           val cycle = resultSet.getInt("i.cycle")
            
             //case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Long = 0, loanInterest : Long = 0, loanPrinciple : Long = 0, baseConstruction : Long = 0, buyAirplane : Long = 0, sellAirplane : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
-          cashFlows += AirlineCashFlow(airlineId, cashFlow, operation, loanInterest, loanPrincipal, baseConstruction, buyAirplane, sellAirplane, createLink, facilityConstruction, oilContract, period, cycle)
+          cashFlows += AirlineCashFlow(airlineId, cashFlow, operation, loanInterest, loanPrincipal, baseConstruction, buyAirplane, sellAirplane, createLink, facilityConstruction, oilContract, assetTransactions, period, cycle)
       }
        
        cashFlows.toList

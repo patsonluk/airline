@@ -155,7 +155,11 @@ function refreshTopBarDelegates(airline) {
 
 }
 
-function showDelegateStatusModal() {
-    updateAirlineDelegateStatus($('#delegateStatusModal .delegateStatus'))
-    $('#delegateStatusModal').fadeIn(500)
+function toggleDelegateStatusModal() {
+    if (!$("#delegateStatusModal").is(":visible")) {
+        updateAirlineDelegateStatus($('#delegateStatusModal .delegateStatus'))
+        $('#delegateStatusModal').fadeIn(500)
+    } else {
+        closeModal($('#delegateStatusModal'))
+    }
 }

@@ -3,15 +3,13 @@ package com.patson
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
-
 import com.patson.model._
 import com.patson.model.FlightType._
-import com.patson.model.airplane.Airplane
-import com.patson.model.airplane.Model
-
+import com.patson.model.airplane.{Airplane, AirplaneMaintenanceUtil, Model}
 import akka.actor.ActorSystem
 import akka.testkit.ImplicitSender
 import akka.testkit.TestKit
+
 import scala.collection.mutable.ListBuffer
  
 class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSender
@@ -19,13 +17,22 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
  
   def this() = this(ActorSystem("MySpec"))
  
-  override def afterAll {
+  override protected def beforeAll() : Unit = {
+    super.beforeAll()
+    AirplaneMaintenanceUtil.setTestFactor(Some(1))
+  }
+
+  override protected def afterAll() : Unit = {
+    AirplaneMaintenanceUtil.setTestFactor(None)
     TestKit.shutdownActorSystem(system)
+    super.afterAll()
   }
  
   val testAirline1 = Airline("airline 1")
   val testAirline2 = Airline("airline 2")
-  val fromAirport = Airport.fromId(1).copy(size = 3, power = Country.HIGH_INCOME_THRESHOLD, population = 1)
+  testAirline1.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
+  testAirline2.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
+  val fromAirport = Airport.fromId(1).copy(size = 3, baseIncome = Country.HIGH_INCOME_THRESHOLD, basePopulation = 1)
   fromAirport.initAirlineBases(List.empty)
   val toAirport = Airport.fromId(2).copy(size = 3)
   toAirport.initAirlineBases(List.empty)
@@ -515,8 +522,8 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val profitMargin4 = economyResult4.profit.toDouble / economyResult4.revenue.toDouble
       val profitMargin5 = economyResult5.profit.toDouble / economyResult5.revenue.toDouble
 
-      assert(profitMargin1 > 0.2 && profitMargin1 < 0.3)
-      assert(profitMargin2 > 0.1 && profitMargin2 < 0.2)
+      assert(profitMargin1 > 0.15 && profitMargin1 < 0.3)
+      assert(profitMargin2 > 0.05 && profitMargin2 < 0.2)
       assert(profitMargin3 > 0.0 && profitMargin3 < 0.1)
       assert(profitMargin4 > -0.1 && profitMargin4 < 0.05) //not profitable with standard price
       assert(profitMargin5 > -0.3 && profitMargin5 < 0.05) //not profitable with standard price
@@ -565,7 +572,7 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
       val profitMargin5 = economyResult5.profit.toDouble / economyResult5.revenue.toDouble
 
       assert(profitMargin1 > 0.3 && profitMargin1 < 0.4)
-      assert(profitMargin2 > 0.2 && profitMargin2 < 0.3)
+      assert(profitMargin2 > 0.15 && profitMargin2 < 0.3)
       assert(profitMargin3 > 0.05 && profitMargin3 < 0.2)
       assert(profitMargin4 > -0.1 && profitMargin4 < 0.1) //not profitable with standard price
       assert(profitMargin5 > -0.2 && profitMargin5 < 0) //not profitable with standard price

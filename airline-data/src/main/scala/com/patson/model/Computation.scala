@@ -2,7 +2,7 @@ package com.patson.model
 
 import com.patson.PassengerSimulation.LINK_COST_TOLERANCE_FACTOR
 import com.patson.model.airplane._
-import com.patson.data.{AirlineSource, AirplaneSource, AirportSource, AllianceSource, BankSource, CountrySource, CycleSource, OilSource}
+import com.patson.data.{AirlineSource, AirplaneSource, AirportAssetSource, AirportSource, AllianceSource, BankSource, CountrySource, CycleSource, OilSource}
 import com.patson.Util
 import com.patson.util.{AirlineCache, AllianceRankingUtil}
 
@@ -16,6 +16,27 @@ object Computation {
     case None =>
       println(s"Cannot find $MODEL_COUNTRY_CODE to compute model power")
       1
+  }
+
+  lazy val MAX_VALUES = getMaxValues()
+  lazy val MODEL_AIRPORT_POWER = MAX_VALUES._1
+  lazy val MAX_INCOME_LEVEL = MAX_VALUES._2
+  lazy val MAX_POPULATION = MAX_VALUES._3
+  lazy val MAX_INCOME = MAX_VALUES._4
+
+  val MAX_COMPUTED_DISTANCE = 20000
+  lazy val standardFlightDurationCache : Array[Int] = {
+    val result = new Array[Int](MAX_COMPUTED_DISTANCE + 1)
+    for (i <- 0 to MAX_COMPUTED_DISTANCE) { //should cover everything...
+      result(i) =  Computation.internalComputeStandardFlightDuration(i)
+    }
+    result
+  }
+
+  def getMaxValues(): (Long, Double, Long, Long) = {
+    val allAirports = AirportSource.loadAllAirports()
+    //take note that below should NOT use boosted values, should use base, otherwise it will incorrectly load some lazy vals of the Airport that is MAX
+    (allAirports.maxBy(_.basePower).basePower, allAirports.maxBy(_.baseIncomeLevel).baseIncomeLevel, allAirports.maxBy(_.basePopulation).basePopulation, allAirports.maxBy(_.baseIncome).baseIncome)
   }
 
   //distance vs max speed
@@ -118,14 +139,51 @@ object Computation {
   /**
    * Returns a normalized income level, should be greater than 0
    */
-  def getIncomeLevel(income : Int) : Int = {
-    val incomeLevel = (Math.log(income.toDouble / 500) / Math.log(1.1)).toInt
+  def getIncomeLevel(income : Int) : Double = {
+    val incomeLevel = (Math.log(income.toDouble / 500) / Math.log(1.1))
     if (incomeLevel < 1) {
       1
     } else {
       incomeLevel
     }
   }
+  def fromIncomeLevel(incomeLevel : Double) : Int = {
+    (Math.pow(Math.E, incomeLevel * Math.log(1.1)) * 500).toInt
+  }
+
+  def computeIncomeLevelBoostFromPercentage(baseIncome : Int, minIncomeBoost : Int, boostPercentage : Int) = {
+    val incomeIncrement = baseIncome * boostPercentage / 100
+    val incomeBoost = Math.max(minIncomeBoost, incomeIncrement)
+
+    //10% would always be 1, but cannot make assumption of our income level calculation tho...
+    val baseIncomeLevel = getIncomeLevel(baseIncome)
+    BigDecimal(Computation.getIncomeLevel(baseIncome + incomeBoost) - baseIncomeLevel).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+  }
+
+  /**
+    * For low income base, use the boost level (which is MAX boost). For higher income base, down adjust it to certain
+    * percentage
+    * @param baseIncome
+    * @param boostLevel
+    * @return
+    */
+  def computeIncomeLevelBoostFromLevel(baseIncome : Int, boostLevel : Double) = {
+    val newIncomeLevel = getIncomeLevel(baseIncome) + boostLevel
+    val incomeIncrement = fromIncomeLevel(newIncomeLevel) - baseIncome
+    val maxIncomeBoost = (boostLevel * 10_000).toInt //a bit arbitrary
+    val minIncomeBoost = (boostLevel * 2_500).toInt
+    val finalBoostLevel =
+      if (incomeIncrement < minIncomeBoost) {
+        getIncomeLevel(baseIncome + minIncomeBoost) - getIncomeLevel(baseIncome)
+      } else if (incomeIncrement <= maxIncomeBoost) {
+        boostLevel
+      } else {
+        getIncomeLevel(baseIncome + maxIncomeBoost) - getIncomeLevel(baseIncome)
+      }
+
+    BigDecimal(finalBoostLevel).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+  }
+
   
   def getLinkCreationCost(from : Airport, to : Airport) : Int = {
     
@@ -166,7 +224,8 @@ object Computation {
 //      BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 //    }
 //  }
-  
+
+  val REDUCED_COMPENSATION_SERVICE_LEVEL_THRESHOLD = 40 //airline with service level below this will pay less compensation
   
   def computeCompensation(link : Link) : Int = {
     if (link.majorDelayCount > 0 || link.minorDelayCount > 0 || link.cancellationCount > 0 ) {
@@ -177,8 +236,13 @@ object Computation {
       var compensation = (affectedSeatsPerFlight * link.cancellationCount * 0.5 * link.price).total  //50% of ticket price, as there's some penalty for that already
       compensation = compensation + (affectedSeatsPerFlight * link.majorDelayCount * 0.3 * link.price).total //30% of ticket price
       compensation = compensation + (affectedSeatsPerFlight * link.minorDelayCount * 0.05 * link.price).total //5% of ticket price
-      
-      compensation.toInt
+
+      if (link.airline.getCurrentServiceQuality() < REDUCED_COMPENSATION_SERVICE_LEVEL_THRESHOLD) { //down to only 20%
+        val ratio = 0.2 + 0.8 * link.airline.getCurrentServiceQuality() / REDUCED_COMPENSATION_SERVICE_LEVEL_THRESHOLD
+        (compensation * ratio).toInt
+      } else {
+        compensation.toInt
+      }
     } else {
       0
     }
@@ -212,15 +276,16 @@ object Computation {
     val currentCycle = CycleSource.loadCycle()
     val amountFromAirplanes = AirplaneSource.loadAirplanesByOwner(airlineId, false).map(Computation.calculateAirplaneSellValue(_).toLong).sum
     val amountFromBases = AirlineSource.loadAirlineBasesByAirline(airlineId).map(_.getValue * 0.2).sum.toLong //only get 20% back
+    val amountFromAssets = AirportAssetSource.loadAirportAssetsByAirline(airlineId).map(_.sellValue).sum
     val amountFromLoans = BankSource.loadLoansByAirline(airlineId).map(_.earlyRepayment(currentCycle) * -1).sum //repay all loans now
     val amountFromOilContracts = OilSource.loadOilContractsByAirline(airlineId).map(_.contractTerminationPenalty(currentCycle) * -1).sum //termination penalty
     val existingBalance = AirlineCache.getAirline(airlineId).get.airlineInfo.balance
     
-    ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromLoans, amountFromOilContracts, existingBalance)
+    ResetAmountInfo(amountFromAirplanes, amountFromBases, amountFromAssets, amountFromLoans, amountFromOilContracts, existingBalance)
   }
   
-  case class ResetAmountInfo(airplanes : Long, bases : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
-    val overall = airplanes + bases + loans + oilContracts + existingBalance
+  case class ResetAmountInfo(airplanes : Long, bases : Long, assets : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
+    val overall = airplanes + bases + assets + loans + oilContracts + existingBalance
   }
 
 //  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
@@ -242,7 +307,15 @@ object Computation {
     satisfaction
   }
 
-  def computeStandardFlightDuration(distance : Int) = {
+  val computeStandardFlightDuration = (distance: Int) => {
+    if (distance <= MAX_COMPUTED_DISTANCE) {
+      standardFlightDurationCache(distance)
+    } else {
+      println(s"Unexpected distance $distance")
+      internalComputeStandardFlightDuration(distance) //just in case
+    }
+  }
+  private def internalComputeStandardFlightDuration(distance : Int) = {
     val standardSpeed =
       if (distance <= 1000) {
         400

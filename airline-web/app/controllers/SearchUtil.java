@@ -14,6 +14,7 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -22,6 +23,9 @@ import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import scala.Option;
 import scala.collection.JavaConverters;
 
@@ -30,6 +34,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class SearchUtil {
+	private final static Logger logger = LoggerFactory.getLogger(SearchUtil.class);
 	static {
 		checkInit();
 	}
@@ -178,6 +183,7 @@ public class SearchUtil {
 			jsonMap.put("airlineId", airline.id());
 			jsonMap.put("airlineName", airline.name());
 			jsonMap.put("airlineCode", airline.getAirlineCode());
+			jsonMap.put("previousNames", JavaConverters.asJava(airline.previousNames()));
 			IndexRequest indexRequest = new IndexRequest("airlines").source(jsonMap);
 			client.index(indexRequest, RequestOptions.DEFAULT);
 		}
@@ -189,13 +195,46 @@ public class SearchUtil {
 			jsonMap.put("airlineId", airline.id());
 			jsonMap.put("airlineName", airline.name());
 			jsonMap.put("airlineCode", airline.getAirlineCode());
+			jsonMap.put("previousNames", JavaConverters.asJava(airline.previousNames()));
 			IndexRequest indexRequest = new IndexRequest("airlines").source(jsonMap);
+			logger.info("Indexing new doc " + jsonMap);
 			client.index(indexRequest, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		System.out.println("Added airline " + airline + " to ES");
 	}
+
+	public static void updateAirline(Airline airline) {
+		try (RestHighLevelClient client = getClient()) {
+			SearchRequest searchRequest = new SearchRequest("airlines");
+			SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+			searchSourceBuilder.query(new TermQueryBuilder("airlineId", airline.id()));
+			searchRequest.source(searchSourceBuilder);
+			SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+			for (SearchHit hit : response.getHits()) {
+				if (Integer.valueOf(airline.id()).equals(hit.getSourceAsMap().get("airlineId"))) { //double check
+					logger.info("Updating airline " + hit);
+					UpdateRequest request = new UpdateRequest("airlines", hit.getId());
+					Map<String, Object> jsonMap = new HashMap<>();
+					jsonMap.put("airlineId", airline.id());
+					jsonMap.put("airlineName", airline.name());
+					jsonMap.put("airlineCode", airline.getAirlineCode());
+					jsonMap.put("previousNames", JavaConverters.asJava(airline.previousNames()));
+					request.doc(jsonMap);
+					client.update(request, RequestOptions.DEFAULT);
+					logger.info("Updated to " + jsonMap);
+				} else {
+					logger.warn("Hit " + hit.getSourceAsMap() + " is not a match to airline ID " + airline.id());
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Updated airline " + airline + " to ES");
+	}
+
+
 
 	public static void initAlliances(RestHighLevelClient client) throws IOException {
 		if (isIndexExist(client, "alliances")) {
@@ -413,6 +452,7 @@ public class SearchUtil {
 			QueryStringQueryBuilder multiMatchQueryBuilder = QueryBuilders.queryStringQuery(input + "*");
 			multiMatchQueryBuilder.field("airlineName",5);
 			multiMatchQueryBuilder.field("airlineCode",1);
+			multiMatchQueryBuilder.field("previousNames",4);
 
 			multiMatchQueryBuilder.defaultOperator(Operator.AND);
 //			multiMatchQueryBuilder.fuzziness(Fuzziness.TWO);
@@ -422,7 +462,7 @@ public class SearchUtil {
 
 			multiMatchQueryBuilder.type(MultiMatchQueryBuilder.Type.BEST_FIELDS);
 
-
+			searchSourceBuilder.highlighter(new HighlightBuilder().field("previousNames"));
 			searchSourceBuilder.query(multiMatchQueryBuilder).size(10);
 
 			searchRequest.source(searchSourceBuilder);
@@ -432,9 +472,8 @@ public class SearchUtil {
 			for (SearchHit hit : response.getHits()) {
 				Map<String, Object> values = hit.getSourceAsMap();
 				Option<Airline> airlineOption = AirlineCache.getAirline((int) values.get("airlineId"), false);
-
 				if (airlineOption.isDefined()) {
-					AirlineSearchResult searchResult = new AirlineSearchResult(airlineOption.get(), hit.getScore());
+					AirlineSearchResult searchResult = new AirlineSearchResult(airlineOption.get(), hit.getScore(), hit.getHighlightFields().containsKey("previousNames"));
 					result.add(searchResult);
 				}
 			}
@@ -656,11 +695,13 @@ class ZoneSearchResult implements Comparable {
 class AirlineSearchResult implements Comparable {
 	private final Airline airline;
 	private final double score;
+	private final boolean previousNameMatch;
 	//private final int status;
 
-	public AirlineSearchResult(Airline airline, double score) {
+	public AirlineSearchResult(Airline airline, double score, boolean previousNameMatch) {
 		this.airline = airline;
 		this.score = score;
+		this.previousNameMatch = previousNameMatch;
 		//this.status = status;
 	}
 
@@ -672,7 +713,11 @@ class AirlineSearchResult implements Comparable {
 		return score;
 	}
 
-//	public int getStatus() {
+	public boolean isPreviousNameMatch() {
+		return previousNameMatch;
+	}
+
+	//	public int getStatus() {
 //		return status;
 //	}
 
@@ -689,6 +734,14 @@ class AirlineSearchResult implements Comparable {
 		} else {
 			return that.airline.id() - this.airline.id();
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "AirlineSearchResult{" +
+				"airline=" + airline +
+				", score=" + score +
+				'}';
 	}
 }
 

@@ -10,19 +10,23 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   val airlineInfo = AirlineInfo(0, 0, 0, 0, 0)
   var allianceId : Option[Int] = None
   var bases : List[AirlineBase] = List.empty
-  
-  def setBalance(balance : Long) = { 
-    airlineInfo.balance = balance 
+
+  def setBalance(balance : Long) = {
+    airlineInfo.balance = balance
   }
+
   def setCurrentServiceQuality(serviceQuality : Double) {
     airlineInfo.currentServiceQuality = serviceQuality
   }
+
   def setTargetServiceQuality(targetServiceQuality : Int) {
     airlineInfo.targetServiceQuality = targetServiceQuality
   }
+
   def setReputation(reputation : Double) {
     airlineInfo.reputation = reputation
   }
+
   def setMaintenanceQuality(maintenanceQuality : Double) {
     airlineInfo.maintenanceQuality = maintenanceQuality
   }
@@ -34,6 +38,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setCountryCode(countryCode : String) = {
     airlineInfo.countryCode = Some(countryCode)
   }
+
   def getCountryCode() = {
     airlineInfo.countryCode
   }
@@ -41,6 +46,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setAirlineCode(airlineCode : String) = {
     airlineInfo.airlineCode = airlineCode
   }
+
   def getAirlineCode() = {
     airlineInfo.airlineCode
   }
@@ -48,6 +54,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setSkipTutorial(value : Boolean) = {
     airlineInfo.skipTutorial = value
   }
+
   def isSkipTutorial = {
     airlineInfo.skipTutorial
   }
@@ -55,10 +62,10 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   def setInitialized(value : Boolean) = {
     airlineInfo.initialized = value
   }
+
   def isInitialized = {
     airlineInfo.initialized
   }
-
 
 
   def setAllianceId(allianceId : Int) = {
@@ -70,22 +77,21 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   }
 
 
-
   def setBases(bases : List[AirlineBase]) {
     this.bases = bases
   }
 
-//  import FlightCategory._
-//  val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
-//      case DOMESTIC => None
-//      case REGIONAL => None
-//      case INTERCONTINENTAL =>
-//        if (airlineGrade.value <= 4) {
-//         Some(0)
-//        } else {
-//          Some((airlineGrade.value - 4) * 3)
-//        }
-//  }
+  //  import FlightCategory._
+  //  val getLinkLimit = (flightCategory :FlightCategory.Value) => flightCategory match {
+  //      case DOMESTIC => None
+  //      case REGIONAL => None
+  //      case INTERCONTINENTAL =>
+  //        if (airlineGrade.value <= 4) {
+  //         Some(0)
+  //        } else {
+  //          Some((airlineGrade.value - 4) * 3)
+  //        }
+  //  }
 
 
   def airlineGrade : AirlineGrade = {
@@ -94,19 +100,22 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   }
 
 
-
   def getBases() = bases
-  def getHeadQuarter() = bases.find( _.headquarter )
+
+  def getHeadQuarter() = bases.find(_.headquarter)
 
   def getBalance() = airlineInfo.balance
+
   def getCurrentServiceQuality() = airlineInfo.currentServiceQuality
+
   def getTargetServiceQuality() : Int = airlineInfo.targetServiceQuality
 
   def getReputation() = airlineInfo.reputation
+
   def getMaintenanceQuality() = airlineInfo.maintenanceQuality
 
   def getDefaultAirlineCode() : String = {
-    var code = name.split("\\s+").foldLeft("")( (foldString, nameToken) => {
+    var code = name.split("\\s+").foldLeft("")((foldString, nameToken) => {
       val firstCharacter = nameToken.charAt(0)
       if (Character.isLetter(firstCharacter)) {
         foldString + firstCharacter.toUpper
@@ -118,34 +127,41 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     if (code.length() > 2) {
       code = code.substring(0, 2)
     } else if (code.length() < 2) {
-      code = name.substring(0, 2).toUpperCase()
+      if (name.length == 1) {
+        code = (name.charAt(0).toString + name.charAt(0)).toUpperCase()
+      } else {
+        code = name.substring(0, 2).toUpperCase()
+      }
     }
     code
   }
 
   lazy val slogan = AirlineSource.loadSlogan(id)
+  lazy val previousNames = AirlineSource.loadPreviousNameHistory(id).sortBy(_.updateTimestamp.getTime)(Ordering.Long.reverse).map(_.name)
 
   def getDelegateInfo() : DelegateInfo = {
     val busyDelegates = DelegateSource.loadBusyDelegatesByAirline(id)
     val availableCount = delegateCount - busyDelegates.size
 
-    DelegateInfo(availableCount, busyDelegates)
+    DelegateInfo(availableCount, delegateBoost, busyDelegates)
   }
 
   val BASE_DELEGATE_COUNT = 5
   val DELEGATE_PER_LEVEL = 3
-  lazy val delegateCount = BASE_DELEGATE_COUNT + airlineGrade.value * DELEGATE_PER_LEVEL +
-    AirlineSource.loadAirlineModifierByAirlineId(id).map { modifier =>
-      modifier match {
-        case DelegateBoostAirlineModifier(amount, duration, creationCycle) => amount
-        case _ => 0
-      }
-    }.sum +
-    AirlineSource.loadAirlineBasesByAirline(id).flatMap(_.specializations).filter(_.isInstanceOf[DelegateSpecialization]).map(_.asInstanceOf[DelegateSpecialization].delegateBoost).sum
-
+  lazy val delegateCount = BASE_DELEGATE_COUNT +
+    airlineGrade.value * DELEGATE_PER_LEVEL +
+    AirlineSource.loadAirlineBasesByAirline(id).flatMap(_.specializations).filter(_.isInstanceOf[DelegateSpecialization]).map(_.asInstanceOf[DelegateSpecialization].delegateBoost).sum +
+    delegateBoost
+  lazy val delegateBoost = AirlineSource.loadAirlineModifierByAirlineId(id).map { modifier =>
+    modifier match {
+      case DelegateBoostAirlineModifier(amount, duration, creationCycle) => amount
+      case _ => 0
+    }
+  }.sum
 }
 
-case class DelegateInfo(availableCount : Int, busyDelegates: List[BusyDelegate])
+
+case class DelegateInfo(availableCount : Int, boost : Int, busyDelegates: List[BusyDelegate])
 
 case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "", var skipTutorial : Boolean = false, var initialized : Boolean = false)
 
@@ -156,12 +172,12 @@ object TransactionType extends Enumeration {
 
 object OtherIncomeItemType extends Enumeration {
   type OtherBalanceItemType = Value
-  val LOAN_INTEREST, BASE_UPKEEP, OVERTIME_COMPENSATION, SERVICE_INVESTMENT, MAINTENANCE_INVESTMENT, LOUNGE_UPKEEP, LOUNGE_COST, LOUNGE_INCOME, SHUTTLE_COST, ADVERTISEMENT, DEPRECIATION, FUEL_PROFIT = Value
+  val LOAN_INTEREST, BASE_UPKEEP, OVERTIME_COMPENSATION, SERVICE_INVESTMENT, LOUNGE_UPKEEP, LOUNGE_COST, LOUNGE_INCOME, ASSET_EXPENSE, ASSET_REVENUE, ADVERTISEMENT, DEPRECIATION, FUEL_PROFIT = Value
 }
 
 object CashFlowType extends Enumeration {
   type CashFlowType = Value
-  val BASE_CONSTRUCTION, BUY_AIRPLANE, SELL_AIRPLANE, CREATE_LINK, FACILITY_CONSTRUCTION, OIL_CONTRACT = Value
+  val BASE_CONSTRUCTION, BUY_AIRPLANE, SELL_AIRPLANE, CREATE_LINK, FACILITY_CONSTRUCTION, OIL_CONTRACT, ASSET_TRANSACTION = Value
 }
 
 object Period extends Enumeration {
@@ -218,7 +234,7 @@ case class TransactionsIncome(airlineId : Int, profit : Long = 0, revenue: Long 
         cycle = income2.cycle)
   }  
 }
-case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, expense: Long = 0, loanInterest : Long = 0, baseUpkeep : Long = 0, overtimeCompensation : Long = 0, serviceInvestment : Long = 0, maintenanceInvestment : Long = 0, advertisement : Long = 0, loungeUpkeep : Long = 0, loungeCost : Long = 0, loungeIncome : Long = 0, shuttleCost : Long = 0, fuelProfit : Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
+case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, expense: Long = 0, loanInterest : Long = 0, baseUpkeep : Long = 0, overtimeCompensation : Long = 0, serviceInvestment : Long = 0, advertisement : Long = 0, loungeUpkeep : Long = 0, loungeCost : Long = 0, loungeIncome : Long = 0, assetExpense : Long = 0, assetRevenue : Long = 0, fuelProfit : Long = 0, depreciation : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
   def update(income2 : OthersIncome) : OthersIncome = {
     OthersIncome(airlineId, 
         profit = profit + income2.profit,
@@ -228,12 +244,12 @@ case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, e
         baseUpkeep = baseUpkeep + income2.baseUpkeep,
         overtimeCompensation = overtimeCompensation + income2.overtimeCompensation,
         serviceInvestment = serviceInvestment + income2.serviceInvestment,
-        maintenanceInvestment = maintenanceInvestment + income2.maintenanceInvestment,
         advertisement = advertisement + income2.advertisement,
         loungeUpkeep = loungeUpkeep + income2.loungeUpkeep,
         loungeCost = loungeCost + income2.loungeCost,
         loungeIncome = loungeIncome + income2.loungeIncome,
-        shuttleCost = shuttleCost + income2.shuttleCost,
+        assetExpense = assetExpense + income2.assetExpense,
+        assetRevenue = assetRevenue + income2.assetRevenue,
         fuelProfit = fuelProfit + income2.fuelProfit,
         depreciation = depreciation + income2.depreciation,
         period = period,
@@ -243,7 +259,7 @@ case class OthersIncome(airlineId : Int, profit : Long = 0, revenue: Long = 0, e
 
 
 case class AirlineCashFlowItem(airlineId : Int, cashFlowType : CashFlowType.Value, amount : Long, var cycle : Int = 0)
-case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Long = 0, loanInterest : Long = 0, loanPrincipal : Long = 0, baseConstruction : Long = 0, buyAirplane : Long = 0, sellAirplane : Long = 0,  createLink : Long = 0, facilityConstruction : Long = 0, oilContract : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
+case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Long = 0, loanInterest : Long = 0, loanPrincipal : Long = 0, baseConstruction : Long = 0, buyAirplane : Long = 0, sellAirplane : Long = 0,  createLink : Long = 0, facilityConstruction : Long = 0, oilContract : Long = 0, assetTransactions : Long = 0, period : Period.Value = Period.WEEKLY, var cycle : Int = 0) {
 /**
    * Current income is expected to be MONTHLY/YEARLY. Adds parameter (WEEKLY income) to this current income object and return a new Airline income with period same as this object but cycle as the parameter
    */
@@ -259,6 +275,7 @@ case class AirlineCashFlow(airlineId : Int, cashFlow : Long = 0, operation : Lon
         createLink = createLink + cashFlow2.createLink,
         facilityConstruction = facilityConstruction + cashFlow2.facilityConstruction,
         oilContract = oilContract + cashFlow2.oilContract,
+        assetTransactions = assetTransactions + cashFlow2.assetTransactions,
         period = period,
         cycle = cashFlow2.cycle)
   }
@@ -283,15 +300,19 @@ object Airline {
 
         //remove all airplanes
         AirplaneSource.deleteAirplanesByCriteria(List(("owner", airlineId)));
+
+        //remove all assets
+        AirportAssetSource.loadAirportAssetsByAirline(airlineId).foreach { asset =>
+          AirportAssetSource.deleteAirportAsset(asset.id)
+        }
+
         //remove all bases
-        AirlineSource.deleteAirlineBaseByCriteria(List(("airline", airlineId)))
+        airline.getBases().foreach(_.delete)
+
         //remove all loans
         BankSource.loadLoansByAirline(airlineId).foreach { loan =>
           BankSource.deleteLoan(loan.id)
         }
-        //remove all facilities
-        AirlineSource.deleteLoungeByCriteria(List(("airline", airlineId)))
-        //AirlineSource.deleteShuttleServiceByCriteria(List(("airline", airlineId)))
 
         //remove all oil contract
         OilSource.deleteOilContractByCriteria(List(("airline", airlineId)))
@@ -381,9 +402,11 @@ object AirlineGrade {
   val TOP_INTERNATIONAL_3 = AirlineGrade(12, 350, "Top International Airline III")
   val TOP_INTERNATIONAL_4 = AirlineGrade(13, 400, "Top International Airline IV")
   val TOP_INTERNATIONAL_5 = AirlineGrade(14, 450, "Top International Airline V")
-  val LEGENDARY = AirlineGrade(15, 500, "Legendary Airline")
+  val EPIC = AirlineGrade(15, 500, "Epic Airline")
   val ULTIMATE = AirlineGrade(16, 550, "Ultimate Airline")
-  val CELESTIAL = AirlineGrade(17, 600, "Celestial Spaceline")
+  val LEGENDARY = AirlineGrade(17, 600, "Legendary Airline")
+  val CELESTIAL = AirlineGrade(18, 700, "Celestial Airline")
+  val MYTHIC = AirlineGrade(19, 800, "Mythic Airline")
 
   def addGrade(grade : AirlineGrade) = {
     allGrades.append(grade)
@@ -403,6 +426,9 @@ object AirlineModifier {
         properties(AirlineModifierPropertyType.STRENGTH).toInt,
         properties(AirlineModifierPropertyType.DURATION).toInt,
         creationCycle)
+      case BANNER_LOYALTY_BOOST => BannerLoyaltyAirlineModifier(
+        properties(AirlineModifierPropertyType.STRENGTH).toInt,
+        creationCycle)
     }
 
     modifier
@@ -413,6 +439,7 @@ object AirlineModifier {
 
 abstract class AirlineModifier(val modifierType : AirlineModifierType.Value, val creationCycle : Int, val expiryCycle : Option[Int], var id : Int = 0) extends IdObject {
   def properties : Map[AirlineModifierPropertyType.Value, Long]
+  def isHidden : Boolean //should it be visible to admin only
 }
 
 case class NerfedAirlineModifier(override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.NERFED, creationCycle, None) {
@@ -430,21 +457,30 @@ case class NerfedAirlineModifier(override val creationCycle : Int) extends Airli
   }
 
   override def properties : Map[AirlineModifierPropertyType.Value, Long] = Map.empty
+  override def isHidden = true
 }
 
 case class DelegateBoostAirlineModifier(amount : Int, duration : Int, override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.DELEGATE_BOOST, creationCycle, Some(creationCycle + duration)) {
   lazy val internalProperties = Map[AirlineModifierPropertyType.Value, Long](AirlineModifierPropertyType.STRENGTH -> amount , AirlineModifierPropertyType.DURATION -> duration)
   override def properties : Map[AirlineModifierPropertyType.Value, Long] = internalProperties
+  override def isHidden = true
 }
 
+case class BannerLoyaltyAirlineModifier(amount : Int, override val creationCycle : Int) extends AirlineModifier(AirlineModifierType.BANNER_LOYALTY_BOOST, creationCycle, Some(creationCycle +  10 * 52)) {
+  lazy val internalProperties = Map[AirlineModifierPropertyType.Value, Long](AirlineModifierPropertyType.STRENGTH -> amount)
+  override def properties : Map[AirlineModifierPropertyType.Value, Long] = internalProperties
+  override def isHidden = false
+}
 
 
 object AirlineModifierType extends Enumeration {
   type AirlineModifierType = Value
-  val NERFED, DELEGATE_BOOST = Value
+  val NERFED, DELEGATE_BOOST, BANNER_LOYALTY_BOOST = Value
 }
 
 object AirlineModifierPropertyType extends Enumeration {
   type AirlineModifierPropertyType = Value
   val STRENGTH, DURATION = Value
 }
+
+case class NameHistory(name : String, updateTimestamp : Date)

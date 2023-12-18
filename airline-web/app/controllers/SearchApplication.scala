@@ -48,13 +48,25 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     }
   }
 
-  implicit object AirlineSearchResultWrites extends Writes[AirlineSearchResult] {
+  class AirlineSearchResultWrites(searchString : String) extends Writes[AirlineSearchResult] {
     def writes(result : AirlineSearchResult) : JsValue = {
-      Json.obj(
+
+      var jsonResult = Json.obj(
         "airlineName" -> result.getAirline.name,
         "airlineCode" -> result.getAirline.getAirlineCode(),
         "airlineId" -> result.getAirline.id,
         "score" -> result.getScore)
+
+      if (result.isPreviousNameMatch) {
+        var namesJson = Json.arr()
+        result.getAirline.previousNames.foreach { previousName =>
+          if (!previousName.equalsIgnoreCase(result.getAirline.name) && previousName.toLowerCase().contains(searchString.toLowerCase())) {
+            namesJson = namesJson.append(JsString(previousName))
+          }
+        }
+        jsonResult = jsonResult + ("previousNames" -> namesJson)
+      }
+      jsonResult
     }
   }
 
@@ -266,7 +278,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       if (result.isEmpty) {
         Ok(Json.obj("message" -> "No match"))
       } else {
-        Ok(Json.obj("entries" -> Json.toJson(result)))
+        Ok(Json.obj("entries" -> Json.toJson(result)(Writes.traversableWrites(new AirlineSearchResultWrites(input)))))
       }
     }
   }
@@ -372,7 +384,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       features += PREMIUM_DRINK_SERVICE
     }
 
-    if (link.rawQuality == 100 && airlineServiceQuality >= 85) {
+    if (link.rawQuality == 100 && airlineServiceQuality >= 80) {
       features += POSH
     }
 

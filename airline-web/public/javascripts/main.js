@@ -189,11 +189,12 @@ function loadUser(isLogin) {
 		  if (user.airlineIds.length > 0) {
 			  selectAirline(user.airlineIds[0])
 			  loadAllCountries() //load country again for relationship
-			  loadAllLogs()
+			  //loadAllLogs()
 			  addAirlineSpecificMapControls(map)
               initPrompts()
 		  }
 		  updateAirlineLabelColors()
+		  $('.button.login').removeClass('loading')
 
 	  },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -208,6 +209,7 @@ function loadUser(isLogin) {
 	            console.log(JSON.stringify(jqXHR));
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    	}
+	    	$('.button.login').removeClass('loading')
 	    }
 	}
 	if (isLogin) {
@@ -287,6 +289,7 @@ function initMap() {
    	minZoom : 2,
    	gestureHandling: 'greedy',
    	styles: getMapStyles(),
+	mapTypeId: getMapTypes(),
    	restriction: {
                 latLngBounds: { north: 85, south: -85, west: -180, east: 180 },
               }
@@ -298,6 +301,11 @@ function initMap() {
 	    $.each(markers, function( key, marker ) {
 	        marker.setVisible(isShowMarker(marker, zoom));
 	    })
+  });
+  
+  google.maps.event.addListener(map, 'maptypeid_changed', function() { 
+		var mapType = map.getMapTypeId();
+		$.cookie('currentMapTypes', mapType);
   });
 
   addCustomMapControls(map)
@@ -435,6 +443,7 @@ var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 
 function updateTime(cycle, fraction, cycleDurationEstimation) {
+	$(".currentTime").attr("title", "Current Cycle: " + cycle)
 	currrentCycle = cycle
 	currentTime = (cycle + fraction) * totalmillisecPerWeek 
 	if (refreshIntervalTimer) {
@@ -521,9 +530,9 @@ function showWorldMap() {
 	setActiveDiv($('#worldMapCanvas'));
 	highlightTab($('.worldMapCanvasTab'))
 	$('#sidePanel').appendTo($('#worldMapCanvas'))
-	closeAirportInfoPopup()
+	//closeAirportInfoPopup()
 	if (selectedLink) {
-		selectLinkFromMap(selectedLink, true)
+		selectLinkFromMap(selectedLink, !activeAirportPopupInfoWindow) //do not refocus if there's a popup, stay where it is
 	}
 	checkTutorial('worldMap')
 }
@@ -562,14 +571,23 @@ function populateTooltips() {
     })
 
     populateDelegatesTooltips()
-
+    populateDataPropertyTooltips()
 }
 function populateDelegatesTooltips() {
     var $html = $("<div></div>")
-    $html.append("<p>Gained my leveling up your airline. Airline grade is determined by reputation points.</p>")
+    $html.append("<p>Gained by leveling up your airline. Airline grade is determined by reputation points.</p>")
     $html.append("<p>Delegates conduct various tasks, such as Flight negotiations, Country relationship improvements, Advertisement campaigns etc.</p>")
 
     addTooltipHtml($('.delegatesTooltip'), $html, {'width' : '350px'})
+}
+
+function populateDataPropertyTooltips() {
+    $('[data-tooltip-text]').each(function(index) {
+        var width = Math.min(400, $(this).data('tooltipText').length * 5) //approximate width
+        var css = { width : width + 'px'}
+        addTooltip($(this), $(this).data('tooltipText'), css)
+    })
+
 }
 
 var airlineGradeLookup

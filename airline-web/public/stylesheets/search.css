@@ -13,7 +13,6 @@ html[data-theme='dark'] {
   --search-text-shadow: 0 0 3px rgba(0, 0, 0, 0.4);
   --search-placeholder-color: rgba(255, 255, 255, 0.4);
   --search-canvas-background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 20%, rgba(0, 0, 0, 0.8) 30%, rgba(0, 0, 0, 0.95) 100%), url(../images/background/night-sky.jpg);
-
   /*--text-color: rgba(255, 255, 255, 0.8);(/
   /*--background-gradient-color: background-color: rgba(0, 0, 0, 0.4);*/
 
@@ -22,7 +21,7 @@ html[data-theme='dark'] {
 
 
 .searchResultEntry.selected, .searchResult .searchResultEntry:hover {
-    background-color: var(--search-background-color);
+    background: var(--table-selected-row-background);
 }
 
 .searchResult .searchResultEntry:hover {
@@ -97,7 +96,7 @@ html[data-theme='dark'] {
 }
 
 .searchResult div {
-    margin: 5px;
+    padding: 3px 5px;
 }
 
 

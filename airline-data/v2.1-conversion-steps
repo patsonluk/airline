@@ -1,0 +1,5 @@
+1. Ensure https://github.com/patsonluk/airline/issues/541 is taken care of
+2. Backup and restore DB to airline_v2_1. Remove from application.conf the mysqldb.schema="airline_v2" property (both web and data, or just set to airline_v2_1). Back up sim log file for comparison
+  - mysql -u [user name] –p airline_v2_1 < [dumpfilename.sql]
+3. Run patch_airport.sql and patch_income_table.sql in airline/airline-data/db_scripts/v2.1/
+4. Run `sbt "runMain com.patson.patch.Version2_1Patcher"`

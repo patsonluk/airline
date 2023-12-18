@@ -1,8 +1,11 @@
 function adminAction(action, targetUserId, callback) {
+ adminActionWithData(action, targetUserId, {}, callback)
+}
+
+function adminActionWithData(action, targetUserId, data, callback) {
 	var url = "/admin-action/" + action + "/" + targetUserId
 	var selectedAirlineId =  $("#rivalDetails .adminActions").data("airlineId")
 
-    var data = { }
 	$.ajax({
 		type: 'PUT',
 		url: url,
@@ -163,7 +166,8 @@ function showAirlinesByIp(ip) {
                }
                $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
                $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByUuidModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
-               $row.append("<div class='cell'>" + entry.username + "</div>")
+               $row.append("<div class='cell'>" + (entry.hqAirport ? getAirportText(entry.hqAirport.city, entry.hqAirport.iata) : "-") + "</div>")
+               $row.append("<div class='cell'>" + entry.username + getUserLevelImg(entry.userLevel) + "</div>")
                $row.append("<div class='cell'>" + entry.userStatus + "</div>")
                $row.append("<div class='cell'>" + modifiersSpan + "</div>")
                $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")
@@ -198,7 +202,8 @@ function showAirlinesByUuid(uuid) {
                }
                 $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
                 $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByUuidModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
-                $row.append("<div class='cell'>" + entry.username + "</div>")
+                $row.append("<div class='cell'>" + (entry.hqAirport ? getAirportText(entry.hqAirport.city, entry.hqAirport.iata) : "-") + "</div>")
+                $row.append("<div class='cell'>" + entry.username + getUserLevelImg(entry.userLevel) + "</div>")
                 $row.append("<div class='cell'>" + entry.userStatus + "</div>")
                 $row.append("<div class='cell'>" + modifiersSpan + "</div>")
                 $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")
@@ -234,6 +239,21 @@ function restore() {
 function banChat() {
     adminAction("ban-chat", $("#rivalDetails .adminActions").data("userId"))
 }
+function setBannerWinner() {
+    adminActionWithData("set-banner-winner", $("#rivalDetails .adminActions").data("userId"),
+    {
+        "strength" : parseInt($("#rivalDetails .bannerLoyaltyBonus").val()),
+        "airlineId" : parseInt($("#rivalDetails .adminActions").data("airlineId")) //airline specific
+    })
+}
+
+function setUserLevel() {
+    adminActionWithData("set-user-level", $("#rivalDetails .adminActions").data("userId"),
+    {
+        "level" : parseInt($("#rivalDetails .setUserLevel").val()),
+    })
+}
+
 function adminSetUsers(action, $modal) {
     var targetUserIds = []
     $.each($modal.find('input:checked'), function(index, input) {

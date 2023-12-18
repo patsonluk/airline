@@ -1,11 +1,11 @@
 package com.patson
 
 import java.util.{ArrayList, Collections}
-
 import com.patson.data.{AirportSource, CountrySource, EventSource}
 import com.patson.model.event.{EventType, Olympics}
 import com.patson.model.{PassengerType, _}
 
+import java.util.concurrent.ThreadLocalRandom
 import scala.collection.immutable.Map
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -21,17 +21,17 @@ object DemandGenerator {
 //
 //  implicit val materializer = FlowMaterializer()
   private[this] val FIRST_CLASS_INCOME_MIN = 15000
-  private[this] val FIRST_CLASS_INCOME_MAX = 100000
+  private[this] val FIRST_CLASS_INCOME_MAX = 100_000
   private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
-  private[this] val BUSINESS_CLASS_INCOME_MAX = 100000
-  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.30, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
+  private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.3, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
   
   val MIN_DISTANCE = 50
   
-  val defaultTotalWorldPower = {
-    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
-  }
+//  val defaultTotalWorldPower = {
+//    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
+//  }
 //  mainFlow
 //  
 //  def mainFlow() = {
@@ -89,11 +89,11 @@ object DemandGenerator {
             LinkClass.values.foreach { linkClass =>
               if (demand(linkClass) > 0) {
                 var remainingDemand = demand(linkClass)
-                var demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
+                var demandChunkSize = baseDemandChunkSize + ThreadLocalRandom.current().nextInt(baseDemandChunkSize)
                 while (remainingDemand > demandChunkSize) {
                   allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, demandChunkSize))
                   remainingDemand -= demandChunkSize
-                  demandChunkSize = baseDemandChunkSize + Random.nextInt(baseDemandChunkSize)
+                  demandChunkSize = baseDemandChunkSize + ThreadLocalRandom.current().nextInt(baseDemandChunkSize)
                 }
                 allDemandChunks.append((PassengerGroup(fromAirport, flightPreferencesPool.draw(linkClass, fromAirport, toAirport), passengerType), toAirport, remainingDemand)) // don't forget the last chunk
               }
@@ -115,17 +115,19 @@ object DemandGenerator {
     } else {
       import FlightType._
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-      
+
       //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
       //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
       //we are using income level for to airport as destination income difference should have less impact on demand compared to origination airport (and income level is log(income))
       val toAirportIncomeLevel = toAirport.incomeLevel
-      
+
+      val lowIncomeThreshold = Country.LOW_INCOME_THRESHOLD + 10_000 //due to a bug in v2, we need to increase this a bit to avoid demand collapse in low income countries
+
       val fromAirportAdjustedIncome : Double = if (fromAirport.income > Country.HIGH_INCOME_THRESHOLD) { //to make high income airport a little bit less overpowered
-        50000
-      } else if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) { //to make low income airport a bit more stronger
-        val delta = Country.LOW_INCOME_THRESHOLD - fromAirport.income
-        Country.LOW_INCOME_THRESHOLD + delta * 0.5 //so a 0 income country will be boosted to 7500, a 5000 income country will be boosted to 10000
+        Country.HIGH_INCOME_THRESHOLD + (fromAirport.income - Country.HIGH_INCOME_THRESHOLD) / 3
+      } else if (fromAirport.income < lowIncomeThreshold) { //to make low income airport a bit stronger
+        val delta = lowIncomeThreshold - fromAirport.income
+        lowIncomeThreshold - delta * 0.3 //so a 0 income country will be boosted to 21000, a 10000 income country will be boosted to 24000
       } else {
         fromAirport.income
       }
@@ -168,9 +170,9 @@ object DemandGenerator {
       
       
       //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
-      val incomeLevel = Computation.getIncomeLevel(fromAirport.income)
-      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && incomeLevel > 25) {
-        adjustedDemand += baseDemand * (((incomeLevel - 25).toDouble / 10) * 2)       
+
+      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
+        adjustedDemand += baseDemand * (((fromAirport.incomeLevel - 25).toDouble / 10) * 2)
       }
       
       //adjustments : these zones do not have good ground transport

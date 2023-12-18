@@ -17,6 +17,10 @@ import scala.util.Random
 
 object GenericTransitGenerator {
 
+  def main(args : Array[String]) : Unit = {
+    generateGenericTransit()
+    Await.result(actorSystem.terminate(), Duration.Inf)
+  }
   def generateGenericTransit(airportCount : Int = 4000, range : Int = 50) : Unit = {
     //purge existing generic transit
     LinkSource.deleteLinksByCriteria(List(("transport_type", TransportType.GENERIC_TRANSIT.id)))

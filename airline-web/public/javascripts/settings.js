@@ -1,7 +1,11 @@
 //determines if the user has a set theme
-function showSettings(){
-    updateCustomWallpaperPanel()
-    $("#settingsModal").fadeIn(500)
+function toggleSettings() {
+    if (!$("#settingsModal").is(":visible")){
+        updateCustomWallpaperPanel()
+        $("#settingsModal").fadeIn(500)
+    } else {
+        closeModal($('#settingsModal'))
+    }
 }
 
 
@@ -17,7 +21,11 @@ var wallpaperTemplates = [
     },
     {
         "background" : "linear-gradient(to bottom, rgba(40, 49, 77, 0.2) 30%, rgba(29, 35, 71, 0.2) 50%, rgba(19, 25, 28, 0.2) 80%, rgba(15, 14, 14, .2) 100%), url(assets/images/background/pixel_city_4.gif)"
+    },
+    {
+        "background" : "linear-gradient(to bottom, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(assets/images/background/airport.jpg)"
     }
+
 ]
 
 function changeWallpaper() {
@@ -44,8 +52,20 @@ function refreshWallpaper() {
         var wallpaperIndex = 0
         if ($.cookie('wallpaperIndex')) {
             wallpaperIndex = parseInt($.cookie('wallpaperIndex'))
+            if (wallpaperIndex >= wallpaperTemplates.length) {
+                wallpaperIndex = 0
+            }
         }
-        template = wallpaperTemplates[wallpaperIndex]
+        if (wallpaperIndex < wallpaperTemplates.length) {
+            template = wallpaperTemplates[wallpaperIndex]
+        } else { //somehow an index that does not exist, might happen when wallpaper list switches
+            template = wallpaperTemplates[0]
+        }
+        if (wallpaperIndex < 4) {
+            $("body").css("image-rendering", "pixelated")
+        } else {
+            $("body").css("image-rendering", "auto")
+        }
     }
 
 
@@ -53,6 +73,7 @@ function refreshWallpaper() {
     $("body").css("background-repeat", "no-repeat")
     $("body").css("background-attachment", "fixed")
     $("body").css("background-size", "cover")
+    $("body > div").css("image-rendering", "auto") // this prevents the non-pixel images from looking weird
 
 }
 
@@ -91,7 +112,7 @@ function updateCustomWallpaperPanel() {
                         url:"users/" + activeUser.id + "/wallpaper",
                         multiple:false,
                         dragDrop:false,
-                        acceptFiles:"image/png,image/gif",
+                        acceptFiles:"image/png,image/gif,image/jpg",
                         fileName:"wallpaperFile",
                         maxFileSize:2 * 1024 * 1024,
                         onSuccess:function(files,data,xhr,pd)

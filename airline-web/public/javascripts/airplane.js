@@ -221,7 +221,14 @@ function promptBuyUsedAirplane(airplane) {
 
 function promptBuyNewAirplane(modelId, fromPlanLink, explicitHomeAirportId) {
     var buyAirplaneFunction = function(quantity, homeAirportId, selectedConfigurationId) {
-        buyAirplane(modelId, quantity, homeAirportId, selectedConfigurationId, fromPlanLink)
+        var callback
+        if (fromPlanLink) {
+            callback = function() {
+                planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), true)
+                $("#planLinkModelSelect").data('explicitId', modelId) //force the plan link to use this value after buying a plane
+            }
+        }
+        buyAirplane(modelId, quantity, homeAirportId, selectedConfigurationId, callback)
     }
 
     promptBuyAirplane(modelId, 100, loadedModelsById[modelId].price, loadedModelsById[modelId].constructionTime, explicitHomeAirportId, true, buyAirplaneFunction)
@@ -392,8 +399,7 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
 }
 
 
-function buyAirplane(modelId, quantity, homeAirportId, configurationId, fromPlanLink) {
-	fromPlanLink = fromPlanLink || false
+function buyAirplane(modelId, quantity, homeAirportId, configurationId, callback) {
 	var airlineId = activeAirline.id
 	var url = "airlines/" + airlineId + "/airplanes?modelId=" + modelId + "&quantity=" + quantity + "&airlineId=" + airlineId + "&homeAirportId=" + homeAirportId + "&configurationId=" + configurationId
 	$.ajax({
@@ -404,9 +410,8 @@ function buyAirplane(modelId, quantity, homeAirportId, configurationId, fromPlan
 	    dataType: 'json',
 	    success: function(response) {
 	    	refreshPanels(airlineId)
-	    	if (fromPlanLink) {
-	    		planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val())
-	    		$("#planLinkModelSelect").data('explicitId', modelId) //force the plan link to use this value after buying a plane
+	    	if (callback) {
+	    		callback()
 	    	} else {
 	    		showAirplaneCanvas()
 	    	}
@@ -733,6 +738,14 @@ function toggleCondition(container, checkbox) {
     }
 }
 
+function showAirplaneBaseFromPlanLink(modelId) {
+    showAirplaneBase(modelId)
+    $('#airplaneBaseModal').data('closeCallback', function() {
+        planLink($("#planLinkFromAirportId").val(), $("#planLinkToAirportId").val(), true)
+    })
+    //console.log("Added " + $('#airplaneBaseModal').data('closeCallback'))
+}
+
 function showAirplaneBase(modelId) {
     if (!loadedModelsOwnerInfo) {
         loadAirplaneModelOwnerInfo()
@@ -813,6 +826,10 @@ function refreshBaseAfterAirplaneUpdate() {
     loadAirplaneModelOwnerInfoByModelId(selectedModelId) //refresh the loaded airplanes on the selected model
     updateAirplaneModelTable()
     showAirplaneBase(selectedModelId)
+
+    if ($('#airplaneCanvas .hangar').is(':visible')) {
+        populateHangerModels()
+    }
 }
 
 function refreshAllAirplaneInventoryAfterAirplaneUpdate() {
@@ -1328,13 +1345,59 @@ function selectAirplaneTab($selectedTab) {
 }
 
 function showAirplaneHangar() {
+    populateMaintenanceFactor()
     populatePreferredSuppliers()
+    populateHangerModels()
+}
+
+function populateHangerModels() {
     var $container = $('#airplaneCanvas .hangar .sectionContainer')
     $container.empty()
     populateHangarByModel($container)
 
     toggleUtilizationRate($container, $("#airplaneCanvas div.hangar .toggleUtilizationRateBox"))
     toggleCondition($container, $("#airplaneCanvas div.hangar .toggleConditionBox"))
+}
+
+function populateMaintenanceFactor() {
+    $.ajax({
+          type: 'GET',
+          url: "airlines/" + activeAirline.id + "/maintenance-factor",
+          contentType: 'application/json; charset=utf-8',
+          dataType: 'json',
+          success: function(result) {
+            $('div.maintenanceFactorSection .factor').text(Number(result.factor).toFixed(2))
+            $('div.maintenanceFactorSection .baseFactor').text(result.baseFactor)
+            $('div.maintenanceFactorSection .familyFactor').text(result.familyFactor)
+            $('div.maintenanceFactorSection .modelFactor').text(result.modelFactor)
+
+            var familyCount = result.families ? result.families.length : 0
+            $('div.maintenanceFactorSection .familyCount').text(familyCount)
+            var modelCount = result.models ? result.models.length : 0
+            $('div.maintenanceFactorSection .modelCount').text(modelCount)
+
+            $('div.maintenanceFactorSection .familyList').empty()
+            $.each(result.families, function(index, family) {
+                $('div.maintenanceFactorSection .familyList').append('<li>' + family + '</li>')
+            })
+            if (familyCount == 0) {
+                $('div.maintenanceFactorSection .familyList').append('<li>-</li>')
+            }
+
+            $('div.maintenanceFactorSection .modelList').empty()
+            $.each(result.models, function(index, model) {
+                $('div.maintenanceFactorSection .modelList').append('<li>' + model + '</li>')
+            })
+            if (modelCount == 0) {
+                $('div.maintenanceFactorSection .modelList').append('<li>-</li>')
+            }
+
+          },
+          error: function(jqXHR, textStatus, errorThrown) {
+                  console.log(JSON.stringify(jqXHR));
+                  console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+          }
+      });
 }
 
 function populatePreferredSuppliers() {
@@ -1387,10 +1450,15 @@ function populatePreferredSuppliers() {
                   console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
           }
       });
-
 }
 function populateHangarByModel($container) {
-    $.each(loadedModelsOwnerInfo, function(index, modelOwnerInfo) {
+    const sorted = [...loadedModelsOwnerInfo].sort(
+        function(a, b) {
+            return a.capacity - b.capacity;
+        }
+    )
+
+    $.each(sorted, function(index, modelOwnerInfo) {
         if (modelOwnerInfo.totalOwned > 0) {
             var modelId = modelOwnerInfo.id
             var $inventoryDiv = $("<div style='min-width : 300px; min-height : 85px; flex: 1;' class='section clickable'></div>")

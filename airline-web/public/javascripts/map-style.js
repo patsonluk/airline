@@ -1,4 +1,5 @@
 var currentStyles
+var currentTypes
 var pathOpacityByStyle = {
     "dark" : {
         highlight : "0.8",
@@ -19,6 +20,15 @@ function initStyles() {
 		$.cookie('currentMapStyles', currentStyles);
 	}
 	console.log("onload " + currentStyles)
+
+	console.log("onload cookie" + $.cookie('currentMapTypes'))
+	if ($.cookie('currentMapTypes')) {
+		currentTypes = $.cookie('currentMapTypes')
+	} else {
+		currentTypes = 'roadmap'
+		$.cookie('currentMapTypes', currentTypes);
+	}
+	console.log("onload " + currentTypes)
 }
 
 function getMapStyles() {
@@ -28,6 +38,11 @@ function getMapStyles() {
 	} else {
 		return darkStyles
 	}
+}
+
+function getMapTypes() {
+	console.log("getting " + currentTypes)
+	return currentTypes
 }
 
 function toggleMapLight() {

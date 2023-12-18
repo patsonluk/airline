@@ -3,13 +3,13 @@
 package com.patson
 
 import java.util.concurrent.TimeUnit
-
 import akka.actor.Props
 import akka.actor.Actor
 import com.patson.data._
 import com.patson.stream.{CycleCompleted, CycleStart, SimulationEventStream}
-import com.patson.util.{AirlineCache, AirportCache}
+import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirplaneOwnershipInfo, AirportCache}
 
+import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
@@ -28,12 +28,14 @@ object MainSimulation extends App {
   def mainFlow() = {
     val actor = actorSystem.actorOf(Props[MainSimulationActor])
     actorSystem.scheduler.schedule(Duration.Zero, Duration(CYCLE_DURATION, TimeUnit.SECONDS), actor, Start)
+    Await.result(actorSystem.whenTerminated, Duration.Inf)
   }
 
 
   def invalidateCaches() = {
     AirlineCache.invalidateAll()
     AirportCache.invalidateAll()
+    AirplaneOwnershipCache.invalidateAll()
   }
 
   def startCycle(cycle : Int) = {
@@ -53,19 +55,26 @@ object MainSimulation extends App {
 
       val (flightLinkResult, loungeResult, linkRidershipDetails) = LinkSimulation.linkSimulation(cycle)
       println("Airport simulation")
-      AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
+      val airportChampionInfo = AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
+
+      println("Airport assets simulation")
+      AirportAssetSimulation.simulate(cycle, linkRidershipDetails)
+
       println("Airplane simulation")
       val airplanes = AirplaneSimulation.airplaneSimulation(cycle)
       println("Airline simulation")
       AirlineSimulation.airlineSimulation(cycle, flightLinkResult, loungeResult, airplanes)
       println("Country simulation")
-      CountrySimulation.simulate(cycle)
+      val countryChampionInfo = CountrySimulation.simulate(cycle)
+
+      println("Alliance simulation")
+      AllianceSimulation.simulate(cycle, flightLinkResult, loungeResult, airportChampionInfo, countryChampionInfo)
       println("Airplane model simulation")
       AirplaneModelSimulation.simulate(cycle)
-      
+
       //purge log
       println("Purging logs")
-      LogSource.deleteLogsBeforeCycle(cycle - 100)
+      LogSource.deleteLogsBeforeCycle(cycle - com.patson.model.Log.RETENTION_CYCLE)
 
       //purge history
       println("Purging link history")
@@ -81,6 +90,10 @@ object MainSimulation extends App {
       cycleEnd
   }
 
+  /**
+    * Things to be done after cycle ticked. These should be relatively short operations (data reconciliation etc)
+    * @param currentCycle
+    */
   def postCycle(currentCycle : Int) = {
     println("Oil simulation")
     OilSimulation.simulate(currentCycle) //simulate at the beginning of a new cycle

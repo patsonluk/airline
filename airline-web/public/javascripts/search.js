@@ -1,8 +1,7 @@
 var loadedOlympicsEvents = []
 var loadedAlerts = []
 
-
-function showSearchCanvas() {
+function showSearchCanvas(historyAirline) {
     var titlesContainer = $("#searchCanvas div.titlesContainer")
     positionTitles(titlesContainer)
     setActiveDiv($("#searchCanvas"))
@@ -27,6 +26,14 @@ function showSearchCanvas() {
     updateNavigationArrows(titlesContainer)
 
     initializeHistorySearch()
+
+    if (historyAirline) {
+        var historyDiv = titlesContainer.find('.titleSelection[data-search-type="history"]')
+        $(historyDiv).trigger('click')
+        $('#searchCanvas div.historySearch input.airline').data('selectedId',historyAirline.id)
+        $('#searchCanvas div.historySearch input.airline').val(getAirlineTextEntry(historyAirline, false))
+        searchLinkHistory()
+    }
 }
 
 function showBanner() {
@@ -77,8 +84,6 @@ function initializeHistorySearch() {
         updateLinkHistoryTable(sortProperty, sortOrder)
        })
      });
-
-
 }
 
 function refreshSearchDiv(selectedDiv) {
@@ -86,19 +91,31 @@ function refreshSearchDiv(selectedDiv) {
     if (searchTitleType === 'route') {
         $('#searchCanvas div.routeSearch').show();
         $('#searchCanvas div.routeSearch').siblings('.searchContainer').hide();
+        $('#searchCanvas .searchFieldContainer').show();
     } else if (searchTitleType === 'history') {
         $('#searchCanvas div.historySearch').show();
         $('#searchCanvas div.historySearch').siblings('.searchContainer').hide();
+        $('#searchCanvas .searchFieldContainer').hide();
     } else if (searchTitleType === 'research') {
         $('#searchCanvas div.research').show();
         $('#researchSearchResult').hide();
         $('#searchCanvas div.research').siblings('.searchContainer').hide();
+        $('#searchCanvas .searchFieldContainer').show();
     }
 
 }
 
+function searchAction(fromAirportId, toAirportId) {
+    var searchTitleType = $('#searchCanvas div.titlesContainer div.selected').data('searchType')
+    if (searchTitleType === 'route') {
+        searchRoute(fromAirportId, toAirportId)
+    } else if (searchTitleType === 'research') {
+        researchFlight(fromAirportId, toAirportId)
+    }
+}
 
-function searchFlight(fromAirportId, toAirportId) {
+
+function searchRoute(fromAirportId, toAirportId) {
     if (fromAirportId && toAirportId) {
         var url = "search-route/" + fromAirportId + "/" + toAirportId
 
@@ -652,7 +669,7 @@ function confirmSelection(input) {
             displayVal = getZoneTextEntry(selected)
             selectedId = selected.zone
         } else if (searchType === "airline") {
-            displayVal = getAirlineTextEntry(selected)
+            displayVal = getAirlineTextEntry(selected, false)
             selectedId = selected.airlineId
         } else if (searchType === "alliance") {
             displayVal = getAllianceTextEntry(selected)
@@ -742,7 +759,7 @@ function search(event, input, retry) {
                     } else if (searchType === "zone") {
                         textEntry = getZoneTextEntry(entry)
                     } else if (searchType === "airline") {
-                        textEntry = getAirlineTextEntry(entry)
+                        textEntry = getAirlineTextEntry(entry, true)
                     } else if (searchType === "alliance") {
                         textEntry = getAllianceTextEntry(entry)
                     }
@@ -871,8 +888,13 @@ function getZoneTextEntry(zone) {
     return zone.zoneName + "(" + zone.zone + ")"
 }
 
-function getAirlineTextEntry(airline) {
-    return airline.airlineName + "(" + airline.airlineCode + ")"
+function getAirlineTextEntry(airline, showPreviousNames) {
+    var name = airline.airlineName ? airline.airlineName : airline.name //some inconsistencies...
+    var result = name + "(" + airline.airlineCode + ")"
+    if (showPreviousNames && airline.previousNames && airline.previousNames.length > 0) {
+        result += (" formerly: " + airline.previousNames.join(", "))
+    }
+    return result
 }
 
 function getAllianceTextEntry(alliance) {

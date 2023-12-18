@@ -77,10 +77,15 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    var row = $("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
 	}
 	
-	$('#airportDetailsPopulation').text(commaSeparateNumber(airport.population))
-    $("#airportDetailsCity").text(airport.city)
+	$("#airportDetailsCity").text(airport.city)
     $("#airportDetailsSize").text(airport.size)
-    $("#airportDetailsIncomeLevel").text(airport.incomeLevel)
+
+    var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, $('#populationDetailsTooltip'))
+    $("#airportDetailsPopulation").html($populationSpan)
+
+    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, $('#incomeDetailsTooltip'))
+    $("#airportDetailsIncomeLevel").html($incomeLevelSpan)
+
 	$("#airportDetailsCountry").text(loadedCountriesByCode[airport.countryCode].name)
 	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
 	if (countryFlagUrl) {
@@ -146,9 +151,10 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 
                     if (airportBase.specializations) {
-                        var specializationList = $('<ul></ul>')
+                        var specializationList = $('<span></span>')
                         $.each(airportBase.specializations, function(index, specialization) {
-                            specializationList.append($('<li class="dot">' + specialization.label + '</li>'))
+                            //specializationList.append($('<li class="dot">' + specialization.label + '</li>'))
+                            specializationList.append($('<img src="assets/images/icons/specialization/' + specialization.id + '.png" title="' + specialization.label + '" style="vertical-align: middle;">'))
                         })
                         $('#airportBaseDetails .baseSpecializations').empty()
                         $('#airportBaseDetails .baseSpecializations').append(specializationList)
@@ -365,6 +371,7 @@ function populateAirportDetails(airport) {
 		loadAirportStatistics(airport)
 		loadGenericTransits(airport)
 		updateAirportLoyalistDetails(airport)
+		showAirportAssets(airport)
 
 		google.maps.event.addListenerOnce(airportMap, 'idle', function() {
            setTimeout(function() { //set a timeout here, otherwise it might not render part of the map...
@@ -659,8 +666,8 @@ function addMarkers(airports) {
 			  $("#airportPopupCity").html(this.airport.city + "&nbsp;" + getCountryFlagImg(this.airport.countryCode))
 			  $("#airportPopupZone").text(zoneById[this.airport.zone])
 			  $("#airportPopupSize").text(this.airport.size)
-			  $("#airportPopupPopulation").text(commaSeparateNumber(this.airport.population))
-			  $("#airportPopupIncomeLevel").text(this.airport.incomeLevel)
+			  $("#airportPopupPopulation").text('-') //wait for extended details
+			  $("#airportPopupIncomeLevel").text('-') //wait for extended details
 			  $("#airportPopupOpenness").html(getOpennessSpan(loadedCountriesByCode[this.airport.countryCode].openness))
 			  $("#airportPopupMaxRunwayLength").html(this.airport.runwayLength + "&nbsp;m")
 			  updateAirportExtendedDetails(this.airport.id, this.airport.countryCode)
@@ -757,7 +764,7 @@ function addCityMarkers(airportMap, airport) {
 			  infoWindow.close();
 			  var city = this.cityInfo
 			  $("#cityPopupName").text(city.name)
-			  $("#cityPopupPopulation").text(city.population)
+			  $("#cityPopupPopulation").text(commaSeparateNumber(city.population))
 			  $("#cityPopupIncomeLevel").text(city.incomeLevel)
 			  $("#cityPopupCountryCode").text(city.countryCode)
 			  $("#cityPopupCountryCode").append("<img class='flag' src='assets/images/flags/" + city.countryCode + ".png' />")
@@ -859,7 +866,7 @@ function updateAirportLoyalistDetails(airport) {
 	    	assignAirlineColors(currentData, "airlineId")
 
 	    	plotPie(currentData, activeAirline ? activeAirline.name : null , $("#airportCanvas .loyalistPie"), "airlineName", "amount")
-	    	plotLoyalistHistoryChart(result.history, $("#airportCanvas .loyalistHistoryChart"))
+	    	plotLoyalistHistoryChart(result.history, $("#loyalistHistoryModal .loyalistHistoryChart"))
             populateNavigation($('#airportCanvas'))
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -867,6 +874,10 @@ function updateAirportLoyalistDetails(airport) {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
+}
+
+function showLoyalistHistoryModal() {
+    $("#loyalistHistoryModal").fadeIn(500)
 }
 
 function refreshAirportExtendedDetails(airport) {
@@ -877,15 +888,6 @@ function refreshAirportExtendedDetails(airport) {
         $.each(airport.appealList, function( key, appeal ) {
             if (appeal.airlineId == airlineId) {
                 if (airport.bonusList[airlineId]) {
-                    if (airport.bonusList[airlineId].awareness > 0) {
-                        $(".airportAwarenessBonus").text("(+" + airport.bonusList[airlineId].awareness + ")")
-                        $(".airportAwarenessBonus").show()
-                        $('#appealBonusDetailsTooltip').data('awarenessBreakdown', airport.bonusList[airlineId].awarenessBreakdown)
-                        $('.airportAwarenessBonusTrigger').show()
-                    } else {
-                        $(".airportAwarenessBonus").hide()
-                        $('.airportAwarenessBonusTrigger').hide()
-                    }
                     if (airport.bonusList[airlineId].loyalty > 0) {
                         $(".airportLoyaltyBonus").text("(+" + airport.bonusList[airlineId].loyalty + ")")
                         $(".airportLoyaltyBonus").show()
@@ -899,22 +901,17 @@ function refreshAirportExtendedDetails(airport) {
 
                 var fullHeartSource = "assets/images/icons/heart.png"
                 var halfHeartSource = "assets/images/icons/heart-half.png"
-                var fullStarSource = "assets/images/icons/star.png"
-                var halfStarSource = "assets/images/icons/star-half.png"
+                var emptyHeartSource = "assets/images/icons/heart-empty.png"
 
-                $(".airportAwareness").empty()
                 $(".airportLoyalty").empty()
-                getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, appeal.awareness).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportAwareness"))
-                getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, appeal.loyalty).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportLoyalty"))
+                getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, appeal.loyalty).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportLoyalty"))
 
-                $(".airportAwareness").append(appeal.awareness)
                 $(".airportLoyalty").append(appeal.loyalty)
 
                 hasMatch = true
             }
         });
         if (!hasMatch) {
-            $(".airportAwareness").text("0")
             $(".airportLoyalty").text("0")
         }
 
@@ -925,18 +922,47 @@ function refreshAirportExtendedDetails(airport) {
 //            $(".airportRelationship").text('-')
 //        }
     }
+    var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, $('#populationDetailsTooltip'))
+    $("#airportPopupPopulation").html($populationSpan)
+
+    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , $('#incomeDetailsTooltip'))
+    $("#airportPopupIncomeLevel").html($incomeLevelSpan)
+
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {
-        $("#airportPopup .airportFeatures").append("<div class='feature' style='display:inline'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'><span>" +  (feature.strength != 0 ? feature.strength : "") + "</span></div>")
-
+        var $popupFeatureDiv = $("<div class='feature' style='display:inline-flex'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'></div>").appendTo($("#airportPopup .airportFeatures"))
+        var $popupFeatureSpan
+        if (feature.boosts && feature.boosts.length > 0) {
+            $popupFeatureSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
+        } else {
+            $popupFeatureSpan = $('<span>' + (feature.strength > 0 ? feature.strength : '') + '</span>')
+        }
+        $popupFeatureDiv.append($popupFeatureSpan)
 
         var $featureDiv = $("<div class='feature'><img src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
         $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
         var featureText = feature.title
         if (feature.strength != 0) {
-            featureText += " (strength: " + feature.strength + ")"
+            if (feature.boosts && feature.boosts.length > 0) {
+                featureText += " (strength: <span style='color: #41A14D'>" + feature.strength + "</span>)"
+            } else {
+                featureText += " (strength: " + feature.strength + ")"
+            }
         }
-        var $featureDescription = $('<span><span>').text(featureText)
+        var $featureDescription = $('<span><span>').text(feature.title)
+
+         if (feature.strength != 0) {
+            var $featureStrengthSpan = $('<span>(strength:&nbsp;</span>')
+            if (feature.boosts && feature.boosts.length > 0) {
+                var $boostSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
+                $featureStrengthSpan.append($boostSpan)
+                $featureStrengthSpan.append('<span>)</span>')
+            } else {
+                $featureStrengthSpan.append('<span>' + feature.strength + ')</span>')
+            }
+            $featureDescription.append($featureStrengthSpan)
+        }
+
         $featureDiv.append($featureDescription)
         $("#airportCanvas .airportFeatures").append($featureDiv)
     })
@@ -944,12 +970,9 @@ function refreshAirportExtendedDetails(airport) {
 
 function updateAirportExtendedDetails(airportId, countryCode) {
 	//clear the old values
-	$(".airportAwareness").text('-')
 	$(".airportLoyalty").text('-')
 	$(".airportRelationship").text('-')
-	$(".airportAwarenessBonus").hide()
-    $('.airportAwarenessBonusTrigger').hide()
-    $(".airportLoyaltyBonus").hide()
+	$(".airportLoyaltyBonus").hide()
     $('.airportLoyaltyBonusTrigger').hide()
 	$("#airportIcons .feature").hide()
 
@@ -1306,9 +1329,9 @@ function showAppealBreakdown($icon, bonusDetails) {
     $('#appealBonusDetailsTooltip').show()
 
 
-    $('#appealBonusDetailsTooltip .table .table-row').empty()
+    $('#appealBonusDetailsTooltip .table .table-row').remove()
     $.each(bonusDetails, function(index, entry) {
-        var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 70%;">+' + entry.value + '</div></div>')
+        var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 30%; text-align: right;">+' + entry.value + '</div></div>')
         $row.css('color', 'white')
         $('#appealBonusDetailsTooltip .table').append($row)
     })

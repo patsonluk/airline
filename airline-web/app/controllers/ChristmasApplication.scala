@@ -34,6 +34,11 @@ class ChristmasApplication @Inject()(cc: ControllerComponents) extends AbstractC
         case Some(_) => ChristmasSource.loadSantaClausInfoByAirline(airline.id) match {
           case Some(entry) =>
             var result = Json.obj("found" -> entry.found, "attemptsLeft" -> entry.attemptsLeft)
+
+            SantaClausAward.getDifficultyLevel(entry).foreach { difficulty =>
+              result = result + ("difficulty" -> JsString(difficulty.toString.toLowerCase))
+            }
+
             entry.pickedAward.foreach { pickedOption =>
               val pickedAward = SantaClausAward.getRewardByType(entry, pickedOption)
               result = result + ("pickedAwardDescription" -> JsString(pickedAward.description))
@@ -71,11 +76,18 @@ class ChristmasApplication @Inject()(cc: ControllerComponents) extends AbstractC
     * @param airlineId
     * @return
     */
-  def makeGuess(airportId: Int, airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def makeGuess(airportId: Int, airlineId : Int, difficulty : String) = AuthenticatedAirline(airlineId) { request =>
     //only if it's one of the possible airports
     val airline = request.user
     ChristmasSource.loadSantaClausInfoByAirline(airline.id) match {
       case Some(entry) => {
+        var attemptsAdjustment = 0
+        if (SantaClausAward.getDifficultyLevel(entry).isEmpty) { //this only matters on first try
+          if (difficulty == "hard") {
+            attemptsAdjustment = -5;
+          }
+        }
+
         //check if there're any attempts left!
         if (entry.attemptsLeft <= 0) {
           BadRequest(Json.obj())
@@ -88,16 +100,16 @@ class ChristmasApplication @Inject()(cc: ControllerComponents) extends AbstractC
           if (santaClausAirport.id == airportId) { //yay
             found = true
           }
-          val newAttemptsLeft = entry.attemptsLeft - 1
+          val newAttemptsLeft = entry.attemptsLeft - 1 + attemptsAdjustment
 
           //update
           ChristmasSource.updateSantaClausInfo(entry.copy(attemptsLeft = newAttemptsLeft, found = found))
           ChristmasSource.saveSantaClausGuess(SantaClausGuess(selectedAirport, airline))
 
           if (found) {
-            Ok(Json.obj("found" -> true, "attemptsLeft" -> entry.attemptsLeft))
+            Ok(Json.obj("found" -> true, "attemptsLeft" -> newAttemptsLeft))
           } else { //calculate how far
-            Ok(Json.obj("found" -> false, "attemptsLeft" -> entry.attemptsLeft, "distanceText" -> getDistanceText(Computation.calculateDistance(santaClausAirport, selectedAirport))))
+            Ok(Json.obj("found" -> false, "attemptsLeft" -> newAttemptsLeft, "distanceText" -> getDistanceText(Computation.calculateDistance(santaClausAirport, selectedAirport))))
           }
         }
       }

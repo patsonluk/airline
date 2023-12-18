@@ -81,7 +81,6 @@ class CampaignApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         }
         val population = areaAirports.map(_.population).sum
         val bonus = Campaign.getAirlineBonus(population, 1)
-        val awarenessBonus = BigDecimal(bonus.awareness).setScale(2, RoundingMode.HALF_UP)
         val loyaltyBonus = BigDecimal(bonus.loyalty).setScale(2, RoundingMode.HALF_UP)
 
         Ok(Json.obj(
@@ -90,7 +89,7 @@ class CampaignApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           "area" -> areaAirports.toList,
           "population" ->  population,
           "candidateArea" -> candidateAirports.toList,
-          "bonus" -> Json.obj("awareness" -> awarenessBonus, "loyalty" -> loyaltyBonus),
+          "bonus" -> Json.obj("loyalty" -> loyaltyBonus),
           "costPerDelegate" -> CampaignDelegateTask.cost(principalAirport.income)))
       case None => NotFound(s"airport with id $airportId not found")
     }

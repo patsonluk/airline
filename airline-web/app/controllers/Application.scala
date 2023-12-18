@@ -19,7 +19,7 @@ import scala.collection.mutable.{ListBuffer, Set}
 import scala.math.BigDecimal.RoundingMode
 
 
-class Application @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+class Application @Inject()(cc: ControllerComponents, val configuration: play.api.Configuration) extends AbstractController(cc) {
   object AirportSimpleWrites extends Writes[Airport] {
     def writes(airport: Airport): JsValue = {
       JsObject(List(
@@ -77,22 +77,22 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     }
   }
   
-  implicit object AirportProjectFormat extends Format[AirportProject] {
-     def writes(project : AirportProject): JsValue = {
-       Json.obj(
-         "projectId" -> project.id,
-         "airportId" -> project.airport.id,    
-         "projectType" -> project.projectType.toString(),
-         "status" -> project.status.toString(), 
-         "progress" -> project.progress
-       )
-    }
-    def reads(json: JsValue): JsResult[AirportProject] = {
-      val airport = Airport.fromId((json \ "id").as[Int])
-      val projectType = ProjectType.withName((json \ "projectType").as[String])
-      JsSuccess(AirportProject(airport, projectType, ProjectStatus.INITIATED, progress = 0, duration = 0, level = 0)) //TODO not implemented
-    }
-  }
+//  implicit object AirportProjectFormat extends Format[AirportProject] {
+//     def writes(project : AirportProject): JsValue = {
+//       Json.obj(
+//         "projectId" -> project.id,
+//         "airportId" -> project.airport.id,
+//         "projectType" -> project.projectType.toString(),
+//         "status" -> project.status.toString(),
+//         "progress" -> project.progress
+//       )
+//    }
+//    def reads(json: JsValue): JsResult[AirportProject] = {
+//      val airport = Airport.fromId((json \ "id").as[Int])
+//      val projectType = ProjectType.withName((json \ "projectType").as[String])
+//      JsSuccess(AirportProject(airport, projectType, ProjectStatus.INITIATED, progress = 0, duration = 0, level = 0)) //TODO not implemented
+//    }
+//  }
 
   implicit object LoyalistWrites extends Writes[Loyalist] {
     def writes(loyalist: Loyalist): JsValue = {
@@ -150,6 +150,7 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
   
   
   def index = Action {
+    implicit lazy val config = configuration
     Ok(views.html.index(""))
   }
   def test = Action {
@@ -593,19 +594,19 @@ class Application @Inject()(cc: ControllerComponents) extends AbstractController
     Ok(result)
   }
 
-  def getAirportProjects(airportId : Int) = Action {
-    val airportProjects = AirportSource.loadAirportProjectsByAirport(airportId)
-    Ok(Json.toJson(airportProjects))
-  }
-  
-  def addAirportProject(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
-     val airline = request.user
-    
-     //TODO validate airline can do it
-     val newProject = request.body.asInstanceOf[AnyContentAsJson].json.as[AirportProject]
-     AirportSource.saveAirportProject(newProject)
-     Ok(Json.toJson(newProject))
-  }
+//  def getAirportProjects(airportId : Int) = Action {
+//    val airportProjects = AirportSource.loadAirportProjectsByAirport(airportId)
+//    Ok(Json.toJson(airportProjects))
+//  }
+//
+//  def addAirportProject(airlineId : Int, airportId : Int) = AuthenticatedAirline(airlineId) { request =>
+//     val airline = request.user
+//
+//     //TODO validate airline can do it
+//     val newProject = request.body.asInstanceOf[AnyContentAsJson].json.as[AirportProject]
+//     AirportSource.saveAirportProject(newProject)
+//     Ok(Json.toJson(newProject))
+//  }
       
   
   def options(path: String) = Action {

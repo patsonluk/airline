@@ -12,8 +12,6 @@ object Constants {
   val AIRPORT_CITY_SHARE_TABLE = "airport_city"
   val AIRPORT_FEATURE_TABLE = "airport_feature"
   val AIRPORT_FEATURE_INDEX_1 = "airport_feature_index_1"
-  val AIRPORT_PROJECT_TABLE = "airport_project"
-  val AIRPORT_PROJECT_INDEX_1 = "airport_project_index_1"
   val AIRPORT_IMAGE_TABLE = "airport_image"
   val AIRPORT_AIRLINE_APPEAL_BONUS_TABLE = "airport_airline_appeal_bonus"
   val AIRPORT_AIRLINE_APPEAL_BONUS_INDEX_1 =  "airport_airline_appeal_bonus_index_1"
@@ -54,7 +52,13 @@ object Constants {
   val AIRLINE_BASE_INDEX_2 = "airline_base_index_2"
   val AIRLINE_BASE_INDEX_3 = "airline_base_index_3"
   val AIRPORT_LOYALTY_TABLE = "loyalty"
-//  val AIRPORT_SLOT_ASSIGNMENT_TABLE = "airport_slot_assignment"
+  val AIRPORT_ASSET_TABLE = "airport_asset"
+  val AIRPORT_ASSET_BLUEPRINT_TABLE = "airport_asset_blueprint"
+  val AIRPORT_ASSET_PROPERTY_TABLE = "airport_asset_property"
+  val AIRPORT_ASSET_BOOST_TABLE = "airport_asset_boost"
+  val AIRPORT_ASSET_PROPERTY_HISTORY_TABLE = "airport_asset_property_history"
+  val AIRPORT_ASSET_BOOST_HISTORY_TABLE = "airport_asset_boost_history"
+
   val AIRLINE_APPEAL_TABLE = "airline_appeal"
   val AIRLINE_APPEAL_INDEX_1 = "airline_appeal_index_1"
   val AIRLINE_APPEAL_INDEX_2 = "airline_appeal_index_2"
@@ -75,6 +79,7 @@ object Constants {
   val AIRLINE_LOGO_TABLE = "airline_logo"
   val AIRLINE_LIVERY_TABLE = "airline_livery"
   val AIRLINE_SLOGAN_TABLE = "airline_slogan"
+  val AIRLINE_NAME_HISTORY_TABLE = "airline_name_history"
   val ALLIANCE_TABLE = "alliance"
   val ALLIANCE_MEMBER_TABLE = "alliance_member"
   val ALLIANCE_HISTORY_TABLE = "alliance_history"
@@ -142,6 +147,7 @@ object Constants {
   val LINK_NEGOTIATION_COOL_DOWN_TABLE = "link_negotiation_cool_down"
   val LOYALIST_TABLE = "loyalist"
   val LOYALIST_HISTORY_TABLE = "loyalist_history"
+  val LOYALIST_HISTORY_INDEX_PREFIX = "loyalist_history_index_"
   val COMPLETED_TUTORIAL_TABLE = "completed_tutorial"
   val COMPLETED_NOTICE_TABLE = "completed_notice"
   val AIRPORT_ANIMATION_TABLE = "airport_animation"
@@ -151,6 +157,15 @@ object Constants {
   val CAMPAIGN_TABLE = "campaign"
   val CAMPAIGN_AREA_TABLE = "campaign_area"
   val CAMPAIGN_DELEGATE_TASK_TABLE = "campaign_delegate_task"
+
+  val ALLIANCE_MISSION_TABLE = "alliance_mission"
+  val ALLIANCE_MISSION_PROPERTY_TABLE = "alliance_mission_property"
+  val ALLIANCE_MISSION_PROPERTY_HISTORY_TABLE = "alliance_mission_property_history"
+  val ALLIANCE_MISSION_REWARD_TABLE = "alliance_mission_reward"
+  val ALLIANCE_MISSION_REWARD_PROPERTY_TABLE = "alliance_mission_reward_property"
+
+  val ALLIANCE_STATS_TABLE = "alliance_stats"
+  val ALLIANCE_MISSION_STATS_TABLE = "alliance_mission_stats"
 
   val LINK_NEGOTIATION_DISCOUNT_TABLE = "link_negotiation_discount"
 
@@ -167,9 +182,10 @@ object Constants {
   val DB_HOST = if (configFactory.hasPath("mysqldb.host")) configFactory.getString("mysqldb.host") else "localhost:3306"
   val dbParams = if (configFactory.hasPath("mysqldb.dbParams")) configFactory.getString("mysqldb.dbParams") else ""
   println("!!!!!!!!!!!!!!!DB HOST IS " + DB_HOST)
-  
+  val SCHEMA_NAME = if (configFactory.hasPath("mysqldb.schema")) configFactory.getString("mysqldb.schema") else "airline_v2_1"
+
   //val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8"
-  val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/airline_v2?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8" + dbParams
+  val DATABASE_CONNECTION = "jdbc:mysql://" + DB_HOST + "/" + SCHEMA_NAME +"?rewriteBatchedStatements=true&useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=utf-8" + dbParams
   val DB_DRIVER = "com.mysql.jdbc.Driver"
   val DATABASE_USER = if (configFactory.hasPath("mysqldb.user")) configFactory.getString("mysqldb.user") else "sa"
   val DATABASE_PASSWORD = if (configFactory.hasPath("mysqldb.password")) configFactory.getString("mysqldb.password") else "admin"

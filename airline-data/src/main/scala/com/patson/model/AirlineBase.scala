@@ -1,6 +1,6 @@
 package com.patson.model
 
-import com.patson.data.{AirportSource, CountrySource}
+import com.patson.data.{AirlineSource, AirportSource, CountrySource}
 import com.patson.model.AirlineBaseSpecialization.FlightTypeSpecialization
 import com.patson.util.AirportCache
 
@@ -12,9 +12,8 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     } else if (headquarter && scale == 1) { //free to start HQ
       0
     } else {
-      val baseCost = (1000000 + airport.rating.overallRating * 120000).toLong
-
-      baseCost * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) ).toLong
+      var baseCost = (1000000 + airport.rating.overallRating * 120000).toLong
+      (baseCost * airportSizeRatio * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) )).toLong
     }
   }
 
@@ -22,9 +21,17 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   
   lazy val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
-    val baseUpkeep = (5000 + airport.rating.overallRating * 150).toLong
-    baseUpkeep * (Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
+    var baseUpkeep = (5000 + airport.rating.overallRating * 150).toLong
+
+    (baseUpkeep * airportSizeRatio * Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
   }
+
+  lazy val airportSizeRatio =
+    if (airport.size > 6) {
+      1.0
+    } else { //discount for size < 6
+      0.3 + airport.size * 0.1
+    }
 
 //  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
 //    val base = 5
@@ -103,6 +110,20 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
   lazy val specializations : List[AirlineBaseSpecialization.Value] = {
     (AirlineBaseSpecialization.values.filter(_.free).toList ++
     AirportSource.loadAirportBaseSpecializations(airport.id, airline.id)).filter(_.scaleRequirement <= scale)
+  }
+
+  def delete(): Unit = {
+    AirlineSource.loadLoungeByAirlineAndAirport(airline.id, airport.id).foreach { lounge =>
+      AirlineSource.deleteLounge(lounge)
+    }
+
+    //remove all base spec and bonus since it has no foreign key on base
+    specializations.foreach { spec =>
+      spec.unapply(airline, airport)
+    }
+    AirportSource.updateAirportBaseSpecializations(airport.id, airline.id, List.empty)
+    //then delete the base itself
+    AirlineSource.deleteAirlineBase(this)
   }
 }
 

@@ -8,6 +8,7 @@ function showRivalsCanvas(selectedAirline) {
 	highlightTab($('.rivalsCanvasTab'))
 	$('#rivalDetails').hide()
 	loadAllRivals(selectedAirline)
+	populateNavigation($("#rivalsCanvas"))
 }
 
 function toggleHideInactive(flagValue) {
@@ -60,7 +61,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 	var displayRivals
 	if (hideInactive) {
 	    displayRivals = loadedRivals.filter(function(rival) {
-                                    	    		  return rival.loginStatus < 3
+                                    	    		  return rival.loginStatus < 3 || rival.id == selectedAirline
                                     	    	});
 	} else {
 	    displayRivals = loadedRivals
@@ -82,7 +83,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 				+ (airline.isGenerated ? "<img src='assets/images/icons/robot.png' title='AI' style='vertical-align:middle;'/>" : "") + "</div>").appendTo(row)
 		addAirlineTooltip($nameDiv, airline.id, airline.slogan, airline.name)
 		if (airline.headquartersAirportName) {
-			row.append("<div class='cell'>" + getAirportText(airline.headquartersCity, airline.headquartersAirportIata) + "</div>")
+			row.append("<div class='cell'>" + getCountryFlagImg(airline.countryCode) + getAirportText(airline.headquartersCity, airline.headquartersAirportIata) + "</div>")
 		} else {
 			row.append("<div class='cell'>-</div>")
 		}
@@ -152,6 +153,7 @@ function loadRivalDetails(row, airlineId) {
 	
 	
 	updateRivalBasicsDetails(airlineId)
+	updateRivalFormerNames(airlineId)
 	updateRivalFleet(airlineId)
 	updateRivalCountriesAirlineTitles(airlineId)
 	updateRivalChampionedAirportsDetails(airlineId)
@@ -160,7 +162,10 @@ function loadRivalDetails(row, airlineId) {
 	
 	updateRivalBaseList(airlineId)
 
-	showAdminActions(loadedRivalsById[airlineId])
+    if (isAdmin()) {
+        showAdminActions(loadedRivalsById[airlineId])
+    }
+
 	$('#rivalDetails').data("airlineId", airlineId)
 
 	$('#rivalDetails').fadeIn(200)
@@ -234,6 +239,7 @@ function updateRivalBasicsDetails(airlineId) {
 	}
 	
 	$("#rivalsCanvas .airlineGrade").html(getGradeStarsImgs(rival.gradeValue))
+	$("#rivalsCanvas .airlineGrade").attr('title', rival.gradeDescription)
 
 	$("#rivalsCanvas .alliance").data("link", "alliance")
 	populateNavigation($("#rivalsCanvas .alliance"))
@@ -241,14 +247,41 @@ function updateRivalBasicsDetails(airlineId) {
 		$("#rivalsCanvas .alliance").text(rival.allianceName)
 		$("#rivalsCanvas .alliance").addClass("clickable")
 		$("#rivalsCanvas .alliance").on("click.showAlliance", function() {
-		    showAllianceCanvas()
-		    selectAlliance(rival.allianceId)
+		    showAllianceCanvas(rival.allianceId)
 		})
 	} else {
 		$("#rivalsCanvas .alliance").text('-')
 		$("#rivalsCanvas .alliance").removeClass("clickable")
 		$("#rivalsCanvas .alliance").off("click.showAlliance")
 	}
+
+}
+
+function updateRivalFormerNames(airlineId) {
+    $('#rivalDetails .formerNames').children('div.table-row').remove()
+
+	$.ajax({
+		type: 'GET',
+		url: "airlines/" + airlineId + "/former-names",
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function(result) {
+	    	$(result).each(function(index, formerName) {
+                var row = $("<div class='table-row'></div>")
+                row.append("<div class='cell'>" + formerName + "</div>")
+                $('#rivalDetails .formerNames').append(row)
+            })
+            if (result.length == 0) {
+                $('#rivalDetails .formerNameRow').hide()
+            } else {
+                $('#rivalDetails .formerNameRow').show()
+            }
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
 
 }
 
@@ -446,4 +479,9 @@ function hideRivalMap() {
 	updateAirportBaseMarkers([]) //revert base markers
 	rivalMapAirlineId = undefined
 	setActiveDiv($("#rivalsCanvas"))
+}
+
+function showRivalHistory() {
+    var airlineId = $('#rivalDetails').data("airlineId")
+    showSearchCanvas(loadedRivalsById[airlineId])
 }

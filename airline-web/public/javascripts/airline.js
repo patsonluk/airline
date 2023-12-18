@@ -6,6 +6,19 @@ var loadedLinks = []
 var loadedLinksById = {}
 var currentAnimationStatus = true
 var currentAirlineAllianceMembers = []
+
+$( document ).ready(function() {
+    $('#linkEventModal .filterCheckboxes input:checkbox').change(function() {
+        $("#linkEventModal .linkEventHistoryTable .table-row").hide() //hide all first
+        $('#linkEventModal .filterCheckboxes input:checkbox').each(function() { //have to iterate them, as they are not mutually exclusive...
+           var filterType = $(this).data('filter')
+           if ($(this).prop('checked')) {
+               $("#linkEventModal .linkEventHistoryTable .table-row.filter-" + filterType).show()
+           }
+        });
+    })
+})
+
 function updateAirlineInfo(airlineId) {
 	$.ajax({
 		type: 'GET',
@@ -659,14 +672,11 @@ function refreshLinkDetails(linkId) {
 	    	    success: function(linkConsumptions) {
 	    	    	$("#linkCompetitons .data-row").remove()
 	    	    	$.each(linkConsumptions, function(index, linkConsumption) {
-    	    			var row = $("<div class='table-row data-row clickable' data-link='rival'><div style='display: table-cell;'>" + linkConsumption.airlineName
+    	    			var row = $("<div class='table-row data-row clickable' onclick='showRivalsCanvas(" + linkConsumption.airlineId + ")' data-link='rival'><div style='display: table-cell;'>" + linkConsumption.airlineName
                                   		    	    				+ "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + toLinkClassValueString(linkConsumption.capacity)
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.quality
                                   		    	    				+ "</div><div style='display: table-cell; text-align: right;'>" + linkConsumption.frequency + "</div></div>")
-                        row.click(function() {
-                            showRivalsCanvas(linkConsumption.airlineId)
-                        })
                         if (linkConsumption.airlineId == airlineId) {
                             $("#linkCompetitons .table-header").after(row) //self is always on top
                         } else {
@@ -689,6 +699,8 @@ function refreshLinkDetails(linkId) {
 	    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    	    }
 	    	});
+
+	    	$('#linkEventModal').data('link', link)
 	    	
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -727,6 +739,7 @@ function refreshLinkDetails(linkId) {
 
 		    	disableButton($("#linkDetails .button.viewLinkHistory"), "Passenger Map is not yet available for this route - please wait for the simulation (time estimation on top left of the screen).")
 		    	disableButton($("#linkDetails .button.viewLinkComposition"), "Passenger Survey is not yet available for this route - please wait for the simulation (time estimation on top left of the screen).")
+		    	disableButton($("#linkDetails .button.viewLinkEvent"), "Event history is not yet available for this route - please wait for the simulation (time estimation on top left of the screen).")
 	    	} else {
 	    		var linkConsumption = linkConsumptions[0]
 	    		$("#linkHistoryPrice").text(toLinkClassValueString(linkConsumption.price, "$"))
@@ -768,8 +781,10 @@ function refreshLinkDetails(linkId) {
 		    	}
 		    	enableButton($("#linkDetails .button.viewLinkHistory"))
 		    	enableButton($("#linkDetails .button.viewLinkComposition"))
+		    	enableButton($("#linkDetails .button.viewLinkEvent"))
 	    	}
             plotLinkCharts(linkConsumptions, plotUnit)
+            $('#linkEventChart').data('linkConsumptions', linkConsumptions)
 	    	$("#linkHistoryDetails").show()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -850,41 +865,51 @@ function planToAirport(toAirportId, toAirportName) {
 	}
 }
 
-function planLink(fromAirport, toAirport) {
+function planLink(fromAirport, toAirport, isRefresh) {
     checkTutorial("planLink")
 	var airlineId = activeAirline.id
+
 	$("#planLinkFromAirportId").val(fromAirport)
 	$("#planLinkToAirportId").val(toAirport)
 	
 	if (fromAirport && toAirport) {
 		setActiveDiv($('#planLinkDetails'))
 		$('#planLinkDetails .warning').hide()
-		$('#sidePanel').fadeOut(200, function() {
-		var url = "airlines/" + airlineId + "/plan-link"
-			$.ajax({
-				type: 'POST',
-				url: url,
-				data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
-	//			contentType: 'application/json; charset=utf-8',
-				dataType: 'json',
-			    success: function(linkInfo) {
-			    	updatePlanLinkInfo(linkInfo)
-			    	$('#sidePanel').fadeIn(200);
-			    },
-		        error: function(jqXHR, textStatus, errorThrown) {
-			            console.log(JSON.stringify(jqXHR));
-			            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-			    },
-			    beforeSend: function() {
+
+		var loadPlanLink = function() {
+            var url = "airlines/" + airlineId + "/plan-link"
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: { 'airlineId' : parseInt(airlineId), 'fromAirportId': parseInt(fromAirport), 'toAirportId' : parseInt(toAirport)} ,
+    //			contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function(linkInfo) {
+                    updatePlanLinkInfo(linkInfo, isRefresh)
+                    if (!isRefresh) {
+                        $('#sidePanel').fadeIn(200);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                        console.log(JSON.stringify(jqXHR));
+                        console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                },
+                beforeSend: function() {
                     $('body .loadingSpinner').show()
                 },
                 complete: function(){
                     $('body .loadingSpinner').hide()
                 }
-			});
-		//hide existing info
-		//$("#planLinkDetails div.value").hide()
-		});
+            });
+            //hide existing info
+            //$("#planLinkDetails div.value").hide()
+        }
+
+        if (!isRefresh) {
+            $('#sidePanel').fadeOut(200, loadPlanLink)
+        } else {
+            loadPlanLink()
+        }
 	}
 	
 	
@@ -896,7 +921,7 @@ var spaceMultipliers = null
 var existingLink
 //var existingLinkModelId = 0
 
-function updatePlanLinkInfo(linkInfo) {
+function updatePlanLinkInfo(linkInfo, isRefresh) {
 	$('#planLinkFromAirportName').attr("onclick", "showAirportDetails(" + linkInfo.fromAirportId + ")").html(getCountryFlagImg(linkInfo.fromCountryCode) + getAirportText(linkInfo.fromAirportCity, linkInfo.fromAirportCode))
 	if (activeAirline.baseAirports.length > 1) { //only allow changing from airport if this is a new link and there are more than 1 base
 		$('#planLinkFromAirportEditIcon').show()
@@ -983,7 +1008,10 @@ function updatePlanLinkInfo(linkInfo) {
     
 	//unhighlight the existing path if any
 	if (selectedLink) {
-		unhighlightLink(selectedLink)
+	    unhighlightLink(selectedLink)
+	    if (!linkInfo.existingLink || linkInfo.existingLink.id != selectedLink) {
+	        deselectLink()
+	    }
 	}
 	
 	if (!linkInfo.existingLink || !flightPaths[linkInfo.existingLink.id]) { //new link or link show visible (other views)
@@ -1068,6 +1096,12 @@ function updatePlanLinkInfo(linkInfo) {
 	//populate airplane model drop down
 	var explicitlySelectedModelId = $("#planLinkModelSelect").data('explicitId')
 	$("#planLinkModelSelect").removeData('explicitId')
+
+	//or if refresh, just use whatever selected previously
+	if (isRefresh) {
+	    explicitlySelectedModelId = $('#planLinkModelSelect').find(":selected").attr('value')
+    }
+
 	$("#planLinkModelSelect").children('option').remove()
 
 	planLinkInfo = linkInfo
@@ -1158,7 +1192,7 @@ function updatePlanLinkInfo(linkInfo) {
 		setActiveDiv($("#extendedPanel #airplaneModelDetails"))
 	}
 	
-	updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId)
+	updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId, isRefresh)
 	$("#planLinkDetails div.value").show()
 }
 
@@ -1201,14 +1235,13 @@ function updateFrequencyBar(frequencyBar, valueContainer, airplane, currentFrequ
     generateImageBar(frequencyBar.data("emptyIcon"), frequencyBar.data("fillIcon"), maxFrequency, frequencyBar, valueContainer, null, null, updateTotalValues)
 }
 
-function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
+function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId, isRefresh) {
     selectedModelId = newModelId //modify the global one
     selectedModel = loadedModelsById[newModelId]
 	if (selectedModelId) {
 		var thisModelPlanLinkInfo = planLinkInfoByModel[selectedModelId]
 		
-		$('#planLinkAirplaneSelect').empty()
-		
+
 //		thisModelPlanLinkInfo.airplanes.sort(sortByProperty('airplane.condition', true))
 //		thisModelPlanLinkInfo.airplanes = sortPreserveOrder(thisModelPlanLinkInfo.airplanes, 'frequency', false) //higher frequency first
 		
@@ -1225,9 +1258,19 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 		    return a.airplane.condition - b.airplane.condition //otherwise: both assigned or both not assigned, then return lowest condition ones first
 		})
 
+        $('#planLinkAirplaneSelect').empty()
+
 		$.each(thisModelPlanLinkInfo.airplanes, function(key, airplaneEntry) {
 //			var option = $("<option></option>").attr("value", airplane.airplaneId).text("#" + airplane.airplaneId)
 //			option.appendTo($("#planLinkAirplaneSelect"))
+
+			//check existing UI changes if just a refresh
+			if (isRefresh) {
+			    var $existingAirplaneRow = $("#planLinkDetails .frequencyDetail .airplaneRow[data-airplaneId='" + airplaneEntry.airplane.id + "']")
+			    //UI values merge into the airplane/frequency info as we want to preserve previously UI change on refresh
+    			mergeAirplaneEntry(airplaneEntry, $existingAirplaneRow)
+			}
+
 			var airplane = airplaneEntry.airplane
 			airplane.isAssigned = airplaneEntry.frequency >  0
 			var div =  $('<div class="clickable airplaneButton" onclick="toggleAssignedAirplane(this)" style="float: left;"></div>')
@@ -1247,8 +1290,10 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 
 
 		$('#planLinkDuration').text(getDurationText(thisModelPlanLinkInfo.duration))
-		
-		existingLink = planLinkInfo.existingLink
+
+		if (!isRefresh) { //for refresh, do not reload the existing link, otherwise refresh on config change would show the new values in confirmation dialog etc
+		    existingLink = planLinkInfo.existingLink
+        }
 		
 		if (existingLink) {
 			$("#planLinkServiceLevel").val(existingLink.rawQuality / 20)
@@ -1264,6 +1309,17 @@ function updatePlanLinkInfoWithModelSelected(newModelId, assignedModelId) {
 	} else {
 		$("#planLinkExtendedDetails").hide()
 	}
+}
+//Merge UI change (though temp) to the data loaded from api service
+//This is used for refresh which we want to reload but keep temp changes from UI
+function mergeAirplaneEntry(airplaneEntry, $airplaneRow) {
+    var frequencyFromUi = $airplaneRow.length ? parseInt($airplaneRow.find(".frequency").val()) : 0
+    var frequencyDelta = frequencyFromUi - airplaneEntry.frequency
+    if (frequencyDelta != 0) { //then UI value is not the same as the original. Do adjustments
+        airplaneEntry.frequency = frequencyFromUi
+        var airplane = airplaneEntry.airplane
+        airplane.availableFlightMinutes = airplane.availableFlightMinutes - (planLinkInfoByModel[airplane.modelId].flightMinutesRequired * frequencyDelta)
+    }
 }
 
 function updateFrequencyDetail(info) {
@@ -1357,6 +1413,7 @@ function addAirplaneRow(container, airplane, frequency) {
     valueContainer.val(frequency)
     airplaneRow.append(valueContainer)
     airplaneRow.data("airplane", airplane)
+    airplaneRow.attr('data-airplaneId', airplane.id) //for easier jquery selector
 
     container.append(airplaneRow)
     updateFrequencyBar(frequencyBar, valueContainer, airplane, frequency)
@@ -1391,6 +1448,8 @@ function removeAirplaneFromLink(airplaneId) {
     })
 }
 
+
+//Get capacity based on current UI status
 function getPlanLinkCapacity() {
     var currentFrequency = 0 //airplanes that are ready
     var currentCapacity = { "economy" : 0, "business" : 0, "first" : 0}
@@ -1747,6 +1806,13 @@ function updateLinksTable(sortProperty, sortOrder) {
 		
 		linksTable.append(row)
 	});
+	if (loadedLinks.length == 0) {
+        $('#linksCanvas .noLinkTips').show();
+	} else {
+	    $('#linksCanvas .noLinkTips').hide();
+    }
+
+
 }
 
 function selectLinkFromMap(linkId, refocus) {
@@ -1853,8 +1919,9 @@ function showLinkComposition(linkId) {
 
 	    	updateTopCountryComposition(result.country)
 	    	updatePassengerTypeComposition(result.passengerType)
-	    	updatePrefernceTypeComposition(result.preferenceType)
-	    	updateTopAirportComposition(result.airport)
+	    	updatePreferenceTypeComposition(result.preferenceType)
+	    	updateTopAirportComposition($('#linkCompositionModal div.topHomeAirports'), result.homeAirports)
+	    	updateTopAirportComposition($('#linkCompositionModal div.topDestinationAirports'), result.destinationAirports)
 	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
 	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
 	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
@@ -1872,6 +1939,176 @@ function showLinkComposition(linkId) {
 	    	$('body .loadingSpinner').hide()
 	    }
 	});
+}
+
+
+function showLinkEventHistory(linkId) {
+    $('#linkEventModal .chart').hide()
+    $('#linkRivalHistoryChart').show()
+
+    //always default to all airlines (instead of self)
+    $("#switchLinkEventRival").prop('checked', true)
+    $("#switchLinkEventSelf").prop('checked', false)
+
+    var link = $("#linkEventModal").data("link")
+    $("#linkEventModal .title").html("<div style='display: inline-flex; align-items: center;'>"
+    + getCountryFlagImg(link.fromCountryCode)
+    + getAirportText(link.fromAirportCity, link.fromAirportCode)
+    + "<img src='assets/images/icons/arrow.png' style='margin: 0 5px;'>"
+    + getCountryFlagImg(link.toCountryCode)
+    + getAirportText(link.toAirportCity, link.toAirportCode) + "</div>")
+    $('#linkEventModal .fromAirportCode').text(link.fromAirportCode)
+    $('#linkEventModal .toAirportCode').text(link.toAirportCode)
+    $('#linkEventModal .bothAirportCode').append(link.fromAirportCode + link.toAirportCode)
+    $("#linkEventModal div.filterCheckboxes input:checkbox").prop('checked', true)
+
+    var linkConsumptions = $($('#linkEventChart').data('linkConsumptions')).toArray().slice(0, 8 * 13)
+
+    var chart = plotLinkEvent(linkConsumptions, $('#linkEventChart'),
+        function(hoverCycle) {
+            var $linkEventTableContainer = $("#linkEventModal .linkEventHistoryTableContainer")
+            $linkEventTableContainer.find(".table-row").removeClass('selected')
+            var $matchingRows = $linkEventTableContainer.find(".table-row[data-cycle='" + hoverCycle + "']")
+            $matchingRows.addClass('selected')
+            if ($matchingRows.length > 0) {
+                scrollToRow($matchingRows[0], $linkEventTableContainer)
+            }
+        },
+        function() { //chartout
+             $("#linkEventModal .linkEventHistoryTableContainer .table-row").removeClass('selected')
+        })
+    $("#linkEventChart").data("chart", chart) //record back to the container
+
+    //load rival comparison
+    $.ajax({
+        		type: 'GET',
+        		url: "airlines/" + activeAirline.id + "/link-related-rival-history/" + linkId + "?cycleCount=" + linkConsumptions.length,
+        	    contentType: 'application/json; charset=utf-8',
+        	    dataType: 'json',
+        	    success: function(result) {
+                    var chart = plotRivalHistory(result, $('#linkRivalHistoryChart'),
+                        function(hoverCycle) {
+                            var $linkEventTableContainer = $("#linkEventModal .linkEventHistoryTableContainer")
+                            $linkEventTableContainer.find(".table-row").removeClass('selected')
+                            var $matchingRows = $linkEventTableContainer.find(".table-row[data-cycle='" + hoverCycle + "']")
+                            $matchingRows.addClass('selected')
+                            if ($matchingRows.length > 0) {
+                                var row = $matchingRows[0]
+                                var baseOffset = $linkEventTableContainer.find(".table-row")[0].offsetTop //somehow first row is not 0...
+                                var realOffset = row.offsetTop - baseOffset
+                                $linkEventTableContainer.stop(true, true) //stop previous animation
+                                $linkEventTableContainer.animate ({scrollTop: realOffset}, "fast");
+                            }
+                        },
+                        function() { //chartout
+                             $("#linkEventModal .linkEventHistoryTableContainer .table-row").removeClass('selected')
+                        }
+                    )
+                    $("#linkRivalHistoryChart").data("chart", chart) //record back to the container
+        	    },
+                error: function(jqXHR, textStatus, errorThrown) {
+        	            console.log(JSON.stringify(jqXHR));
+        	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        	    }
+        	});
+
+
+
+
+
+
+    var url = "airlines/" + activeAirline.id + "/link-related-event-history/" + linkId + "?cycleCount=" + linkConsumptions.length
+    $.ajax({
+    		type: 'GET',
+    		url: url,
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(result) {
+                var linkEventTable = $("#linkEventModal .linkEventHistoryTable")
+                linkEventTable.children("div.table-row").remove()
+
+                result = result.sort(function (a, b) {
+                    return b.cycle - a.cycle
+                });
+
+                $.each(result, function(index, entry) {
+                    var row = $("<div class='table-row clickable'></div>")
+                    row.attr("data-cycle", entry.cycle)
+                    row.data("index", index)
+                    row.append("<div class='cell'>" + getCycleDeltaText(entry.cycleDelta) + "</div>")
+                    if (entry.airlineId) {
+                        row.append("<div class='cell'>" + getAirlineLogoImg(entry.airlineId) + entry.airlineName + "</div>")
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+
+                    var $descriptionCell = $("<div class='cell'>" + entry.description + "</div>")
+                    if (entry.descriptionCountryCode) {
+                        $descriptionCell.prepend(getCountryFlagImg(entry.descriptionCountryCode))
+                    }
+                    row.append($descriptionCell)
+                    if (entry.capacity) {
+                        $("<div class='cell' align='right'></div>").appendTo(row).append(getCapacitySpan(entry.capacity, entry.frequency))
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+
+                    if (entry.capacityDelta) {
+                        $("<div class='cell' align='right'></div>").appendTo(row).append(getCapacityDeltaSpan(entry.capacityDelta))
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+
+                    if (entry.price) {
+                        $("<div class='cell'></div>").appendTo(row).text(toLinkClassValueString(entry.price, '$'))
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+                    if (entry.priceDelta) {
+                        $("<div class='cell'></div>").appendTo(row).append(getPriceDeltaSpan(entry.priceDelta))
+                    } else {
+                        row.append("<div class='cell'>-</div>")
+                    }
+                    row.mouseenter(function() {
+                        toggleLinkEventBar($('#linkEventModal .chart:visible').data('chart'), entry.cycle, true)
+                    })
+                    if (entry.matchFrom) {
+                        row.addClass('filter-fromAirport')
+                    }
+                    if (entry.matchTo) {
+                        row.addClass('filter-toAirport')
+                    }
+                    if (entry.matchFrom && entry.matchTo) {
+                        row.addClass('filter-bothAirport')
+                    }
+                    if (!entry.matchFrom && !entry.matchTo) {
+                        row.addClass('filter-other')
+                    }
+                    linkEventTable.append(row)
+                });
+
+                if (result.length == 0) {
+                    var row = $("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
+                    linkEventTable.append(row)
+                }
+
+                linkEventTable.mouseleave(function() {
+                  toggleLinkEventBar($('#linkEventModal .chart:visible').data('chart'), -1, false)
+                })
+    	    },
+            error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    },
+    	    beforeSend: function() {
+    	    	$('body .loadingSpinner').show()
+    	    },
+    	    complete: function(){
+    	    	$('body .loadingSpinner').hide()
+    	    }
+    	});
+
+    $('#linkEventModal').fadeIn(200)
 }
 
 function showLinkRivalHistory(linkId) {
@@ -1905,6 +2142,11 @@ function showLinkRivalHistory(linkId) {
 	});
 }
 
+function switchLinkEventChart($chartContainer) {
+    $("#linkEventModal .chart").hide()
+    $chartContainer.show()
+}
+
 function showLinkRivalDetails(linkId) {
 	var url = "airlines/" + activeAirline.id + "/link-rival-details/" + linkId
 
@@ -1931,12 +2173,20 @@ function showLinkRivalDetails(linkId) {
 	});
 }
 
+function getLoungeIconSpan(lounge) {
+    var $loungeSpan = $('<span style="position:relative"></span>')
+    $loungeSpan.append($('<img src="' + 'assets/images/icons/sofa.png' +  '">'))
+    $loungeSpan.attr('title', lounge.name + ' at ' + lounge.airportName + ' (' + lounge.airlineName + ' level ' + lounge.level + ')')
+    $loungeSpan.append('<div style="position: absolute; right: 0px; bottom: 0px; padding: 0px; vertical-align: middle; color: rgb(69, 69, 68); background-color: rgb(140, 185, 217); font-size: 8px; font-weight: bold;">' + lounge.level + '</div>')
+    return $loungeSpan
+}
+
 function updateRivalTables(result) {
-    var loyaltyAwarenessTable = $("#rivalLoyaltyAwarenessTable")
+    var appealTable = $("#rivalAppealTable")
     var networkCapacityTable = $("#networkCapacity")
-    loyaltyAwarenessTable.children(".table-row").remove()
+    appealTable.children(".table-row").remove()
     networkCapacityTable.children(".table-row").remove()
-	var fromAirportText = getAirportText(result.fromCity, result.fromAirportCode)
+    var fromAirportText = getAirportText(result.fromCity, result.fromAirportCode)
     var toAirportText = getAirportText(result.toCity, result.toAirportCode)
     $("#linkRivalDetailsModal .fromAirportText").text(fromAirportText)
     $("#linkRivalDetailsModal .toAirportText").text(toAirportText)
@@ -1945,44 +2195,51 @@ function updateRivalTables(result) {
 	var airlineNameById = {}
 	var fromAirportLoyalty = {}
 	var toAirportLoyalty = {}
-	var fromAirportAwareness = {}
-    var toAirportAwareness = {}
-    var fromAirportCapacity = {}
+	var fromAirportCapacity = {}
     var toAirportCapacity = {}
-
-
+    var fromAirportLounge = {}
+    var toAirportLounge = {}
 
     $.each(result.fromAirport, function(index, entry) {
 	     var airlineId = entry.airline.id
 	     airlineNameById[airlineId] = entry.airline.name
-	     fromAirportAwareness[airlineId] = entry.awareness
 	     fromAirportLoyalty[airlineId] = entry.loyalty
 	     fromAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
+	     if (entry.lounge) {
+            fromAirportLounge[airlineId] = entry.lounge
+	     }
      })
 
     $.each(result.toAirport, function(index, entry) {
          var airlineId = entry.airline.id
-         toAirportAwareness[airlineId] = entry.awareness
          toAirportLoyalty[airlineId] = entry.loyalty
          toAirportCapacity[airlineId] = { "economy" : entry.network.economy, "business" : entry.network.business, "first" : entry.network.first}
+         if (entry.lounge) {
+             toAirportLounge[airlineId] = entry.lounge
+         }
     })
 
 
     var fullHeartSource = "assets/images/icons/heart.png"
     var halfHeartSource = "assets/images/icons/heart-half.png"
-    var fullStarSource = "assets/images/icons/star.png"
-    var halfStarSource = "assets/images/icons/star-half.png"
+    var emptyHeartSource = "assets/images/icons/heart-empty.png"
     var greenManSource = "assets/images/icons/man-green.png"
     var blueManSource = "assets/images/icons/man-blue.png"
     var yellowManSource = "assets/images/icons/man-yellow.png"
     $.each(airlineNameById, function(airlineId, airlineName) {
      	var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell' align='left'>" + getAirlineSpan(airlineId, airlineName) + "</div>")
-		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, fromAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, fromAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		getHalfStepImageBarByValue(fullHeartSource, halfHeartSource, 10, toAirportLoyalty[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, toAirportAwareness[airlineId]).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
-		loyaltyAwarenessTable.append(row)
+     	var $airlineSpan = $(getAirlineSpan(airlineId, airlineName))
+     	if (fromAirportLounge[airlineId]) {
+     	    $airlineSpan.append(getLoungeIconSpan(fromAirportLounge[airlineId]))
+     	}
+     	if (toAirportLounge[airlineId]) {
+            $airlineSpan.append(getLoungeIconSpan(toAirportLounge[airlineId]))
+        }
+        var $airlineCell = $("<div class='cell' align='left'></div>").append($airlineSpan)
+		row.append($airlineCell)
+		getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, fromAirportLoyalty[airlineId].toFixed(2)).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+		getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, toAirportLoyalty[airlineId].toFixed(2)).appendTo($("<div class='cell' align='right'></div>").appendTo(row))
+		appealTable.append(row)
 
 		row = $("<div class='table-row'></div>")
 
@@ -1999,7 +2256,7 @@ function updateRivalTables(result) {
 
 }
 
-function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStepAmount, value) {
+function getPaddedHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, emptyStepImageSrc, halfStepAmount, value) {
     var containerDiv = $("<div>")
 	containerDiv.prop("title", value)
 
@@ -2010,12 +2267,20 @@ function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStep
 		var image = $("<img src='" + fullStepImageSrc + "'>")
 		containerDiv.append(image)
     }
-    if (hasRemainder) {
+    if (hasRemainder && halfStepImageSrc) {
         var image = $("<img src='" + halfStepImageSrc + "'>")
     	containerDiv.append(image)
     }
+    if (emptyStepImageSrc && halfSteps == 0 && fullSteps == 0) {
+        var image = $("<img src='" + emptyStepImageSrc + "'>")
+        containerDiv.append(image)
+    }
 
     return containerDiv
+}
+
+function getHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, halfStepAmount, value) {
+    return getPaddedHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, null, halfStepAmount, value)
 }
 
 function getCapacityImageBar(imageSrc, value, linkClass) {
@@ -2211,39 +2476,39 @@ function updateTopCountryComposition(countryComposition) {
 	});
 }
 
-function updateTopAirportComposition(airportComposition) {
+function updateTopAirportComposition($container, airportComposition) {
 	var maxPerColumn = 10;
 	var index = 0;
-	$('#linkCompositionModal .topAirportTables').empty()
+	$container.empty()
 	var $table
 	$.each(airportComposition, function(index, entry) {
 	    if (index % maxPerColumn == 0) { //flush a column (a table)
-	        $table = $('<div class="table data" style="flex : 1; min-width: 200px;"></div>').appendTo($('#linkCompositionModal .topAirportTables'))
+	        $table = $('<div class="table data" style="flex : 1; min-width: 200px;"></div>').appendTo($container)
 	    }
 		$table.append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.airport
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 
-function updatePassengerTypeComposition(countryComposition) {
-	countryComposition = countryComposition.sort(function (a, b) {
+function updatePassengerTypeComposition(typeComposition) {
+	typeComposition = typeComposition.sort(function (a, b) {
 	    return b.passengerCount - a.passengerCount 
 	});
 	
 	$('#linkCompositionModal .passengerTypeTable .table-row').remove()
-	$.each(countryComposition, function(key, entry) {
+	$.each(typeComposition, function(key, entry) {
 		$('#linkCompositionModal .passengerTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 
-function updatePrefernceTypeComposition(countryComposition) {
-	countryComposition = countryComposition.sort(function (a, b) {
+function updatePreferenceTypeComposition(preferenceComposition) {
+	preferenceComposition = preferenceComposition.sort(function (a, b) {
 	    return b.passengerCount - a.passengerCount 
 	});
 	
 	$('#linkCompositionModal .preferenceTypeTable .table-row').remove()
-	$.each(countryComposition, function(key, entry) {
+	$.each(preferenceComposition, function(key, entry) {
 		$('#linkCompositionModal .preferenceTypeTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
@@ -2428,6 +2693,15 @@ function changeAssignedDelegateCount(delta) {
     }
 }
 
+function changeAssignedDelegateCountToMax() {
+    for (i = availableDelegates; i >= 0 ; i --) {
+        if (!isNaN(negotiationOddsLookup[i])) {
+            updateAssignedDelegateCount(i)
+            break
+        }
+    }
+}
+
 function updateAssignedDelegateCount(delegateCount) {
     assignedDelegates = delegateCount
     $('#linkConfirmationModal div.assignedDelegatesIcons').empty()
@@ -2578,14 +2852,14 @@ function getLinkNegotiation(callback) {
                     if (negotiationInfo.finalRequirementValue > availableDelegates) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Not enough available delegates)'
-                        $('#linkConfirmationModal .negotiationInfo img.error').show();
+                        $('#linkConfirmationModal .negotiationInfo .error').show();
                     } else if (negotiationInfo.finalRequirementValue > 10) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Too difficult to negotiate)'
-                        $('#linkConfirmationModal .negotiationInfo img.error').show();
+                        $('#linkConfirmationModal .negotiationInfo .error').show();
                     } else {
+                        $('#linkConfirmationModal .negotiationInfo .error').hide();
                         $('#linkConfirmationModal .negotiationInfo img.info').show();
-                        $('#linkConfirmationModal .negotiationInfo img.error').hide();
                     }
 
                     $('#negotiationDifficultyModal .negotiationInfo .negotiationDifficultyTotal').text(difficultyTotalText)

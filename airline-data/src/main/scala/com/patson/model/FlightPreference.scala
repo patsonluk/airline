@@ -4,6 +4,8 @@ import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 import com.patson.Util
+
+import java.util.concurrent.ThreadLocalRandom
 /**
  * Flight preference has a computeCost method that convert the existing price of a link to a "perceived price". The "perceived price" will be refer to "cost" here
  * 
@@ -104,7 +106,7 @@ abstract class FlightPreference(homeAirport : Airport) {
   }
 
   def loyaltyAdjustRatio(link : Transport) = {
-    val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0, 0))
+    val appeal = appealList.getOrElse(link.airline.id, AirlineAppeal(0))
     val loyalty = appeal.loyalty
     //the maxReduceFactorForThisAirline, if at max loyalty, it is the same as maxReduceFactorAtMaxLoyalty, at 0 loyalty, this is at maxReduceFactorAtMinLoyalty
     //    val maxReduceFactorForThisAirline = maxReduceFactorAtMinLoyalty + (maxReduceFactorAtMaxLoyalty - maxReduceFactorAtMinLoyalty) * (loyalty.toDouble / maxLoyalty)
@@ -137,8 +139,6 @@ abstract class FlightPreference(homeAirport : Airport) {
         1 - GOOD_QUALITY_DELTA.toDouble / Link.MAX_QUALITY * 0.5 - extraDelta.toDouble / Link.MAX_QUALITY * 0.3
       }
 
-    //TODO this makes higher income country
-    //println(qualityExpectation + " vs " + link.computedQuality + " : " + priceAdjust)
     1 + (priceAdjust - 1) * qualitySensitivity
   }
 
@@ -146,8 +146,8 @@ abstract class FlightPreference(homeAirport : Airport) {
   /**
    *	flattop bell random centered at 0
    */
-  def getFlatTopBellRandom(topWidth : Double, bellExtenstion : Double) = {
-    topWidth / 2 - Math.random * topWidth + Util.getBellRandom(0) * bellExtenstion
+  def getFlatTopBellRandom(topWidth : Double, bellExtension : Double) = {
+    topWidth / 2 - ThreadLocalRandom.current().nextDouble() * topWidth + Util.getBellRandom(0) * bellExtension
   }
 
   val priceAdjustedByLinkClassDiff = (link : Transport, linkClass : LinkClass) => {
@@ -176,8 +176,9 @@ abstract class FlightPreference(homeAirport : Airport) {
         val flightDurationThreshold = Computation.computeStandardFlightDuration(link.distance)
         Math.min(flightDurationSensitivity, (link.duration - flightDurationThreshold).toFloat / flightDurationThreshold * flightDurationSensitivity)
       }
+    val finalDelta = Math.max(-0.75, frequencyRatioDelta + flightDurationRatioDelta) //just to play safe, can only at most 75% off
 
-    1 + frequencyRatioDelta + flightDurationRatioDelta
+    1 + finalDelta
   }
 
   def loungeAdjustRatio(link : Transport, loungeLevelRequired : Int, linkClass: LinkClass) = {
@@ -288,10 +289,10 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
   override val loyaltySensitivity = 0
   override val frequencyThreshold = 14
   override val frequencySensitivity = 0.15
-  override val flightDurationSensitivity = 0.7
+  override val flightDurationSensitivity = 1.0
 
   def computeCost(baseCost : Double, link : Transport, linkClass : LinkClass) = {
-    val noise = 0.9 + getFlatTopBellRandom(0.2, 0.1)
+    val noise = 0.9 + getFlatTopBellRandom(0.3, 0.25)
 
     //NOISE?
     val finalCost = baseCost * noise
@@ -315,12 +316,21 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
   override val loyaltySensitivity = loyaltyRatio
   override val frequencyThreshold = 14
   override val frequencySensitivity = 0.05
-  override val flightDurationSensitivity = 0.25
+  override val flightDurationSensitivity = preferredLinkClass match {
+    case FIRST => 0.55
+    case BUSINESS => 0.4
+    case ECONOMY => 0.25
+  }
   override val loungeSensitivity : Double = 1
 
   def computeCost(baseCost: Double, link : Transport, linkClass : LinkClass) : Double = {
     //println(link.airline.name + " loyalty " + loyalty + " from price " + link.price + " reduced to " + perceivedPrice)
     var perceivedPrice = baseCost
+
+    if (getPreferenceType == ELITE && link.computedQuality() > 80) { //find luxurious flight attractive
+      val discount = 0.4 * (link.computedQuality() - 80) / 20.0
+      perceivedPrice = perceivedPrice * (1 - discount)
+    }
 
 //    println(link.airline.name + " baseCost " + baseCost +  " actual reduce factor " + actualReduceFactor + " max " + maxReduceFactorForThisAirline + " min " + minReduceFactorForThisAirline)
     val noise = 0.9 + getFlatTopBellRandom(0.3, 0.25)
@@ -404,7 +414,7 @@ class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]
   def draw(linkClass: LinkClass, fromAirport : Airport, toAirport : Airport) : FlightPreference = {
     //Random.shuffle(pool).apply(0)
     val poolForClass = pool(linkClass).filter(_.isApplicable(fromAirport, toAirport))
-    poolForClass(Random.nextInt(poolForClass.length))
+    poolForClass(ThreadLocalRandom.current().nextInt(poolForClass.length))
   }
 }
 

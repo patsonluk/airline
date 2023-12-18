@@ -78,20 +78,20 @@ object HistoryUtil {
     groupedLinks.toList
   }
 
-  def loadConsumptionByLink(link : Link, cycleDelta : Int = 0, selfOnly : Boolean = false) : LinkHistory = {
+  def loadConsumptionByLink(link : Link, linkConsiderationFilter : LinkConsideration => Boolean, cycleDelta : Int = 0, selfOnly : Boolean = false) : LinkHistory = {
     val relatedConsumptions = loadRelatedRoutesFromCache(link.id, cycleDelta)
     val airlineId = link.airline.id
 
     println("Finished loading related consumption for " + link)
 
     val relatedForwardLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
-        case(route, _) => route.links.find { linkConsideration => !linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
+        case(route, _) => route.links.find { linkConsideration => !linkConsideration.inverted && linkConsideration.link.id == link.id && linkConsiderationFilter(linkConsideration)}.isDefined
       }.toList, airlineId, selfOnly
     )
     val groupedForwardLinks = groupLinksByStep(link.from, link.to, link.airline, relatedForwardLinks)
     
     val relatedReverseLinks : List[RelatedLink] = computeRelatedLinks(relatedConsumptions.filter {
-        case(route, _) => route.links.find { linkConsideration => linkConsideration.inverted && linkConsideration.link.id == link.id}.isDefined
+        case(route, _) => route.links.find { linkConsideration => linkConsideration.inverted && linkConsideration.link.id == link.id && linkConsiderationFilter(linkConsideration)}.isDefined
       }.toList, airlineId, selfOnly
     )
 

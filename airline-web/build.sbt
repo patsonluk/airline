@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   guice,
   specs2 % Test,
   "com.typesafe.akka" %% "akka-remote" % "2.5.32",
-  "default" %% "airline-data" % "2.0",
+  "default" %% "airline-data" % "2.1",
   "com.google.api-client" % "google-api-client" % "1.30.4",
   "com.google.oauth-client" % "google-oauth-client-jetty" % "1.34.1",
   "com.google.apis" % "google-api-services-gmail" % "v1-rev103-1.25.0",
@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
 )
 
 // https://mvnrepository.com/artifact/org.elasticsearch.client/elasticsearch-rest-client
-libraryDependencies += "org.elasticsearch.client" % "elasticsearch-rest-high-level-client" % "7.6.2"
+libraryDependencies += "org.elasticsearch.client" % "elasticsearch-rest-high-level-client" % "7.17.2"
 
 
 
