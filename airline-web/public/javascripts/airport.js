@@ -86,6 +86,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
     var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, $('#incomeDetailsTooltip'))
     $("#airportDetailsIncomeLevel").html($incomeLevelSpan)
 
+	$("#airportDetailsCountry").setAttribute("onclick", "showCountryView('" + airport.countryCode + "')")
 	$("#airportDetailsCountry").text(loadedCountriesByCode[airport.countryCode].name)
 	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
 	if (countryFlagUrl) {
