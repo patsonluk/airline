@@ -258,7 +258,12 @@ function updateAirportChampionDetails(airport) {
 	        var champions = result.champions
 	    	$(champions).each(function(index, championDetails) {
 	    		var row = $("<div class='table-row clickable' data-link='rival' onclick=\"showRivalsCanvas('" + championDetails.airlineId + "');\"></div>")
-	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
+	    		var icon = getRankingImg(championDetails.ranking)
+	    		if (icon !== "") {
+	    		    row.append("<div class='cell'>" + icon + "</div>")
+                } else {
+                    row.append("<div class='cell'>" + championDetails.ranking + "</div>")
+                }
 	    		row.append("<div class='cell'>" + getAirlineSpan(championDetails.airlineId, championDetails.airlineName) + "</div>")
 	    		row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
 	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.loyalty + "</div>")
