@@ -981,14 +981,22 @@ function updateChampionedAirportsDetails() {
 		url: "airlines/" + activeAirline.id + "/championed-airports",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(championedAirports) {
-	    	$(championedAirports).each(function(index, championDetails) {
+	    success: function(championedInfo) {
+	        $(championedInfo.airports).each(function(index, championDetails) {
 	    		var row = $("<div class='table-row clickable' data-link='airport' onclick=\"showAirportDetails('" + championDetails.airportId + "');\"></div>")
 	    		row.append("<div class='cell'>" + getRankingImg(championDetails.ranking) + "</div>")
 	    		row.append("<div class='cell'>" + getCountryFlagImg(championDetails.countryCode) + championDetails.airportText + "</div>")
 	    		row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
-	    		row.append("<div class='cell' style='text-align: right;'>" + championDetails.reputationBoost + "</div>")
+	    		if (index < championedInfo.maxEntries) {
+                    row.append("<div class='cell' style='text-align: right;'>" + championDetails.reputationBoost + "</div>")
+                } else {
+                    var $cell = $("<div class='cell' style='text-align: right; color:#888888;'><img src='assets/images/icons/exclamation-circle.png' style='vertical-align: middle;'/>" + championDetails.reputationBoost + "</div>")
+                    row.attr("title", "Entry gives no boost beyond top " + championedInfo.maxEntries)
+                    row.append($cell)
+                }
+
 	    		$('#championedAirportsList').append(row)
+
 	    	})
 
 	    	populateNavigation($('#championedAirportsList'))

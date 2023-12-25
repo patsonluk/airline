@@ -64,7 +64,9 @@ object ChampionUtil {
     7 -> 0.06,
     8 -> 0.04,
     9 -> 0.03,
-    10 -> 0.02
+    10 -> 0.02,
+    10 -> 0.015,
+    10 -> 0.01
   )
 
   /**
@@ -148,6 +150,6 @@ object ChampionUtil {
   }
 
   def getAirportChampionCount(airport: Airport) = {
-    airport.size
+    airport.size + 2
   }
 }
