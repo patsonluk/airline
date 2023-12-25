@@ -13,18 +13,17 @@ import scala.util.Random
 
 object MaxAirportChampTest extends App {
   val allInfo = ChampionUtil.loadAirportChampionInfo()
-  val sortedBefore = allInfo.groupBy(_.loyalist.airline).toList.map {
-    case (airline, entries) => (airline, (entries.map(_.reputationBoost).sum, entries.length))
-  }.sortBy(_._2._2).reverse
+  val sorted = allInfo.groupBy(_.loyalist.airline).toList.map {
+    case (airline, entries) => (airline,
+      entries.filter(entry => entry.ranking <= ChampionUtil.getAirportChampionCount(entry.loyalist.airport) - 2).map(_.reputationBoost).sum,
+      entries.map(_.reputationBoost).sorted.takeRight(MAX_AIRPORT_CHAMPION_BOOST_ENTRIES).sum,
+      entries.filter(entry => entry.ranking <= ChampionUtil.getAirportChampionCount(entry.loyalist.airport) - 2).length,
+      entries.map(_.reputationBoost).sorted.takeRight(MAX_AIRPORT_CHAMPION_BOOST_ENTRIES).length
+      )
+  }.sortBy(_._2).reverse
 
-  println("BEFORE!!!!!!!!!!!!!!!!")
-  sortedBefore.foreach(println)
-
-  val sortedAfter = allInfo.groupBy(_.loyalist.airline).toList.map {
-    case (airline, entries) => (airline, (entries.map(_.reputationBoost).sorted.takeRight(MAX_AIRPORT_CHAMPION_BOOST_ENTRIES).sum, MAX_AIRPORT_CHAMPION_BOOST_ENTRIES))
-  }.sortBy(_._2._1).reverse
-  println("AFTER!!!!!!!!!!!!!!!!!")
-  sortedAfter.foreach(println)
-
-
+  sorted.foreach {
+    case (airline, before, after, beforeCount, afterCount) =>
+      println(s"${airline.name},$before,$after,$beforeCount,$afterCount")
+  }
 }
