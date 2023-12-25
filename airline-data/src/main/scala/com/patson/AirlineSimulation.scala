@@ -20,6 +20,7 @@ object AirlineSimulation {
   val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUTATION_DELTA = 1
   val BANKRUPTCY_CASH_THRESHOLD = -10000000 //-10M
+  val MAX_AIRPORT_CHAMPION_BOOST_ENTRIES = 100 //per airline, how many airport champ entries can it add up for reputation boost
 
   def airlineSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane]) = {
     //compute profit
@@ -358,8 +359,10 @@ object AirlineSimulation {
 //          }
 //        }
 
+
+
         val reputationByAirportChampions = airportChampionsByAirlineId.get(airline.id) match {
-          case Some(airportChampions) => airportChampions.map(_.reputationBoost).sum
+          case Some(airportChampions) => airportChampions.map(_.reputationBoost).sorted.takeRight(MAX_AIRPORT_CHAMPION_BOOST_ENTRIES).sum
           case None => 0
         }
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.AIRPORT_LOYALIST_RANKING, reputationByAirportChampions))
