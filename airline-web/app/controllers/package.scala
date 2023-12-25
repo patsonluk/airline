@@ -522,6 +522,23 @@ package object controllers {
     }
   }
 
+  object SimpleAirportWrites extends Writes[Airport] {
+    override def writes(airport : Airport) : JsValue = {
+      Json.obj(
+        "id" -> airport.id,
+        "name" -> airport.name,
+        "iata" -> airport.iata,
+        "icao" -> airport.icao,
+        "city" -> airport.city,
+        "size" -> airport.size,
+        "latitude" -> airport.latitude,
+        "longitude" -> airport.longitude,
+        "countryCode" -> airport.countryCode,
+        "population" -> airport.population,
+        "incomeLevel" -> airport.incomeLevel.toInt)
+    }
+  }
+
   implicit object AirportFormat extends Format[Airport] {
     def reads(json: JsValue): JsResult[Airport] = {
       val airport = Airport.fromId((json \ "id").as[Int])

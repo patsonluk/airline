@@ -53,6 +53,10 @@ function updateRankingTable(rankingType, rankings) {
 		rankingTable = $('#loungeRank')
 	} else if (rankingType == "AIRPORT") {
 		rankingTable = $('#airportRank')
+    } else if (rankingType == "INTERNATIONAL_PAX") {
+        rankingTable = $('#internationPaxRank')
+    } else if (rankingType == "DOMESTIC_PAX") {
+        rankingTable = $('#domesticPaxRank')
 	} else if (rankingType == "PASSENGER_AS") {
 		rankingTable = $('#passengerRankAs')
 	} else if (rankingType == "PASSENGER_AF") {
@@ -97,13 +101,20 @@ function getRankingRow(ranking) {
 	if (ranking.airlineId) {
 		var entry = getAirlineSpan(ranking.airlineId, ranking.airlineName)
 		if (ranking.rankInfo) {
-			entry += ' : ' + ranking.rankInfo
+		    if (ranking.rankInfo.from && ranking.rankInfo.to) {
+		        entry += ' : ' + "<span style='vertical-align:bottom'>" + getAirportSpan(ranking.rankInfo.from) + "<img style='vertical-align:bottom; margin:0 3px;' src='assets/images/icons/12px/arrow-double.png'/>" + getAirportSpan(ranking.rankInfo.to) + "</span>"
+		    } else {
+			    entry += ' : ' + ranking.rankInfo
+            }
 		}
 		var $airlineDiv = $("<div class='cell'>" + entry + "</div>").appendTo(row)
 		addAirlineTooltip($airlineDiv, ranking.airlineId, ranking.airlineSlogan, ranking.airlineName)
 	} else if (ranking.airportId) {
 		var entry = getCountryFlagImg(ranking.countryCode) + ranking.iata + " : " + ranking.airportName 
 		row.append("<div class='cell'>" + entry + "</div>")
+	} else if (ranking.airport1 && ranking.airport2) {
+		var entry = getAirportSpan(ranking.airport1) + "<img style='vertical-align:bottom; margin:0 3px;' src='assets/images/icons/12px/arrow-double.png'/>" + getAirportSpan(ranking.airport2)
+        row.append("<div class='cell'>" + entry + "</div>")
 	}
 	row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(ranking.rankedValue) + "</div>")
 	

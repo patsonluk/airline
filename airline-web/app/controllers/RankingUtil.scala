@@ -42,7 +42,12 @@ object RankingUtil {
     updatedRankings.put(RankingType.LINK_COUNT, getLinkCountRanking(links, airlinesById))
     updatedRankings.put(RankingType.LINK_PROFIT, getLinkProfitRanking(flightConsumptions, airlinesById))
     updatedRankings.put(RankingType.LOUNGE, getLoungeRanking(LoungeHistorySource.loadAll, airlinesById))
-    updatedRankings.put(RankingType.AIRPORT, getAirportRanking(flightConsumptions))
+
+    val (paxByAirport, paxByAirportPair) = getPaxStat(flightConsumptions)
+
+    updatedRankings.put(RankingType.AIRPORT, getAirportRanking(paxByAirport))
+    updatedRankings.put(RankingType.INTERNATIONAL_PAX, getAirportPairRanking(paxByAirportPair, (airport1, airport2) => airport1.countryCode != airport2.countryCode))
+    updatedRankings.put(RankingType.DOMESTIC_PAX, getAirportPairRanking(paxByAirportPair, (airport1, airport2) => airport1.countryCode == airport2.countryCode))
 //    val linkConsumptionsByAirlineAndZone = getPassengersByZone(linkConsumptionsByAirline)
 //    updatedRankings.put(RankingType.PASSENGER_AS, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AS, "AS"))
 //    updatedRankings.put(RankingType.PASSENGER_AF, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AF, "AF"))
@@ -186,18 +191,8 @@ object RankingUtil {
     }.toList
   }
   
-  private[this] def getAirportRanking(linkConsumptions : List[LinkConsumptionDetails]) : List[Ranking] = {
-    val passengersByAirport = scala.collection.mutable.Map[Airport, Long]()
-    
-    linkConsumptions.foreach {  consumption =>
-      val fromAirport = consumption.link.from
-      val toAirport = consumption.link.to
-      val passengers = consumption.link.getTotalSoldSeats.toLong
-      passengersByAirport.put(fromAirport, passengersByAirport.getOrElse(fromAirport, 0L) + passengers)
-      passengersByAirport.put(toAirport, passengersByAirport.getOrElse(toAirport, 0L) + passengers)
-    }
-    
-    passengersByAirport.toList.sortBy(_._2)(Ordering[Long].reverse).zipWithIndex.map {
+  private[this] def getAirportRanking(paxByAirport : Map[Airport, Long]) : List[Ranking] = {
+    paxByAirport.toList.sortBy(_._2)(Ordering[Long].reverse).zipWithIndex.map {
       case((airport, passengers), index) => Ranking(RankingType.AIRPORT,
                                                       key = airport.id,
                                                       entry = airport,
@@ -205,7 +200,37 @@ object RankingUtil {
                                                       rankedValue = passengers)
     }.toList.take(40) //40 max for now
   }
-  
+
+  private[this] def getPaxStat(linkConsumptions : List[LinkConsumptionDetails]) : (Map[Airport, Long], Map[(Airport, Airport), Long]) = {
+    val passengersByAirport = scala.collection.mutable.Map[Airport, Long]()
+    val passengersByAirportPair = scala.collection.mutable.Map[(Airport, Airport), Long]()
+
+    linkConsumptions.foreach { consumption =>
+      val fromAirport = consumption.link.from
+      val toAirport = consumption.link.to
+      val pair = if (fromAirport.id < toAirport.id) (fromAirport, toAirport) else (toAirport, fromAirport)
+      val passengers = consumption.link.getTotalSoldSeats.toLong
+      passengersByAirport.put(fromAirport, passengersByAirport.getOrElse(fromAirport, 0L) + passengers)
+      passengersByAirport.put(toAirport, passengersByAirport.getOrElse(toAirport, 0L) + passengers)
+      passengersByAirportPair.put(pair, passengersByAirportPair.getOrElse(pair, 0L) + passengers)
+    }
+    (passengersByAirport.toMap, passengersByAirportPair.toMap)
+  }
+
+  private[this] def getAirportPairRanking(paxByAirportPair : Map[(Airport, Airport), Long], pairFilter : (Airport, Airport) => Boolean) : List[Ranking] = {
+    paxByAirportPair.toList.filter {
+      case ((airport1, airport2), _) => pairFilter(airport1, airport2)
+    }.sortBy(_._2)(Ordering[Long].reverse).zipWithIndex.map {
+      case (((airport1, airport2), passengers), index) => Ranking(RankingType.AIRPORT,
+        key = (airport1, airport2),
+        entry = (airport1, airport2),
+        ranking = index + 1,
+        rankedValue = passengers)
+    }.toList.take(40) //40 max for now
+  }
+
+
+
   private[this] def updateMovements(previousRankings : Map[RankingType.Value, List[Ranking]], newRankings : Map[RankingType.Value, List[Ranking]]) = {
     val previousRankingsByKey : Map[RankingType.Value, Map[Any, Int]] = previousRankings.view.mapValues { rankings =>
        rankings.map(ranking => (ranking.key, ranking.ranking)).toMap
@@ -230,7 +255,7 @@ object RankingUtil {
 
 object RankingType extends Enumeration {
   type RankingType = Value
-  val PASSENGER, PASSENGER_MILE, REPUTATION, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LOUNGE, AIRPORT, PASSENGER_AS, PASSENGER_AF, PASSENGER_OC, PASSENGER_EU, PASSENGER_NA, PASSENGER_SA = Value
+  val PASSENGER, PASSENGER_MILE, REPUTATION, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LOUNGE, AIRPORT, INTERNATIONAL_PAX, DOMESTIC_PAX, PASSENGER_AS, PASSENGER_AF, PASSENGER_OC, PASSENGER_EU, PASSENGER_NA, PASSENGER_SA = Value
 }
 
 

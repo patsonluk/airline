@@ -39,13 +39,18 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         result = result + ("airlineName" -> JsString(airline.name)) + ("airlineId" -> JsNumber(airline.id)) + ("airlineSlogan" -> JsString(airline.slogan.getOrElse("")))
       } else if (ranking.entry.isInstanceOf[Link]) {
         val link = ranking.entry.asInstanceOf[Link]
-        result = result + ("airlineName" -> JsString(link.airline.name)) + ("airlineId" -> JsNumber(link.airline.id)) + ("rankInfo" -> JsString(getLinkDescription(link)))
+        val fromJson = Json.toJson(link.from)(SimpleAirportWrites)
+        val toJson = Json.toJson(link.to)(SimpleAirportWrites)
+        result = result + ("airlineName" -> JsString(link.airline.name)) + ("airlineId" -> JsNumber(link.airline.id)) ++ Json.obj("rankInfo" -> Json.obj("from" -> fromJson, "to" -> toJson))
       } else if (ranking.entry.isInstanceOf[Lounge]) {
         val lounge = ranking.entry.asInstanceOf[Lounge]
         result = result + ("airlineName" -> JsString(lounge.airline.name)) + ("airlineId" -> JsNumber(lounge.airline.id)) + ("rankInfo" -> JsString(getLoungeDescription(lounge)))
       } else if (ranking.entry.isInstanceOf[Airport]) { 
         val airport = ranking.entry.asInstanceOf[Airport]
         result = result + ("airportName" -> JsString(airport.name)) + ("airportId" -> JsNumber(airport.id)) + ("iata" -> JsString(airport.iata)) + ("countryCode" -> JsString(airport.countryCode))
+      } else if (ranking.entry.isInstanceOf[(Airport, Airport)]) {
+        val (airport1, airport2) = ranking.entry.asInstanceOf[(Airport, Airport)]
+        result = result ++ Json.obj("airport1" -> Json.toJson(airport1)(SimpleAirportWrites), "airport2" -> Json.toJson(airport2)(SimpleAirportWrites))
       }
       
       result
@@ -60,10 +65,7 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
   
-  def getLinkDescription(link : Link) = {
-    link.from.city + "(" + link.from.iata + ") <=> " + link.to.city + "(" + link.to.iata + ")" 
-  }
-  
+
   def getLoungeDescription(lounge : Lounge) = {
     lounge.name + " at " + lounge.airport.city + "(" + lounge.airport.iata + ")" 
   }
