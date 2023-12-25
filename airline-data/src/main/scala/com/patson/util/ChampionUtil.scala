@@ -54,7 +54,7 @@ object ChampionUtil {
 
   val BASE_BOOST = 0.5
   val MAX_ECONOMIC_BOOST = 20.0
-  val reputationBoostTop10 : Map[Int, Double] = Map(
+  val reputationBoostBrackets : Map[Int, Double] = Map(
     1 -> 1,
     2 -> 0.5,
     3 -> 0.3,
@@ -65,8 +65,8 @@ object ChampionUtil {
     8 -> 0.04,
     9 -> 0.03,
     10 -> 0.02,
-    10 -> 0.015,
-    10 -> 0.01
+    11 -> 0.015,
+    12 -> 0.01
   )
 
   /**
@@ -100,7 +100,7 @@ object ChampionUtil {
       case _ => 0
     })
 
-    boost * reputationBoostTop10(ranking)
+    boost * reputationBoostBrackets(ranking)
   }
 
 //  def updateAirportChampionInfo(loyalists: List[Loyalist]) = {
