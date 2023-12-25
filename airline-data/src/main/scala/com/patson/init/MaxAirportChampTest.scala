@@ -24,7 +24,7 @@ object MaxAirportChampTest extends App {
     case (airline, entries) => (airline, (entries.map(_.reputationBoost).sorted.takeRight(MAX_AIRPORT_CHAMPION_BOOST_ENTRIES).sum, MAX_AIRPORT_CHAMPION_BOOST_ENTRIES))
   }.sortBy(_._2._2).reverse
   println("AFTER!!!!!!!!!!!!!!!!!")
-
+  sortedAfter.foreach(println)
 
 
 }
