@@ -56,11 +56,7 @@ function loadCurrentAirlineMemberDetails() {
     		$('#currentAirlineMemberDetails .allianceRole').text(allianceDetails.allianceRole)
     		if (alliance.ranking) {
 	    		var rankingImg = getRankingImg(alliance.ranking)
-	    		if (rankingImg) {
-	    			$('#currentAirlineMemberDetails .allianceRanking').html(rankingImg)
-	    		} else {
-	    			$('#currentAirlineMemberDetails .allianceRanking').text(alliance.ranking)
-	    		}
+	    		$('#currentAirlineMemberDetails .allianceRanking').html(rankingImg)
     		} else {
     			$('#currentAirlineMemberDetails .allianceRanking').text('-')
     		}
@@ -309,11 +305,7 @@ function updateAllianceBasicsDetails(allianceId) {
 
 	if (alliance.ranking) {
 		var rankingImg = getRankingImg(alliance.ranking)
-		if (rankingImg) {
-			$('#allianceDetails .allianceRanking').html(rankingImg)
-		} else {
-			$('#allianceDetails .allianceRanking').text(alliance.ranking)
-		}
+		$('#allianceDetails .allianceRanking').html(rankingImg)
 	} else {
 		$('#allianceDetails .allianceRanking').text('-')
 	}

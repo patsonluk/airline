@@ -338,12 +338,15 @@ function getRankingImg(ranking) {
 	} else if (ranking <= 10) {
 		rankingIcon = "assets/images/icons/trophy-" + ranking + ".png"
 		rankingTitle = ranking + "th place"
+	} else if (ranking <= 20) {
+		rankingIcon = "assets/images/icons/counter-" + ranking + ".png"
+        rankingTitle = ranking + "th place"
 	}
 	
 	if (rankingIcon) {
 		return "<img src='" + rankingIcon + "' title='" + rankingTitle + "' style='vertical-align:middle;'/>"
 	} else {
-		return ""
+		return "<span>" + ranking + "</span>"
 	}
 }
 
