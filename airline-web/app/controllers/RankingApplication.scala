@@ -33,24 +33,20 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         "movement" ->  ranking.movement
       )
       
-      if (ranking.entry.isInstanceOf[Airline]) { 
-        val airline = ranking.entry.asInstanceOf[Airline]
-        //if (ranking.ranking <= MAX_ENTRY || airline.
-        result = result + ("airlineName" -> JsString(airline.name)) + ("airlineId" -> JsNumber(airline.id)) + ("airlineSlogan" -> JsString(airline.slogan.getOrElse("")))
-      } else if (ranking.entry.isInstanceOf[Link]) {
-        val link = ranking.entry.asInstanceOf[Link]
-        val fromJson = Json.toJson(link.from)(SimpleAirportWrites)
-        val toJson = Json.toJson(link.to)(SimpleAirportWrites)
-        result = result + ("airlineName" -> JsString(link.airline.name)) + ("airlineId" -> JsNumber(link.airline.id)) ++ Json.obj("rankInfo" -> Json.obj("from" -> fromJson, "to" -> toJson))
-      } else if (ranking.entry.isInstanceOf[Lounge]) {
-        val lounge = ranking.entry.asInstanceOf[Lounge]
-        result = result + ("airlineName" -> JsString(lounge.airline.name)) + ("airlineId" -> JsNumber(lounge.airline.id)) + ("rankInfo" -> JsString(getLoungeDescription(lounge)))
-      } else if (ranking.entry.isInstanceOf[Airport]) { 
-        val airport = ranking.entry.asInstanceOf[Airport]
-        result = result + ("airportName" -> JsString(airport.name)) + ("airportId" -> JsNumber(airport.id)) + ("iata" -> JsString(airport.iata)) + ("countryCode" -> JsString(airport.countryCode))
-      } else if (ranking.entry.isInstanceOf[(Airport, Airport)]) {
-        val (airport1, airport2) = ranking.entry.asInstanceOf[(Airport, Airport)]
-        result = result ++ Json.obj("airport1" -> Json.toJson(airport1)(SimpleAirportWrites), "airport2" -> Json.toJson(airport2)(SimpleAirportWrites))
+      ranking.entry match {
+        case airline : Airline =>
+          result = result + ("airlineName" -> JsString(airline.name)) + ("airlineId" -> JsNumber(airline.id)) + ("airlineSlogan" -> JsString(airline.slogan.getOrElse("")))
+        case link : Link =>
+          val fromJson = Json.toJson(link.from)(SimpleAirportWrites)
+          val toJson = Json.toJson(link.to)(SimpleAirportWrites)
+          result = result + ("airlineName" -> JsString(link.airline.name)) + ("airlineId" -> JsNumber(link.airline.id)) ++ Json.obj("rankInfo" -> Json.obj("from" -> fromJson, "to" -> toJson))
+        case lounge : Lounge =>
+          result = result + ("airlineName" -> JsString(lounge.airline.name)) + ("airlineId" -> JsNumber(lounge.airline.id)) + ("rankInfo" -> JsString(getLoungeDescription(lounge)))
+        case airport : Airport =>
+          result = result + ("airportName" -> JsString(airport.name)) + ("airportId" -> JsNumber(airport.id)) + ("iata" -> JsString(airport.iata)) + ("countryCode" -> JsString(airport.countryCode))
+        case (airport1 : Airport, airport2 : Airport) =>
+          result = result ++ Json.obj("airport1" -> Json.toJson(airport1)(SimpleAirportWrites), "airport2" -> Json.toJson(airport2)(SimpleAirportWrites))
+        case _ =>
       }
       
       result
