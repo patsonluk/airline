@@ -143,7 +143,7 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     val busyDelegates = DelegateSource.loadBusyDelegatesByAirline(id)
     val availableCount = delegateCount - busyDelegates.size
 
-    DelegateInfo(availableCount, delegateBoost, busyDelegates)
+    DelegateInfo(availableCount, delegateBoosts, busyDelegates)
   }
 
   val BASE_DELEGATE_COUNT = 5
@@ -151,17 +151,24 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
   lazy val delegateCount = BASE_DELEGATE_COUNT +
     airlineGrade.value * DELEGATE_PER_LEVEL +
     AirlineSource.loadAirlineBasesByAirline(id).flatMap(_.specializations).filter(_.isInstanceOf[DelegateSpecialization]).map(_.asInstanceOf[DelegateSpecialization].delegateBoost).sum +
-    delegateBoost
-  lazy val delegateBoost = AirlineSource.loadAirlineModifierByAirlineId(id).map { modifier =>
-    modifier match {
-      case DelegateBoostAirlineModifier(amount, duration, creationCycle) => amount
-      case _ => 0
-    }
-  }.sum
+    delegateBoosts.map(_.amount).sum
+  lazy val delegateBoosts = AirlineSource.loadAirlineModifierByAirlineId(id).filter(_.modifierType == AirlineModifierType.DELEGATE_BOOST).map(_.asInstanceOf[DelegateBoostAirlineModifier])
 }
 
 
-case class DelegateInfo(availableCount : Int, boost : Int, busyDelegates: List[BusyDelegate])
+case class DelegateInfo(availableCount : Int, boosts : List[DelegateBoostAirlineModifier], busyDelegates: List[BusyDelegate]) {
+  //take away all the boosted ones that are unoccupied, those are not eligible for permanent tasks (country relation/campaign etc)
+  val permanentAvailableCount = {
+    val cooldownDelegateCount = busyDelegates.filter(_.availableCycle.isDefined).length
+    val unoccupiedBonusDelegateCount = boosts.map(_.amount).sum - cooldownDelegateCount
+    if (unoccupiedBonusDelegateCount > 0) {
+      availableCount - unoccupiedBonusDelegateCount
+    } else {
+      availableCount
+    }
+  }
+
+}
 
 case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var countryCode : Option[String] = None, var airlineCode : String = "", var skipTutorial : Boolean = false, var initialized : Boolean = false)
 
