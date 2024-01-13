@@ -21,7 +21,7 @@ function showCampaignModal() {
     }
 
     updateAirlineDelegateStatus($('#campaignModal div.delegateStatus'), function(delegateInfo) {
-            $('#campaignModal div.delegateSection').data("availableDelegates", delegateInfo.availableCount)
+            $('#campaignModal div.delegateSection').data("availableDelegates", delegateInfo.permanentAvailableCount)
         })
     $('#campaignModal div.delegateSection').data("delegatesRequired", 0)
     $('#campaignModal .campaignDetails').hide()

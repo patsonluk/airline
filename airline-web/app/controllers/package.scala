@@ -702,8 +702,13 @@ package object controllers {
 
   implicit object DelegateInfoWrites extends Writes[DelegateInfo] {
     def writes(delegateInfo : DelegateInfo): JsValue = {
-      var result = Json.obj("availableCount" -> delegateInfo.availableCount, "boost" -> delegateInfo.boost).asInstanceOf[JsObject]
       val currentCycle = CycleSource.loadCycle()
+      var boosts = Json.arr()
+      delegateInfo.boosts.foreach { boost =>
+        boosts = boosts.append(Json.obj("amount" -> boost.amount, "remainingCycles" -> (boost.expiryCycle.get - currentCycle)))
+      }
+
+      var result = Json.obj("availableCount" -> delegateInfo.availableCount, "permanentAvailableCount" -> delegateInfo.permanentAvailableCount, "boosts" -> boosts).asInstanceOf[JsObject]
       var busyDelegatesJson = Json.arr()
       val delegateWrites = new BusyDelegateWrites(currentCycle)
       delegateInfo.busyDelegates.foreach { busyDelegate =>

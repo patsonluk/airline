@@ -138,7 +138,7 @@ class CampaignApplication @Inject()(cc: ControllerComponents) extends AbstractCo
           //save delegates
           val existingDelegates : List[BusyDelegate] = DelegateSource.loadBusyDelegatesByCampaigns(List(campaign)).getOrElse(campaign, List.empty).sortBy(_.assignedTask.getStartCycle)
           val delta = delegateCount - existingDelegates.length
-          if (delegateCount >= 0 && delta <= airline.getDelegateInfo().availableCount) {
+          if (delegateCount >= 0 && delta <= airline.getDelegateInfo().permanentAvailableCount) {
             if (delta < 0) { //unassign the most junior ones first
               existingDelegates.takeRight(delta * -1).foreach { unassigningDelegate =>
                 DelegateSource.deleteBusyDelegateByCriteria(List(("id", "=", unassigningDelegate.id)))

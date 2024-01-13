@@ -30,7 +30,7 @@ class DelegateApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       BadRequest(s"Require $delegatesRequired but trying to set to $delegateCount")
     } else {
       val delta = delegateCount - existingDelegates.length
-      if (delegateCount >= 0 && delta <= airline.getDelegateInfo().availableCount) {
+      if (delegateCount >= 0 && delta <= airline.getDelegateInfo().permanentAvailableCount) {
         if (delta < 0) { //unassign the most junior ones first
           existingDelegates.takeRight(delta * -1).foreach { unassigningDelegate =>
             DelegateSource.deleteBusyDelegateByCriteria(List(("id", "=", unassigningDelegate.id)))
