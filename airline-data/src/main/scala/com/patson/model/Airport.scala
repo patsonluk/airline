@@ -89,7 +89,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
             val powerHouseSpec = spec.asInstanceOf[PowerhouseSpecialization]
             val boost = boostType match {
               case AirportBoostType.INCOME => powerHouseSpec.incomeLevelBoost(Airport.this)
-              case AirportBoostType.POPULATION => powerHouseSpec.populationBoost
+              case AirportBoostType.POPULATION => powerHouseSpec.populationBoost(Airport.this)
               case _ => 0
             }
 
