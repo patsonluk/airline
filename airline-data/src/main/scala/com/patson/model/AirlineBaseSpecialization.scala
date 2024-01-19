@@ -54,7 +54,7 @@ object AirlineBaseSpecialization extends Enumeration {
       Computation.computeIncomeLevelBoostFromPercentage(airport.baseIncome, minIncomeBoost, percentageBoost)
     }
     def populationBoost(airport : Airport) = {
-      Math.min(Math.floor(minPopulationBoost + airport.baseIncome * ((maxPopulationBoost - minPopulationBoost) / richCountryThreshold)), maxPopulationBoost)
+      Math.max(Math.floor(maxPopulationBoost - airport.baseIncome * ((maxPopulationBoost - minPopulationBoost) / richCountryThreshold)), minPopulationBoost)
     }
     override def descriptions(airport : Airport) =  {
       List(s"Increase population by $populationBoost", s"Increase income level by ${incomeLevelBoost(airport)}")
