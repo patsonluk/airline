@@ -347,7 +347,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       return BadRequest("Link is rejected: " + rejectionReason.get);
     }
 
-    if (delegateCount > airline.getDelegateInfo().availableCount) {
+    //if assign more delegates then available.
+    //However assigning no delegates should be allowed even if negative delegates
+    if (delegateCount > 0 && delegateCount > airline.getDelegateInfo().availableCount) {
       return BadRequest(s"Assigning $delegateCount delegates but not enough available");
     }
 

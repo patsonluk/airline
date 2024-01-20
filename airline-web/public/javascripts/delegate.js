@@ -127,7 +127,7 @@ function refreshTopBarDelegates(airline) {
 	var $delegateIconDiv = $('<div style="position: relative; display: inline-block;"></div>').appendTo($('#topBar .delegatesShortcut'))
     var $delegateIcon = $('<img>').appendTo($delegateIconDiv)
 
-    if (availableDelegates == 0) {
+    if (availableDelegates <= 0) {
         $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-unavailable.png')
         var minCoolDown = -1
         $.each(airline.delegatesInfo.busyDelegates, function(index, busyDelegate) {
