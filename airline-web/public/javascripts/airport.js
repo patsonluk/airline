@@ -86,8 +86,9 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
     var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, $('#incomeDetailsTooltip'))
     $("#airportDetailsIncomeLevel").html($incomeLevelSpan)
 
-	$("#airportDetailsCountry").setAttribute("onclick", "showCountryView('" + airport.countryCode + "')")
-	$("#airportDetailsCountry").text(loadedCountriesByCode[airport.countryCode].name)
+	$("#airportDetailsCountry").attr("onclick", "showCountryView('" + airport.countryCode + "')")
+	$("#airportDetailsCountry").attr("data-link", 'country')
+	$("#airportDetailsCountry").append("<span>" + loadedCountriesByCode[airport.countryCode].name + '&nbsp;</span>')
 	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
 	if (countryFlagUrl) {
 		$("#airportDetailsCountry").append("<img src='" + countryFlagUrl + "' />")
@@ -240,6 +241,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	} else {
 		$('#airportBaseDetails').hide()
 	}
+	populateNavigation($('#airportCanvas'))
 }
 
 
