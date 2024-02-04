@@ -195,13 +195,7 @@ function searchRoute(fromAirportId, toAirportId) {
                             }
 
                             if (remarks.length > 0) {
-                                var remarksText = ""
-                                for (i = 0 ; i < remarks.length; i++) {
-                                    if (i > 0) {
-                                        linkDurationText += ", "
-                                    }
-                                    remarksText += remarks[i]
-                                }
+                                var remarksText = remarks.join(", ")
                                 linkDurationText += "(" + remarksText + ")"
                             }
 
