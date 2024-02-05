@@ -43,8 +43,7 @@ object GeoDataGenerator extends App {
     val incomeInfo = getIncomeInfo()
     val getCityFuture = getCity(incomeInfo)
 
-    var cities = Await.result(getCityFuture, Duration.Inf)
-    cities = cities ++ AdditionalLoader.loadAdditionalCities(incomeInfo)
+    var cities = AdditionalLoader.loadAdditionalCities(incomeInfo)
 
     //make sure cities are saved first as we need the id for airport info
     try {
@@ -75,11 +74,11 @@ object GeoDataGenerator extends App {
       val result = ListBuffer[City]()
       for (line : String <- Source.fromFile("cities500.txt").getLines) {
         val infoArray = line.split("\\t")
-        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8), infoArray(14).toInt) && infoArray(14).toInt > 0) { //then a valid target
+        if (infoArray(5) == "P" && isCity(infoArray(6), infoArray(7), infoArray(13).toInt)) { //then a valid target
           if (incomeInfo.get(infoArray(8)).isEmpty) {
             println(infoArray(8) + " has no income info")
           }
-          result += new City(infoArray(1), infoArray(4).toDouble, infoArray(5).toDouble, infoArray(8), infoArray(14).toInt, incomeInfo.get(infoArray(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
+          result += new City(infoArray(0), infoArray(4).toDouble, infoArray(3).toDouble, "US", infoArray(13).toInt * 25, incomeInfo.get(infoArray(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
         }
       }
       result.toList
@@ -271,7 +270,7 @@ object GeoDataGenerator extends App {
 
 
   def generateAirportData(rawAirportResult : List[CsvAirport], runwayResult : Map[Int, List[Runway]], cities : List[City]) : List[Airport] = {
-    val specialAirportNames = AdditionalLoader.loadSpecialAirportNames()
+    // val specialAirportNames = AdditionalLoader.loadSpecialAirportNames()
     val removalAirportIatas = AdditionalLoader.loadRemovalAirportIatas()
 
     println(s"Removal iatas")
@@ -315,21 +314,19 @@ object GeoDataGenerator extends App {
         potentialAirports(0)._1.addCityServed(city, 1)
       } else if (potentialAirports.size > 1) {
         //val sortedAirports = potentialAirports.sortBy(_._2).sortBy(- _._1.size)
-        val dominateAirportSize : Int = potentialAirports.filter(_._2 <= 50).map(_._1).reduceLeftOption { (largestAirport, airport) =>
+        val dominateAirportSize : Int = potentialAirports.filter(_._2 <= 75).map(_._1).reduceLeftOption { (largestAirport, airport) =>
           if (largestAirport.size < airport.size) airport else largestAirport
         }.fold(0)(_.size)
 
         val validAirports = if (dominateAirportSize >= 6) {
-          potentialAirports.filter(_._1.size >= 2)
-        } else potentialAirports //there's a super airport within 50km, then other airports can only get some share if it's size >= 3
-
-        //            val validAirports = potentialAirports            //give small airports a chance... for now
+          potentialAirports.filter(_._1.size >= 3)
+        } else potentialAirports //there's a super airport within 75km, then other airports can only get some share if it's size >= 3
 
         val airportWeights = validAirports.foldRight(List[(Airport, Int)]()) {
           case (Tuple2(airport, distance), airportWeightList) =>
-            val thisAirportWeight = (if (distance <= 25) 30 else if (distance <= 50) 20 else if (distance <= 100) 8 else if (distance <= 200) 2 else 1) * airport.size * airport.size
+            val thisAirportWeight = (if (distance <= 25) 40 else if (distance <= 50) 25 else if (distance <= 100) 12 else if (distance <= 200) 2 else 1) * airport.size * airport.size
             (airport, thisAirportWeight) :: airportWeightList
-        }.sortBy(_._2).takeRight(10) //take the largest 10
+        }.sortBy(_._2).takeRight(3) //take the largest 3
 
         val totalWeight = airportWeights.foldRight(0)(_._2 + _)
 
@@ -356,24 +353,6 @@ object GeoDataGenerator extends App {
       val population = airport.citiesServed.foldLeft(0.toLong) {
         case (foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong
       }
-
-
-//      //calculate slots
-//      //https://en.wikipedia.org/wiki/List_of_busiest_airports_by_aircraft_movements#2017_statistics (take 30% discount assumimg those are freight service)
-//      val slots = airport.size match {
-//        case 1 => 200
-//        case 2 => 500
-//        case 3 => 1000
-//        case 4 => 2000
-//        case 5 => 2500
-//        case 6 => 3000
-//        case 7 => 4000
-//        case 8 => 6000
-//        case 9 => 8000
-//        case size : Int if size >= 10 => 12000
-//        case _ => 0
-//      }
-//      airport.slots = slots
 
       if (population == 0) {
         airport

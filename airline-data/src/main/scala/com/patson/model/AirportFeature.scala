@@ -22,7 +22,7 @@ abstract class AirportFeature {
       case VACATION_HUB => "Vacation Hub - Attracts more tourist passengers"
       case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers"
       case DOMESTIC_AIRPORT => "Domestic Airport"
-      case ISOLATED_TOWN => s"Isolated Town - Increases demand flying to airport with at least 100000 pop within ${this.asInstanceOf[IsolatedTownFeature].boostRange}km. The higher the strength, the longer the range"
+      case ISOLATED_TOWN => s"Isolated - Increases demand flying to airport with at least 100000 pop within ${this.asInstanceOf[IsolatedTownFeature].boostRange}km. The higher the strength, the longer the range"
       case GATEWAY_AIRPORT => "Gateway Airport - Easier negotiation and more passengers with other gateway airports"
       case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games"
       case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games"
@@ -168,9 +168,10 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
 }
 
 object IsolatedTownFeature {
-  val ISOLATION_MAX_POP = 50000 //MAX pop to be consider isolated. Otherwise it has the right mass to be alone
-  val HUB_MIN_POP = 100000 //Not considered as isolated if there's a HUB within HUB_RANGE
-  val HUB_RANGE_BRACKETS = Array(300, 500, 1000, 2000) //if couldn't find a major airport within
+  // val ISOLATION_MAX_POP = 75000 //MAX pop to be consider isolated. Otherwise it has the right mass to be alone
+  val HUB_MIN_POP = 100000 
+  val HUB_RANGE = 1000
+  val HUB_RANGE_BRACKETS = Array(500, 900, 1400, 2000) //if couldn't find a major airport within
 }
 
 sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
@@ -184,26 +185,22 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
 
   import IsolatedTownFeature._
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
-    if (toAirport.population >= HUB_MIN_POP) {
-      val distance = Computation.calculateDistance(fromAirport, toAirport)
-      if (distance <= boostRange) {
-        if (rawDemand < 0.01) { //up to 30
-          5 + rawDemand / 0.01 * 25
-        } else if (rawDemand <= 0.1) { //up to 60
-          30 + rawDemand / 0.1 * 30
-        } else if (rawDemand <= 0.5) { //up to 100
-          60 + rawDemand / 0.5 * 40
-        } else if (rawDemand <= 2) { //up to 150
-          100 + rawDemand / 2 * 50
-        } else if (rawDemand <= 5) { //up to 200
-          150 + rawDemand / 5 * 50
-        } else if (rawDemand <= 10) { //up to 250
-          200 + rawDemand / 10 * 50
-        } else {
-          250 + rawDemand * 3
-        }
+    val distance = Computation.calculateDistance(fromAirport, toAirport)
+    if (distance <= boostRange) {
+      if (rawDemand < 0.01) { //up to 30
+        5 + rawDemand / 0.01 * 25
+      } else if (rawDemand <= 0.1) { //up to 60
+        30 + rawDemand / 0.1 * 30
+      } else if (rawDemand <= 0.5) { //up to 100
+        60 + rawDemand / 0.5 * 40
+      } else if (rawDemand <= 2) { //up to 150
+        100 + rawDemand / 2 * 50
+      } else if (rawDemand <= 5) { //up to 200
+        150 + rawDemand / 5 * 50
+      } else if (rawDemand <= 10) { //up to 250
+        200 + rawDemand / 10 * 50
       } else {
-        0
+        250 + rawDemand
       }
     } else {
       0

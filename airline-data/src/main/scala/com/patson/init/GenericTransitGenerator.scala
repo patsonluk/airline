@@ -52,7 +52,7 @@ object GenericTransitGenerator {
 
       airportsInRange.foreach { case (targetAirport, distance) =>
         val minSize = Math.min(airport.size, targetAirport.size)
-        val capacity = minSize * 10000 //kinda random
+        val capacity = minSize * 20000 //kinda random
         val genericTransit = GenericTransit(from = airport, to = targetAirport, distance = distance.toInt, capacity = LinkClassValues.getInstance(economy = capacity))
         LinkSource.saveLink(genericTransit)
         println(genericTransit)

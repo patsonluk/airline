@@ -16,11 +16,6 @@ import scala.util.Random
 
 object DemandGenerator {
 
-//  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
-//
-//  import actorSystem.dispatcher
-//
-//  implicit val materializer = FlowMaterializer()
   private[this] val FIRST_CLASS_INCOME_MIN = 15000
   private[this] val FIRST_CLASS_INCOME_MAX = 100_000
   private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)
@@ -29,16 +24,6 @@ object DemandGenerator {
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.3, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
   val MIN_DISTANCE = 50
   
-//  val defaultTotalWorldPower = {
-//    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
-//  }
-//  mainFlow
-//  
-//  def mainFlow() = {
-//    Await.ready(computeDemand(), Duration.Inf)
-//    
-//    actorSystem.shutdown()
-//  }
   import scala.collection.JavaConverters._
 
 
@@ -104,7 +89,114 @@ object DemandGenerator {
     allDemandChunks.toList
   }
 
+  def computeBaseDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, distance : Int ) : Int = {
+    //bell curve income 
+    val fromAirportAdjustedIncome : Double = if (fromAirport.income > Country.HIGH_INCOME_THRESHOLD) { //to make high income airport a little bit less overpowered
+      // Country.HIGH_INCOME_THRESHOLD + (fromAirport.income - Country.HIGH_INCOME_THRESHOLD) / 3
+      fromAirport.income
+    } else if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) { //to make low income airport a bit stronger
+      val delta = Country.LOW_INCOME_THRESHOLD - fromAirport.income
+      Country.LOW_INCOME_THRESHOLD - delta * 0.3 //so a 0 income country will be boosted to 21000, a 10000 income country will be boosted to 24000
+    } else {
+      fromAirport.income
+    }
+    //domestic/foreign relation multiplier
+    val countryRelationMutliplier = 
+      if (fromAirport.countryCode != toAirport.countryCode) {
+        if (relationship <= -3) 0 
+        else if (relationship == -2) 0.1
+        else if (relationship == -1) 0.25
+        else if (relationship == 0) 0.5
+        else if (relationship == 1) 0.75
+        else if (relationship == 2) 1
+        else if (relationship == 3) 2
+        else 3 // >= 4
+      } else {
+        3 //domestic flight
+      }
 
+    //assumption: 3 domestic passenger each week from airport with 100k pop and 50k income will want to travel to an airport with 100k pop, at medium distance
+    val baseDemand: Double = countryRelationMutliplier * (fromAirportAdjustedIncome.toDouble / 50000 * fromAirport.population / 10000) * ( toAirport.incomeLevel.toDouble / 50000 * toAirport.population / 10000 )
+
+    val distanceReducerExponent: Double = 
+      if (distance < 350) distance.toDouble / 350
+      else if (distance > 3000) { //if greater than medium distance
+        1.075 - distance.toDouble / 20000 * 2 //divde by ~ longest journey doubled
+      } else 1
+    
+    val specialCountryModifier =
+      if (fromAirport.countryCode == "AU" || fromAirport.countryCode == "NZ") {
+        2.5 //they travel a lot
+      } else if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN" && distance < 1100) {
+        0.6 //China has a very extensive highspeed rail network (1100km is Beijing to Shanghai)
+      } else if (fromAirport.countryCode == "JP" && toAirport.countryCode == "JP" && distance < 500) {
+        0.4 //also interconnected by HSR / intercity rail
+      } else if (fromAirport.countryCode == "ES" && toAirport.zone == "EU" && distance < 500) {
+        0.4
+      } else if (fromAirport.countryCode == "FR" && toAirport.zone == "EU" && distance < 700) {
+        0.6 
+      } else if (fromAirport.countryCode == "NL" && toAirport.zone == "EU" && distance < 400) {
+        0.6
+      } else if (fromAirport.countryCode == "BE" && toAirport.zone == "EU" && distance < 400) {
+        0.6
+      } else if (fromAirport.countryCode == "CH" && toAirport.zone == "EU" && distance < 700) {
+        0.6
+      } else if (fromAirport.countryCode == "DE" && toAirport.zone == "EU" && distance < 500) {
+        0.6
+      } else 1
+
+    (Math.pow(baseDemand, distanceReducerExponent) * specialCountryModifier).toInt
+  }
+
+  def computeClassDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, distance : Int, passengerType : PassengerType.Value, baseDemand : Int ) : LinkClassValues = {
+    import FlightType._
+    val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
+    var adjustedDemand : Double = baseDemand.toDouble
+
+    //adjust by features
+    fromAirport.getFeatures().foreach { feature =>
+      val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, relationship)
+      adjustedDemand += adjustment
+    }
+    toAirport.getFeatures().foreach { feature => 
+      val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType, relationship)
+      adjustedDemand += adjustment
+    }
+    
+    //more business and first going to international hubs      
+    val internationalHubPercentBonus = {
+      if(toAirport.hasFeature(AirportFeatureType.INTERNATIONAL_HUB)) 0.02
+      else 0
+    }
+
+    val income = fromAirport.income
+
+    val firstClassPercentage : Double = 
+      if (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
+        if (income <= FIRST_CLASS_INCOME_MIN) {
+          0 
+        } else if (income >= FIRST_CLASS_INCOME_MAX) {
+          FIRST_CLASS_PERCENTAGE_MAX(passengerType) 
+        } else { 
+          FIRST_CLASS_PERCENTAGE_MAX(passengerType) * (income - FIRST_CLASS_INCOME_MIN) / (FIRST_CLASS_INCOME_MAX - FIRST_CLASS_INCOME_MIN)
+        }
+      } else {
+        0 
+      }
+    val businessClassPercentage : Double =
+      if (income <= BUSINESS_CLASS_INCOME_MIN) {
+        0 
+      } else if (income >= BUSINESS_CLASS_INCOME_MAX) {
+        BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) 
+      } else { 
+        BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * (income - BUSINESS_CLASS_INCOME_MIN) / (BUSINESS_CLASS_INCOME_MAX - BUSINESS_CLASS_INCOME_MIN)
+      }
+    var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
+    var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
+    val economyClassDemand = (adjustedDemand - firstClassDemand - businessClassDemand).toInt
+
+    LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
+  }
 
   def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {
     val distance = Computation.calculateDistance(fromAirport, toAirport)
@@ -291,7 +383,6 @@ object DemandGenerator {
     }
   }
 
-
   def generateEventDemand(cycle : Int, airports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])] = {
     val eventDemand = ListBuffer[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
     EventSource.loadEvents().filter(_.isActive(cycle)).foreach { event =>
@@ -333,9 +424,10 @@ object DemandGenerator {
       val fromAirport = airport
       olympicsAirports.foreach {  olympicsAirport =>
         val toAirport = olympicsAirport
+        val distance = Computation.calculateDistance(fromAirport, toAirport)
         val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
         val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
-        if (computedDemand.total > 0) {
+          if (computedDemand.total > 0) {
           unscaledDemandsOfThisFromAirport.append((toAirport, (PassengerType.OLYMPICS, computedDemand)))
         }
       }
@@ -365,9 +457,6 @@ object DemandGenerator {
   def getFlightPreferencePoolOnAirport(homeAirport : Airport) : FlightPreferencePool = {
     val flightPreferences = ListBuffer[(FlightPreference, Int)]()
     
-    //ECONOMY prefs
-    flightPreferences.append((SimplePreference(homeAirport, 0.8, ECONOMY), 2))
-    
     val budgetTravelerMultiplier =
       if (homeAirport.income < Country.LOW_INCOME_THRESHOLD / 2) {
         3
@@ -376,36 +465,62 @@ object DemandGenerator {
   	  } else {
         1
       }
+
+      /**
+       * Pax breakdown
+       * 
+       * example poor country economy
+       * 40 denominator
+       * 24 budget 60%
+       * 6 brand 15%
+       * 2 simple 5%
+       * 5 comprehensive 13%
+       * 3 swift 8%
+       * 
+       * rich country economy
+       * 20 denominator
+       * 8 budget 40%
+       * 2 brand 10%
+       * 2 simple 10%
+       * 5 comprehensive 25%
+       * 3 swift 15%
+       **/ 
     
+    //ECONOMY prefs
     for (i <- 0 until budgetTravelerMultiplier) {
       //Brand
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.2), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.1), 1))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.4), 1))
       //Budget
       flightPreferences.append((SimplePreference(homeAirport, 1.2, ECONOMY), 3)) //quite sensitive to price
       flightPreferences.append((SimplePreference(homeAirport, 1.4, ECONOMY), 2))
-      flightPreferences.append((SimplePreference(homeAirport, 1.6, ECONOMY), 1)) //very sensitive to price
+      flightPreferences.append((SimplePreference(homeAirport, 1.6, ECONOMY), 3)) //very sensitive to price
     }
     
+    //Simple
+    flightPreferences.append((SimplePreference(homeAirport, 0.7, ECONOMY), 2))
     //Swift
-    flightPreferences.append((SpeedPreference(homeAirport, ECONOMY), 2))
+    flightPreferences.append((SpeedPreference(homeAirport, ECONOMY), 3))
     //Comprehensive
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 3))
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 4))
-    //Brand
-    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1.4), 2))
+    flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, loungeLevelRequired = 0), 5))    
     
-    
-    //BUSINESS prefs
+    /**
+     * BUSINESS prefs
+     * 10 demoninator
+     * 40% swift
+     * 20% comprehensive
+     * 20% brand
+     * 20% elite
+     **/
     for (i <- 0 until 2) { //bit more randomness - set variation per group
-      flightPreferences.append((SpeedPreference(homeAirport, BUSINESS), 3))
+      flightPreferences.append((SpeedPreference(homeAirport, BUSINESS), 4))
       //Comprehensive
       flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 0.8), 2))
       //Brand
-      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1.2), 2))
+      flightPreferences.append((AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1.4), 2))
       //Elite
       flightPreferences.append((ElitePreference(homeAirport, BUSINESS, loungeLevelRequired = 1), 1))
       flightPreferences.append((ElitePreference(homeAirport, BUSINESS, loungeLevelRequired = 2), 1))
-      flightPreferences.append((ElitePreference(homeAirport, BUSINESS, loungeLevelRequired = 3), 1))
     }
     
     //FIRST prefs 

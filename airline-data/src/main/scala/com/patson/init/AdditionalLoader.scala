@@ -38,19 +38,19 @@ object AdditionalLoader {
     additionalAirports.toList
   }
 
-  def loadSpecialAirportNames() : List[String] = {
-    val specialAirportNameSource = scala.io.Source.fromFile("special-airport-names.csv").getLines()
-    val specialAirportNames = ListBuffer[String]()
-    specialAirportNameSource.foreach { line =>
-      if (!line.startsWith("#")) {
-        val airportName = line.trim()
-        if (airportName.length > 0) {
-          specialAirportNames += airportName.toLowerCase
-        }
-      }
-    }
-    specialAirportNames.toList
-  }
+  // def loadSpecialAirportNames() : List[String] = {
+  //   val specialAirportNameSource = scala.io.Source.fromFile("special-airport-names.csv").getLines()
+  //   val specialAirportNames = ListBuffer[String]()
+  //   specialAirportNameSource.foreach { line =>
+  //     if (!line.startsWith("#")) {
+  //       val airportName = line.trim()
+  //       if (airportName.length > 0) {
+  //         specialAirportNames += airportName.toLowerCase
+  //       }
+  //     }
+  //   }
+  //   specialAirportNames.toList
+  // }
 
   def loadAdditionalCities(incomeInfo : Map[String, Int]) : List[City] = {
     val additionalCitySource = scala.io.Source.fromFile("additional-cities.csv").getLines()

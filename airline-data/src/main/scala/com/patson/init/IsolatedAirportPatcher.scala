@@ -18,28 +18,26 @@ object IsolatedAirportPatcher {
     val isolationByAirport = Map[Airport, Int]()
 
     allAirports.foreach { airport =>
-      if (airport.population <= ISOLATION_MAX_POP) { //then a valid candidate to consider as isolated
-        var isolationLevel = 0
+      var isolationLevel : Int = 0
 
-        val boundaryLongitude = GeoDataGenerator.calculateLongitudeBoundary(airport.latitude, airport.longitude, HUB_RANGE_BRACKETS.last)
-        for (i <- 0 until HUB_RANGE_BRACKETS.size) {
-          val threshold = HUB_RANGE_BRACKETS(i)
-          val hubWithinRange = allAirports.find { targetAirport =>
-            if (targetAirport.population >= HUB_MIN_POP && targetAirport.longitude >= boundaryLongitude._1 && targetAirport.longitude <= boundaryLongitude._2) {
-              val distance = Util.calculateDistance(airport.latitude, airport.longitude, targetAirport.latitude, targetAirport.longitude)
-              distance <= threshold
-            } else {
-              false
-            }
-          }
-
-          if (hubWithinRange.isEmpty) { //then it is indeed isolated
-            isolationLevel = i + 1
-          }
+      val boundaryLongitude = GeoDataGenerator.calculateLongitudeBoundary(airport.latitude, airport.longitude, HUB_RANGE_BRACKETS.last)
+      for (i <- 0 until HUB_RANGE_BRACKETS.size) {
+        val threshold = HUB_RANGE_BRACKETS(i)
+        val countOfHubWithinRange = allAirports.count { targetAirport =>
+          val distance = Util.calculateDistance(airport.latitude, airport.longitude, targetAirport.latitude, targetAirport.longitude)
+          targetAirport.population >= HUB_MIN_POP && distance < threshold && targetAirport.longitude >= boundaryLongitude._1 && targetAirport.longitude <= boundaryLongitude._2
         }
-        if (isolationLevel > 0) {
-          isolationByAirport.put(airport, isolationLevel)
+        if (0 == countOfHubWithinRange) { //very isolated
+          isolationLevel += 3
+        } else if (3 >= countOfHubWithinRange) {
+          isolationLevel += 2
+        } else if (5 >= countOfHubWithinRange) { //kinda isolated
+          isolationLevel += 1
         }
+      }
+      isolationLevel = (Math.floor( isolationLevel / 2 )).toInt
+      if (isolationLevel > 0) {
+        isolationByAirport.put(airport, isolationLevel)
       }
     }
 

@@ -11,6 +11,8 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 
+import AirportFeatureType._
+
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, baseIncome : Int, basePopulation : Long, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
   var shouldLoadCities = false
   lazy val citiesServed = loadCitiesServed()
@@ -260,6 +262,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     features.toList
   }
 
+  def hasFeature(targetFeature: AirportFeatureType): Boolean = {
+    baseFeatures.find(_.featureType == targetFeature).isDefined
+  }
+
   def isGateway() = {
     baseFeatures.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
   }
@@ -467,10 +473,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   lazy val airportRadius : Int = {
     size match {
-      case 1 => 100
-      case 2 => 150
-      case n if (n >= 3) => 250
-      case _ => 0
+      case 1 => 200
+      case 7 => 300
+      case n if (n >= 8) => 350
+      case _ => 250
     }
   }
 

@@ -6,90 +6,136 @@ import scala.collection.mutable.ListBuffer
 
 object AirportSizeAdjust {
   //https://en.wikipedia.org/wiki/List_of_busiest_airports_by_passenger_traffic
+  //orderd per 2022 stats
   val sizeList = Map(
         "ATL" -> 10,
-        "PEK" -> 9,
-        "DXB" -> 9,
-        "HND" -> 9,
+        "DFW" -> 10,
+        "DEN" -> 10,
+        "ORD" -> 10,
+        "DXB" -> 10,
         "LAX" -> 9,
-        "LHR" -> 9,
-        "HKG" -> 9,
-        "ORD" -> 9,
-        "DFW" -> 9,
-        "BKK" -> 9,
-        "PVG" -> 9,
-        "CDG" -> 9,
-        "CAN" -> 9,
-        "SIN" -> 9,
         "IST" -> 9,
-        "ICN" -> 9,
-        "FRA" -> 9,
-        "CGK" -> 8,
-        "DEN" -> 8,
-        "KUL" -> 8,
+        "LHR" -> 9,
+        "DEL" -> 9,
+        "CDG" -> 9,
         "JFK" -> 9,
+        "LAS" -> 9,
         "AMS" -> 9,
-        "PHX" -> 8,
-        "MIA" -> 8,
-        "SFO" -> 8,
-        "DEL" -> 8,
+        "MIA" -> 9,
+        "MAD" -> 9, //top 15
+        "PEK" -> 9, //bonus addition
+        "HND" -> 8,
+        "MCO" -> 8,
+        "FRA" -> 8,
         "CLT" -> 8,
-        "LAS" -> 8,
-        "CTU" -> 8,
+        "MEX" -> 8,
+        "PHX" -> 8,
+        "SFO" -> 8,
+        "BCN" -> 8,
+        "CGK" -> 8,
+        "YYZ" -> 8, //top 25, minus some USA airports 
+        "DOH" -> 8, 
+        "BKK" -> 8,
+        "SIN" -> 8,
+        "ICN" -> 8,
+        "KUL" -> 8,
         "GRU" -> 8,
-        "IAH" -> 8,
         "MUC" -> 8,
         "SYD" -> 8,
-        "YYZ" -> 8,
         "FCO" -> 8,
+        "HKG" -> 7,
         "LGW" -> 7,
-        "SHA" -> 7,
-        "BCN" -> 7,
-        "SEA" -> 7,
-        "SZX" -> 7,
         "TPE" -> 7,
-        "MCO" -> 7,
-        "EWR" -> 7,
         "NRT" -> 7,
-        "MSP" -> 7,
         "BOM" -> 7,
-        "MEX" -> 7,
         "MNL" -> 7,
-        "DME" -> 7,
-        "KMG" -> 7,
-        "XIY" -> 7,
-        "SVO" -> 7,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States
+        "IAH" -> 7,
+        "SEA" -> 7,
         "DTW" -> 7,
+        "EWR" -> 7,        
         "PHL" -> 7,
         "FLL" -> 7,
         "BWI" -> 7,
         "DCA" -> 7,
         "SLC" -> 7,
-        "MDW" -> 7,
         "IAD" -> 7,
         "SAN" -> 7,
         "HNL" -> 7,
         "TPA" -> 7,
         "PDX" -> 7,
-        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Germany
-        "DUS" -> 7,
-        "TXL" -> 7,
-        "HAM" -> 7,
-        "SXF" -> 7,
-        "CGN" -> 7,
-        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Germany
-        "NCE" -> 7,
-        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Italy
-        "MXP" -> 7,
-        "VCE" -> 7,
-        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Spain
-        "AGP" -> 7,
-        "ALC" -> 7,
-        "LPA" -> 7,
-        "TFS" -> 7,
-        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Austria
+        "BOS" -> 7,
+        "MSP" -> 7,
+        //metro NYC
+        "LGA" -> 6,
+        "SWF" -> 3,
+        "ACY" -> 2,
+        "HPN" -> 3,
+        "BDL" -> 4,
+        //metro LA
+        "BUR" -> 4,
+        "SNA" -> 4,
+        "ONT" -> 3,
+        "LGB" -> 3,        
+        "SBD" -> 3,
+        "PMD" -> 2,
+        //metro Chicago
+        "MDW" -> 7,
+        "RFD" -> 2,
+        "MSN" -> 5,
+        //metro SF
+        "STS" -> 3,
+        "SMF" -> 6,
+        "MHR" -> 2,
+        //upgrade established city airports
+        "SAT" -> 6,
+        "OKC" -> 6,
+        "ABQ" -> 6,
+        "MKE" -> 6,
+        "KOA" -> 5, //Kailua hawaii
+        "CHS" -> 5,
+        //downgrade secondary USA airports
+        "LCK" -> 3,
+        "BLV" -> 3,
+        "GRK" -> 3,
+        "PIA" -> 3,
+        "FWA" -> 4,
+        "BFI" -> 3,
+        "GGG" -> 2,
+        "OGD" -> 2,
+        "USA" -> 2,
+        "MEI" -> 2,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Europe
+        "SVO" -> 7,
+        "LIS" -> 7,
+        "DUB" -> 7,
+        "ORY" -> 7,
         "VIE" -> 7,
+        "ZRH" -> 7,
+        "ATH" -> 7,
+        "MAN" -> 7,
+        "CPH" -> 7,
+        "MXP" -> 7,
+        "OSL" -> 7,
+        "BER" -> 7,
+        "AGP" -> 7,
+        "BRU" -> 7,
+        "DME" -> 7,
+        "ARN" -> 7,
+        "LED" -> 7,
+        "DUS" -> 7,
+        "WAW" -> 7,
+        "ALC" -> 7,
+        "HEL" -> 7,
+        "BUD" -> 7,
+        "NCE" -> 7,
+        "OTP" -> 7,
+        "EDI" -> 7,
+        "HAM" -> 7,
+        //keeping islands small so they don't spill over other islands
+        "LPA" -> 5,
+        "TFS" -> 5,
+        "PMI" -> 5,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_India
         "BLR" -> 7,
         "MAA" -> 7,
@@ -107,10 +153,25 @@ object AirportSizeAdjust {
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Brazil
         "BSB" -> 7,
         "GIG" -> 7,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_China
+        "SZX" -> 8,
+        "PVG" -> 8,
+        "CAN" -> 8,
+        "SHA" -> 7,
+        "CKG" -> 7,
+        "CTU" -> 7,
+        "KMG" -> 7,
+        "HGH" -> 7,
+        "TFU" -> 7,
+        "XIY" -> 7,
+        "CSX" -> 7,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Mexico
         "CUN" -> 7,
-        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Russia
-        "LED" -> 7,
+        "GDL" -> 7,
+        "TIJ" -> 6,
+        //downgrade
+        "PBC" -> 4,
+        "TLC" -> 4,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Turkey
         "SAW" -> 7,
         "AYT" -> 7,
@@ -121,126 +182,90 @@ object AirportSizeAdjust {
         "YUL" -> 7,
         "YYC" -> 7,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Africa
-        "JNB" -> 7,
-        "CSX" -> 6,
-        "KHN" -> 5,
-        
+        "JNB" -> 8,
+        "CPT" -> 7,
+        "CAI" -> 7,
+        "CMN" -> 7,
+        "LOS" -> 7,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Thailand
-        "HKT" -> 5,
-        
-        //Adjustment on country with 1m pop+ but w/o a level 4 airport
-        //https://en.wikipedia.org/wiki/List_of_airports_in_Afghanistan
-        "KBL" -> 4,
-        "KDH" -> 5,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Albania
-        "TIA" -> 5,
+        //algeria downgrades
+        "TMR" -> 3,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Angola
-        "LAD" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Bangladesh
-        "CGP" -> 4,
-        "DAC" -> 5,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Burkina_Faso
-        "OUA" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Benin
-        "COO" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Bolivia
-        "VVI" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_the_Democratic_Republic_of_the_Congo
-        "FIH" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_the_Republic_of_the_Congo
-        "BZV" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Ivory_Coast
-        "ABJ" -> 5,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Cameroon
-        "DLA" -> 4,
-        //costa rica
-        "SJO" -> 5,
+        //cote d'ivoire
+        "BYK" -> 4,
+        //costa-rico
+        "BYK" -> 5,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Guinea
-        "CKY" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Guatemala
-        "GUA" -> 5,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Honduras
-        "TGU" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Haiti
-        "PAP" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Jamaica
-        "KIN" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Kyrgyzstan
-        "FRU" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_North_Korea
         "FNJ" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Liberia
-        "ROB" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Lithuania
-        "RIX" -> 4,
-        "VNO" -> 4,
+        //Libya
+        "GHT" -> 2,
+        "AKF" -> 2,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Moldova
-        "KIV" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Madagascar
-        "TNR" -> 4,
+        "ERS" -> 2,
         //https://en.wikipedia.org/wiki/List_of_airports_in_the_Republic_of_Macedonia
-        "SKP" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Mali
-        "BKO" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Mongolia
-        "ULN" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Mauritania
-        "NKC" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Malawi
-        "LLW" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Mozambique
-        "MPM" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Niger
-        "NIM" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Nicaragua
-        "MGA" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Nepal
-        "KTM" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Paraguay
-        "ASU" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Rwanda
-        "KGL" -> 4,
+        //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Russia
+        "PYJ" -> 3,
+        "DYR" -> 3,
+        "NER" -> 3,
+        "PKC" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Sierra_Leone
-        "FNA" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Somalia
-        "MGQ" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_El_Salvador
-        "SAL" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Chad
-        "NDJ" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Tajikistan
-        "DYU" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Turkmenistan
-        "ASB" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Tanzania
-        "DAR" -> 4,
+        "MWZ" -> 3,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Uganda
-        "EBB" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Venezuela
-        "CCS" -> 5,
-        "MAR" -> 5,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Kosovo
-        "PRN" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Yemen
-        "SAH" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Zambia
-        "LUN" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Zimbabwe
-        "HRE" -> 4,
+        
+        // Force AU airports to have large range
+        "MEL" -> 8,
+        "PER" -> 7,
+        "BNE" -> 7,
+        // "ADL" -> 7,
+        // "CNS" -> 7,
+        "OOL" -> 4,
+        "AKL" -> 7,
+        "ZQN" -> 3,
+        "WLG" -> 4,
        //below manual adjustment
-        "KOA" -> 4, //Kailua hawaii
         "MRU" -> 4, //Mauritius
-        "IBZ" -> 4, //Ibiza Spain 
-        "BFI" -> 3,
-        "DRW" -> 5, //Darwin
-        "CLO" -> 4,
-        "GYE" -> 4,
-        "UIO" -> 4,
-        "JTR" -> 3, //Santorini
         "YLW" -> 3, //Kelowna
         "MDE" -> 5, //https://en.wikipedia.org/wiki/Jos%C3%A9_Mar%C3%ADa_C%C3%B3rdova_International_Airport around 7 mil passengers
         "BDA" -> 5, // Bermuda
-        "DUB" -> 5, // Dublin
         "BHX" -> 5 //https://en.wikipedia.org/wiki/Birmingham_Airport around 13 mil passengers, A380 capable
       )
       

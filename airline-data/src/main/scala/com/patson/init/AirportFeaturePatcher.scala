@@ -11,102 +11,120 @@ object AirportFeaturePatcher extends App {
   import AirportFeatureType._
 
   lazy val featureList = Map(
-    INTERNATIONAL_HUB -> Map[String, Int](
-      "JFK" -> 45, //New York
-"LHR" -> 60, //London
-"HKG" -> 50, //Hong Kong
-"SIN" -> 50, //Singapore
-"NRT" -> 30, //Tokyo
-"CDG" -> 55, //Paris
-"SYD" -> 30, //Sydney
-"AUH" -> 20, //Abu Dhabi
-"PVG" -> 55, //Shanghai
-"SFO" -> 40, //San Francisco
-"ZRH" -> 20, //Zurich
-"FRA" -> 50, //Frankfurt
-"LAX" -> 65, //Los Angeles
-"TPE" -> 30, //Taipei
-"MXP" -> 15, //Milan
-"YYZ" -> 35, //Toronto
-"FCO" -> 30, //Rome
-"ICN" -> 50, //Seoul
-"PEK" -> 75, //Beijing
-"EZE" -> 10, //Buenos Aires
-"MAD" -> 45, //Madrid
-"AMS" -> 50, //Amsterdam
-"KUL" -> 45, //Kuala Lumpur
-"JNB" -> 20, //Johannesburg
-"GRU" -> 25, //Sao Paulo
-"IAD" -> 15, //Washington DC
-"MIA" -> 30, //Miami
-"YVR" -> 15, //Vancouver
-"BKK" -> 45, //Bangkok
-"BOS" -> 30, //Boston
-"CGK" -> 35, //Jakarta
-"KIX" -> 15, //Osaka
-"ARN" -> 10, //Stockholm
-"MEX" -> 35, //Mexico City
-"BRU" -> 10, //Brussels
-"DOH" -> 25, //Doha
-"WAW" -> 10, //Warsaw
-"BOM" -> 30, //Mumbai
-"ATL" -> 80, //Atlanta
-"DXB" -> 65, //Dubai
-"HND" -> 60, //Tokyo
-"ORD" -> 60, //Chicago
-"DFW" -> 55, //Dallas Fort Worth
-"CAN" -> 30, //Guangzhou
-"DEN" -> 45, //Denver
-"DEL" -> 45, //New Delhi
-"IST" -> 50, //Istanbul
-"CTU" -> 25, //Chengdu
-"SZX" -> 25, //Shenzhen
-"BCN" -> 25, //Barcelona
-"SEA" -> 35, //Seattle
-"LAS" -> 15, //Las Vegas
-"CLT" -> 35, //Charlotte
-"SVO" -> 30, //Moscow
-"KMG" -> 15, //Kunming
-"MUC" -> 30, //Munich
-"MNL" -> 30, //Manila
-"XIY" -> 15, //Xi'an
-"LGW" -> 20, //London
-"EWR" -> 30, //New York
-"PHX" -> 25, //Phoenix
-"SHA" -> 15, //Shanghai
-"IAH" -> 30, //Houston
-"DUB" -> 25, //Dublin
-"ORY" -> 20, //Paris
-"VIE" -> 15, //Vienna
-"LIS" -> 20, //Lisbon
-"CPH" -> 15, //Copenhagen
-"OSL" -> 15, //Oslo
-"DME" -> 15, //Moscow
-"ATH" -> 10, //Athens
-"HEL" -> 15, //Helsinki
-"MSP" -> 25, //Minneapolis
-"DTW" -> 20, //Detroit
-"PHL" -> 15, //Philadelphia
-"SLC" -> 10, //Salt Lake City
-"HNL" -> 10, //Honolulu
-"RUH" -> 15, //Riyadh
-"CAI" -> 10, //Cairo
-"CMN" -> 10, //Casablanca
-"MEL" -> 20, //Melbourne
-"BOG" -> 20, //Bogota
-"LIM" -> 15, //Lima
-"SCL" -> 15, //Santiago
-"AKL" -> 10, //Auckland
-"SGN" -> 25, //Ho Chi Minh City
-"PTY" -> 15, //Panama
-"ADD" -> 10, //Addis Ababa
-"NBO" -> 10, //Nairobi
-"JED" -> 15, //Jeddah
-"KEF" -> 15 //Reykjavik
 
-    
+    INTERNATIONAL_HUB -> Map[String, Int](
+/**
+*destinations with unusually more premium & intercontinental visitors relative to population
+**/
+
+//EU hubs+++ as they're relatively low pop
+"LHR" -> 65, //London
+"CDG" -> 60, //Paris
+"AMS" -> 40, //Amsterdam
+"FRA" -> 35, //Frankfurt
+"FCO" -> 30, //Rome
+"MXP" -> 25, //Milan
+"ZRH" -> 25, //Zurich
+"MAD" -> 25, //Madrid
+"GVA" -> 20, //Geneva; low-pop
+"BRU" -> 20, //Brussels
+"DUB" -> 15, //Dublin
+"CPH" -> 15, //Copenhagen
+"ARN" -> 15, //Stockholm
+"DME" -> 15, //Moscow
+"SVO" -> 15, //Moscow
+"ORY" -> 10, //Paris
+"LGW" -> 10, //London
+"ATH" -> 10, //Athens
+"MUC" -> 10, //Munich
+"BCN" -> 10, //Barcelona
+"NCE" -> 10, //Nice
+"OSL" -> 10, //Oslo
+"LIS" -> 10, //Lisbon
+"VIE" -> 5, //Vienna
+"HEL" -> 5, //Helsinki
+"WAW" -> 5, //Warsaw
+
+//north-america
+"JFK" -> 50, //New York
+"SFO" -> 45, //San Francisco; low-pop
+"YYZ" -> 30, //Toronto
+"BOS" -> 30, //Boston; medium-pop
+"LAX" -> 25, //Los Angeles
+"MIA" -> 25, //Miami; medium-pop
+"IAD" -> 25, //Washington DC; low-pop airport
+"IAH" -> 20, //Houston
+"SEA" -> 20, //Seattle
+"MEX" -> 15, //Mexico City; very high-pop
+"YVR" -> 15, //Vancouver
+"LAS" -> 15, //Las Vegas
+"HNL" -> 15, //Honolulu
+"ORD" -> 10, //Chicago
+"ATL" -> 10, //Atlanta; high-pop
+"DFW" -> 10, //Dallas Fort Worth
+"EWR" -> 10, //New York
+"DTW" -> 5, //Detroit
+"DEN" -> 5, //Denver
+"CLT" -> 5, //Charlotte
+"SLC" -> 5, //Salt Lake City
+"PHX" -> 5, //Phoenix
+"MSP" -> 5, //Minneapolis
+
+//oceania
+"SYD" -> 50, //Sydney
+"MEL" -> 20, //Melbourne
+"AKL" -> 10, //Auckland
+
+//east-asia
+"SIN" -> 65, //Singapore; medium pop
+"NRT" -> 60, //Tokyo
+"HKG" -> 45, //Hong Kong
+"TPE" -> 35, //Taipei
+"PVG" -> 30, //Shanghai
+"ICN" -> 30, //Seoul
+"CAN" -> 20, //Guangzhou
+"SZX" -> 15, //Shenzhen
+"BKK" -> 15, //Bangkok
+"KUL" -> 15, //Kuala Lumpur
+"KIX" -> 15, //Osaka
+"PEK" -> 10, //Beijing; huge pop
+"CGK" -> 10, //Jakarta
+"SGN" -> 10, //Ho Chi Minh City
+"HND" -> 5, //Tokyo; huge pop
+"CTU" -> 5, //Chengdu
+"KMG" -> 5, //Kunming
+"MNL" -> 5, //Manila
+"XIY" -> 5, //Xi'an
+
+//india
+"BOM" -> 10, //Mumbai
+"DEL" -> 5, //New Delhi; 150m pop so ~same as 100 charm on 7m pop airport
+
+//MENA
+"DXB" -> 20, //Dubai
+"JNB" -> 20, //Johannesburg
+"JED" -> 15, //Jeddah
+"IST" -> 15, //Istanbul
+"AUH" -> 10, //Abu Dhabi
+"DOH" -> 10, //Doha
+"RUH" -> 5, //Riyadh
+"CAI" -> 5, //Cairo
+"ADD" -> 5, //Addis Ababa
+"NBO" -> 5, //Nairobi
+"TLV" -> 5, //Tel Aviv
+
+//south-america
+"GRU" -> 25, //Sao Paulo
+"SCL" -> 15, //Santiago
+"EZE" -> 10, //Buenos Aires
+"BOG" -> 5, //Bogota
+"LIM" -> 5, //Lima
+"PTY" -> 5 //Panama
     ),
     VACATION_HUB -> Map[String, Int](
+/**
+*destinations with unusually more tourists relative to population
+**/
 "HNL" -> 100, //Honolulu
 "BKK" -> 100, //Bangkok
 "CDG" -> 65, //Paris
@@ -155,7 +173,7 @@ object AirportFeaturePatcher extends App {
 "PSA" -> 44, //Pisa
 "OSL" -> 21, //Oslo
 "AMS" -> 22, //Amsterdam
-"TLV" -> 25, //Tel Aviv
+"TLV" -> 5, //Tel Aviv
 "CPH" -> 21, //Copenhagen
 "CAI" -> 40, //Cairo
 "LHR" -> 20, //London
@@ -218,7 +236,7 @@ object AirportFeaturePatcher extends App {
 "TFN" -> 25, //Tenerife Island
 "CHQ" -> 14, //Heraklion
 "FLL" -> 22, //Miami
-"HND" -> 28, //Tokyo / Narita
+"HND" -> 14, //Tokyo / Narita
 "SDU" -> 13, //Rio De Janeiro
 "DCA" -> 25, //Washington, DC
 "CGH" -> 35, //São Paulo
@@ -308,7 +326,7 @@ object AirportFeaturePatcher extends App {
 "LGK" -> 90, //Langkawi
 "BKI" -> 98, //Kota Kinabalu
 "KTM" -> 39, //Kathmandu
-"ICN" -> 0, //Seoul
+"ICN" -> 7, //Seoul
 "PPS" -> 26, //Puerto Princesa City
 "MPH" -> 55, //Malay
 "CNX" -> 150, //Chiang Mai
@@ -393,11 +411,11 @@ object AirportFeaturePatcher extends App {
 "TIV" -> 30, //Tivat
 "ARN" -> 10, //Stockholm
 "LLA" -> 16, //LuleÃ¥
-"OTP" -> 0, //Bucharest
+"OTP" -> 5, //Bucharest
 "KZN" -> 44, //Kazan
 "KRR" -> 66, //Krasnodar
 "SVO" -> 16, //Moscow
-"ZIA" -> 0, //Moscow
+"ZIA" -> 5, //Moscow
 "IKT" -> 33, //Irkutsk
 "AER" -> 72, //Sochi
 "VOG" -> 11, //Volgograd
@@ -424,7 +442,12 @@ object AirportFeaturePatcher extends App {
 "DME" -> 10, //Moscow
 "ECN" -> 12, //Nicosia
 "VKO" -> 10, //Moscow
-"ZRH" -> 20 //Zurich   
+"ZRH" -> 20, //Zurich
+"QZN" -> 15, //Queenstown
+"SGU" -> 5, //Zion National Park
+"FCA" -> 5, //Glacier National Park
+"STS" -> 5 //Sedona
+   
  ),
     FINANCIAL_HUB -> Map[String, Int](
 "LHR" -> 80, //London
@@ -518,7 +541,6 @@ object AirportFeaturePatcher extends App {
 "VIE" -> 49, //Vienna
 "FCO" -> 50, //Rome
 "LIS" -> 45, //Lisbon
-"TLV" -> 52, //Tel Aviv
 "TPE" -> 42, //Taipei
 "KUL" -> 44, //Kuala Lumpur
 "DOH" -> 29, //Doha
@@ -659,6 +681,22 @@ object AirportFeaturePatcher extends App {
     val list: mutable.ListBuffer[String] = collection.mutable.ListBuffer(baseList:_*)
 
     list -= "HND" //not haneda, instead it should be NRT
+    list -= "CGO"
+    list -= "KGA" //DRC
+    list += "FID"
+    list -= "KAN" //Nigeria
+    list += "LOS"
+    list -= "APL" //Mozambique
+    list += "MPM"
+    list -= "MWZ" //Tanzania
+    list += "DAR"
+    list -= "OSS" //Uzbekistan
+    list += "FRU"
+    list -= "LHE" //Pakistan
+    list += "ISB"
+    list -= "GYE" //Ecuador
+    list += "UIO"
+    
 
     //now add extra ones for bigger countries
     //from top to bottom by pop coverage, so we wouldnt miss any

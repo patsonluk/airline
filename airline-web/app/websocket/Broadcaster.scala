@@ -96,11 +96,13 @@ object Broadcaster {
   def checkPrompts(airlineId : Int) = {
 
     val airline = AirlineCache.getAirline(airlineId).get
-    val prompts = PromptUtil.getPrompts(airline)
-//    prompts.notices.foreach(localMainActor ! BroadcastWrapper(_))
-//    prompts.tutorials.foreach(localMainActor ! BroadcastWrapper(_))
-    airlineEventBus.publish(AirlinePrompts(airline, prompts))
-    airlineEventBus.publish(AirlinePendingActions(airline, PendingActionUtil.getPendingActions(airline))) //should send empty list if none, so front end can clear
+    if (!airline.isGenerated) {
+      val prompts = PromptUtil.getPrompts(airline)
+  //    prompts.notices.foreach(localMainActor ! BroadcastWrapper(_))
+  //    prompts.tutorials.foreach(localMainActor ! BroadcastWrapper(_))
+      airlineEventBus.publish(AirlinePrompts(airline, prompts))
+      airlineEventBus.publish(AirlinePendingActions(airline, PendingActionUtil.getPendingActions(airline))) //should send empty list if none, so front end can clear
+    }
   }
 
   def unsubscribeFromBroadcaster(subscribe: ActorRef) = {

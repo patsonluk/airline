@@ -613,7 +613,7 @@ package object controllers {
         ))
       }
 
-      val citiesServed = airport.citiesServed.sortBy(_._1.population).takeRight(20)
+      val citiesServed = airport.citiesServed.sortBy(_._1.population)
 
 
       airportObject = airportObject + ("citiesServed" -> Json.toJson(citiesServed.map(_._1).toList))

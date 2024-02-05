@@ -77,7 +77,7 @@ object AirportSimulation {
               val newInfoByAirport = newRanks.groupBy(_.loyalist.airport).view.mapValues(_(0)) //should be exactly one entry
               val airportIds = previousInfoByAirport.keySet ++ newInfoByAirport.keySet
               airportIds.foreach { airportId =>
-                if (previousInfoByAirport.get(airportId).map(_.ranking).getOrElse(0) != newInfoByAirport.get(airportId).map(_.ranking).getOrElse(0)) {
+                if (previousInfoByAirport.get(airportId).map(_.ranking).getOrElse(0) != newInfoByAirport.get(airportId).map(_.ranking).getOrElse(0) && newInfoByAirport.get(airportId).map(_.reputationBoost).exists(_ > 0.5)) {
                   changes.append(ChampionInfoChange(previousInfoByAirport.get(airportId), newInfoByAirport.get(airportId)))
                 }
               }
@@ -148,7 +148,7 @@ object AirportSimulation {
     newInfo
   }
 
-  val DECAY_RATE = 0.0005 //1 loyalist disappears per 2000 per week
+  val DECAY_RATE = 0.00025 //1 loyalist disappears per 4000 per week
   private[patson] def decayLoyalists(allAirports : List[Airport], existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) : immutable.Map[Int, List[Loyalist]] = {
     val updatingLoyalists, deletingLoyalists = ListBuffer[Loyalist]()
     val r = new Random()
@@ -214,17 +214,10 @@ object AirportSimulation {
 
               var conversionRatio =
                 if (satisfaction < NEUTRAL_SATISFACTION) {
-                  //(satisfaction - NEUTRAL_SATISFACTION) / NEUTRAL_SATISFACTION * MAX_LOYALIST_FLIP_RATIO
                   0
                 } else {
-                  val multiplier = Math.min(MAX_LOYALIST_FLIP_RATIO, passengerGroup.preference.loyaltySensitivity + 0.3)
-                  (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION) * multiplier
+                  (satisfaction - NEUTRAL_SATISFACTION) / (1 - NEUTRAL_SATISFACTION)
                 }
-              //adjust with income level. Since lower income country has less pax to start with. Up to 3 times
-              if (fromAirport.incomeLevel < highIncomeLevel) {
-                val multiplier = 1 + 2 * (highIncomeLevel - fromAirport.incomeLevel) / highIncomeLevel
-                conversionRatio *= multiplier
-              }
 
               if (link.distance != totalDistance) {
                 conversionRatio = conversionRatio * (0.5 / route.links.length  + 0.5 * link.distance / totalDistance) //half depends on # of leg, half proportional to the % of distance travel of the whole route
