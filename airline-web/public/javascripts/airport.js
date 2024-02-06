@@ -88,7 +88,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 	$("#airportDetailsCountry").attr("onclick", "showCountryView('" + airport.countryCode + "')")
 	$("#airportDetailsCountry").attr("data-link", 'country')
-	$("#airportDetailsCountry").append("<span>" + loadedCountriesByCode[airport.countryCode].name + '&nbsp;</span>')
+	$("#airportDetailsCountry").html("<span>" + loadedCountriesByCode[airport.countryCode].name + '&nbsp;</span>')
 	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
 	if (countryFlagUrl) {
 		$("#airportDetailsCountry").append("<img src='" + countryFlagUrl + "' />")
