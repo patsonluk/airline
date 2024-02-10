@@ -1266,6 +1266,7 @@ function drawAirportLinkPath(localAirport, details) {
 	
 	var infowindow;
 	shadowPath.addListener('mouseover', function(event) {
+	    highlightPath(airportLinkPath, false)
 		$("#airportLinkPopupFrom").html(getCountryFlagImg(this.fromCountry) + this.fromAirport)
 		$("#airportLinkPopupTo").html(getCountryFlagImg(this.toCountry) + this.toAirport)
 		$("#airportLinkPopupCapacity").text(toLinkClassValueString(this.details.capacity) + "(" + this.details.frequency + ")")
@@ -1289,6 +1290,7 @@ function drawAirportLinkPath(localAirport, details) {
 		infowindow.open(map);
 	})		
 	shadowPath.addListener('mouseout', function(event) {
+	    unhighlightPath(airportLinkPath)
 		infowindow.close()
 	})
 	
