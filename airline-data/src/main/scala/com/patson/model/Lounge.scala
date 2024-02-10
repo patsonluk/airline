@@ -8,14 +8,18 @@ case class Lounge(airline : Airline, allianceId : Option[Int], airport : Airport
   val getUpkeep : Long = {
     if (status == LoungeStatus.ACTIVE) (10000 + airport.baseIncome) * 5 * level else 0 //use base income for calculation here
   }
-  
+
+  val rankingThreshold = Map(
+    5 -> 2,
+    6 -> 3,
+    7 -> 4,
+    8 -> 4,
+    9 -> 5,
+    10 -> 5
+  )
   //to be considered active, it should have passenger ranking smaller (ie higher) or equals to this value)
   val getActiveRankingThreshold : Int = {
-    if (airport.size <= 4) {
-      1
-    } else {
-      (airport.size - 1) / 2
-    }
+    rankingThreshold.getOrElse(airport.size, 1)
   }
   
   val baseReduceRate = 0.005 + level * 0.01
