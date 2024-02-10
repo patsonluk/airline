@@ -1164,8 +1164,6 @@ function toggleAirportLinksView() {
 	clearAirportLinkPaths() //clear previous ones if exist
 	deselectLink()
 
-	$("#hideAirportLinksButton").show();
-
 	toggleAirportLinks(activeAirport)
 }
 
@@ -1184,19 +1182,38 @@ function toggleAirportLinks(airport) {
 	closeAirportInfoPopup()
 	$.ajax({
 		type: 'GET',
-		url: "airports/" + airport.id + "/link-consumptions",
+		url: "airports/" + airport.id + "/links",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    success: function(passengersByRemoteAirport) {
-	    	if (!jQuery.isEmptyObject(passengersByRemoteAirport)) {
-	    		$.each(passengersByRemoteAirport, function(index, remoteAirportPassengers) {
-	    			drawAirportLinkPath(airport, remoteAirportPassengers.remoteAirport, remoteAirportPassengers.passengers)
-	    		})
-	    		showAirportLinkPaths()
-	    		//printConsole('Showing all routes with passenger volume flying from or to this airport')
-	    	} else {
-	    		//printConsole('No routes with passenges yet flying from or to this airport')
-	    	}
+	    success: function(linksByRemoteAirport) {
+	        $("#topAirportLinksPanel .topDestinations .table-row").remove()
+	    	$.each(linksByRemoteAirport, function(index, entry) {
+                drawAirportLinkPath(airport, entry)
+                //populate top 5 destinations
+                if (index < 5) {
+                    var $destinationRow = $('<div class="table-row"></div>')
+                    var $airportCell = $('<div class="cell"></div>')
+                    $airportCell.append(getAirportSpan(entry.remoteAirport))
+                    $destinationRow.append($airportCell)
+                    $destinationRow.append('<div class="cell">' + toLinkClassValueString(entry.capacity) + '(' + entry.frequency + ')</div>')
+                    var $operatorsCell = $('<div class="cell"></div>')
+                    $.each(entry.operators, function(index, operator) {
+                        var $airlineLogoSpan = $('<span></span>')
+                    	$airlineLogoSpan.append(getAirlineLogoImg(operator.airlineId))
+                    	$airlineLogoSpan.attr("title", operator.airlineName + ' ' + toLinkClassValueString(operator.capacity) + '(' + operator.frequency + ')')
+                        $operatorsCell.append($airlineLogoSpan)
+                    })
+                    $destinationRow.append($operatorsCell)
+
+                    $("#topAirportLinksPanel .topDestinations").append($destinationRow)
+                }
+            })
+            if (linksByRemoteAirport.length == 0) {
+                $("#topAirportLinksPanel .topDestinations").append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
+            }
+            showAirportLinkPaths()
+
+	    	$("#topAirportLinksPanel").show();
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -1212,8 +1229,9 @@ function toggleAirportLinks(airport) {
 }
 
 
-function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
-	var from = new google.maps.LatLng({lat: localAirport.latitude, lng: localAirport.longitude})
+function drawAirportLinkPath(localAirport, details) {
+    var remoteAirport = details.remoteAirport
+    var from = new google.maps.LatLng({lat: localAirport.latitude, lng: localAirport.longitude})
 	var to = new google.maps.LatLng({lat: remoteAirport.latitude, lng: remoteAirport.longitude})
 	var pathKey = remoteAirport.id
 	
@@ -1241,7 +1259,7 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 	     fromCountry : localAirport.countryCode, 
 	     toAirport : toAirport,
 	     toCountry : remoteAirport.countryCode,
-	     passengers : passengers,
+	     details: details
 	});
 	
 	airportLinkPath.shadowPath = shadowPath
@@ -1250,7 +1268,15 @@ function drawAirportLinkPath(localAirport, remoteAirport, passengers) {
 	shadowPath.addListener('mouseover', function(event) {
 		$("#airportLinkPopupFrom").html(getCountryFlagImg(this.fromCountry) + this.fromAirport)
 		$("#airportLinkPopupTo").html(getCountryFlagImg(this.toCountry) + this.toAirport)
-		$("#airportLinkPopupPassengers").text(this.passengers)
+		$("#airportLinkPopupCapacity").text(toLinkClassValueString(this.details.capacity) + "(" + this.details.frequency + ")")
+		$("#airportLinkOperators").empty()
+		$.each(this.details.operators, function(index, operator){
+		    var $operatorDiv = $('<div></div>')
+		    $operatorDiv.append(getAirlineLogoSpan(operator.airlineId, operator.airlineName))
+            $operatorDiv.append('<span>' + operator.frequency + '&nbsp;flight(s) weekly&nbsp;' + toLinkClassValueString(operator.capacity) + '</span>')
+		    $("#airportLinkOperators").append($operatorDiv)
+		})
+
 
 		infowindow = new google.maps.InfoWindow({
              maxWidth : 400
@@ -1299,8 +1325,7 @@ function hideAirportLinksView() {
 	clearAirportLinkPaths()
 	updateLinksInfo() //redraw all flight paths
 		
-    $("#hideAirportLinksButton").hide();
-	
+    $("#topAirportLinksPanel").hide();
 }
 
 function getAirportIcon(airportInfo) {
