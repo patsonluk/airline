@@ -1234,14 +1234,23 @@ function drawAirportLinkPath(localAirport, details) {
     var from = new google.maps.LatLng({lat: localAirport.latitude, lng: localAirport.longitude})
 	var to = new google.maps.LatLng({lat: remoteAirport.latitude, lng: remoteAirport.longitude})
 	var pathKey = remoteAirport.id
-	
+
+    var totalCapacity = details.capacity.total
+
+    var opacity
+    if (totalCapacity < 2000) {
+        opacity = 0.2 + totalCapacity / 2000 * (0.6)
+    } else {
+        opacity = 0.8
+    }
 	var airportLinkPath = new google.maps.Polyline({
 			 geodesic: true,
 		     strokeColor: "#DC83FC",
-		     strokeOpacity: 0.8,
+		     strokeOpacity: opacity,
 		     strokeWeight: 2,
 		     path: [from, to],
 		     zIndex : 1100,
+		     map: map,
 		});
 		
 	var fromAirport = getAirportText(localAirport.city, localAirport.iata)
@@ -1259,8 +1268,11 @@ function drawAirportLinkPath(localAirport, details) {
 	     fromCountry : localAirport.countryCode, 
 	     toAirport : toAirport,
 	     toCountry : remoteAirport.countryCode,
-	     details: details
+	     details: details,
+	     map: map,
 	});
+	polylines.push(airportLinkPath)
+    polylines.push(shadowPath)
 	
 	airportLinkPath.shadowPath = shadowPath
 	
@@ -1297,21 +1309,6 @@ function drawAirportLinkPath(localAirport, details) {
 	airportLinkPaths[pathKey] = airportLinkPath
 }
 
-function showAirportLinkPaths() {
-	$.each(airportLinkPaths, function(key, airportLinkPath) {
-		var totalCapacity = airportLinkPath.shadowPath.details.capacity.total
-		if (totalCapacity < 2000) {
-			var newOpacity = 0.2 + totalCapacity / 2000 * (airportLinkPath.strokeOpacity - 0.2)
-			airportLinkPath.setOptions({strokeOpacity : newOpacity})
-		}
-			
-		airportLinkPath.setMap(map)
-		airportLinkPath.shadowPath.setMap(map)
-		polylines.push(airportLinkPath)
-		polylines.push(airportLinkPath.shadowPath)
-	})
-}
-	
 function clearAirportLinkPaths() {
 	$.each(airportLinkPaths, function(key, airportLinkPath) {
 		airportLinkPath.setMap(null)
