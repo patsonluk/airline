@@ -1299,9 +1299,9 @@ function drawAirportLinkPath(localAirport, details) {
 
 function showAirportLinkPaths() {
 	$.each(airportLinkPaths, function(key, airportLinkPath) {
-		var totalPassengers = airportLinkPath.shadowPath.passengers
-		if (totalPassengers < 2000) {
-			var newOpacity = 0.2 + totalPassengers / 2000 * (airportLinkPath.strokeOpacity - 0.2)
+		var totalCapacity = airportLinkPath.shadowPath.details.capacity.total
+		if (totalCapacity < 2000) {
+			var newOpacity = 0.2 + totalCapacity / 2000 * (airportLinkPath.strokeOpacity - 0.2)
 			airportLinkPath.setOptions({strokeOpacity : newOpacity})
 		}
 			
