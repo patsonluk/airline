@@ -411,7 +411,11 @@ function highlightPath(path, refocus) {
 	if (!path.highlighted) { //only highlight again if it's not already done so
 	    path.setOptions({ strokeOpacity : pathOpacityByStyle[currentStyles].highlight })
 		var originalColorString = path.strokeColor
+		//keep track of original values so we can revert...shouldn't there be a better way to just get all options all at once?
 		path.originalColor = originalColorString
+		path.originalStrokeWeight = path.strokeWeight
+		path.originalZIndex = path.zIndex
+		path.originalStrokeOpacity = path.strokeOpacity
 		var totalFrames = 20
 		
 		var rgbHexValue = parseInt(originalColorString.substring(1), 16);
@@ -454,7 +458,7 @@ function highlightPath(path, refocus) {
 function unhighlightPath(path) {
 	window.clearInterval(path.animation)
 	path["animation"] = undefined
-	path.setOptions({ strokeColor : path.originalColor , strokeWeight : 2, zIndex : 90, strokeOpacity : pathOpacityByStyle[currentStyles].normal})
+	path.setOptions({ strokeColor : path.originalColor , strokeWeight : path.originalStrokeWeight, zIndex : path.originalZIndex, strokeOpacity : path.originalStrokeOpacity})
 	
 	delete path.highlighted
 }

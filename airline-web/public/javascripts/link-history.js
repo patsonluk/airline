@@ -430,9 +430,14 @@ function showLinkHistory() {
 
                 infowindow.setPosition(event.latLng);
                 infowindow.open(map);
+
+                highlightPath(historyPath, false)
             })
             historyPath.shadowPath.addListener('mouseout', function(event) {
                 infowindow.close()
+                if (!historyPath.watched) { //do not unhighlight if it's watched link
+                    unhighlightPath(historyPath)
+                }
             })
 
 
