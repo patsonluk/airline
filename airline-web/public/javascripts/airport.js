@@ -1211,7 +1211,6 @@ function toggleAirportLinks(airport) {
             if (linksByRemoteAirport.length == 0) {
                 $("#topAirportLinksPanel .topDestinations").append("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
             }
-            showAirportLinkPaths()
 
 	    	$("#topAirportLinksPanel").show();
 	    },
