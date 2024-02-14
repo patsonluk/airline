@@ -40,19 +40,19 @@ object AirplaneSimulation {
     }
     
     var updatingAirplanes = updatingAirplanesListBuffer.toList 
-    val updatedCount = AirplaneSource.updateAirplanesDetails(updatingAirplanes, true) //version check to avoid manual renewal from web UI
-    println(s"Finished updating all airplanes expected ${updatingAirplanes.size} actual $updatedCount")
+    val updatedAirplanes = AirplaneSource.updateAirplanesDetails(updatingAirplanes, true) //version check to avoid manual renewal from web UI
+    println(s"Finished updating all airplanes expected ${updatingAirplanes.size} actual ${updatedAirplanes.size}")
     
     println("Start renewing airplanes")
-    updatingAirplanes = renewAirplanes(updatingAirplanes, cycle)
+    renewAirplanes(updatedAirplanes, cycle)
     println("Finished renewing airplanes")
     
     println("Start retiring airplanes")
     //adjustLinksBasedOnAirplaneStatus(updatingAirplanes, cycle)
-    retireAgingAirplanes(updatingAirplanes.toList)
-    println("Finished retiring airplanes")
-    
-    updatingAirplanes.toList
+    val retiredCount = retireAgingAirplanes(updatedAirplanes)
+    println(s"Finished retiring $retiredCount airplanes")
+
+    updatedAirplanes.toList
   }
 
   val SECOND_HAND_MAX_AIRPLANE_PER_MODEL_COUNT = 50 //only 50 max at a time
@@ -95,7 +95,7 @@ object AirplaneSimulation {
   val DEALER_RATIO_LOWER_THERSHOLD = Computation.SELL_RATE //at this ratio, the dealer would just scrap the airplane
   
   
-  def renewAirplanes(airplanes : List[Airplane], currentCycle : Int) : List[Airplane] = {
+  def renewAirplanes(airplanes : List[Airplane], currentCycle : Int) = {
     val renewalThresholdsByAirline : scala.collection.immutable.Map[Int, Int] = AirlineSource.loadAirplaneRenewals()
     val costsByAirline : scala.collection.mutable.Map[Int, (Long, Long, Long, Long)] = mutable.HashMap[Int, (Long, Long, Long, Long)]()
     val airlinesByid = AirlineSource.loadAllAirlines(false).map(airline => (airline.id, airline)).toMap
@@ -161,15 +161,15 @@ object AirplaneSimulation {
     AirplaneSource.saveAirplanes(secondHandAirplanes.toList)
     //save the renewed airplanes
     AirplaneSource.updateAirplanes(renewedAirplanes.toList) //no version check, since money is deducted already, and renewed airplanes are safe to save
-      
-    updatingAirplanes
   }
 
-  def retireAgingAirplanes(airplanes : List[Airplane]) {
+  def retireAgingAirplanes(airplanes : List[Airplane]) : Int = {
+    var deletedCount = 0
     airplanes.filter(_.condition <= 0).foreach { airplane =>
       println("Deleting airplane " + airplane)
-      println(AirplaneSource.deleteAirplane(airplane.id, Some(airplane.version)))
+      deletedCount += AirplaneSource.deleteAirplane(airplane.id, Some(airplane.version))
     }
+    deletedCount
   }
   
   def computeDepreciationRate(model : Model, decayRate : Double) = {
