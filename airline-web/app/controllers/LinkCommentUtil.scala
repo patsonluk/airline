@@ -369,7 +369,7 @@ object LinkComment {
           }
         } else if (serviceQuality >= 50 && qualityDelta > 10) {
           if (random == 0) {
-            Some("The flight attendants are polite an cheerful!")
+            Some("The flight attendants are polite and cheerful!")
           } else if (random == 1) {
             Some("I found the seat pretty comfy!")
           } else {
