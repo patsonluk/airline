@@ -124,7 +124,7 @@ div.button:active:not([class*="disabled"]) {
 	padding-right: 2px;
 	border-radius: 6px
 }
-#topBar > :first-child {
+#topBar > :first-child:not(.hide-empty) {
 	background-color: var(--background-1);
 	position: absolute;
 	top: 3px;
