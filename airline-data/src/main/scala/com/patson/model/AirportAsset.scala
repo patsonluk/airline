@@ -389,7 +389,7 @@ object AirportAssetType extends Enumeration {
         }
 
         def computeAssetDiscount(paxGroup : PassengerGroup) : Double = {
-            if (paxGroup.passengerType == PassengerType.BUSINESS) {
+                if (paxGroup.passengerType == PassengerType.BUSINESS) {
                 businessDiscount * (0.5 + 0.5 * level / AirportAsset.MAX_LEVEL)
             } else {
                 touristDiscount * (0.5 + 0.5 * level / AirportAsset.MAX_LEVEL)

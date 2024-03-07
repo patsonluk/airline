@@ -604,6 +604,9 @@ package object controllers {
       if (airport.isGateway()) {
         airportObject = airportObject + ("isGateway" -> JsBoolean(true))
       }
+      if (airport.isDomesticAirport()) {
+        airportObject = airportObject + ("isDomesticAirport" -> JsBoolean(true))
+      }
 
 
       if (airport.getRunways().length > 0) {

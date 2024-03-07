@@ -652,6 +652,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       case Right((fromAirport, toAirport)) => {
         var existingLink: Option[Link] = LinkSource.loadFlightLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
 
+        val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
         val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
 
         val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink)
@@ -661,14 +662,20 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val modelsWithinRange: List[Model] = ModelSource.loadModelsWithinRange(distance)
 
         val allManufacturingCountries = modelsWithinRange.map(_.countryCode).toSet
-
         val countryRelations : immutable.Map[String, AirlineCountryRelationship] = allManufacturingCountries.map { countryCode =>
           (countryCode, AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, airline))
         }.toMap
+        val modelsWithinRangeAndRelationship = modelsWithinRange.filter(model => model.purchasableWithRelationship(countryRelations(model.countryCode).relationship))
+
+        val modelsForCustoms = if (relationship != 5 && fromAirport.isDomesticAirport() || relationship != 5 && toAirport.isDomesticAirport()) {
+          import Model.Category._
+          modelsWithinRangeAndRelationship.filter(_.category == LIGHT)
+        } else {
+          modelsWithinRangeAndRelationship
+        }
 
         val ownedAirplanesByModel = AirplaneSource.loadAirplanesByOwner(airlineId).groupBy(_.model)
-        val modelsWithinRangeAndRelationship = modelsWithinRange.filter(model => model.purchasableWithRelationship(countryRelations(model.countryCode).relationship))
-        val availableModels = modelsWithinRangeAndRelationship ++ ownedAirplanesByModel.keys.filter(_.range >= distance)
+        val availableModels = modelsForCustoms ++ ownedAirplanesByModel.keys.filter(_.range >= distance)
 
         val airplanesAssignedToThisLink = new mutable.HashMap[Int, Int]()
 
@@ -731,22 +738,31 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             (suggestedPrice(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
             (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
         }
-        val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
-        val directFromAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS)
-        val directToAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
-        val directBusinessDemand =  directFromAirportBusinessDemand + directToAirportBusinessDemand
+//        val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+//        val directFromAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS)
+//        val directToAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
+//        val directBusinessDemand =  directFromAirportBusinessDemand + directToAirportBusinessDemand
+//
+//        val directFromAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST)
+//        val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+//        val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
-        val directFromAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST)
-        val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+        val demand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, relationship, distance)
+
+        val directFromAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.BUSINESS, (demand * 0.5).toInt)
+        val directToAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.BUSINESS, (demand * 0.5).toInt)
+        val directBusinessDemand = directFromAirportBusinessDemand + directToAirportBusinessDemand
+
+        val directFromAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.TOURIST, (demand * 0.5).toInt)
+        val directToAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.TOURIST, (demand * 0.5).toInt)
         val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
         val directDemand = directBusinessDemand + directTouristDemand
-        //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum
 
         val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
         val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
         val flightCode = LinkUtil.getFlightCode(request.user, flightNumber)
-        val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
+        val flightType = Computation.getFlightType(fromAirport, toAirport, distance, relationship)
 
         val estimatedDifficulty : Option[Double] =
           if (existingLink.isEmpty) {
@@ -775,7 +791,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "toAirportLongitude" -> toAirport.longitude,
           "toCountryCode" -> toAirport.countryCode,
           "flightCode" -> flightCode,
-          "mutualRelationship" -> countryRelationship,
+          "mutualRelationship" -> relationship,
           "distance" -> distance,
           "flightType" -> FlightType.label(flightType),
           "suggestedPrice" -> suggestedPrice,
@@ -840,7 +856,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   object RejectionType extends Enumeration {
     type RejectionType = Value
-    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH, NEGOTIATION_COOL_DOWN, DUPLICATED_LINK = Value
+    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH, NEGOTIATION_COOL_DOWN, DUPLICATED_LINK, REQUIRES_CUSTOMS = Value
   }
 
   def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, existingLink : Option[Link]) : Option[(String, RejectionType.Value)]= {
@@ -848,14 +864,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (airline.getCountryCode.isEmpty) {
       return Some(("Airline has no HQ!", NO_BASE))
     }
-    val toCountryCode = toAirport.countryCode
 
     existingLink match {
       case None => //new link
         //validate there's no existing link with opposite direction
-        LinkSource.loadFlightLinkByAirportsAndAirline(toAirport.id, fromAirport.id, airline.id).foreach { _ =>
-          return Some(("Cannot create this route as your airline already has one flying between these 2 airports"), DUPLICATED_LINK)
-        }
+//        LinkSource.loadFlightLinkByAirportsAndAirline(toAirport.id, fromAirport.id, airline.id).foreach { _ =>
+//          return Some(("Cannot create this route as your airline already has one flying between these 2 airports"), DUPLICATED_LINK)
+//        }
 
         //validate from airport is a base
         val base = fromAirport.getAirlineBase(airline.id) match {
@@ -863,8 +878,18 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           case Some(base) => base
         }
 
+        val countryRelationships = CountrySource.getCountryMutualRelationships()
+        val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
 
-        val flightCategory = FlightType.getCategory(Computation.getFlightType(fromAirport, toAirport))
+        if (! toAirport.isGateway() && toAirport.size <= 2 && relationship != 5) {
+          return Some("Destination airport is too small to serve international destinations.", REQUIRES_CUSTOMS)
+        }
+        if (!toAirport.isGateway() && fromAirport.size <= 2 && relationship != 5) {
+          return Some("Home airport is too small to serve international destinations.", REQUIRES_CUSTOMS)
+        }
+
+//          val toCountryCode = toAirport.countryCode
+//        val flightCategory = FlightType.getCategory(Computation.getFlightType(fromAirport, toAirport))
         //check title status
 //        if (flightCategory == FlightCategory.INTERCONTINENTAL) {
 //          val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE

@@ -23,19 +23,22 @@ object IsolatedAirportPatcher {
       val boundaryLongitude = GeoDataGenerator.calculateLongitudeBoundary(airport.latitude, airport.longitude, HUB_RANGE_BRACKETS.last)
       for (i <- 0 until HUB_RANGE_BRACKETS.size) {
         val threshold = HUB_RANGE_BRACKETS(i)
-        val countOfHubWithinRange = allAirports.count { targetAirport =>
+        val populationWithinRange = allAirports.filter { targetAirport =>
           val distance = Util.calculateDistance(airport.latitude, airport.longitude, targetAirport.latitude, targetAirport.longitude)
-          targetAirport.population >= HUB_MIN_POP && distance < threshold && targetAirport.longitude >= boundaryLongitude._1 && targetAirport.longitude <= boundaryLongitude._2
-        }
-        if (0 == countOfHubWithinRange) { //very isolated
+          distance < threshold && targetAirport.longitude >= boundaryLongitude._1 && targetAirport.longitude <= boundaryLongitude._2
+        }.map(_.population).sum
+        if (populationWithinRange < 100000) { //very isolated
           isolationLevel += 3
-        } else if (3 >= countOfHubWithinRange) {
+        } else if (populationWithinRange < 500000) {
           isolationLevel += 2
-        } else if (5 >= countOfHubWithinRange) { //kinda isolated
+        } else if (populationWithinRange < 2500000) { //kinda isolated
           isolationLevel += 1
         }
       }
       isolationLevel = (Math.floor( isolationLevel / 2 )).toInt
+      if (ISOLATED_COUNTRIES.contains(airport.countryCode) && airport.size <= 4){
+        isolationLevel += 1
+      }
       if (isolationLevel > 0) {
         isolationByAirport.put(airport, isolationLevel)
       }

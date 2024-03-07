@@ -236,7 +236,12 @@ a {
     width: 30%;
 }
 .airportCanvasRightGroup {
-    width: 20%;
+    /* width: 40%; */
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 500px;
+    height: 500px;
 }
 
 #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, .campaignDetails .verticalGroup, #allianceCanvas .verticalGroup {

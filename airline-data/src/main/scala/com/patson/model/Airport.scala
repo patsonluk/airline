@@ -270,6 +270,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     baseFeatures.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
   }
 
+  def isDomesticAirport() = {
+    baseFeatures.find(_.featureType == AirportFeatureType.DOMESTIC_AIRPORT).isDefined
+  }
+
   def initAirlineAppealsComputeLoyalty(airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty, loyalistEntries : List[Loyalist]) = {
     this.loyalistEntries = loyalistEntries
     val airlineBaseLoyalty : Map[Int, Double] = computeLoyaltyByLoyalist(loyalistEntries)
@@ -474,9 +478,11 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   lazy val airportRadius : Int = {
     size match {
       case 1 => 200
+      case 2 => 200
+      case 6 => 275
       case 7 => 300
       case n if (n >= 8) => 350
-      case _ => 250
+      case _ => 225
     }
   }
 
