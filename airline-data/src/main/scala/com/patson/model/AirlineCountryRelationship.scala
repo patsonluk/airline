@@ -18,7 +18,7 @@ object AirlineCountryRelationship {
   val HOME_COUNTRY = (homeCountry : Country, targetCountry : Country, relationship : Int) => new RelationshipFactor {
     override val getDescription: String = {
       val relationshipString = relationship match {
-        case x if x >= 5 => "Home Country"
+        case x if x >= 5 => "Home / Open Skies"
         case 4 => "Alliance"
         case 3 => "Close"
         case 2 => "Friendly"

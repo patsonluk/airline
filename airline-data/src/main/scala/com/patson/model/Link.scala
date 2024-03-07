@@ -202,35 +202,35 @@ object Link {
   val staffScheme : Map[model.FlightType.Value, StaffSchemeBreakdown] = {
       val basicLookup = Map(
         SHORT_HAUL_DOMESTIC -> 0,
-        MEDIUM_HAUL_DOMESTIC -> 5,
-        LONG_HAUL_DOMESTIC -> 15,
-        SHORT_HAUL_INTERNATIONAL -> 2,
-        MEDIUM_HAUL_INTERNATIONAL -> 10,
-        LONG_HAUL_INTERNATIONAL -> 30,
-        SHORT_HAUL_INTERCONTINENTAL -> 6,
-        MEDIUM_HAUL_INTERCONTINENTAL -> 16,
-        LONG_HAUL_INTERCONTINENTAL -> 30,
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 50)
+        MEDIUM_HAUL_DOMESTIC -> 0,
+        LONG_HAUL_DOMESTIC -> 0,
+        SHORT_HAUL_INTERNATIONAL -> 0,
+        MEDIUM_HAUL_INTERNATIONAL -> 0,
+        LONG_HAUL_INTERNATIONAL -> 0,
+        SHORT_HAUL_INTERCONTINENTAL -> 0,
+        MEDIUM_HAUL_INTERCONTINENTAL -> 0,
+        LONG_HAUL_INTERCONTINENTAL -> 0,
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 0)
 
 
       val multiplyFactorLookup = Map(
-        SHORT_HAUL_DOMESTIC -> 2,
-        MEDIUM_HAUL_DOMESTIC -> 2,
+        SHORT_HAUL_DOMESTIC -> 1,
+        MEDIUM_HAUL_DOMESTIC -> 1,
         LONG_HAUL_DOMESTIC -> 2,
         SHORT_HAUL_INTERNATIONAL -> 2,
-        MEDIUM_HAUL_INTERNATIONAL -> 2,
-        LONG_HAUL_INTERNATIONAL -> 2,
-        SHORT_HAUL_INTERCONTINENTAL -> 3,
-        MEDIUM_HAUL_INTERCONTINENTAL -> 3,
-        LONG_HAUL_INTERCONTINENTAL -> 4,
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 4)
+        MEDIUM_HAUL_INTERNATIONAL -> 4,
+        LONG_HAUL_INTERNATIONAL -> 8,
+        SHORT_HAUL_INTERCONTINENTAL -> 2,
+        MEDIUM_HAUL_INTERCONTINENTAL -> 4,
+        LONG_HAUL_INTERCONTINENTAL -> 8,
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 12)
 
 
       val lookup = FlightType.values.toList.map { flightType =>
         val basic = basicLookup(flightType)
         val multiplyFactor = multiplyFactorLookup(flightType)
-        val staffPerFrequency = 2.0 / 5 * multiplyFactor
-        val staffPer900Pax = 1 * multiplyFactor
+        val staffPerFrequency = multiplyFactor
+        val staffPer900Pax = multiplyFactor
         (flightType, StaffSchemeBreakdown(basic, staffPerFrequency, staffPer900Pax))
       }.toMap
 

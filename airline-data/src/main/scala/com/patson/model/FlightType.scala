@@ -11,9 +11,9 @@ object FlightType extends Enumeration {
     }
 
     val label = (flightType : FlightType.Value) => flightType match {
-        case SHORT_HAUL_DOMESTIC => "Short-haul Domestic"
-        case MEDIUM_HAUL_DOMESTIC => "Medium-haul Domestic"
-        case LONG_HAUL_DOMESTIC => "Long-haul Domestic"
+        case SHORT_HAUL_DOMESTIC => "Short-haul Domestic / Pseudo-Domestic"
+        case MEDIUM_HAUL_DOMESTIC => "Medium-haul Domestic / Pseudo-Domestic"
+        case LONG_HAUL_DOMESTIC => "Long-haul Domestic / Pseudo-Domestic"
         case SHORT_HAUL_INTERNATIONAL => "Short-haul International"
         case MEDIUM_HAUL_INTERNATIONAL => "Medium-haul International"
         case LONG_HAUL_INTERNATIONAL => "Long-haul International"

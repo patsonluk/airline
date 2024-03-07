@@ -98,15 +98,18 @@ object Computation {
     Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   }
 
+  def getRelationship(fromAirport : Airport, toAirport : Airport) : Int = {
+    val countryRelationships = CountrySource.getCountryMutualRelationships()
+    countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
+  }
+
   def getFlightType(fromAirport : Airport, toAirport : Airport) : FlightType.Value = {
-    getFlightType(fromAirport, toAirport, calculateDistance(fromAirport, toAirport))
+    getFlightType(fromAirport, toAirport, calculateDistance(fromAirport, toAirport), getRelationship(fromAirport, toAirport))
   }
   
-  def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int) = { 
-//    val distance = distanceOption.getOrElse(Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt)
-    
+  def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int, relationship: Int = 0) = {
     import FlightType._
-    if (fromAirport.countryCode == toAirport.countryCode) { //domestic
+    if (relationship == 5) { //domestic
       if (distance <= 1000) {
         SHORT_HAUL_DOMESTIC
       } else if (distance <= 3000) {
@@ -127,7 +130,7 @@ object Computation {
         SHORT_HAUL_INTERCONTINENTAL
       } else if (distance <= 5000) {
         MEDIUM_HAUL_INTERCONTINENTAL
-      } else if (distance <= 12000) {
+      } else if (distance <= 9000) {
         LONG_HAUL_INTERCONTINENTAL
       } else {
         ULTRA_LONG_HAUL_INTERCONTINENTAL
@@ -137,10 +140,10 @@ object Computation {
   
 
   /**
-   * Returns a normalized income level, should be greater than 0
+   * Returns income level, should be greater than 0
    */
   def getIncomeLevel(income : Int) : Double = {
-    val incomeLevel = (Math.log(income.toDouble / 500) / Math.log(1.1))
+    val incomeLevel = income.toDouble / 1000
     if (incomeLevel < 1) {
       1
     } else {
@@ -148,7 +151,7 @@ object Computation {
     }
   }
   def fromIncomeLevel(incomeLevel : Double) : Int = {
-    (Math.pow(Math.E, incomeLevel * Math.log(1.1)) * 500).toInt
+    (incomeLevel * 1000).toInt
   }
 
   def computeIncomeLevelBoostFromPercentage(baseIncome : Int, minIncomeBoost : Int, boostPercentage : Int) = {

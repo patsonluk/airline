@@ -41,9 +41,9 @@ object GeoDataGenerator extends App {
 
   def mainFlow() {
     val incomeInfo = getIncomeInfo()
-    val getCityFuture = getCity(incomeInfo)
+//    val getCityFuture = getCity(incomeInfo) //delete?
 
-    var cities = AdditionalLoader.loadAdditionalCities(incomeInfo)
+    val cities = AdditionalLoader.loadAdditionalCities(incomeInfo)
 
     //make sure cities are saved first as we need the id for airport info
     try {
@@ -314,13 +314,13 @@ object GeoDataGenerator extends App {
         potentialAirports(0)._1.addCityServed(city, 1)
       } else if (potentialAirports.size > 1) {
         //val sortedAirports = potentialAirports.sortBy(_._2).sortBy(- _._1.size)
-        val dominateAirportSize : Int = potentialAirports.filter(_._2 <= 75).map(_._1).reduceLeftOption { (largestAirport, airport) =>
+        val dominateAirportSize : Int = potentialAirports.filter(_._2 <= 125).map(_._1).reduceLeftOption { (largestAirport, airport) =>
           if (largestAirport.size < airport.size) airport else largestAirport
         }.fold(0)(_.size)
 
         val validAirports = if (dominateAirportSize >= 6) {
           potentialAirports.filter(_._1.size >= 3)
-        } else potentialAirports //there's a super airport within 75km, then other airports can only get some share if it's size >= 3
+        } else potentialAirports //there's a super airport within 125km, then other airports can only get some share if it's size >= 3
 
         val airportWeights = validAirports.foldRight(List[(Airport, Int)]()) {
           case (Tuple2(airport, distance), airportWeightList) =>

@@ -7,8 +7,53 @@ import scala.collection.mutable.Map
 
 object CountryMutualRelationshipGenerator extends App {
   lazy val AFFILIATIONS = List(
-    Affiliation("EU", 2, List(
-      "BE", "GR", "LT", "PT", "BG", "ES", "LU", "RO", "CZ", "FR", "HU", "SI", "DK", "HR", "MT", "SK", "DE", "IT", "NL", "FI", "EE", "CY", "AT", "SE", "IE", "LV", "PL"
+    Affiliation("EU and allies", 4, List(
+      "TR", "BA", "AL", "ME", "IE", "RO", "BG", "CY", "AT", "BE", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HR", "HU", "IS", "IT", "LT", "LU", "MT", "NL", "PL", "PT", "SI", "SK", "ES", "SE", "CH"
+    )),
+    Affiliation("Schengen", 5, List(
+      "AT", "BE", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HR", "HU", "IS", "IT", "LT", "LU", "MT", "NL", "PL", "PT", "SI", "SK", "ES", "SE", "CH"
+    )),
+    Affiliation("France", 5, List(
+      "FR", "GF", "GP", "MF", "MQ", "RE", "NC", "PF", "PM", "BL"
+    )),
+    Affiliation("GB", 5, List(
+      "GB", "IM", "TC", "KY", "BM", "FK", "GG", "GI", "SH", "VG", "MS", "AI"
+    )),
+    Affiliation("Denmark", 5, List(
+      "DK", "GL", "FO"
+    )),
+    Affiliation("Netherlands", 5, List(
+      "NL", "AW", "BQ", "CW", "SX"
+    )),
+    Affiliation("US Anglo Caribbean", 4, List(
+      "US", "PR", "VI", "VG", "BS", "TC", "KY", "AI"
+    )),
+    Affiliation("US", 5, List(
+      "US", "MP", "PR", "VI", "GU", "AS", "MH", "FM"
+    )),
+    Affiliation("Pacific Islands Air Services Agreement", 5, List(
+      "CK", "NR", "NU", "WS", "TO", "VU"
+    )),
+    Affiliation("Anzac SAM", 5, List(
+      "AU", "NZ", "NF", "CK", "NU"
+    )),
+    Affiliation("Arab Free Trade Area", 3, List(
+      "SA", "EG", "BH", "QA", "AE", "KW", "JO", "LB", "OM", "SD", "IQ", "LY", "MA", "TN"
+    )),
+    Affiliation("EAC", 4, List(
+      "KE", "UG", "SS", "RW", "BI", "TZ"
+    )),
+    Affiliation("ECCAS", 2, List(
+      "AO", "BI", "CM", "TD", "CD", "GQ", "GA", "CG", "RW", "ST"
+    )),
+    Affiliation("SADC", 5, List(
+      "ZA", "BW", "SZ", "LS", "NA"
+    )),
+    Affiliation("Andean", 4, List(
+      "BO", "CO", "PE", "EC"
+    )),
+    Affiliation("ASEAN", 3, List(
+      "BN", "KH", "ID", "LA", "MY", "PH", "SG", "TH", "VN"
     ))
   )
 
