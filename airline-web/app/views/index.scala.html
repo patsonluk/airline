@@ -65,7 +65,7 @@
 	<script src='@routes.Assets.versioned("javascripts/lazysizes/lazysizes.min.js")' async></script>
 
 	<script src='@routes.Assets.versioned("javascripts/main.js")'></script>
-	<script src='@routes.Assets.versioned("javascripts/airport.js")'></script>
+	<script defer src='@routes.Assets.versioned("javascripts/airport.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/airport-asset.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/airplane.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/model-configuration.js")'></script>
@@ -1090,23 +1090,23 @@
 									<h4>Airport Rating</h4>
 									<div class="table" style="width: 100%">
 										<div class="table-row">
-											<div class="label" style="width: 25%"><h5>Airport:</h5></div>
+											<div class="label" style="width: 25%">Rating:</div>
 											<div class="value economicRating rating" style="width: 75%"></div>
 										</div>
 										<div class="table-row">
-											<div class="label" style="width: 25%"><h5>Country:</h5></div>
+											<div class="label" style="width: 25%">Country:</div>
 											<div class="value countryRating rating" style="width: 75%"></div>
 										</div>
 										<div class="table-row">
-											<div class="label" style="width: 25%"><h5>Competition:</h5></div>
+											<div class="label" style="width: 25%">Competition:</div>
 											<div class="value competitionRating rating" style="width: 75%"></div>
 										</div>
 										<div class="table-row">
-											<div class="label" style="width: 25%"><h5>Charms:</h5></div>
+											<div class="label" style="width: 25%">Charms:</div>
 											<div class="value airportFeatures" style="width: 75%"></div>
 										</div>
 										<div class="table-row">
-											<div class="label" style="width: 25%"><h5>Difficulty:</h5></div>
+											<div class="label" style="width: 25%">Difficulty:</div>
 											<div class="value difficulty rating" style="width: 75%"></div>
 										</div>
 									</div>
@@ -1222,47 +1222,67 @@
 							</div>
 						</div>
 						<div id="airportDetails" class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
-							<h4>Airport Details</h4>
+							<h4><span id="airportDetailsName">Airport Details</span> | <i class="airportCityName"></i>, <i class="airportCountryName"></i></h4>
 							<div class="table verticalGroup" style="float: left">
 								<div class="table-row">
-									<div class="label" style="width:50%;"><h5>Airport:</h5></div>
-									<div class="value" id="airportDetailsName" style="width:50%;"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>City:</h5></div>
-									<div class="value" id="airportDetailsCity"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Airport scale:</h5></div>
-									<div class="value" id="airportDetailsSize"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Population Coverage:</h5></div>
+									<div class="label">Population Coverage:</h5></div>
 									<div class="value" id="airportDetailsPopulation"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Average income level:</h5></div>
+									<div class="label">Percent middle income:</div>
+									<div class="value">
+										<span id="airportDetailsPopMiddleIncome"></span>
+										<div class="tooltip">
+											<img src='@routes.Assets.versioned("images/icons/information.png")'>
+											<span class="tooltiptext alignLeft" style="width: 400px;">
+												<p>In-game, the very poor do not take flights. Highly populous airports with large middle classes will have the most outgoing passengers.</p>
+												<p>Additionally, airports with higher incomes will have more outgoing demand for premium seats.</p>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="table-row">
+									<div class="label"><span class="airportCityName">Airport</span> elite population:</div>
+									<div class="value" id="airportDetailsPopElite"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">GDP per capita, normalized:</div>
 									<div class="value" id="airportDetailsIncomeLevel"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>IATA/ICAO:</h5></div>
-									<div class="value"><span id="airportDetailsIata"></span>&nbsp;/&nbsp;<span id="airportDetailsIcao"></span></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Country:</h5></div>
-									<div class="value"><span id="airportDetailsCountry"></span>&nbsp;(<span id="airportDetailsZone"></span>)</div>
+									<div class="label"><span class="airportCountryName">Country</span> gini coefficient:</div>
+									<div class="value">
+										<span id="airportDetailsGini"></span>
+										<div class="tooltip">
+											<img src='@routes.Assets.versioned("images/icons/information.png")'>
+											<span class="tooltiptext alignLeft" style="width: 400px;">
+												<p><b>Gini coefficient</b> is a common measure of inequlaity. In-game, population, income, and inequality is applied to determine how much of each airport is low, middle, and extremely-high income.</p>
+											</span>
+										</div>
+									</div>
 								</div>
 
 								<div class="table-row">
-									<div class="label"><h5>Country market openness:</h5></div>
+									<div class="label">Airport level:</div>
+									<div class="value">
+										<span id="airportDetailsSize"></span>
+										<div class="tooltip">
+											<img src='@routes.Assets.versioned("images/icons/information.png")'>
+											<span class="tooltiptext alignLeft" style="width: 400px;">
+												<p>Larger airports with more gates, runways, and other facilities are a higher <b>Airport level</b>. Higher level airports are worth more reputation, however have higher aircraft landing fees.</p>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="table-row">
+									<div class="label">Country openness:</div>
 									<div class="value" id="airportDetailsOpenness"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Runways:</h5></div>
-									<div class="value">
-										<div class="runwayTable table data" style="width: 95%;">
-										</div>
-									</div>
+									<div class="label">Runways:</div>
+									<div class="value"></div>
+								</div>
+								<div class="table-row runwayTable table data" style="width: 95%;">
 								</div>
 							</div>
 							<div class="table verticalGroup" style="float: left;">
@@ -1472,22 +1492,24 @@
 							<div style="width: 100%; height: 100%; overflow: auto;">
 								<div id="countryTableHeader" class="table data" style="width: 100%; height: 20px; min-width: 400px;">
 									<div class="table-header">
-										<div class="cell clickable" style="width: 25%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
-										<div class="cell clickable selected" style="width: 30%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Pop Coverage</div>
-										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="incomeLevel" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Income Level</div>
-										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
+										<div class="cell clickable" style="width: 22%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
+										<div class="cell clickable selected" style="width: 22%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Pop Coverage</div>
+										<div class="cell clickable" style="width: 14%" align="right" data-sort-property="income" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">GDP per Pop</div>
+										<div class="cell clickable" style="width: 14%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
+										<div class="cell clickable" style="width: 14%" align="right" data-sort-property="gini" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Gini Coefficient</div>
 	<!--									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="baseCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Base Count</div>-->
-										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="delegatesCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Country Delegates</div>
+										<div class="cell clickable" style="width: 14%" align="right" data-sort-property="delegatesCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Country Delegates</div>
 									</div>
 								</div>
 								<div style="height:  calc(100% - 40px); width: 100%; overflow-y: auto; min-width: 400px;">
 									<div id="countryTable" class="table data" style="height: 100%; width: 100%;">
 										<div class="table-header">
-											<div class="cell" style="width: 25%; border-bottom: none;"></div>
-											<div class="cell" style="width: 30%; border-bottom: none;"></div>
-											<div class="cell" style="width: 15%; border-bottom: none;"></div>
-											<div class="cell" style="width: 15%; border-bottom: none;"></div>
-											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+											<div class="cell" style="width: 22%; border-bottom: none;"></div>
+											<div class="cell" style="width: 22%; border-bottom: none;"></div>
+											<div class="cell" style="width: 14%; border-bottom: none;"></div>
+											<div class="cell" style="width: 14%; border-bottom: none;"></div>
+											<div class="cell" style="width: 14%; border-bottom: none;"></div>
+											<div class="cell" style="width: 14%; border-bottom: none;"></div>
 										</div>
 									</div>
 								</div>
@@ -3567,13 +3589,9 @@
     	<div style="margin: 10px 0 10px 0;">
    			<div style="display: flex; flex-wrap: wrap; width: 100%">
 				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
-					<img title="Population coverage (Income Level)" src='@routes.Assets.versioned("images/icons/users.png")' style="margin-right: 5px;">
-					<span id="airportPopupPopulation"></span>&nbsp;(<span id="airportPopupIncomeLevel"></span>)
+					<img title="Population coverage" src='@routes.Assets.versioned("images/icons/users.png")' style="margin-right: 5px;">
+					<span id="airportPopupPopulation"></span>&nbsp
 				</span>
-<!--				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">-->
-<!--					<img title="Income Level" src='@routes.Assets.versioned("images/icons/moneys.png")' style="margin-right: 5px;">-->
-<!--					<span id="airportPopupIncomeLevel"></span>-->
-<!--				</span>-->
 				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
 					<img title="Airport Scale (Max Runway Length)" src='@routes.Assets.versioned("images/icons/star.png")' style="margin-right: 5px;">
 					<span id="airportPopupSize"></span>&nbsp;(<span id="airportPopupMaxRunwayLength"></span>)
@@ -3582,6 +3600,10 @@
 
 			<div style="display: flex; flex-wrap: wrap; width: 100%">
 				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+					<img title="Income Level" src='@routes.Assets.versioned("images/icons/moneys.png")' style="margin-right: 5px;">
+					<span id="airportPopupIncomeLevel"></span>
+				</span>
+				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
 					<img title="Loyalty" src='@routes.Assets.versioned("images/icons/heart.png")' style="margin-right: 5px;">
 					<span class="airportLoyalty" id="airportPopupLoyalty"></span>
 					<span class="airportLoyaltyBonus"></span>
@@ -3589,8 +3611,8 @@
 				</span>
 			</div>
 		</div>
-		<div style="width: 100%;">
-			<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()" >Plan Flight</div>
+		<div style="display: flex; flex-wrap: wrap; width: 100%">
+			<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()">Plan Flight</div>
 			<div class="button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
 			<div class="button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
 			<div class="button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
@@ -3666,6 +3688,7 @@
     	<input type="hidden" id="cityPopupId">
     	<div class="header"><span id="cityPopupName" ></span></div>
 		<div>(POP:&nbsp;<span id="cityPopupPopulation"></span>)</div>
+		 <div>(INCOME:&nbsp;<span id="cityPopupIncomeLevel"></span>)</div>
     	<div id="cityIcons">
     		<!-- <img alt="Your Headquarter" title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon"><img alt="Your Base" title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon">  -->
     	</div>

@@ -108,57 +108,83 @@ object DemandGenerator {
 
   //new demand formula
   def computeBaseDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, distance : Int ) : Int = {
-    //bell curve income 
-    val fromAirportAdjustedIncome : Double = if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) { //to make low income airport a bit stronger
-      val delta = Country.LOW_INCOME_THRESHOLD - fromAirport.income
-      Country.LOW_INCOME_THRESHOLD - delta * 0.3 //so a 0 income country will be boosted to 21000, a 10000 income country will be boosted to 24000
-    } else {
-      fromAirport.income
-    }
-    //domestic/foreign relation multiplier
-    val countryRelationMutliplier =
-        if (relationship <= -3) 0.00625 //at war
-        else if (relationship == -2) 0.0125
-        else if (relationship == -1) 0.025
-        else if (relationship == 0) 0.05
-        else if (relationship == 1) 0.1
-        else if (relationship == 2) 0.2
-        else if (relationship == 3) 0.4
-        else if (relationship == 4) 0.8
-        else 1 // domestic or eighth-freedom
+    //roughly adjusting for PPP, ignoring some top countries where nominal ~= PPP
+//    val normalizedIncome = if (!Set("LU", "IS", "BM", "QA", "FK", "GI", "CK", "AU", "US", "CA", "MO").contains(fromAirport.countryCode)) {
+//      fromAirport.income + 4000
+//    } else {
+//      fromAirport.income
+//    }
+//    val iata = fromAirport.iata
+//    import java.text.NumberFormat
+    val fromPopIncomeAdjusted = if(fromAirport.popMiddleIncome > 0) fromAirport.popMiddleIncome else 1.0
 
-    //remove income from algo??
-    //assumption: 1 domestic passenger each week from airport with 250k pop and 50k income will want to travel to an airport with 250k pop, at medium distance
-    val baseDemand: Double = countryRelationMutliplier * ( fromAirport.population / 300_000) * ( toAirport.population / 300_000 )
+    val incomeRatio = math.min(1.5, (toAirport.income.toDouble / fromAirport.income.toDouble + 1) / 2.0)
+
+    //modeling provincial travel dynamics
+    val populationRatio = if (distance < 2500 && toAirport.population > fromPopIncomeAdjusted) {
+      math.min(2.0, math.pow(toAirport.population / fromPopIncomeAdjusted.toDouble, .125))
+    } else {
+      1.0
+    }
 
     val distanceReducerExponent: Double =
-      if (distance < 350) distance.toDouble / 350
-      else if (distance > 4000) { //if long-distance or longer
-        1.0 - distance.toDouble / 22000 //divide by longest journey
+      if (distance < 350) {
+        distance.toDouble / 350
+      } else if (distance > 5000) { //about long-distance or longer
+        1.01 - distance.toDouble / 50000
+      } else if (distance > 2000) { //about medium-distance or longer
+        1.11 - distance.toDouble / 20000 //i.e 0.1, and then adding a .01 boost
       } else 1
-    
+
+    //domestic/foreign relation multiplier
+    val countryRelationMutliplier =
+      if (relationship <= -3) 0.01 //at war
+      else if (relationship == -2) 0.01
+      else if (relationship == -1) 0.025
+      else if (relationship == 0) 0.1
+      else if (relationship == 1) 0.2
+      else if (relationship == 2) 0.3
+      else if (relationship == 3) 0.4
+      else if (relationship == 4) 0.5
+      else 1.0 // domestic or eighth-freedom
+
     val specialCountryModifier =
       if (fromAirport.countryCode == "AU" || fromAirport.countryCode == "NZ") {
-        2.0 //they travel a lot
+        16.0 //they travel a lot
+      } else if (fromAirport.countryCode == "ZA" || fromAirport.countryCode == "BW" || fromAirport.countryCode == "SZ") {
+        5.0
+      } else if (toAirport.countryCode == "ID") {
+        2.0 //island nation with top10 domestic routes & big tourism destination
+      } else if (fromAirport.countryCode == "KR" && toAirport.countryCode == "KR") {
+        4.0 //top 10 domestic routes
       } else if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN" && distance < 1100) {
         0.6 //China has a very extensive highspeed rail network (1100km is Beijing to Shanghai)
+      } else if (toAirport.countryCode == "IN") {
+        0.5 //toAiport pops are huge even tho > 80% aren't middle income, so cut pops by 50%
       } else if (fromAirport.countryCode == "JP" && toAirport.countryCode == "JP" && distance < 500) {
         0.4 //also interconnected by HSR / intercity rail
       } else if (fromAirport.countryCode == "ES" && toAirport.zone == "EU" && distance < 500) {
         0.4
-      } else if (fromAirport.countryCode == "FR" && toAirport.zone == "EU" && distance < 700) {
-        0.6 
-      } else if (fromAirport.countryCode == "NL" && toAirport.zone == "EU" && distance < 500) {
+      } else if (fromAirport.countryCode == "FR" && relationship == 5 && distance < 700) {
         0.5
-      } else if (fromAirport.countryCode == "BE" && toAirport.zone == "EU" && distance < 400) {
+      } else if (fromAirport.countryCode == "IT" && relationship == 5 && distance < 500) {
+        0.6
+      } else if (fromAirport.countryCode == "NL" && relationship == 5 && distance < 600) {
+        0.5
+      } else if (fromAirport.countryCode == "BE" && relationship == 5 && distance < 700) {
         0.6
       } else if (fromAirport.countryCode == "CH" && toAirport.zone == "EU" && distance < 700) {
         0.6
-      } else if (fromAirport.countryCode == "DE" && toAirport.zone == "EU" && distance < 500) {
+      } else if (fromAirport.countryCode == "DE" && relationship == 5 && distance < 600) {
         0.6
-      } else 1
+      } else 1.0
 
-    (Math.pow(baseDemand, distanceReducerExponent) * specialCountryModifier).toInt
+    val baseDemand: Double = specialCountryModifier * countryRelationMutliplier * incomeRatio * populationRatio * fromPopIncomeAdjusted * toAirport.population.toDouble / 250_000 / 250_000
+    if(baseDemand <= 1){
+      0
+    } else {
+      (Math.pow(baseDemand, distanceReducerExponent)).toInt
+    }
   }
 
   def computeClassDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, distance : Int, passengerType : PassengerType.Value, baseDemand : Int ) : LinkClassValues = {
@@ -185,7 +211,7 @@ object DemandGenerator {
     val income = fromAirport.income
 
     val firstClassPercentage : Double = 
-      if (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
+      if (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_DOMESTIC ||  flightType == MEDIUM_HAUL_INTERNATIONAL) {
         if (income <= FIRST_CLASS_INCOME_MIN) {
           internationalHubPercentBonus
         } else if (income >= FIRST_CLASS_INCOME_MAX) {
@@ -208,193 +234,194 @@ object DemandGenerator {
     val businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
     val economyClassDemand = (adjustedDemand - firstClassDemand - businessClassDemand).toInt
 
-    LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
+//    LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
+    LinkClassValues.getInstance(baseDemand, 0, 0)
   }
 
-  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {
-    val distance = Computation.calculateDistance(fromAirport, toAirport)
-    if (fromAirport == toAirport || fromAirport.population == 0 || toAirport.population == 0 || distance <= MIN_DISTANCE) {
-      LinkClassValues.getInstance(0, 0, 0)
-    } else {
-      import FlightType._
-      val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-
-      //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
-      //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
-      //we are using income level for to airport as destination income difference should have less impact on demand compared to origination airport (and income level is log(income))
-      val toAirportIncomeLevel = toAirport.incomeLevel
-
-      val lowIncomeThreshold = Country.LOW_INCOME_THRESHOLD + 10_000 //due to a bug in v2, we need to increase this a bit to avoid demand collapse in low income countries
-
-      val fromAirportAdjustedIncome : Double = if (fromAirport.income > Country.HIGH_INCOME_THRESHOLD) { //to make high income airport a little bit less overpowered
-        Country.HIGH_INCOME_THRESHOLD + (fromAirport.income - Country.HIGH_INCOME_THRESHOLD) / 3
-      } else if (fromAirport.income < lowIncomeThreshold) { //to make low income airport a bit stronger
-        val delta = lowIncomeThreshold - fromAirport.income
-        lowIncomeThreshold - delta * 0.3 //so a 0 income country will be boosted to 21000, a 10000 income country will be boosted to 24000
-      } else {
-        fromAirport.income
-      }
-        
-      val fromAirportAdjustedPower =
-	if (fromAirport.population > 50000) fromAirportAdjustedIncome * fromAirport.population
-	else fromAirportAdjustedIncome * 50000
-
-      val ADJUST_FACTOR = 0.35
-
-      val population_adjusted = 
-	if (toAirport.population.doubleValue > 50000) toAirport.population.doubleValue
-	else 50000
-	    
-      var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (population_adjusted / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
-      case PassengerType.BUSINESS => 6
-      case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
-      }) * ADJUST_FACTOR
-      
-      if (fromAirport.countryCode != toAirport.countryCode) {
-        //baseDemand = baseDemand *
-        val mutliplier = 
-            if (relationship <= -3) 0 
-            else if (relationship == -2) 0.1
-            else if (relationship == -1) 0.2
-            else if (relationship == 0) 0.5
-            else if (relationship == 1) 0.8
-            else if (relationship == 2) 1
-            else if (relationship == 3) 1.5
-            else 2 // >= 4
-        baseDemand = baseDemand * mutliplier
-      }
-          
-      
-      
-      var adjustedDemand = baseDemand
-      
-      //bonus for domestic and short-haul flight
-      adjustedDemand += baseDemand * (flightType match {
-        case SHORT_HAUL_DOMESTIC => 7.0
-        case MEDIUM_HAUL_DOMESTIC => 9.0
-        case LONG_HAUL_DOMESTIC => 7.0
-        case SHORT_HAUL_INTERNATIONAL => 1.5
-        case MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
-        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => -1.1
-        case LONG_HAUL_INTERCONTINENTAL => -1.4
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -2.5
-      })
-      
-      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
-      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
-        adjustedDemand += baseDemand * (((fromAirport.incomeLevel - 25).toDouble / 10) * 2)
-      }
-      
-      //adjustments : these zones do not have good ground transport
-      if (fromAirport.zone == toAirport.zone) {
-        if (fromAirport.zone == "AF") {
-          adjustedDemand +=  baseDemand * 2
-        } else if (fromAirport.zone == "SA") {
-          adjustedDemand +=  baseDemand * 1
-        } else if (fromAirport.zone == "NA") {
-          adjustedDemand += baseDemand * 0.5
-        }
-      }
-
-      //they travel a lot
-      if (fromAirport.countryCode == "AU" || fromAirport.countryCode == "NZ") {
-        adjustedDemand += baseDemand * 1
-      }
-      
-      //adjustments : China has very extensive highspeed rail network (1100km is Beijing to Shanghai)
-      if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN" && distance < 1100) {
-        adjustedDemand *= 0.6
-      }
-      //also interconnected by HSR / intercity rail
-      if (fromAirport.countryCode == "FR" || fromAirport.countryCode == "LU" || fromAirport.countryCode == "BE" || fromAirport.countryCode == "NL" || fromAirport.countryCode == "CH"){
-        if (toAirport.countryCode == "FR" || toAirport.countryCode == "LU" || toAirport.countryCode == "BE" || toAirport.countryCode == "NL" || toAirport.countryCode == "CH"){
-          adjustedDemand *= 0.3
-        }        
-      }
-      if (fromAirport.countryCode == "DE" || fromAirport.countryCode == "AT" || fromAirport.countryCode == "CZ" || fromAirport.countryCode == "NL" || fromAirport.countryCode == "CH"){
-        if (toAirport.countryCode == "DE" || toAirport.countryCode == "AT" || toAirport.countryCode == "CZ" || toAirport.countryCode == "NL" || toAirport.countryCode == "CH"){
-          adjustedDemand *= 0.5
-        }        
-      }
-      if (fromAirport.countryCode == "IT" && toAirport.countryCode == "IT" && distance < 500) {
-        adjustedDemand *= 0.2
-      }
-      if (fromAirport.countryCode == "ES" && toAirport.countryCode == "ES" && distance < 500) {
-        adjustedDemand *= 0.2
-      }
-      if (fromAirport.countryCode == "JP" && toAirport.countryCode == "JP" && distance < 500) {
-        adjustedDemand *= 0.4
-      }
-
-      //adjust by features
-      fromAirport.getFeatures().foreach { feature =>
-        val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, relationship)
-        adjustedDemand += adjustment
-      }
-      toAirport.getFeatures().foreach { feature => 
-        val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType, relationship)
-        adjustedDemand += adjustment
-      }
-    	    
-      //adjustments : diminished demand for short routes (290 so LGA-BOS works haha)
-      if (adjustedDemand >= 75 && distance < 290) {
-        adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.6)
-      }
-      if (adjustedDemand >= 75 && distance < 150) {
-        adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.3)
-      }
-
-      if( adjustedDemand < 0) {
-        adjustedDemand = 0
-      }
-      
-      //compute demand composition. depends on from airport income
-      val income = fromAirport.income
-
-      val firstClassPercentage : Double = 
-        if (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
-          if (income <= FIRST_CLASS_INCOME_MIN) {
-            0 
-          } else if (income >= FIRST_CLASS_INCOME_MAX) {
-            FIRST_CLASS_PERCENTAGE_MAX(passengerType) 
-          } else { 
-            FIRST_CLASS_PERCENTAGE_MAX(passengerType) * (income - FIRST_CLASS_INCOME_MIN) / (FIRST_CLASS_INCOME_MAX - FIRST_CLASS_INCOME_MIN)
-          }
-        } else {
-         0 
-        }
-      val businessClassPercentage : Double =
-        if (income <= BUSINESS_CLASS_INCOME_MIN) {
-          0 
-        } else if (income >= BUSINESS_CLASS_INCOME_MAX) {
-          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) 
-        } else { 
-          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * (income - BUSINESS_CLASS_INCOME_MIN) / (BUSINESS_CLASS_INCOME_MAX - BUSINESS_CLASS_INCOME_MIN)
-        }
-      var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
-      var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
-      val economyClassDemand = (adjustedDemand - firstClassDemand - businessClassDemand).toInt
-      
-      //add extra business and first class demand from lounge for major airports
-      if (fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) { 
-        firstClassDemand = (firstClassDemand * 2.5).toInt
-        businessClassDemand = (businessClassDemand * 2.5).toInt
-      }
-
-      //add extra business and first class for all high population airports to international features
-      //adding later to get around income calculation
-      if (fromAirport.population >= 500000 && distance > 250) { 
-        toAirport.getFeatures().foreach { feature =>
-          if( feature.featureType == AirportFeatureType.INTERNATIONAL_HUB ) {
-            firstClassDemand += (fromAirport.population / 500000 * feature.strengthFactor).toInt
-            businessClassDemand += (fromAirport.population / 200000 * feature.strengthFactor).toInt
-          }
-        }
-      }
-      
-      LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
-    }
-  }
+//  def computeDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, passengerType : PassengerType.Value) : LinkClassValues = {
+//    val distance = Computation.calculateDistance(fromAirport, toAirport)
+//    if (fromAirport == toAirport || fromAirport.population == 0 || toAirport.population == 0 || distance <= MIN_DISTANCE) {
+//      LinkClassValues.getInstance(0, 0, 0)
+//    } else {
+//      import FlightType._
+//      val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
+//
+//      //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
+//      //             0.3 passenger in same condition for sightseeing (very low as it should be mainly driven by feature)
+//      //we are using income level for to airport as destination income difference should have less impact on demand compared to origination airport (and income level is log(income))
+//      val toAirportIncomeLevel = toAirport.incomeLevel
+//
+//      val lowIncomeThreshold = Country.LOW_INCOME_THRESHOLD + 10_000 //due to a bug in v2, we need to increase this a bit to avoid demand collapse in low income countries
+//
+//      val fromAirportAdjustedIncome : Double = if (fromAirport.income > Country.HIGH_INCOME_THRESHOLD) { //to make high income airport a little bit less overpowered
+//        Country.HIGH_INCOME_THRESHOLD + (fromAirport.income - Country.HIGH_INCOME_THRESHOLD) / 3
+//      } else if (fromAirport.income < lowIncomeThreshold) { //to make low income airport a bit stronger
+//        val delta = lowIncomeThreshold - fromAirport.income
+//        lowIncomeThreshold - delta * 0.3 //so a 0 income country will be boosted to 21000, a 10000 income country will be boosted to 24000
+//      } else {
+//        fromAirport.income
+//      }
+//
+//      val fromAirportAdjustedPower =
+//	if (fromAirport.population > 50000) fromAirportAdjustedIncome * fromAirport.population
+//	else fromAirportAdjustedIncome * 50000
+//
+//      val ADJUST_FACTOR = 0.35
+//
+//      val population_adjusted =
+//	if (toAirport.population.doubleValue > 50000) toAirport.population.doubleValue
+//	else 50000
+//
+//      var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (population_adjusted / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
+//      case PassengerType.BUSINESS => 6
+//      case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
+//      }) * ADJUST_FACTOR
+//
+//      if (fromAirport.countryCode != toAirport.countryCode) {
+//        //baseDemand = baseDemand *
+//        val mutliplier =
+//            if (relationship <= -3) 0
+//            else if (relationship == -2) 0.1
+//            else if (relationship == -1) 0.2
+//            else if (relationship == 0) 0.5
+//            else if (relationship == 1) 0.8
+//            else if (relationship == 2) 1
+//            else if (relationship == 3) 1.5
+//            else 2 // >= 4
+//        baseDemand = baseDemand * mutliplier
+//      }
+//
+//
+//
+//      var adjustedDemand = baseDemand
+//
+//      //bonus for domestic and short-haul flight
+//      adjustedDemand += baseDemand * (flightType match {
+//        case SHORT_HAUL_DOMESTIC => 7.0
+//        case MEDIUM_HAUL_DOMESTIC => 9.0
+//        case LONG_HAUL_DOMESTIC => 7.0
+//        case SHORT_HAUL_INTERNATIONAL => 1.5
+//        case MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 0
+//        case LONG_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => -1.1
+//        case LONG_HAUL_INTERCONTINENTAL => -1.4
+//        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -2.5
+//      })
+//
+//      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
+//      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
+//        adjustedDemand += baseDemand * (((fromAirport.incomeLevel - 25).toDouble / 10) * 2)
+//      }
+//
+//      //adjustments : these zones do not have good ground transport
+//      if (fromAirport.zone == toAirport.zone) {
+//        if (fromAirport.zone == "AF") {
+//          adjustedDemand +=  baseDemand * 2
+//        } else if (fromAirport.zone == "SA") {
+//          adjustedDemand +=  baseDemand * 1
+//        } else if (fromAirport.zone == "NA") {
+//          adjustedDemand += baseDemand * 0.5
+//        }
+//      }
+//
+//      //they travel a lot
+//      if (fromAirport.countryCode == "AU" || fromAirport.countryCode == "NZ") {
+//        adjustedDemand += baseDemand * 1
+//      }
+//
+//      //adjustments : China has very extensive highspeed rail network (1100km is Beijing to Shanghai)
+//      if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN" && distance < 1100) {
+//        adjustedDemand *= 0.6
+//      }
+//      //also interconnected by HSR / intercity rail
+//      if (fromAirport.countryCode == "FR" || fromAirport.countryCode == "LU" || fromAirport.countryCode == "BE" || fromAirport.countryCode == "NL" || fromAirport.countryCode == "CH"){
+//        if (toAirport.countryCode == "FR" || toAirport.countryCode == "LU" || toAirport.countryCode == "BE" || toAirport.countryCode == "NL" || toAirport.countryCode == "CH"){
+//          adjustedDemand *= 0.3
+//        }
+//      }
+//      if (fromAirport.countryCode == "DE" || fromAirport.countryCode == "AT" || fromAirport.countryCode == "CZ" || fromAirport.countryCode == "NL" || fromAirport.countryCode == "CH"){
+//        if (toAirport.countryCode == "DE" || toAirport.countryCode == "AT" || toAirport.countryCode == "CZ" || toAirport.countryCode == "NL" || toAirport.countryCode == "CH"){
+//          adjustedDemand *= 0.5
+//        }
+//      }
+//      if (fromAirport.countryCode == "IT" && toAirport.countryCode == "IT" && distance < 500) {
+//        adjustedDemand *= 0.2
+//      }
+//      if (fromAirport.countryCode == "ES" && toAirport.countryCode == "ES" && distance < 500) {
+//        adjustedDemand *= 0.2
+//      }
+//      if (fromAirport.countryCode == "JP" && toAirport.countryCode == "JP" && distance < 500) {
+//        adjustedDemand *= 0.4
+//      }
+//
+//      //adjust by features
+//      fromAirport.getFeatures().foreach { feature =>
+//        val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, relationship)
+//        adjustedDemand += adjustment
+//      }
+//      toAirport.getFeatures().foreach { feature =>
+//        val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType, relationship)
+//        adjustedDemand += adjustment
+//      }
+//
+//      //adjustments : diminished demand for short routes (290 so LGA-BOS works haha)
+//      if (adjustedDemand >= 75 && distance < 290) {
+//        adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.6)
+//      }
+//      if (adjustedDemand >= 75 && distance < 150) {
+//        adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.3)
+//      }
+//
+//      if( adjustedDemand < 0) {
+//        adjustedDemand = 0
+//      }
+//
+//      //compute demand composition. depends on from airport income
+//      val income = fromAirport.income
+//
+//      val firstClassPercentage : Double =
+//        if (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
+//          if (income <= FIRST_CLASS_INCOME_MIN) {
+//            0
+//          } else if (income >= FIRST_CLASS_INCOME_MAX) {
+//            FIRST_CLASS_PERCENTAGE_MAX(passengerType)
+//          } else {
+//            FIRST_CLASS_PERCENTAGE_MAX(passengerType) * (income - FIRST_CLASS_INCOME_MIN) / (FIRST_CLASS_INCOME_MAX - FIRST_CLASS_INCOME_MIN)
+//          }
+//        } else {
+//         0
+//        }
+//      val businessClassPercentage : Double =
+//        if (income <= BUSINESS_CLASS_INCOME_MIN) {
+//          0
+//        } else if (income >= BUSINESS_CLASS_INCOME_MAX) {
+//          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType)
+//        } else {
+//          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * (income - BUSINESS_CLASS_INCOME_MIN) / (BUSINESS_CLASS_INCOME_MAX - BUSINESS_CLASS_INCOME_MIN)
+//        }
+//      var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
+//      var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
+//      val economyClassDemand = (adjustedDemand - firstClassDemand - businessClassDemand).toInt
+//
+//      //add extra business and first class demand from lounge for major airports
+//      if (fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT) {
+//        firstClassDemand = (firstClassDemand * 2.5).toInt
+//        businessClassDemand = (businessClassDemand * 2.5).toInt
+//      }
+//
+//      //add extra business and first class for all high population airports to international features
+//      //adding later to get around income calculation
+//      if (fromAirport.population >= 500000 && distance > 250) {
+//        toAirport.getFeatures().foreach { feature =>
+//          if( feature.featureType == AirportFeatureType.INTERNATIONAL_HUB ) {
+//            firstClassDemand += (fromAirport.population / 500000 * feature.strengthFactor).toInt
+//            businessClassDemand += (fromAirport.population / 200000 * feature.strengthFactor).toInt
+//          }
+//        }
+//      }
+//
+//      LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
+//    }
+//  }
 
   def generateEventDemand(cycle : Int, airports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])] = {
     val eventDemand = ListBuffer[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
@@ -439,7 +466,9 @@ object DemandGenerator {
         val toAirport = olympicsAirport
         val distance = Computation.calculateDistance(fromAirport, toAirport)
         val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-        val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
+//        val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
+        val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, relationship, distance)
+        val computedDemand = computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.OLYMPICS, (demand * 0.3).toInt)
           if (computedDemand.total > 0) {
           unscaledDemandsOfThisFromAirport.append((toAirport, (PassengerType.OLYMPICS, computedDemand)))
         }

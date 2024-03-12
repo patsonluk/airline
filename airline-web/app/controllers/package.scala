@@ -445,8 +445,9 @@ package object controllers {
         "countryCode" -> country.countryCode,
         "name" -> country.name,
         "airportPopulation" -> country.airportPopulation,
-        "incomeLevel" -> Computation.getIncomeLevel(country.income).toInt,
-        "openness" ->  country.openness
+        "income" -> country.income,
+        "openness" ->  country.openness,
+        "gini" ->  country.gini
       )
     }
   }
@@ -460,6 +461,7 @@ package object controllers {
         "airportPopulation" -> country.airportPopulation,
         "incomeLevel" -> Computation.getIncomeLevel(country.income).toInt,
         "openness" ->  country.openness,
+        "gini" ->  country.gini,
         "mutualRelationship" -> mutualRelationship
       )
     }
@@ -500,7 +502,7 @@ package object controllers {
 
   implicit object CityWrites extends Writes[City] {
     def writes(city: City): JsValue = {
-      val incomeLevel = Computation.getIncomeLevel(city.income).toInt
+//      val incomeLevel = Computation.getIncomeLevel(city.income).toInt
       JsObject(List(
         "id" -> JsNumber(city.id),
         "name" -> JsString(city.name),
@@ -508,7 +510,7 @@ package object controllers {
         "longitude" -> JsNumber(city.longitude),
         "countryCode" -> JsString(city.countryCode),
         "population" -> JsNumber(city.population),
-        "incomeLevel" -> JsNumber(incomeLevel)))
+        "incomeLevel" -> JsNumber(city.income)))
     }
   }
 
@@ -529,9 +531,11 @@ package object controllers {
     }
 
     def writes(airport: Airport): JsValue = {
-      //      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
-      //        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)
-      //      }
+      val popElite = if (airport.popElite.toString.length <= 2) {
+        airport.popElite.toString.take(1) + "0" * (airport.popElite.toString.length - 1)
+      } else {
+        airport.popElite.toString.take(2) + "0" * (airport.popElite.toString.length - 2)
+      }
 
       var airportObject = JsObject(List(
         "id" -> JsNumber(airport.id),
@@ -545,9 +549,11 @@ package object controllers {
         "longitude" -> JsNumber(airport.longitude),
         "countryCode" -> JsString(airport.countryCode),
         "population" -> JsNumber(airport.population),
+        "popElite" -> JsString(popElite),
+        "popMiddleIncome" -> JsNumber(BigDecimal(airport.popMiddleIncome / airport.population.toDouble * 100).setScale(1, RoundingMode.HALF_EVEN).toDouble),
         "radius" -> JsNumber(airport.airportRadius),
         "zone" -> JsString(airport.zone),
-        "incomeLevel" -> JsNumber(airport.incomeLevel.toInt)))
+        "incomeLevel" -> JsNumber(airport.income.toInt)))
 
 
       if (airport.isAirlineAppealsInitialized) {

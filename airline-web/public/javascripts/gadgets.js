@@ -399,8 +399,8 @@ function scrollToRow($matchingRow, $container) {
 /*
 Get a span with value and a tool tip of breakdown
 */
-function getBoostSpan(finalValue, boosts, $tooltip) {
-    var $valueSpan = $('<span>' + commaSeparateNumber(finalValue) + '</span>')
+function getBoostSpan(finalValue, boosts, $tooltip, prepend = "") {
+    var $valueSpan = $('<span>' + prepend + commaSeparateNumber(finalValue) + '</span>')
     if (boosts) {
         $valueSpan.css('color', '#41A14D')
         $tooltip.find('.table .table-row').remove()

@@ -146,12 +146,11 @@ object PassengerSimulation {
 
        println("Available links: " + availableLinks.length)
 
-//       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
-//       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
+      //og AC at 4, 5, 6
        val iterationCount =
-        if (consumptionCycleCount < 3) 4
-        else if (consumptionCycleCount < 6) 5
-        else 6
+        if (consumptionCycleCount < 3) 3
+        else if (consumptionCycleCount < 6) 4
+        else 5
       val allRoutesMap = mutable.HashMap[PassengerGroup, Map[Airport, Route]]()
 
        //start consuming routes

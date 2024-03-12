@@ -13,7 +13,7 @@ import scala.jdk.CollectionConverters._
 
 import AirportFeatureType._
 
-case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, baseIncome : Int, basePopulation : Long, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
+case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, baseIncome : Int, basePopulation : Long, popMiddleIncome : Int, popElite : Int, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
   var shouldLoadCities = false
   lazy val citiesServed = loadCitiesServed()
   private[this] val airlineBaseAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals
@@ -66,17 +66,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
 
   lazy val populationBoost = boostFactorsByType.get(AirportBoostType.POPULATION).map(_._2).sum.toInt
-//  lazy val populationBoostFactors : Map[String, Int] = {
-//    (assetBoostFactors.getOrElse(AirportBoostType.POPULATION, List.empty).map {
-//      case (asset, boost) => (asset.name, boost.value.toInt)
-//    }
-//     ++ airlineBases.values.flatMap { airlineBase =>
-//      airlineBase.specializations.filter(_ == POWERHOUSE).map { spec =>
-//        val description = s"${airlineBase.airline.name} Powerhouse"
-//        (description, spec.asInstanceOf[PowerhouseSpecialization].populationBoost)
-//      }
-//    }).toMap
-//  }
   val boostFactorsByType :  LoadingCache[AirportBoostType.Value, List[(String, Double)]]  = CacheBuilder.newBuilder.build(new BoostFactorsLoader())
 
   class BoostFactorsLoader extends CacheLoader[AirportBoostType.Value, List[(String, Double)]] {
@@ -105,8 +94,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
 
   lazy val population = basePopulation + populationBoost
-  lazy val power = income * population
-  val basePower = baseIncome * basePopulation
+  lazy val power = income * population.toLong
+  val basePower = baseIncome * basePopulation.toLong
 
 
   lazy val features : List[AirportFeature] = computeFeatures()
@@ -416,25 +405,25 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   def slotFee(airplaneModel : Model, airline : Airline) : Int = {
     val baseSlotFee = size match {
-      case 1 => 10 //small
-      case 2 => 20 
-      case 3 => 40
-      case 4 => 80 
-      case 5 => 160
-      case 6 => 320
-      case 7 => 640
-      case _ => 800 //mega
+      case 1 => 1 //small airport
+      case 2 => 5
+      case 3 => 25
+      case 4 => 75
+      case 5 => 150
+      case 6 => 300
+      case 7 => 600
+      case _ => 900 //mega
     }
 
     import Model.Type._
     val multiplier = airplaneModel.airplaneType match {
       case LIGHT => 1
       case SMALL => 1
-      case REGIONAL => 2
-      case MEDIUM => 4
-      case LARGE => 8
-      case X_LARGE => 16
-      case JUMBO => 32
+      case REGIONAL => 3
+      case MEDIUM => 6
+      case LARGE => 12
+      case X_LARGE => 24
+      case JUMBO => 36
       case SUPERSONIC => 16
     }
 
@@ -475,6 +464,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     country.get
   }
 
+  //airport range
   lazy val airportRadius : Int = {
     size match {
       case 1 => 200
@@ -563,14 +553,13 @@ object Airport {
   val qualityExpectationFlightTypeAdjust =
   Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
         SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
-        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 5, 15),
         MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 5, 15),
-        MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 5, 15),
-        MEDIUM_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(0, 5, 15),
-        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 5, 15),
-        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 10, 20),
-        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20),
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20))
+        MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 10, 15),
+        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 10, 15),
+        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(10, 15, 20),
+        ULTRA_LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 15, 20),
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20)
+  )
 }
 
 case class Runway(length : Int, code : String, runwayType : RunwayType.Value, lighted : Boolean)

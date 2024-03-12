@@ -12,9 +12,9 @@ case class AirportRating(economicPowerRating : Int, competitionRating : Int, cou
     feature.featureType match {
       case INTERNATIONAL_HUB => feature.strength.toDouble / 3
       case FINANCIAL_HUB => feature.strength.toDouble / 5
-      case VACATION_HUB => feature.strength.toDouble  / 12
+      case VACATION_HUB => feature.strength.toDouble  / 10
       case ISOLATED_TOWN => feature.strength.toDouble  / 2
-      case GATEWAY_AIRPORT => 1
+      case GATEWAY_AIRPORT => 3
       case _ => 0
     }
   }.sum

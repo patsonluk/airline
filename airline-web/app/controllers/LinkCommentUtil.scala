@@ -254,7 +254,7 @@ object LinkComment {
     val random = Random.nextInt(3)
     import FlightType._
     val comment = flightType match {
-      case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL =>
+      case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL =>
         if (rawQuality <= 20 && qualityDelta < -10) {
           if (random == 0) {
             Some("Not even a cup of water was provided!")
@@ -322,7 +322,7 @@ object LinkComment {
     val random = Random.nextInt(3)
     import FlightType._
     val comment = flightType match {
-      case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL =>
+      case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL =>
         if (serviceQuality <= 20 && qualityDelta < 0) {
           if (random == 0) {
             Some("The flight attendants were unprofessional!")

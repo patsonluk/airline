@@ -256,6 +256,8 @@ object AirportSource {
           resultSet.getInt("airport_size"),
           resultSet.getInt("income"),
           resultSet.getLong("population"),
+          resultSet.getInt("pop_middle_income"),
+          resultSet.getInt("pop_elite"),
           runwayLength = resultSet.getInt("runway_length"))
         airport.id = resultSet.getInt("id")
         airportData += airport
@@ -609,7 +611,7 @@ object AirportSource {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, zone, airport_size, income, population, runway_length)  VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, zone, airport_size, income, population, pop_middle_income, pop_elite, runway_length)  VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
     
       connection.setAutoCommit(false)
       airports.foreach { 
@@ -625,7 +627,9 @@ object AirportSource {
           preparedStatement.setInt(9, airport.size)
           preparedStatement.setLong(10, airport.baseIncome)
           preparedStatement.setLong(11, airport.basePopulation)
-          preparedStatement.setInt(12, airport.runwayLength)
+          preparedStatement.setInt(12, airport.popMiddleIncome)
+          preparedStatement.setInt(13, airport.popElite)
+          preparedStatement.setInt(14, airport.runwayLength)
           
           preparedStatement.executeUpdate()
           val generatedKeys = preparedStatement.getGeneratedKeys
@@ -678,7 +682,7 @@ object AirportSource {
     val connection = Meta.getConnection()
 
     try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, income = ?, population = ?, name = ?, city = ?, runway_length = ?  WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, income = ?, population = ?, pop_middle_income = ?, pop_elite = ?, name = ?, city = ?, runway_length = ?  WHERE id = ?")
 
       connection.setAutoCommit(false)
 
@@ -688,6 +692,8 @@ object AirportSource {
           preparedStatement.setInt(1, airport.size)
           preparedStatement.setInt(2, airport.baseIncome)
           preparedStatement.setLong(3, airport.basePopulation)
+          preparedStatement.setInt(4, airport.popMiddleIncome)
+          preparedStatement.setInt(5, airport.popElite)
           preparedStatement.setString(6, airport.name)
           preparedStatement.setString(7, airport.city)
           preparedStatement.setInt(8, airport.runwayLength)
@@ -763,7 +769,7 @@ object AirportSource {
     val connection = Meta.getConnection()
 
     try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, income = ?, population = ?, runway_length = ?  WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, income = ?, population = ?, pop_middle_income = ?, pop_elite = ?, runway_length = ?  WHERE id = ?")
 
       connection.setAutoCommit(false)
 
@@ -774,8 +780,9 @@ object AirportSource {
             preparedStatement.setInt(1, airport.size)
             preparedStatement.setLong(2, airport.baseIncome)
             preparedStatement.setLong(3, airport.basePopulation)
-            preparedStatement.setInt(4, airport.runwayLength)
-            preparedStatement.setInt(5, airport.id)
+            preparedStatement.setInt(4, airport.popMiddleIncome)
+            preparedStatement.setInt(5, airport.runwayLength)
+            preparedStatement.setInt(6, airport.id)
 
             preparedStatement.addBatch()
             //preparedStatement.executeUpdate()

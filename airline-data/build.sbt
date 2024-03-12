@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-remote" % "2.5.26",
   "com.typesafe.akka" %% "akka-testkit" % "2.5.26" % Test,
   "com.typesafe.play"          %%  "play-json" % "2.7.4",
+  "org.apache.commons" % "commons-math3" % "3.6.1",
   "com.mchange" % "c3p0" % "0.9.5.5",
   "com.google.guava" % "guava" % "22.0")
 

@@ -77,21 +77,25 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    var row = $("<div class='table-row'><div class='cell'>-</div><div class='cell'>-</div><div class='cell'>-</div></div>")
 	}
 	
-	$("#airportDetailsCity").text(airport.city)
+	$(".airportCityName").text(airport.city)
     $("#airportDetailsSize").text(airport.size)
 
     var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, $('#populationDetailsTooltip'))
     $("#airportDetailsPopulation").html($populationSpan)
 
-    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, $('#incomeDetailsTooltip'))
+    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, $('#incomeDetailsTooltip'), "$")
     $("#airportDetailsIncomeLevel").html($incomeLevelSpan)
+    $("#airportDetailsGini").html(loadedCountriesByCode[airport.countryCode].gini)
+    $("#airportDetailsPopMiddleIncome").html(airport.popMiddleIncome + "%")
+    $("#airportDetailsPopElite").html("~" + Number(airport.popElite).toLocaleString())
 
-	$("#airportDetailsCountry").text(loadedCountriesByCode[airport.countryCode].name)
+	$(".airportCountryName").text(loadedCountriesByCode[airport.countryCode].name + " ")
 	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
 	if (countryFlagUrl) {
-		$("#airportDetailsCountry").append("<img src='" + countryFlagUrl + "' />")
+	    //only apply to heading
+		$("h4 .airportCountryName").append("<img src='" + countryFlagUrl + "' />")
 	}
-	$("#airportDetailsZone").text(zoneById[airport.zone])
+//	$("#airportDetailsZone").text(zoneById[airport.zone])
 	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness))
 	
 	refreshAirportExtendedDetails(airport)
@@ -915,17 +919,17 @@ function refreshAirportExtendedDetails(airport) {
             $(".airportLoyalty").text("0")
         }
 
-//        var relationshipValue = loadedCountriesByCode[airport.countryCode].mutualRelationship
-//        if (typeof relationshipValue != 'undefined') {
-//            $(".airportRelationship").text(getCountryRelationshipDescription(relationshipValue))
-//        } else {
-//            $(".airportRelationship").text('-')
-//        }
+        var relationshipValue = loadedCountriesByCode[airport.countryCode].mutualRelationship
+        if (typeof relationshipValue != 'undefined') {
+            $(".airportRelationship").text(getCountryRelationshipDescription(relationshipValue))
+        } else {
+            $(".airportRelationship").text('-')
+        }
     }
     var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, $('#populationDetailsTooltip'))
     $("#airportPopupPopulation").html($populationSpan)
 
-    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , $('#incomeDetailsTooltip'))
+    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , $('#incomeDetailsTooltip'), "$")
     $("#airportPopupIncomeLevel").html($incomeLevelSpan)
 
     $(".airportFeatures .feature").remove()
@@ -1144,7 +1148,7 @@ function updateAirportBaseMarkers(newBaseAirports, relatedFlightPaths) {
 
 function updateAirportMarkers(airline) { //set different markers for head quarter and bases
 	if (!markers) { //markers not ready yet, wait
-		setTimeout(function() { updateAirportMarkers(airline) }, 100)
+		setTimeout(function() { updateAirportMarkers(airline) }, 500)
 	} else {
 	    if (airline) {
 		    updateAirportBaseMarkers(airline.baseAirports, flightPaths)
@@ -1308,7 +1312,7 @@ function getAirportIcon(airportInfo) {
 
     if (airportInfo.isGateway) {
       icon = gatewayAirportMarkerIcon
-    } else if (airportInfo.size <= 3) {
+    } else if (airportInfo.isDomesticAirport) {
       icon = domesticAirportMarkerIcon
     } else if (airportInfo.size <= 3) {
       icon = smallAirportMarkerIcon

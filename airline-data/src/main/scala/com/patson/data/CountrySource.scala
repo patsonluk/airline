@@ -49,8 +49,10 @@ object CountrySource {
           resultSet.getString("name"),
           resultSet.getInt("airport_population"),
           resultSet.getInt("income"),
-          resultSet.getInt("openness"))
-          countryData += country
+          resultSet.getInt("openness"),
+          resultSet.getDouble("gini")
+        )
+        countryData += country
       }    
       resultSet.close()
       preparedStatement.close()
@@ -74,7 +76,7 @@ object CountrySource {
   def saveCountries(countries : List[Country]) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("INSERT INTO " + COUNTRY_TABLE + "(code, name, airport_population, income, openness) VALUES (?,?,?,?,?)")
+      val preparedStatement = connection.prepareStatement("INSERT INTO " + COUNTRY_TABLE + "(code, name, airport_population, income, openness, gini) VALUES (?,?,?,?,?,?)")
     
       connection.setAutoCommit(false)
       countries.foreach { 
@@ -84,6 +86,7 @@ object CountrySource {
           preparedStatement.setInt(3, country.airportPopulation)
           preparedStatement.setInt(4, country.income)
           preparedStatement.setInt(5, country.openness)
+          preparedStatement.setDouble(6, country.gini)
           preparedStatement.executeUpdate()
       }
       preparedStatement.close()
@@ -96,7 +99,7 @@ object CountrySource {
   def updateCountries(countries : List[Country]) = {
     val connection = Meta.getConnection()
     try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + COUNTRY_TABLE + " SET name = ?, airport_population = ?,  income = ?,  openness = ? WHERE code = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + COUNTRY_TABLE + " SET name = ?, airport_population = ?,  income = ?,  openness = ?, gini = ? WHERE code = ?")
     
       connection.setAutoCommit(false)
       countries.foreach { 
@@ -106,6 +109,7 @@ object CountrySource {
           preparedStatement.setInt(3, country.income)
           preparedStatement.setInt(4, country.openness)
           preparedStatement.setString(5, country.countryCode)
+          preparedStatement.setDouble(6, country.gini)
           preparedStatement.executeUpdate()
       }
       preparedStatement.close()

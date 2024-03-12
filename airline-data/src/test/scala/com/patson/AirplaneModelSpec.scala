@@ -43,7 +43,7 @@ class AirplaneModelSpec extends WordSpecLike with Matchers with BeforeAndAfterAl
       case LIGHT => (FlightType.SHORT_HAUL_DOMESTIC, 3)
       case SMALL => (FlightType.LONG_HAUL_DOMESTIC, 4)
       case REGIONAL => (FlightType.LONG_HAUL_INTERNATIONAL, 5)
-      case MEDIUM => (FlightType.LONG_HAUL_INTERCONTINENTAL, 7)
+      case MEDIUM => (FlightType.LONG_HAUL_INTERNATIONAL, 7)
       case LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
       case X_LARGE => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)
       case JUMBO => (FlightType.ULTRA_LONG_HAUL_INTERCONTINENTAL, 8)

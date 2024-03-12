@@ -28,7 +28,7 @@ object AdditionalLoader {
           }
         }
         //iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, var power : Long, var population : Long, var slots : Int, var id : Int = 0
-        val airport = Airport(iata = tokens(0), icao = tokens(1), name = tokens(2), latitude = tokens(3).toDouble, longitude = tokens(4).toDouble, countryCode = tokens(5), city = tokens(6), zone = tokens(7), size = tokens(8).toInt, basePopulation = 0, baseIncome = 0)
+        val airport = Airport(iata = tokens(0), icao = tokens(1), name = tokens(2), latitude = tokens(3).toDouble, longitude = tokens(4).toDouble, countryCode = tokens(5), city = tokens(6), zone = tokens(7), size = tokens(8).toInt, basePopulation = 0, popMiddleIncome = 0, popElite = 0, baseIncome = 0)
         additionalAirports += airport
       }
     }
@@ -37,20 +37,6 @@ object AdditionalLoader {
     additionalAirports.foreach(println)
     additionalAirports.toList
   }
-
-  // def loadSpecialAirportNames() : List[String] = {
-  //   val specialAirportNameSource = scala.io.Source.fromFile("special-airport-names.csv").getLines()
-  //   val specialAirportNames = ListBuffer[String]()
-  //   specialAirportNameSource.foreach { line =>
-  //     if (!line.startsWith("#")) {
-  //       val airportName = line.trim()
-  //       if (airportName.length > 0) {
-  //         specialAirportNames += airportName.toLowerCase
-  //       }
-  //     }
-  //   }
-  //   specialAirportNames.toList
-  // }
 
   def loadAdditionalCities(incomeInfo : Map[String, Int]) : List[City] = {
     val additionalCitySource = scala.io.Source.fromFile("additional-cities.csv").getLines()
@@ -66,7 +52,18 @@ object AdditionalLoader {
             token
           }
         }
-        val city = City(name = tokens(0), latitude = tokens(1).toDouble, longitude = tokens(2).toDouble, countryCode = tokens(3), population = tokens(4).toInt, income = incomeInfo.get(tokens(3)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME))
+        val city = City(
+          name = tokens(0),
+          latitude = tokens(1).toDouble,
+          longitude = tokens(2).toDouble,
+          countryCode = tokens(3),
+          population = tokens(4).toInt,
+          income = if(tokens(5).length >= 1){
+            tokens(5).toInt
+          }  else {
+            incomeInfo.get(tokens(3)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)
+          }
+        )
         additionalCities += city
       }
     }

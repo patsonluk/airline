@@ -129,7 +129,7 @@ Liechtenstein,LI,LIE,438,ISO 3166-2:LI,Europe,Western Europe,150,155
 Lithuania,LT,LTU,440,ISO 3166-2:LT,Europe,Northern Europe,150,154
 Luxembourg,LU,LUX,442,ISO 3166-2:LU,Europe,Western Europe,150,155
 Macao,MO,MAC,446,ISO 3166-2:MO,Asia,Eastern Asia,142,030
-Macedonia,MK,MKD,807,ISO 3166-2:MK,Europe,Southern Europe,150,039
+North Macedonia,MK,MKD,807,ISO 3166-2:MK,Europe,Southern Europe,150,039
 Madagascar,MG,MDG,450,ISO 3166-2:MG,Africa,Eastern Africa,002,014
 Malawi,MW,MWI,454,ISO 3166-2:MW,Africa,Eastern Africa,002,014
 Malaysia,MY,MYS,458,ISO 3166-2:MY,Asia,South-Eastern Asia,142,035

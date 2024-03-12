@@ -99,8 +99,7 @@ object Computation {
   }
 
   def getRelationship(fromAirport : Airport, toAirport : Airport) : Int = {
-    val countryRelationships = CountrySource.getCountryMutualRelationships()
-    countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
+    CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
   }
 
   def getFlightType(fromAirport : Airport, toAirport : Airport) : FlightType.Value = {
@@ -114,24 +113,18 @@ object Computation {
         SHORT_HAUL_DOMESTIC
       } else if (distance <= 3000) {
         MEDIUM_HAUL_DOMESTIC
-      } else {
+      } else if (distance <= 9000) {
         LONG_HAUL_DOMESTIC
-      }
-    } else if (fromAirport.zone == toAirport.zone) { //international but same continent
-      if (distance <= 2000) {
-        SHORT_HAUL_INTERNATIONAL
-      } else if (distance <= 4000) {
-        MEDIUM_HAUL_INTERNATIONAL
       } else {
-        LONG_HAUL_INTERNATIONAL
+        ULTRA_LONG_HAUL_DOMESTIC
       }
     } else {
-      if (distance <= 2000) {
-        SHORT_HAUL_INTERCONTINENTAL
-      } else if (distance <= 5000) {
-        MEDIUM_HAUL_INTERCONTINENTAL
+      if (distance <= 1000) {
+        SHORT_HAUL_INTERNATIONAL
+      } else if (distance <= 3000) {
+        MEDIUM_HAUL_INTERNATIONAL
       } else if (distance <= 9000) {
-        LONG_HAUL_INTERCONTINENTAL
+        LONG_HAUL_INTERNATIONAL
       } else {
         ULTRA_LONG_HAUL_INTERCONTINENTAL
       }
@@ -187,7 +180,40 @@ object Computation {
     BigDecimal(finalBoostLevel).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }
 
-  
+  import org.apache.commons.math3.distribution.{LogNormalDistribution, NormalDistribution}
+
+  def populationAboveThreshold(meanIncome: Double, population: Int, gini: Double, threshold: Int = 34000): Int = {
+//    val normalDistribution = new NormalDistribution(meanIncome, meanIncome * gini / 100)
+
+    //larger urban areas have much more inequality
+    val urbanInequalityModifier = if(population > 8000000){
+      1.9
+    } else if(population > 2000000){
+      1.7
+    } else if(population > 1000000){
+      1.5
+    } else if(population > 100000){
+      1.2
+    } else {
+      0.7
+    }
+
+    val meanLog = Math.log(meanIncome)
+    val sdLog = gini / 100 * urbanInequalityModifier
+    val logDistribution = new LogNormalDistribution(meanLog, sdLog)
+
+    val probLognormal = 1.0 - logDistribution.cumulativeProbability(threshold)
+
+
+    // Could do a normal dist + log
+//    val normalPop = math.min(population, 1000000) // First 1 million
+//    val lognormalPop = math.max(population - 1000000, 0)
+//    val probNormal = 1.0 - normalDistribution.cumulativeProbability(threshold)
+
+    // (normalPop * probNormal + lognormalPop * probLognormal).round.toInt
+    (population * probLognormal).round.toInt
+  }
+
   def getLinkCreationCost(from : Airport, to : Airport) : Int = {
     
     val baseCost = 100000 + (from.income + to.income)

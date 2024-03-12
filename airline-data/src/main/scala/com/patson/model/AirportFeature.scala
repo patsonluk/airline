@@ -19,13 +19,13 @@ abstract class AirportFeature {
   lazy val getDescription = {
     featureType match {
       case INTERNATIONAL_HUB => "International Hub - More international passengers especially premium."
-      case VACATION_HUB => "Vacation Hub - Attracts more tourists"
-      case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers"
-      case DOMESTIC_AIRPORT => "Domestic Airport – Only accepts small aircraft if flight is international"
+      case VACATION_HUB => "Vacation Hub - Attracts more tourists."
+      case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers."
+      case DOMESTIC_AIRPORT => "Domestic Discount Airport – Lower base upkeep. If flight is international, only accepts small aircraft."
       case ISOLATED_TOWN => s"Isolated Airport - Increased demand within ${this.asInstanceOf[IsolatedTownFeature].boostRange}km."
-      case GATEWAY_AIRPORT => "Gateway - More passengers with other gateway airports"
-      case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games"
-      case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games"
+      case GATEWAY_AIRPORT => "Gateway - More passengers with other gateway airports."
+      case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games."
+      case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games."
       case UNKNOWN => "Unknown"
     }
   }
@@ -57,9 +57,9 @@ sealed case class InternationalHubFeature(baseStrength : Int, boosts : List[Airp
         } else {
           0.5
         }
-      if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL) {
+      if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL ) {
         (rawDemand * (strengthFactor * 0.5) * multiplier).toInt //at MAX_STREGTH, add 1x for business traveler, 0.2x for tourists (short haul)   
-      } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
+      } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == ULTRA_LONG_HAUL_DOMESTIC || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
         (rawDemand * (strengthFactor * 1) * multiplier).toInt //at MAX_STREGTH, add 2x for business traveler, 0.4x for tourists (long haul)
       } else {
         0
@@ -81,11 +81,11 @@ sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBo
           50
         } else if (flightType == MEDIUM_HAUL_DOMESTIC) {
           75
-        } else if (flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL) {
+        } else if (flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL) {
           100
-        } else if (flightType == MEDIUM_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL) {
+        } else if (flightType == MEDIUM_HAUL_INTERNATIONAL) {
           150
-        } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_INTERCONTINENTAL) {
+        } else if (flightType == LONG_HAUL_INTERNATIONAL) {
           500
         } else {
           // i.e. ULTRA_LONG_HAUL_INTERCONTINENTAL
@@ -120,7 +120,7 @@ sealed case class DomesticAirportFeature() extends AirportFeature {
   def strength = 0
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     if (FlightType.getCategory(flightType) == FlightCategory.DOMESTIC) {
-      rawDemand / 2
+      rawDemand / 4
     } else {
        (-1 * rawDemand / 2).toInt
     }
@@ -147,8 +147,7 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
 
         if (base >= 1) {
           val distanceMultiplier = {
-            if (flightType ==  FlightType.SHORT_HAUL_INTERCONTINENTAL
-              || flightType == FlightType.SHORT_HAUL_INTERNATIONAL) {
+            if (flightType == FlightType.SHORT_HAUL_INTERNATIONAL) {
               4
             } else if (flightType ==  FlightType.MEDIUM_HAUL_INTERNATIONAL) {
               2.5
@@ -169,7 +168,7 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
 
 object IsolatedTownFeature {
   val HUB_RANGE_BRACKETS = Array(300, 600, 1200, 2400) //if pop not within X km
-  val ISOLATED_COUNTRIES = Array("FO", "BS", "KY", "TC", "VC", "GD", "DM", "AG", "MS", "BQ", "BL", "MF", "SX", "AI", "VI", "VG") //always add 1 level, because island countries
+  val ISOLATED_COUNTRIES = Array("FO", "BS", "KY", "TC", "VC", "GD", "DM", "AG", "MS", "BQ", "BL", "MF", "SX", "AI", "VI", "VG", "MU", "MV", "CC", "CK") //always add 1 level, because island countries
 }
 
 sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {

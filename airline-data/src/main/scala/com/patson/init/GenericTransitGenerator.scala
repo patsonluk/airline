@@ -51,8 +51,8 @@ object GenericTransitGenerator {
       }
 
       airportsInRange.foreach { case (targetAirport, distance) =>
-        val domesticAirportBonus = if(targetAirport.isGateway() || airport.isGateway()){
-          30000
+        val domesticAirportBonus = if(targetAirport.isDomesticAirport() || airport.isDomesticAirport()){
+          40000
         } else {
           0
         }

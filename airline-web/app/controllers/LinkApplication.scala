@@ -667,15 +667,15 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         }.toMap
         val modelsWithinRangeAndRelationship = modelsWithinRange.filter(model => model.purchasableWithRelationship(countryRelations(model.countryCode).relationship))
 
-        val modelsForCustoms = if (relationship != 5 && fromAirport.isDomesticAirport() || relationship != 5 && toAirport.isDomesticAirport()) {
-          import Model.Category._
-          modelsWithinRangeAndRelationship.filter(_.category == LIGHT)
-        } else {
-          modelsWithinRangeAndRelationship
-        }
-
         val ownedAirplanesByModel = AirplaneSource.loadAirplanesByOwner(airlineId).groupBy(_.model)
-        val availableModels = modelsForCustoms ++ ownedAirplanesByModel.keys.filter(_.range >= distance)
+        val availableModels = modelsWithinRangeAndRelationship ++ ownedAirplanesByModel.keys.filter(_.range >= distance)
+
+        val availableModelsAndCustoms = if (relationship != 5 && fromAirport.isDomesticAirport() || relationship != 5 && toAirport.isDomesticAirport()) {
+          import Model.Category._
+          availableModels.filter(_.category == LIGHT)
+        } else {
+          availableModels
+        }
 
         val airplanesAssignedToThisLink = new mutable.HashMap[Int, Int]()
 
@@ -690,7 +690,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         //available airplanes are either the ones that are already assigned to this link or have available flight minutes that is >= required minutes
         //group airplanes by model, also add Int to indicated how many frequency is this airplane currently assigned to this link
-        val availableAirplanesByModel : immutable.Map[Model, List[(Airplane, Int)]] = availableModels.map { model =>
+        val availableAirplanesByModel : immutable.Map[Model, List[(Airplane, Int)]] = availableModelsAndCustoms.map { model =>
           val ownedAirplanesOfThisModel = ownedAirplanesByModel.getOrElse(model, List.empty)
           val flightMinutesRequired = Computation.calculateFlightMinutesRequired(model, distance)
           val availableAirplanesOfThisModel = ownedAirplanesOfThisModel.filter(airplane => (airplane.home.id == fromAirportId && airplane.availableFlightMinutes >= flightMinutesRequired) || airplanesAssignedToThisLink.isDefinedAt(airplane.id))
@@ -747,14 +747,15 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //        val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
 //        val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
-        val demand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, relationship, distance)
+        val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, relationship, distance)
+        val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, relationship, distance)
 
-        val directFromAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.BUSINESS, (demand * 0.5).toInt)
-        val directToAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.BUSINESS, (demand * 0.5).toInt)
+        val directFromAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.BUSINESS, (fromDemand * 0.5).toInt)
+        val directToAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.BUSINESS, (toDemand * 0.5).toInt)
         val directBusinessDemand = directFromAirportBusinessDemand + directToAirportBusinessDemand
 
-        val directFromAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.TOURIST, (demand * 0.5).toInt)
-        val directToAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.TOURIST, (demand * 0.5).toInt)
+        val directFromAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.TOURIST, (fromDemand * 0.5).toInt)
+        val directToAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.TOURIST, (toDemand * 0.5).toInt)
         val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
         val directDemand = directBusinessDemand + directTouristDemand
