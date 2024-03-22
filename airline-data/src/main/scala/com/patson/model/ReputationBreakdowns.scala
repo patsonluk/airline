@@ -23,6 +23,10 @@ object ReputationType extends Enumeration {
     override val label = "Airport Loyalist Ranking"
   }
 
+  val LEADERBOARD_BONUS = new AbstractReputationType {
+    override val label = "Leaderboard Bonus"
+  }
+
   val ALLIANCE_BONUS = new AbstractReputationType {
     override val label = "Alliance Bonus"
   }

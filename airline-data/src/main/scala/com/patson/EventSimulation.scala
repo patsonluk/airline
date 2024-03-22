@@ -89,15 +89,16 @@ object EventSimulation {
   }
 
   val MAX_CANDIDATES_COUNT = 6
-  val CANDIDATE_MIN_SIZE = 4
-  val CANDIDATE_MIN_POPULATION = 250000
+  val CANDIDATE_MIN_SIZE = 6
+  val CANDIDATE_MIN_POPULATION = 750000
 
   def selectCandidates() : List[Airport] = {
     selectCandidates(AirportSource.loadAllAirports())
   }
 
-  val HOST_COUNTRY_COOLDOWN = 6 //should not be hosting it in the last 4 times
-  val HOST_ZONE_COOLDOWN = 2 //should not be hosting it in last 2 times
+  val PREVIOUS_CANIDATE_AIRPORTS = 4
+  val HOST_COUNTRY_COOLDOWN = 8 //should not be hosting it in the last 4 times
+  val HOST_ZONE_COOLDOWN = 3 //should not be hosting it in last 2 times
   def selectCandidates(allAirports : List[Airport]) : List[Airport] = {
     val previousOlympics = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).sortBy(_.startCycle).dropRight(1) //drop the current one
 
@@ -109,7 +110,14 @@ object EventSimulation {
       Olympics.getSelectedAirport(olympics.id).map(_.zone)
     }.flatten
 
-    val randomizedAirports = Random.shuffle(allAirports.filter { airport =>
+    val previousCanidateAirports: List[Airport] = previousOlympics.takeRight(3).map(_.asInstanceOf[Olympics]).map { olympics =>
+      Olympics.getCandidates(olympics.id).filter { airport =>
+        !cooldownCountries.contains(airport.countryCode) &&
+        !cooldownZones.contains(airport.zone)
+      }
+    }.flatten.takeRight(PREVIOUS_CANIDATE_AIRPORTS)
+
+    val randomizedAirports: List[Airport] = previousCanidateAirports ++ Random.shuffle(allAirports.filter { airport =>
       airport.size >= CANDIDATE_MIN_SIZE &&
       airport.population >= CANDIDATE_MIN_POPULATION &&
       !cooldownCountries.contains(airport.countryCode) &&
@@ -131,7 +139,9 @@ object EventSimulation {
 
   val AFFECT_RADIUS = 80 //80km
   def simulateOlympicsAffectedAirport(principalAirport : Airport): List[Airport] = {
-    Computation.getDomesticAirportWithinRange(principalAirport, AFFECT_RADIUS)
+    Computation.getDomesticAirportWithinRange(principalAirport, AFFECT_RADIUS).filter {
+      _.population > 0
+    }
   }
 
   def simulateOlympicsVoteRounds(olympics: Olympics) : List[OlympicsVoteRound] = {
@@ -181,7 +191,7 @@ object EventSimulation {
   }
 
   val BASE_PASSENGER_GOAL = 2000
-  val GOAL_BASE_FACTOR = 0.90 //90% of the max possible pax?
+  val GOAL_BASE_FACTOR = 0.85 //85% of the max possible pax?
   def simulateOlympicsPassengerGoals(olympics: Olympics) = {
     val allLinkStats = LinkStatisticsSource.loadLinkStatisticsByCriteria(List.empty)
     val passengersByAirline: MapView[Airline, Int] = allLinkStats.groupBy(_.key.airline).view.mapValues(_.map(_.passengers).sum)

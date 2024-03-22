@@ -38,33 +38,33 @@ function updateRankingTable(rankingType, rankings) {
 	//locate which table
 	var rankingTable;
 	if (rankingType == "PASSENGER") {
-		rankingTable = $('#passengerRank')
-	} else if (rankingType == "PASSENGER_MILE") {
-		rankingTable = $('#passengerMileRank')
-	} else if (rankingType == "REPUTATION") {
+        rankingTable = $('#passengerRank')
+    } else if (rankingType == "PASSENGER_MILE") {
+        rankingTable = $('#passengerMileRank')
+    } else if (rankingType == "PASSENGER_QUALITY") {
+        rankingTable = $('#passengerMileQualityRank')
+    } else if (rankingType == "LINK_DISTANCE") {
+        rankingTable = $('#linkDistanceRank')
+	} else if (rankingType == "PASSENGER_SATISFACTION") {
+          rankingTable = $('#satisfactionRank')
+    } else if (rankingType == "REPUTATION") {
 		rankingTable = $('#reputationRank')
 	} else if (rankingType == "SERVICE_QUALITY") {
 		rankingTable = $('#serviceQualityRank')
 	} else if (rankingType == "LINK_COUNT") {
 		rankingTable = $('#linkCountRank')
+	} else if (rankingType == "LINK_FREQUENCY") {
+		rankingTable = $('#linkFrequency')
 	} else if (rankingType == "LINK_PROFIT") {
 		rankingTable = $('#linkProfitRank')
+    } else if (rankingType == "UNIQUE_IATA") {
+        rankingTable = $('#uniqueIataRank')
+    } else if (rankingType == "UNIQUE_COUNTRIES") {
+        rankingTable = $('#uniqueCountriesRank')
 	} else if (rankingType == "LOUNGE") {
 		rankingTable = $('#loungeRank')
 	} else if (rankingType == "AIRPORT") {
 		rankingTable = $('#airportRank')
-	} else if (rankingType == "PASSENGER_AS") {
-		rankingTable = $('#passengerRankAs')
-	} else if (rankingType == "PASSENGER_AF") {
-		rankingTable = $('#passengerRankAf')
-	} else if (rankingType == "PASSENGER_OC") {
-		rankingTable = $('#passengerRankOc')
-	} else if (rankingType == "PASSENGER_EU") {
-		rankingTable = $('#passengerRankEu')
-	} else if (rankingType == "PASSENGER_NA") {
-		rankingTable = $('#passengerRankNa')
-	} else if (rankingType == "PASSENGER_SA") {
-		rankingTable = $('#passengerRankSa')
 	} else {
 		console.log("Unknown ranking type " + rankingType)
 	}
@@ -106,8 +106,10 @@ function getRankingRow(ranking) {
 		row.append("<div class='cell'>" + entry + "</div>")
 	}
 	row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(ranking.rankedValue) + "</div>")
-	
-	
+	if (ranking.reputationPrize || ranking.reputationPrize === 0){
+    	row.append("<div class='cell' style='text-align: right;'>" + getRankingImg(ranking.rank, true) + " " + commaSeparateNumber(ranking.reputationPrize) + "</div>")
+	}
+
 	return row
 }
 
@@ -117,7 +119,8 @@ function getDividerRow() {
 	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
 	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
 	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
-	
+	row.append("<div class='cell' style='border-top: 1px solid #6093e7; padding: 0;'></div>")
+
 	return row
 }
 

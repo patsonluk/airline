@@ -12,6 +12,7 @@ import com.patson.model.oil.OilPrice
 import com.patson.model.oil.OilInventoryPolicy
 import com.patson.model.oil.OilConsumptionHistory
 import com.patson.model.oil.OilConsumptionType
+import com.patson.model.RankingLeaderboards
 import com.patson.util.{AirportChampionInfo, ChampionUtil, CountryChampionInfo}
 
 object AirlineSimulation {
@@ -60,6 +61,14 @@ object AirlineSimulation {
     val alliances = AllianceSource.loadAllAlliances()
     val allianceByAirlineId :scala.collection.immutable.Map[Int, Alliance] = alliances.flatMap { alliance => (alliance.members.filter(_.role != AllianceRole.APPLICANT).map(member => (member.airline.id, alliance))) }.toMap
     val allianceRankings = Alliance.getRankings(alliances)
+
+    val rankings :scala.collection.immutable.Map[RankingType.Value, List[Ranking]] = RankingLeaderboards.getRankings()
+    val rankingsByAirlineId :scala.collection.immutable.Map[Int, Double] = rankings.values.flatten.groupBy(_.key.asInstanceOf[Int]).map {
+     case (key, rankings) =>
+      val totalReputationPrize = rankings.flatMap(_.reputationPrize).sum
+      (key, totalReputationPrize)
+    }
+//    println(rankingsByAirlineId)
 
     val fuelContractsByAirlineId = OilSource.loadAllOilContracts().groupBy(contract => contract.airline.id)
     val fuelInventoryPolicyByAirlineId = OilSource.loadAllOilInventoryPolicies.map(policy => (policy.airline.id, policy)).toMap
@@ -153,7 +162,7 @@ object AirlineSimulation {
             case None => None
           }
           val staffCapacity = base.getOfficeStaffCapacity
-          val compensationOfThisBase = base.getOvertimeCompensation(staffRequired)
+          val compensationOfThisBase = if(airline.isGenerated) 0 else base.getOvertimeCompensation(staffRequired)
           if (compensationOfThisBase > 0) {
             println(s"${airline.name} Overtime compensation $compensationOfThisBase : capacity $staffCapacity ; required $staffRequired")
           }
@@ -332,12 +341,12 @@ object AirlineSimulation {
 
         //update reputation
         val reputationBreakdowns = ListBuffer[ReputationBreakdown]()
+
         val reputationByPassengers = flightLinkResultByAirline.get(airline.id) match {
           case Some(linkConsumptions) =>
             val totalPassengerKilometers = linkConsumptions.foldLeft(0L) { (foldLong, linkConsumption) =>
               foldLong + linkConsumption.link.soldSeats.total * linkConsumption.link.distance
             }
-
             //https://en.wikipedia.org/wiki/World%27s_largest_airlines
             val reputation = Math.log(totalPassengerKilometers / 50000) * 30
             if (reputation > Airline.MAX_REPUTATION_BY_PASSENGERS) {
@@ -352,12 +361,6 @@ object AirlineSimulation {
         }
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.FLIGHT_PASSENGERS, reputationByPassengers))
 
-//        champions.get(airline).foreach { //if this airline championed anything
-//          _.foreach { championInfo =>
-//              targetReputation = targetReputation + championInfo.reputationBoost
-//          }
-//        }
-
         val reputationByAirportChampions = airportChampionsByAirlineId.get(airline.id) match {
           case Some(airportChampions) => airportChampions.map(_.reputationBoost).sum
           case None => 0
@@ -371,8 +374,10 @@ object AirlineSimulation {
           }
           case None => 0.0
         }
-
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.ALLIANCE_BONUS, reputationBonusFromAlliance))
+
+        val reputationBonusFromLeaderboards: Double = rankingsByAirlineId.getOrElse(airline.id, 0)
+        reputationBreakdowns.append(ReputationBreakdown(ReputationType.LEADERBOARD_BONUS, reputationBonusFromLeaderboards))
 
         val finalBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
         AirlineSource.updateReputationBreakdowns(airline.id, finalBreakdowns)
@@ -405,7 +410,7 @@ object AirlineSimulation {
         }
 
 
-        println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
+//        println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
     }
     
     AirlineSource.saveAirlinesInfo(allAirlines)

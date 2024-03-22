@@ -2597,119 +2597,114 @@
 
 
 				<div id="rankingCanvas" class="canvas" style="display: none; padding-bottom: 30px;">
-					<div style="float: left;" class="verticalGroup">
-						<div class="table data section" id="passengerRank" style="width: 95%">
+					<style type="text/css">
+						//.rankingTable {min-width: 520px}
+					</style>
+					<div style="display: grid;grid-gap: 10px;grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));">
+						<div class="table data section rankingTable" id="passengerMileRank">
 							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Movement</div>
-								<div class="cell" style="width: 50%">Airline</div>
-								<div class="cell" style="width: 30%" align="right">Weekly Passenger</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Largest Airline by Passenger mile</div>
+								<div class="cell" style="width: 27%" align="right">Pax miles</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section" id="linkProfitRank" style="width: 95%">
+						<div class="table data section" id="satisfactionRank">
 							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Movement</div>
-								<div class="cell" style="width: 50%">Airline</div>
-								<div class="cell" style="width: 30%" align="right">Route Weekly Profit</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Airline with Happiest Customers</div>
+								<div class="cell" style="width: 27%" align="right">SF per pax km</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section" id="airportRank" style="width: 95%">
+						<div class="table data section rankingTable" id="passengerMileQualityRank">
 							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Movement</div>
-								<div class="cell" style="width: 50%">Airport</div>
-								<div class="cell" style="width: 30%" align="right">Total Weekly Passengers</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Highest Quality Average Flight Service</div>
+								<div class="cell" style="width: 27%" align="right">Quality per pax km</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-	<!--          			<div class="table data section" id="passengerRankAs" style="width: 95%"> -->
-	<!-- 	  	  				<div class="table-header"> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Rank</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Movement</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 50%">Airline</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger (Asia)</div> -->
-	<!-- 						</div> -->
-	<!--          			</div> -->
-	<!--          			<div class="table data section" id="passengerRankEu" style="width: 95%"> -->
-	<!-- 	  	  				<div class="table-header"> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Rank</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Movement</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 50%">Airline</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger (Europe)</div> -->
-	<!-- 						</div> -->
-	<!--          			</div> -->
-	<!--          			<div class="table data section" id="passengerRankSa" style="width: 95%"> -->
-	<!-- 	  	  				<div class="table-header"> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Rank</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Movement</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 50%">Airline</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger (South America)</div> -->
-	<!-- 						</div> -->
-	<!--          			</div> -->
-						<div class="table data section" id="linkCountRank" style="width: 95%">
+						<div class="table data section rankingTable" id="loungeRank">
 							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Movement</div>
-								<div class="cell" style="width: 50%">Airline</div>
-								<div class="cell" style="width: 30%" align="right">Total Flight Routes</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Airline with Busiest Lounge</div>
+								<div class="cell" style="width: 27%" align="right">Weekly Visitors</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-					</div>
-					<div style="float: right;" class="verticalGroup">
-						<div class="table data section" id="passengerMileRank" style="width: 95%">
+						<div class="table data section rankingTable" id="linkFrequency">
 							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Movement</div>
-								<div class="cell" style="width: 50%">Airline</div>
-								<div class="cell" style="width: 30%" align="right">Weekly Passenger Miles</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Highest Frequency Route per Airline</div>
+								<div class="cell" style="width: 27%" align="right">Frequency</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section" id="reputationRank" style="width: 95%">
+						<div class="table data section rankingTable" id="linkProfitRank">
 							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Movement</div>
-								<div class="cell" style="width: 50%">Airline</div>
-								<div class="cell" style="width: 30%" align="right">Airline Reputation</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Most Profitable Route per Airline</div>
+								<div class="cell" style="width: 27%" align="right">Weekly Profit</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section" id="loungeRank" style="width: 95%">
+						<div class="table data section" id="linkDistanceRank">
 							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Movement</div>
-								<div class="cell" style="width: 50%">Airline</div>
-								<div class="cell" style="width: 30%" align="right">Weekly Lounge Visitors</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Longest Route per Airline <small>With more than 200 sold seats</small></div>
+								<div class="cell" style="width: 27%" align="right">Distance</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-	<!--          			<div class="table data section" id="passengerRankNa" style="width: 95%"> -->
-	<!-- 	  	  				<div class="table-header"> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Rank</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Movement</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 50%">Airline</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger (North America)</div> -->
-	<!-- 						</div> -->
-	<!--          			</div> -->
-	<!--          			<div class="table data section" id="passengerRankOc" style="width: 95%"> -->
-	<!-- 	  	  				<div class="table-header"> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Rank</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Movement</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 50%">Airline</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger (Oceania)</div> -->
-	<!-- 						</div> -->
-	<!--          			</div> -->
-	<!--          			<div class="table data section" id="passengerRankAf" style="width: 95%"> -->
-	<!-- 	  	  				<div class="table-header"> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Rank</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 10%">Movement</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 50%">Airline</div> -->
-	<!-- 	 	  					<div class="cell" style="width: 30%" align="right">Weekly Passenger (Africa)</div> -->
-	<!-- 						</div> -->
-	<!--          			</div> -->
-						<div class="table data section" id="serviceQualityRank" style="width: 95%">
+						<div class="table data section rankingTable" id="uniqueIataRank">
 							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Movement</div>
-								<div class="cell" style="width: 50%">Airline</div>
-								<div class="cell" style="width: 30%" align="right">Service Quality</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Most Unique Destinations</div>
+								<div class="cell" style="width: 27%" align="right">Airports</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
+							</div>
+						</div>
+						<div class="table data section" id="uniqueCountriesRank">
+							<div class="table-header">
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Most Unique Countries</div>
+								<div class="cell" style="width: 27%" align="right">Countries</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
+							</div>
+						</div>
+						<div class="table data section rankingTable" id="serviceQualityRank">
+							<div class="table-header">
+								<div class="cell" style="width: 9%">Rank</div>
+								<div class="cell" style="width: 7%">Change</div>
+								<div class="cell" style="width: 60%">Airline</div>
+								<div class="cell" style="width: 24%" align="right">Service Quality</div>
+							</div>
+						</div>
+						<div class="table data section rankingTable" id="airportRank">
+							<div class="table-header">
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Busiest Airport</div>
+								<div class="cell" style="width: 34%" align="right">Weekly Enplanements</div>
+							</div>
+						</div>
+						<div class="table data section rankingTable" id="linkCountRank">
+							<div class="table-header">
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Airline with Most Routes</div>
+								<div class="cell" style="width: 27%" align="right">Routes</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
 					</div>
