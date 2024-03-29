@@ -30,7 +30,7 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
       "latitude" -> JsNumber(airport.latitude),
       "longitude" -> JsNumber(airport.longitude),
       "countryCode" -> JsString(airport.countryCode),
-      "zone" -> JsString(airport.zone)))
+      "zone" -> JsString(airport.zone.split("-")(0))))
       
     }
   }

@@ -960,6 +960,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	//$('#planLinkToAirportExpectedQuality').attr("onclick", "loadLinkExpectedQuality(" + linkInfo.fromAirportId + "," + linkInfo.toAirportId + "," + linkInfo.toAirportId + ")")
 	$('#planLinkFlightCode').text(linkInfo.flightCode)
 	$('#planLinkMutualRelationship').html(getCountryFlagImg(linkInfo.fromCountryCode) + "&nbsp;vs&nbsp;" + getCountryFlagImg(linkInfo.toCountryCode) + getCountryRelationshipDescription(linkInfo.mutualRelationship))
+	$('#planLinkAffinity').html(linkInfo.affinity)
 
 	var relationship = linkInfo.toCountryRelationship
     var relationshipSpan = getAirlineRelationshipDescriptionSpan(relationship.total)
@@ -2876,7 +2877,7 @@ function getLinkNegotiation(callback) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Not enough available delegates)'
                         $('#linkConfirmationModal .negotiationInfo .error').show();
-                    } else if (negotiationInfo.finalRequirementValue > 10) {
+                    } else if (negotiationInfo.finalRequirementValue > 11) {
                         $('#linkConfirmationModal .negotiationInfo img.info').hide();
                         difficultyTotalText += ' (Too difficult to negotiate)'
                         $('#linkConfirmationModal .negotiationInfo .error').show();

@@ -1,7 +1,7 @@
 package com.patson.init
 
 import com.patson.data.{AirportSource, CitySource, CountrySource}
-import com.patson.init.GeoDataGenerator.{CsvAirport, getIncomeInfo}
+import com.patson.init.GeoDataGenerator.{CsvAirport}
 import com.patson.model._
 
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
@@ -34,13 +34,10 @@ object AirportGeoPatcher extends App {
         case Some(savedId) => CsvAirport(rawAirport.copy(id = savedId), csvAirportId, scheduleService)
         case None => csvAirport
       }
-
     }
     val runways : Map[Int, List[Runway]] = Await.result(GeoDataGenerator.getRunway(), Duration.Inf)
 
-    val incomeInfo = getIncomeInfo()
-
-    val cities = AdditionalLoader.loadAdditionalCities(incomeInfo)
+    val cities = AdditionalLoader.loadAdditionalCities()
     //make sure cities are saved first as we need the id for airport info
     try {
       AirportSource.deleteAllAirports()

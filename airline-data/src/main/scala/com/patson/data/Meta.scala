@@ -166,7 +166,7 @@ object Meta {
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(16), airport_size INTEGER, income BIGINT, population BIGINT, pop_middle_income BIGINT, pop_elite BIGINT, runway_length SMALLINT)")
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(64), airport_size INTEGER, income BIGINT, population BIGINT, pop_middle_income BIGINT, pop_elite BIGINT, runway_length SMALLINT)")
     statement.execute()
     statement.close()
     
@@ -1533,8 +1533,8 @@ object Meta {
       "to_airport INTEGER, " +
       "from_country CHAR(2), " +
       "to_country CHAR(2), " +
-      "from_zone CHAR(2), " +
-      "to_zone CHAR(2), " +
+      "from_zone CHAR(64), " +
+      "to_zone CHAR(64), " +
       "airline INTEGER, " +
       "alliance INTEGER, " +
       "frequency SMALLINT, " +

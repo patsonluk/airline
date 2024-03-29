@@ -206,7 +206,7 @@ object Link {
         LONG_HAUL_DOMESTIC -> 5,
         ULTRA_LONG_HAUL_DOMESTIC -> 10,
         SHORT_HAUL_INTERNATIONAL -> 5,
-        MEDIUM_HAUL_INTERNATIONAL -> 5,
+        MEDIUM_HAUL_INTERNATIONAL -> 10,
         LONG_HAUL_INTERNATIONAL -> 10,
         ULTRA_LONG_HAUL_INTERCONTINENTAL -> 15)
 
@@ -219,7 +219,7 @@ object Link {
         SHORT_HAUL_INTERNATIONAL -> 2.0,
         MEDIUM_HAUL_INTERNATIONAL -> 2.5,
         LONG_HAUL_INTERNATIONAL -> 3.0,
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 3.5)
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 4.0)
 
 
       val lookup = FlightType.values.toList.map { flightType =>
@@ -235,7 +235,7 @@ object Link {
 }
 
 case class StaffBreakdown(basicStaff : Int, frequencyStaff : Double, capacityStaff : Double, modifier : Double) {
-  val total = ((basicStaff + frequencyStaff + capacityStaff) * modifier).toInt
+  val total = (math.round(basicStaff + frequencyStaff + capacityStaff) * modifier).toInt
 }
 case class StaffSchemeBreakdown(basic : Int, perFrequency : Double, per500Pax : Double)
 

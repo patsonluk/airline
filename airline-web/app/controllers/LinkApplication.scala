@@ -653,6 +653,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         var existingLink: Option[Link] = LinkSource.loadFlightLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
 
         val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+        val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
         val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
 
         val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink)
@@ -747,8 +748,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //        val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
 //        val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
-        val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, relationship, distance)
-        val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, relationship, distance)
+        val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
+        val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, distance)
 
         val directFromAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.BUSINESS, (fromDemand * 0.5).toInt)
         val directToAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.BUSINESS, (toDemand * 0.5).toInt)
@@ -793,6 +794,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "toCountryCode" -> toAirport.countryCode,
           "flightCode" -> flightCode,
           "mutualRelationship" -> relationship,
+          "affinity" -> Computation.constructAffinityText(fromAirport.zone,toAirport.zone,relationship),
           "distance" -> distance,
           "flightType" -> FlightType.label(flightType),
           "suggestedPrice" -> suggestedPrice,
@@ -1594,6 +1596,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     case PassengerType.BUSINESS => "Business"
     case PassengerType.TOURIST => "Tourist"
     case PassengerType.OLYMPICS => "Olympics"
+    case PassengerType.ELITE => "Elite"
+    case PassengerType.TRAVELER => "Traveler"
   }
 
 

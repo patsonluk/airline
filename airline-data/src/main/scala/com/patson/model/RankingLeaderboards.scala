@@ -180,7 +180,7 @@ object RankingLeaderboards {
         val airlineId = linkConsumption.link.airline.id
         val ranking = Ranking(
           RankingType.PASSENGER_MILE,
-          key = linkConsumption.link.id,
+          key = airlineId,
           entry = linkConsumption.link.asInstanceOf[Link].copy(airline = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId))),
           ranking = index + 1,
           rankedValue = linkConsumption.profit,
@@ -210,7 +210,7 @@ object RankingLeaderboards {
         val airlineId = linkConsumption.link.airline.id
         val ranking = Ranking(
           RankingType.LINK_DISTANCE,
-          key = linkConsumption.link.id,
+          key = airlineId,
           entry = linkConsumption.link.asInstanceOf[Link].copy(airline = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId))),
           ranking = index + 1,
           rankedValue = linkConsumption.link.distance,
@@ -243,7 +243,7 @@ object RankingLeaderboards {
         val airlineId = linkConsumption.link.airline.id
         val ranking = Ranking(
           RankingType.LINK_FREQUENCY,
-          key = linkConsumption.link.id,
+          key = airlineId,
           entry = linkConsumption.link.asInstanceOf[Link].copy(airline = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId))),
           ranking = prevRanking + 1,
           rankedValue = linkConsumption.link.frequency,

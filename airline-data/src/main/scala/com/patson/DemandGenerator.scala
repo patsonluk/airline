@@ -38,13 +38,17 @@ object DemandGenerator {
 	  
 	  val countryRelationships = CountrySource.getCountryMutualRelationships()
 	  airports.foreach {  fromAirport =>
+      //computer Elite destinations & demand
 	    val demandList = Collections.synchronizedList(new ArrayList[(Airport, (PassengerType.Value, LinkClassValues))]())
-//      println("Calculating demand " + fromAirport.iata)
+
       airports.par.foreach { toAirport =>
         val distance = Computation.calculateDistance(fromAirport, toAirport)
         if (fromAirport != toAirport && fromAirport.population != 0 && toAirport.population != 0 && distance >= MIN_DISTANCE) {
           val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-          val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, relationship, distance)
+          val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
+          val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
+          //return list of paxType demands
+          //add each to demandList
           val businessDemand = computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.BUSINESS, (demand * 0.5).toInt)
           val touristDemand = computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.TOURIST, (demand * 0.5).toInt)
 
@@ -107,7 +111,7 @@ object DemandGenerator {
   }
 
   //new demand formula
-  def computeBaseDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, relationship : Int, distance : Int ) : Int = {
+  def computeBaseDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, affinity : Int, distance : Int ) : Int = {
     //roughly adjusting for PPP, ignoring some top countries where nominal ~= PPP
 //    val normalizedIncome = if (!Set("LU", "IS", "BM", "QA", "FK", "GI", "CK", "AU", "US", "CA", "MO").contains(fromAirport.countryCode)) {
 //      fromAirport.income + 4000
@@ -116,7 +120,7 @@ object DemandGenerator {
 //    }
 //    val iata = fromAirport.iata
 //    import java.text.NumberFormat
-    val fromPopIncomeAdjusted = if(fromAirport.popMiddleIncome > 0) fromAirport.popMiddleIncome else 1.0
+    val fromPopIncomeAdjusted = if (fromAirport.popMiddleIncome > 0) fromAirport.popMiddleIncome else 1.0
 
     val incomeRatio = math.min(1.5, (toAirport.income.toDouble / fromAirport.income.toDouble + 1) / 2.0)
 
@@ -131,22 +135,21 @@ object DemandGenerator {
       if (distance < 350) {
         distance.toDouble / 350
       } else if (distance > 5000) { //about long-distance or longer
-        1.01 - distance.toDouble / 50000
-      } else if (distance > 2000) { //about medium-distance or longer
+        1.01 - distance.toDouble / (15000 * (affinity + 2)) //affinity affects perceived distance
+      } else if (distance > 2000) { //bit less than medium-distance
         1.11 - distance.toDouble / 20000 //i.e 0.1, and then adding a .01 boost
       } else 1
 
     //domestic/foreign relation multiplier
-    val countryRelationMutliplier =
-      if (relationship <= -3) 0.01 //at war
-      else if (relationship == -2) 0.01
-      else if (relationship == -1) 0.025
-      else if (relationship == 0) 0.1
-      else if (relationship == 1) 0.2
-      else if (relationship == 2) 0.3
-      else if (relationship == 3) 0.4
-      else if (relationship == 4) 0.5
-      else 1.0 // domestic or eighth-freedom
+    val countryRelationMutliplier : Double =
+      if (affinity == 5) 1.0 //domestic
+      else if (affinity >= 4) 0.4
+      else if (affinity == 3) 0.35
+      else if (affinity == 2) 0.3
+      else if (affinity == 1) 0.2
+      else if (affinity == 0) 0.1
+      else 0.05
+
 
     val specialCountryModifier =
       if (fromAirport.countryCode == "AU" || fromAirport.countryCode == "NZ") {
@@ -163,24 +166,16 @@ object DemandGenerator {
         0.5 //toAiport pops are huge even tho > 80% aren't middle income, so cut pops by 50%
       } else if (fromAirport.countryCode == "JP" && toAirport.countryCode == "JP" && distance < 500) {
         0.4 //also interconnected by HSR / intercity rail
-      } else if (fromAirport.countryCode == "ES" && toAirport.zone == "EU" && distance < 500) {
-        0.4
-      } else if (fromAirport.countryCode == "FR" && relationship == 5 && distance < 700) {
+      } else if (fromAirport.countryCode == "FR" && distance < 550 && toAirport.countryCode != "GB") {
+        0.3
+      } else if (fromAirport.countryCode == "IT" && distance < 500) {
         0.5
-      } else if (fromAirport.countryCode == "IT" && relationship == 5 && distance < 500) {
-        0.6
-      } else if (fromAirport.countryCode == "NL" && relationship == 5 && distance < 600) {
-        0.5
-      } else if (fromAirport.countryCode == "BE" && relationship == 5 && distance < 700) {
-        0.6
-      } else if (fromAirport.countryCode == "CH" && toAirport.zone == "EU" && distance < 700) {
-        0.6
-      } else if (fromAirport.countryCode == "DE" && relationship == 5 && distance < 600) {
+      } else if (fromAirport.zone.contains("EU") && distance < 260) {
         0.6
       } else 1.0
 
     val baseDemand: Double = specialCountryModifier * countryRelationMutliplier * incomeRatio * populationRatio * fromPopIncomeAdjusted * toAirport.population.toDouble / 250_000 / 250_000
-    if(baseDemand <= 1){
+    if (baseDemand <= 1){
       0
     } else {
       (Math.pow(baseDemand, distanceReducerExponent)).toInt
@@ -204,7 +199,7 @@ object DemandGenerator {
     
     //more business and first going to international hubs      
     val internationalHubPercentBonus = {
-      if(toAirport.hasFeature(AirportFeatureType.INTERNATIONAL_HUB)) 0.01
+      if (toAirport.hasFeature(AirportFeatureType.INTERNATIONAL_HUB)) 0.01
       else 0
     }
 
@@ -371,7 +366,7 @@ object DemandGenerator {
 //        adjustedDemand = 75 + Math.pow(adjustedDemand - 100, 0.3)
 //      }
 //
-//      if( adjustedDemand < 0) {
+//      if ( adjustedDemand < 0) {
 //        adjustedDemand = 0
 //      }
 //
@@ -412,7 +407,7 @@ object DemandGenerator {
 //      //adding later to get around income calculation
 //      if (fromAirport.population >= 500000 && distance > 250) {
 //        toAirport.getFeatures().foreach { feature =>
-//          if( feature.featureType == AirportFeatureType.INTERNATIONAL_HUB ) {
+//          if ( feature.featureType == AirportFeatureType.INTERNATIONAL_HUB ) {
 //            firstClassDemand += (fromAirport.population / 500000 * feature.strengthFactor).toInt
 //            businessClassDemand += (fromAirport.population / 200000 * feature.strengthFactor).toInt
 //          }
@@ -466,8 +461,9 @@ object DemandGenerator {
         val toAirport = olympicsAirport
         val distance = Computation.calculateDistance(fromAirport, toAirport)
         val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-//        val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
-        val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, relationship, distance)
+        val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
+        //        val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
+        val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
         val computedDemand = computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.OLYMPICS, (demand * 0.3).toInt)
           if (computedDemand.total > 0) {
           unscaledDemandsOfThisFromAirport.append((toAirport, (PassengerType.OLYMPICS, computedDemand)))
@@ -495,7 +491,14 @@ object DemandGenerator {
     scaledDemands
 
   }
-  
+
+//    def getFlightPreferencePool(homeAirport : Airport, paxType : PassengerType) : FlightPreferencePool = {
+//      val flightPreferences = ListBuffer[(FlightPreference, Int)]()
+//
+//
+//    }
+
+
   def getFlightPreferencePoolOnAirport(homeAirport : Airport) : FlightPreferencePool = {
     val flightPreferences = ListBuffer[(FlightPreference, Int)]()
     

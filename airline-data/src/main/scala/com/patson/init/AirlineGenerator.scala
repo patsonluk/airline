@@ -33,7 +33,7 @@ object AirlineGenerator extends App {
     deleteAirlines()
     generateAirlines(250)
 //    generateMegaAirlines(25)
-//    generateLocalAirlines(10)
+//    generateLocalAirlines(20)
     println("DONE Creating airlines")
 
     Await.result(actorSystem.terminate(), Duration.Inf)
@@ -86,14 +86,14 @@ object AirlineGenerator extends App {
       println(i + " generated user " + user.userName)
 
       val nearbyAirports = airports.filter(toAirport => {
-        toAirport.id != baseAirport.id && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 2 && Computation.calculateDistance(baseAirport, toAirport) > 300 && Computation.calculateDistance(baseAirport, toAirport) < 3000
+        toAirport.id != baseAirport.id && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 0 && Computation.calculateDistance(baseAirport, toAirport) > 300 && Computation.calculateDistance(baseAirport, toAirport) < 3000
       })
       val nearbyPoolSize = if(nearbyAirports.length < 300) nearbyAirports.length else 300
-      val internationalAirports = airports.filter(toAirport => {
-        toAirport.id != baseAirport.id && Computation.calculateDistance(baseAirport, toAirport) >= 3000
+      val farAwayAirports = airports.filter(toAirport => {
+        toAirport.id != baseAirport.id && Computation.calculateDistance(baseAirport, toAirport) >= 3000 && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 0
       })
-      generateLinks("domestic 15", newAirline, baseAirport, nearbyAirports, poolSize = nearbyPoolSize, 15, modelsShort, false, 40)
-      generateLinks("international 8", newAirline, baseAirport, internationalAirports, poolSize = 300, 8, modelsLong, false, 40)
+      generateLinks("near 15", newAirline, baseAirport, nearbyAirports, poolSize = nearbyPoolSize, 15, modelsShort, false, 40)
+      generateLinks("international 8", newAirline, baseAirport, farAwayAirports, poolSize = 300, 8, modelsLong, false, 40)
 
       //generate Inter-zone links
 //      generateLinks(newAirline, baseAirport, airports.filter { airport => airport.zone != baseAirport.zone }, 25, 4, modelsLong, false, 80)
@@ -120,7 +120,7 @@ object AirlineGenerator extends App {
       UserSource.saveUser(user)
       Authentication.createUserSecret("K" + baseAirport.iata, "gidding")
       
-      val newAirline = Airline("Koala Air " + baseAirport.countryCode, isGenerated = true)
+      val newAirline = Airline("MOUP " + baseAirport.countryCode, isGenerated = true)
       newAirline.setBalance(200000000)
       newAirline.setMaintenanceQuality(55)
       newAirline.setTargetServiceQuality(55)
@@ -151,7 +151,9 @@ object AirlineGenerator extends App {
 
   def generateLocalAirlines(count: Int) : Unit = {
     val airports = AirportSource.loadAllAirports(false).sortBy { _.power }
-    val topAirports = airports.takeRight(count)
+    val topAirports = airports.filter { airport =>
+      airport.countryCode == "US" || airport.countryCode == "MX"
+    }.takeRight(count)
     val models = ModelSource.loadAllModels().filter { model => 
       model.family == "Airbus A320"
     }
@@ -159,19 +161,19 @@ object AirlineGenerator extends App {
     val airportsByZone = topAirports.groupBy { _.zone }
     for (i <- 0 until count) {
       val baseAirport = topAirports(i)
-      val user = User(userName = "A" + baseAirport.iata, email = "bot", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
+      val user = User(userName = "B" + baseAirport.iata, email = "bot", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
       UserSource.saveUser(user)
-      Authentication.createUserSecret("A" + baseAirport.iata, "gidding")
+      Authentication.createUserSecret("B" + baseAirport.iata, "gidding")
       
-      val newAirline = Airline("Ajwaa Airlines " + baseAirport.countryCode, isGenerated = true)
+      val newAirline = Airline("Bark and Fly " + baseAirport.countryCode, isGenerated = true)
       newAirline.setBalance(200000000)
       newAirline.setMaintenanceQuality(55)
       newAirline.setTargetServiceQuality(55)
-      newAirline.setCurrentServiceQuality(70)
+      newAirline.setCurrentServiceQuality(65)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
       
-      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 8, 1, true)
+      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 9, 1, true)
       
       AirlineSource.saveAirlines(List(newAirline))
       
@@ -184,7 +186,7 @@ object AirlineGenerator extends App {
       println(i + " generated user " + user.userName)
                   
       //generate Local Links
-//      generateLinks(newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, 100, 37, models, false, 40)
+      generateLinks("domestic 37", newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, poolSize = 300, 37, models, false, 40)
       //generate Inter-zone links
 //      generateLinks(newAirline, baseAirport, topAirports.filter { airport => airport.zone != baseAirport.zone }, 10, 2, models, false, 60)
     }
@@ -207,7 +209,8 @@ object AirlineGenerator extends App {
       i += 1
       val distance = Computation.calculateDistance(fromAirport, toAirport)
       val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-      val targetSeats = 3 * DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, relationship, distance)
+      val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
+      val targetSeats = 3 * DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
 
       if (targetSeats > 0) {
         var pickedModel = airplaneModelsByCapacity.find { model => model.capacity * Computation.calculateMaxFrequency(model, distance) >= targetSeats && model.range >= distance} //find smallest model that can cover all demand

@@ -91,14 +91,15 @@ object EventSimulation {
   val MAX_CANDIDATES_COUNT = 6
   val CANDIDATE_MIN_SIZE = 6
   val CANDIDATE_MIN_POPULATION = 750000
+  val CANDIDATE_MIN_INCOME = 8000
 
   def selectCandidates() : List[Airport] = {
     selectCandidates(AirportSource.loadAllAirports())
   }
 
   val PREVIOUS_CANIDATE_AIRPORTS = 4
-  val HOST_COUNTRY_COOLDOWN = 8 //should not be hosting it in the last 4 times
-  val HOST_ZONE_COOLDOWN = 3 //should not be hosting it in last 2 times
+  val HOST_COUNTRY_COOLDOWN = 6 //should not be hosting it in the last 4 times
+  val HOST_ZONE_COOLDOWN = 4 //should not be hosting it in last 2 times
   def selectCandidates(allAirports : List[Airport]) : List[Airport] = {
     val previousOlympics = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).sortBy(_.startCycle).dropRight(1) //drop the current one
 
@@ -107,21 +108,22 @@ object EventSimulation {
     }.flatten
 
     val cooldownZones : List[String] = previousOlympics.takeRight(HOST_ZONE_COOLDOWN).map(_.asInstanceOf[Olympics]).map{ olympics =>
-      Olympics.getSelectedAirport(olympics.id).map(_.zone)
+      Olympics.getSelectedAirport(olympics.id).map(_.zone.split("-")(0))
     }.flatten
 
     val previousCanidateAirports: List[Airport] = previousOlympics.takeRight(3).map(_.asInstanceOf[Olympics]).map { olympics =>
       Olympics.getCandidates(olympics.id).filter { airport =>
         !cooldownCountries.contains(airport.countryCode) &&
-        !cooldownZones.contains(airport.zone)
+        !cooldownZones.contains(airport.zone.split("-")(0))
       }
     }.flatten.takeRight(PREVIOUS_CANIDATE_AIRPORTS)
 
     val randomizedAirports: List[Airport] = previousCanidateAirports ++ Random.shuffle(allAirports.filter { airport =>
       airport.size >= CANDIDATE_MIN_SIZE &&
       airport.population >= CANDIDATE_MIN_POPULATION &&
+      airport.income >= CANDIDATE_MIN_INCOME &&
       !cooldownCountries.contains(airport.countryCode) &&
-      !cooldownZones.contains(airport.zone)
+      !cooldownZones.contains(airport.zone.split("-")(0))
     })
     val candidates = ListBuffer[Airport]()
     val candidateCountryCodes = mutable.HashSet[String]()

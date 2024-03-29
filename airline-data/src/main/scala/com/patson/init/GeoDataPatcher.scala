@@ -17,10 +17,7 @@ object GeoDataPatcher extends App {
   mainFlow
   
   def mainFlow() {
-    val incomeInfo = GeoDataGenerator.getIncomeInfo()
-//    val getCityFuture = GeoDataGenerator.getCity(incomeInfo)
-    
-    val cities = AdditionalLoader.loadAdditionalCities(incomeInfo)
+    val cities = AdditionalLoader.loadAdditionalCities()
  
     println("FROM " + cities.length)
     println("TO " + cities.length)

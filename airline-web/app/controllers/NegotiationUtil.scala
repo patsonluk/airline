@@ -15,8 +15,7 @@ import scala.util.Random
 
 
 object NegotiationUtil {
-  val NEW_LINK_BASE_COST = 100
-  val MAX_ASSIGNED_DELEGATE = 10
+  val MAX_ASSIGNED_DELEGATE = 11
   val FREE_LINK_THRESHOLD = 5 //for newbie
   val FREE_LINK_FREQUENCY_THRESHOLD = 5
   val FREE_LINK_DIFFICULTY_THRESHOLD = 10
@@ -48,25 +47,19 @@ object NegotiationUtil {
   }
 
   val getFlightTypeGroup : model.FlightType.Value => FlightTypeGroup.Value = (flightType : FlightType.Value) => flightType match {
-    case SHORT_HAUL_DOMESTIC => FlightTypeGroup.GROUP_1
-    case MEDIUM_HAUL_DOMESTIC | LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL  => FlightTypeGroup.GROUP_2
+    case SHORT_HAUL_DOMESTIC | MEDIUM_HAUL_DOMESTIC => FlightTypeGroup.GROUP_1
+    case LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL  => FlightTypeGroup.GROUP_2
     case MEDIUM_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL | ULTRA_LONG_HAUL_DOMESTIC | ULTRA_LONG_HAUL_INTERCONTINENTAL => FlightTypeGroup.GROUP_3
   }
 
-//  val getLinkLimit = (base : Option[AirlineBase]) => base match {
-//    case Some(base) =>
-//      val titlesByCountryCode: Map[String, Title.Value] = CountrySource.loadCountryAirlineTitlesByCriteria(List(("airline", base.airline.id))).map(entry => (entry.country.countryCode, entry.title)).toMap
-//      base.getLinkLimit(titlesByCountryCode.get(base.countryCode))
-//    case None => 0 //should not happen
-//  }
   def getMaxFrequencyByFlightType(baseScale : Int, flightType : FlightType.Value) : Int = {
     getMaxFrequencyByGroup(baseScale, getFlightTypeGroup(flightType))
   }
 
   def getMaxFrequencyByGroup(baseScale : Int, flightTypeGroup : FlightTypeGroup.Value) : Int = {
     var maxFrequency = flightTypeGroup match {
-      case FlightTypeGroup.GROUP_1 => 4 + (baseScale * 2.5).toInt
-      case FlightTypeGroup.GROUP_2 => 5 + (baseScale * 2).toInt
+      case FlightTypeGroup.GROUP_1 => 6 + (baseScale * 2.5).toInt
+      case FlightTypeGroup.GROUP_2 => 6 + (baseScale * 2).toInt
       case FlightTypeGroup.GROUP_3 => 6 + (baseScale * 1.5).toInt
     }
     // NEGOTIATION_EXPERT bonus
@@ -82,9 +75,9 @@ object NegotiationUtil {
 
   def getRequirementMultiplier(flightType : FlightType.Value) = {
     flightType match {
-      case SHORT_HAUL_DOMESTIC => 1.5
-      case MEDIUM_HAUL_DOMESTIC | LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL  => 1.5
-      case MEDIUM_HAUL_INTERNATIONAL | LONG_HAUL_INTERNATIONAL | ULTRA_LONG_HAUL_DOMESTIC | ULTRA_LONG_HAUL_INTERCONTINENTAL => 2
+      case SHORT_HAUL_DOMESTIC | MEDIUM_HAUL_DOMESTIC => 1
+      case LONG_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERNATIONAL => 1.5
+      case LONG_HAUL_INTERNATIONAL | ULTRA_LONG_HAUL_DOMESTIC | ULTRA_LONG_HAUL_INTERCONTINENTAL => 2
     }
   }
 
@@ -168,13 +161,13 @@ object NegotiationUtil {
 
     val flightTypeMultiplier = Computation.getFlightType(newLink.from, newLink.to) match {
       case SHORT_HAUL_DOMESTIC => 1
-      case MEDIUM_HAUL_DOMESTIC => 2
-      case LONG_HAUL_DOMESTIC => 4
-      case ULTRA_LONG_HAUL_DOMESTIC => 6
-      case SHORT_HAUL_INTERNATIONAL => 2
-      case MEDIUM_HAUL_INTERNATIONAL => 4
-      case LONG_HAUL_INTERNATIONAL => 6
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 8
+      case MEDIUM_HAUL_DOMESTIC => 1
+      case LONG_HAUL_DOMESTIC => 2
+      case ULTRA_LONG_HAUL_DOMESTIC => 3
+      case SHORT_HAUL_INTERNATIONAL => 3
+      case MEDIUM_HAUL_INTERNATIONAL => 3
+      case LONG_HAUL_INTERNATIONAL => 4
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 5
     }
     val NEW_LINK_BASE_REQUIREMENT = 1
     val UPDATE_BASE_REQUIREMENT = 0.3
@@ -213,13 +206,18 @@ object NegotiationUtil {
     val airport = newLink.to
     val country = CountryCache.getCountry(airport.countryCode).get
     airline.getCountryCode().foreach { homeCountryCode =>
-      if (homeCountryCode != airport.countryCode) { //closed country are anti foreign airlines
-        var baseForeignAirline = (14 - country.openness) * 0.5
+      if (homeCountryCode != airport.countryCode) {
+        var baseForeignAirline = (12 - country.openness) * 0.5
         if (existingLinkOption.isDefined) { //cheaper if it's already established
           baseForeignAirline = baseForeignAirline * 0.5
         }
-
         requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, baseForeignAirline, "Foreign Airline"))
+      }
+      airport.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
+        case Some(_) =>
+          val gatewayCost = flightTypeMultiplier * 0.5
+          requirements.append(NegotiationRequirement(GATEWAY, gatewayCost, "Crowded Gateway Airport"))
+        case None =>
       }
     }
 
@@ -239,32 +237,19 @@ object NegotiationUtil {
       //        if (competingLinksCount >= 2) {
       //          requirements.append(NegotiationRequirement(EXISTING_COMPETITION, competingLinksCount - 2))
       //        }
-        val airport = newLink.to
-        CountryCache.getCountry(airport.countryCode).foreach { country =>
-          val flightCategory = FlightType.getCategory(newLink.flightType)
-          if (flightCategory != FlightCategory.DOMESTIC) {
-            airport.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
-              case Some(_) => //OK
-                val gatewayCost = ((14 - country.openness) * 0.15 * flightTypeMultiplier) * 0.5
-                requirements.append(NegotiationRequirement(GATEWAY, gatewayCost, "International flight gateway"))
-              case None => // no additional penalty for flight to non-gateway airport
-
-            }
-          }
-        }
     }
     requirements.toList
   }
   val getStaffRequired = (link : Link) => {
     Computation.getFlightType(link.from, link.to) match {
-      case SHORT_HAUL_DOMESTIC => 0
-      case MEDIUM_HAUL_DOMESTIC => 0
-      case LONG_HAUL_DOMESTIC => 0
-      case ULTRA_LONG_HAUL_DOMESTIC => 0
-      case SHORT_HAUL_INTERNATIONAL => 0
-      case MEDIUM_HAUL_INTERNATIONAL => 0
-      case LONG_HAUL_INTERNATIONAL => 0
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 0
+      case SHORT_HAUL_DOMESTIC => 2
+      case MEDIUM_HAUL_DOMESTIC => 2
+      case LONG_HAUL_DOMESTIC => 5
+      case ULTRA_LONG_HAUL_DOMESTIC => 10
+      case SHORT_HAUL_INTERNATIONAL => 5
+      case MEDIUM_HAUL_INTERNATIONAL => 10
+      case LONG_HAUL_INTERNATIONAL => 10
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 15
     }
   }
 
@@ -326,14 +311,6 @@ object NegotiationUtil {
     val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(airport.countryCode, airline).relationship
     if (relationship >= 0) {
       var discount = relationship * 0.01
-//        if (relationship <= 20) {
-//          relationship * 0.01
-//        } else if (relationship <= 50) {
-//          0.2 + (relationship - 20) * 0.005
-//        } else {
-//          0.35 + (relationship - 50) * 0.003
-//        }
-
       discount = Math.min(discount, 0.4)
       discounts.append(SimpleNegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     } else if (relationship < 0) { //very penalizing
@@ -404,19 +381,18 @@ object NegotiationUtil {
     val totalFromDiscount = Math.min(MAX_TOTAL_DISCOUNT, fromAirportDiscounts.map(_.value).sum)
     val totalToDiscount = Math.min(MAX_TOTAL_DISCOUNT, toAirportDiscounts.map(_.value).sum)
     val fromAirportRequirementValue = fromRequirementBase * (1 - totalFromDiscount)
-    val toAirportRequirementValue = toRequirementBase * (1 - totalToDiscount)
+    val toAirportRequirementValue = if(totalToDiscount >= 0) toRequirementBase * (1 - totalToDiscount) else toRequirementBase * totalToDiscount * -1
     val finalRequirementValue = fromAirportRequirementValue + toAirportRequirementValue
 
     //check for freebie bonus
     if (airlineLinks.length < FREE_LINK_THRESHOLD &&
       newFrequency <= FREE_LINK_FREQUENCY_THRESHOLD &&  //to prevent many small increase
-      finalRequirementValue < FREE_LINK_DIFFICULTY_THRESHOLD &&
-      FlightType.getCategory(newLink.flightType) != FlightCategory.INTERCONTINENTAL
+      finalRequirementValue < FREE_LINK_DIFFICULTY_THRESHOLD
     ) {
       return NegotiationUtil.NO_NEGOTIATION_REQUIRED.copy(remarks = Some(s"Free for first $FREE_LINK_THRESHOLD routes of freq <= $FREE_LINK_FREQUENCY_THRESHOLD (< $FREE_LINK_DIFFICULTY_THRESHOLD difficulty)"))
     }
 
-    val info = NegotiationInfo(fromAirportRequirements, toAirportRequirements, fromAirportDiscounts, toAirportDiscounts, totalFromDiscount, totalToDiscount, finalRequirementValue, computeOdds(finalRequirementValue, Math.min(MAX_ASSIGNED_DELEGATE, airline.getDelegateInfo.availableCount)))
+    val info = NegotiationInfo(fromAirportRequirements, toAirportRequirements, fromAirportDiscounts, toAirportDiscounts, totalFromDiscount, finalToDiscountValue = totalToDiscount, finalRequirementValue, computeOdds(finalRequirementValue, Math.min(MAX_ASSIGNED_DELEGATE, airline.getDelegateInfo.availableCount)))
     return info
   }
 

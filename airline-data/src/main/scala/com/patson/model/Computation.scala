@@ -53,7 +53,7 @@ object Computation {
   def calculateDuration(airplaneSpeed : Int, distance : Int) = {
     var remainDistance = distance
     var duration = 0;
-    for ((distanceBucket, maxSpeed) <- speedLimits if(remainDistance > 0)) {
+    for ((distanceBucket, maxSpeed) <- speedLimits if (remainDistance > 0)) {
       val speed = Math.min(maxSpeed, airplaneSpeed)
       if (distanceBucket >= remainDistance) {
         duration += remainDistance * 60 / speed
@@ -108,7 +108,11 @@ object Computation {
   
   def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int, relationship: Int = 0) = {
     import FlightType._
-    if (relationship == 5) { //domestic
+    //https://en.wikipedia.org/wiki/European_Common_Aviation_Area
+    //hard-coding EU home market into the computation functon, to save relation values & allow for independent relation values for demand
+    val ECAA = List("AL", "AM", "AT", "BA", "BE", "BG", "CH", "CZ", "DK", "EE", "FI", "FR", "DE", "GE", "GR", "HR", "HU", "IE", "IS", "IT", "LT", "LU", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS", "SI", "SK", "ES", "SE", "XK")
+    val ANZAC = List("AU", "NZ", "CX", "CK", "NU", "CC")
+    if (relationship == 5 || ECAA.contains(fromAirport.countryCode) && ECAA.contains(toAirport.countryCode) || ANZAC.contains(fromAirport.countryCode) && ANZAC.contains(toAirport.countryCode)){
       if (distance <= 1000) {
         SHORT_HAUL_DOMESTIC
       } else if (distance <= 3000) {
@@ -130,6 +134,39 @@ object Computation {
       }
     }
   }
+
+def calculateAffinityValue(fromZone : String, toZone : String, relationship : Int) : Int = {
+  if (relationship < 0) {
+    -1
+  } else if (relationship == 5) {
+    5
+  }  else {
+    val set1 = fromZone.split("-").filter(_!="None")
+    val set2 = toZone.split("-").filter(_!="None")
+    val affinity = set1.intersect(set2).size
+    if (relationship >= 3) {
+      affinity + 1
+    } else {
+      affinity
+    }
+  }
+}
+def constructAffinityText(fromZone : String, toZone : String, relationship : Int) : String = {
+  if (relationship == 5) {
+    "Domestic"
+  } else if (relationship < 0) {
+    "-1: Hostile"
+  } else {
+    val set1 = fromZone.split("-").filter(_!="None")
+    val set2 = toZone.split("-").filter(_!="None")
+    val matchingItems = set1.intersect(set2)
+    if (relationship >= 3) {
+      s"+${matchingItems.size + 1}: ${matchingItems.mkString(", ")}, Good Relations"
+    } else {
+      s"+${matchingItems.size}: ${matchingItems.mkString(", ")}"
+    }
+  }
+}
   
 
   /**
@@ -186,13 +223,13 @@ object Computation {
 //    val normalDistribution = new NormalDistribution(meanIncome, meanIncome * gini / 100)
 
     //larger urban areas have much more inequality
-    val urbanInequalityModifier = if(population > 8000000){
+    val urbanInequalityModifier = if (population > 8000000){
       1.9
-    } else if(population > 2000000){
+    } else if (population > 2000000){
       1.7
-    } else if(population > 1000000){
+    } else if (population > 1000000){
       1.5
-    } else if(population > 100000){
+    } else if (population > 100000){
       1.2
     } else {
       0.7

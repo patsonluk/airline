@@ -38,7 +38,7 @@ object AdditionalLoader {
     additionalAirports.toList
   }
 
-  def loadAdditionalCities(incomeInfo : Map[String, Int]) : List[City] = {
+  def loadAdditionalCities() : List[City] = {
     val additionalCitySource = scala.io.Source.fromFile("additional-cities.csv").getLines()
     val additionalCities = ListBuffer[City]()
     additionalCitySource.foreach { line =>
@@ -61,7 +61,7 @@ object AdditionalLoader {
           income = if(tokens(5).length >= 1){
             tokens(5).toInt
           }  else {
-            incomeInfo.get(tokens(3)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)
+            Country.DEFAULT_UNKNOWN_INCOME
           }
         )
         additionalCities += city

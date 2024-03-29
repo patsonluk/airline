@@ -192,22 +192,26 @@ object CountrySource {
   }
   
   def getCountryMutualRelationship(country1 : String, country2 : String) : Int = {
-     val connection = Meta.getConnection()
-     val statement = connection.prepareStatement("SELECT relationship FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + " WHERE country_1 = ? AND country_2 = ?")
-     try {
-       statement.setString(1, country1)
-       statement.setString(2, country2)
-       val result = statement.executeQuery();
-       
-       if (result.next()) {
-         result.getInt("relationship")
-       } else {
-         0
-       }
-     } finally {
-       statement.close()
-       connection.close()
-     }  
+    if(country1 == country2){
+      5
+    } else {
+      val connection = Meta.getConnection()
+      val statement = connection.prepareStatement("SELECT relationship FROM " + COUNTRY_MUTUAL_RELATIONSHIP_TABLE + " WHERE country_1 = ? AND country_2 = ?")
+      try {
+        statement.setString(1, country1)
+        statement.setString(2, country2)
+        val result = statement.executeQuery();
+
+        if (result.next()) {
+          result.getInt("relationship")
+        } else {
+          0
+        }
+      } finally {
+        statement.close()
+        connection.close()
+      }
+    }
   }
   
   def getCountryMutualRelationships() : scala.collection.immutable.Map[(String, String), Int] = {

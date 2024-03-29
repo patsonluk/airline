@@ -109,6 +109,7 @@ object AirportSizeAdjust {
         "CPT" -> 7,
         "CMN" -> 7,
         "LOS" -> 7,
+        "ADD" -> 7,
         //Oceania (force AU airports to have large range)
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Australia
         "SYD" -> 8,
@@ -205,22 +206,23 @@ object AirportSizeAdjust {
         "CJC" -> 5,
         "CCP" -> 5,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_China
+        //listing 2022 order + PVG
         "CAN" -> 8,
-        "SZX" -> 8,
-        "PVG" -> 8,
-        "PEK" -> 8,
         "CKG" -> 8,
-        "CTU" -> 8,
+        "SZX" -> 8,
         "KMG" -> 8,
+        "HGH" -> 8,
+        "PVG" -> 8,
+        "CTU" -> 7,
+        "PEK" -> 7,
         "SHA" -> 7,
-        "HGH" -> 7,
         "TFU" -> 7,
         "WUH" -> 7,
         "XIY" -> 7,
         "CSX" -> 7,
         "NKG" -> 7,
-        "XMN" -> 7,
-        "URC" -> 7,
+        "XMN" -> 6,
+        "URC" -> 6,
         "TFU" -> 6,
         "PZI" -> 3,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Colombia
