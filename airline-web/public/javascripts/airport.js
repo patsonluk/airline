@@ -96,7 +96,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 		$("h4 .airportCountryName").append("<img src='" + countryFlagUrl + "' />")
 	}
 //	$("#airportDetailsZone").text(zoneById[airport.zone])
-	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness))
+	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness, airport.size, airport.isDomesticAirport))
 	
 	refreshAirportExtendedDetails(airport)
 	//updateAirportSlots(airport.id)
@@ -666,17 +666,16 @@ function addMarkers(airports) {
 				  updateBaseInfo(this.airport.id)
 			  }
 			  $("#airportPopupName").text(this.airport.name)
+			  $("#airportPopupCustomsIcon").html(airportPopupCustomsIcon(loadedCountriesByCode[this.airport.countryCode].openness,this.airport.size,this.airport.isDomesticAirport))
 			  $("#airportPopupIata").text(this.airport.iata)
 			  $("#airportPopupCity").html(this.airport.city + "&nbsp;" + getCountryFlagImg(this.airport.countryCode))
 			  $("#airportPopupZone").text(zoneById[this.airport.zone])
 			  $("#airportPopupSize").text(this.airport.size)
 			  $("#airportPopupPopulation").text('-') //wait for extended details
 			  $("#airportPopupIncomeLevel").text('-') //wait for extended details
-			  $("#airportPopupOpenness").html(getOpennessSpan(loadedCountriesByCode[this.airport.countryCode].openness))
 			  $("#airportPopupMaxRunwayLength").html(this.airport.runwayLength + "&nbsp;m")
 			  updateAirportExtendedDetails(this.airport.id, this.airport.countryCode)
-			  //updateAirportSlots(this.airport.id)
-			  
+
 			  $("#airportPopupId").val(this.airport.id)
 			  var popup = $("#airportPopup").clone()
 			  populateNavigation(popup)
@@ -931,6 +930,8 @@ function refreshAirportExtendedDetails(airport) {
 
     var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , $('#incomeDetailsTooltip'), "$")
     $("#airportPopupIncomeLevel").html($incomeLevelSpan)
+
+    airportPopupCustomsIcon(airport.size,airport.is)
 
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {

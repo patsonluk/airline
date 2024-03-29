@@ -491,10 +491,10 @@ object PassengerSimulation {
           val costProvider = CostStoreProvider() //use same instance of costProvider so this is only computed once
           val linkConsideration1 = LinkConsideration(link, matchingLinkClass, false, passengerGroup, externalCostModifier, costProvider)
           val linkConsideration2 = LinkConsideration(link, matchingLinkClass, true, passengerGroup, externalCostModifier, costProvider)
-          if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
+          if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness, link.from.size)) {
             linkConsiderations.add(linkConsideration1)
           }
-          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
+          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness, link.from.size)) {
             linkConsiderations.add(linkConsideration2)
           }
       }
@@ -506,12 +506,14 @@ object PassengerSimulation {
   
   
   
-  def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int]) : Boolean = {
+  def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int], airportSize : Int) : Boolean = {
     if (linkConsideration.from.countryCode == linkConsideration.to.countryCode) { //domestic flight is always ok
       true
     } else if (linkConsideration.from.countryCode == originatingAirport.countryCode) { //always ok if link flying out from same country as the originate airport
       true
-    } else { //a foreign airline flying out carrying passengers originating from a foreign airport, decide base on openness
+    } else if (airportSize >= 7) { //large airports can handle transfers
+      true
+    } else { //international to international, decide base on openness
       countryOpenness(linkConsideration.from.countryCode) >= Country.SIXTH_FREEDOM_MIN_OPENNESS
     }
   }

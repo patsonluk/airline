@@ -367,15 +367,33 @@ function getYearMonthText(weekDuration) {
 	}
 }
 
-
-function getOpennessSpan(openness) {
+function airportPopupCustomsIcon(openness, size=null, isDomesticAirport=false) {
 	var description
 	var icon
-	if (openness >= 7) {
-		description = "Opened Market"
+	if (size <= 2, isDomesticAirport){
+	    description = "Limited International Flights"
+        icon = "prohibition.png"
+	} else if (openness >= 7 || size >= 7) {
+		description = "All International Connections"
 		icon = "globe--plus.png"
 	} else {
-		description = "No International Connection"
+		description = "No International to International Connections"
+		icon = "globe--exclamation.png"
+	}
+	return "<img src='assets/images/icons/" + icon + "' title='" + description + "'/>"
+}
+
+function getOpennessSpan(openness, size=null, isDomesticAirport=false) {
+	var description
+	var icon
+	if (size <= 2 || isDomesticAirport){
+	    description = "Limited International Flights"
+        icon = "prohibition.png"
+	} else if (openness >= 7 || size >= 7) {
+		description = "All International Connections"
+		icon = "globe--plus.png"
+	} else {
+		description = "No International to International Connections"
 		icon = "globe--exclamation.png"
 	}/* else if (openness >= 2) {
 		description = "No Foreign Airline Base"
@@ -384,8 +402,7 @@ function getOpennessSpan(openness) {
 		description = "No Foreign Airline"
 		icon = "prohibition.png"
 	}*/
-	return "<span>" + description + "(" + openness + ")&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
-	
+	return "<span>" + description + "&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
 }
 
 function scrollToRow($matchingRow, $container) {

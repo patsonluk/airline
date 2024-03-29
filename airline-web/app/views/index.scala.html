@@ -1203,13 +1203,13 @@
 										<div class="tooltip">
 											<img src='@routes.Assets.versioned("images/icons/information.png")'>
 											<span class="tooltiptext alignLeft" style="width: 400px;">
-												<p>Larger airports with more gates, runways, and other facilities are a higher <b>Airport level</b>. Higher level airports are worth more reputation, however have higher aircraft landing fees.</p>
+												<p>Larger airports with more gates, runways, and other facilities are a higher <b>Airport level</b>. Higher level airports are worth more reputation, however have higher aircraft landing fees and office costs.</p>
 											</span>
 										</div>
 									</div>
 								</div>
 								<div class="table-row">
-									<div class="label">Country openness:</div>
+									<div class="label">International transfers:</div>
 									<div class="value" id="airportDetailsOpenness"></div>
 								</div>
 								<div class="table-row">
@@ -3508,9 +3508,9 @@
     <div style="display: none; width: 100%; white-space: normal;" id="airportPopup" class="mapPopup">
     	<input type="hidden" id="airportPopupId">
     	<div>
-    		<h4><span id="airportPopupName"></span>&nbsp;(<span id="airportPopupIata"></span>)</h4>
+    		<h4><span id="airportPopupName"></span>&nbsp;<i style="opacity:0.65;" id="airportPopupIata"></i>&nbsp;<span style="" id="airportPopupCustomsIcon"></span></h4>
     	</div>
-		<h5><span id="airportPopupCity"></span>(<span id="airportPopupZone"></span>)</h5>
+		<h5><span id="airportPopupCity"></span></h5>
     	<div id="airportIcons" class="airportFeatures">
     		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon" style="display: none">
     		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon" style="display:none">
@@ -3519,7 +3519,7 @@
    			<div style="display: flex; flex-wrap: wrap; width: 100%">
 				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
 					<img title="Population coverage" src='@routes.Assets.versioned("images/icons/users.png")' style="margin-right: 5px;">
-					<span id="airportPopupPopulation"></span>&nbsp
+					<span id="airportPopupPopulation"></span>
 				</span>
 				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
 					<img title="Airport Scale (Max Runway Length)" src='@routes.Assets.versioned("images/icons/star.png")' style="margin-right: 5px;">
@@ -3529,7 +3529,7 @@
 
 			<div style="display: flex; flex-wrap: wrap; width: 100%">
 				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
-					<img title="Income Level" src='@routes.Assets.versioned("images/icons/moneys.png")' style="margin-right: 5px;">
+					<img title="Average income per capita" src='@routes.Assets.versioned("images/icons/moneys.png")' style="margin-right: 5px;">
 					<span id="airportPopupIncomeLevel"></span>
 				</span>
 				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
