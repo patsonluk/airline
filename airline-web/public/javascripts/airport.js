@@ -95,7 +95,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    //only apply to heading
 		$("h4 .airportCountryName").append("<img src='" + countryFlagUrl + "' />")
 	}
-//	$("#airportDetailsZone").text(zoneById[airport.zone])
+	$("#airportDetailsAffinityZone").text(airport.zone.replaceAll("-", ", "))
 	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness, airport.size, airport.isDomesticAirport))
 	
 	refreshAirportExtendedDetails(airport)
@@ -666,7 +666,7 @@ function addMarkers(airports) {
 				  updateBaseInfo(this.airport.id)
 			  }
 			  $("#airportPopupName").text(this.airport.name)
-			  $("#airportPopupCustomsIcon").html(airportPopupCustomsIcon(loadedCountriesByCode[this.airport.countryCode].openness,this.airport.size,this.airport.isDomesticAirport))
+			  $("#airportPopupCustomsIcon").html(getOpennessIcon(loadedCountriesByCode[this.airport.countryCode].openness,this.airport.size,this.airport.isDomesticAirport))
 			  $("#airportPopupIata").text(this.airport.iata)
 			  $("#airportPopupCity").html(this.airport.city + "&nbsp;" + getCountryFlagImg(this.airport.countryCode))
 			  $("#airportPopupZone").text(zoneById[this.airport.zone])
@@ -930,8 +930,6 @@ function refreshAirportExtendedDetails(airport) {
 
     var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , $('#incomeDetailsTooltip'), "$")
     $("#airportPopupIncomeLevel").html($incomeLevelSpan)
-
-    airportPopupCustomsIcon(airport.size,airport.is)
 
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {

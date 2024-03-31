@@ -264,7 +264,7 @@ function loadCountryDetails(countryCode) {
 function getCountryRelationshipDescription(value) {
 	var description;
 	if (value >= 5) {
-		description = "Home Country / Open Skies"
+		description = "Domestic / Home Market"
     } else if (value == 4) {
 		description = "Alliance"
 	} else if (value == 3) {

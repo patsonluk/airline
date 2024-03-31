@@ -7,6 +7,12 @@ function showSettings(){
 
 var wallpaperTemplates = [
     {
+        "background" : "rgb(17, 18, 31)"
+    },
+    {
+        "background" : "rgb(86, 91, 151)"
+    },
+    {
         "background" : "linear-gradient(to bottom, rgba(40, 49, 77, 0.8) 30%, rgba(29, 35, 71, 0.8) 50%, rgba(19, 25, 28, 0.8) 80%, rgba(15, 14, 14, .8) 100%), url(assets/images/background/pixel_city_1.gif)"
     },
     {

@@ -155,6 +155,9 @@
 				<span class="currentAirline label" style="margin-left: 0px 5px; font-weight: bold"></span>
 				<span>$<span class="balance label"></span></span>
 				<span style="display: inline-block;" class="delegatesShortcut clickable" onclick="showDelegateStatusModal()">
+				<span style="margin: 0px 10px; padding: 0 5px"  title="Latest Oil Price" class="latestOilPriceShortCut clickable" onclick="showOilCanvas()">
+					<span class="latest-price label" style=""></span>
+				</span>
 			</div>
 		</div>
   		<div style="display: flex; align-items: center; flex-wrap: wrap;">
@@ -431,71 +434,39 @@
 					<div id="sidePanel" class="sidePanel" style="float: left; display:none;" >
 						<div id="detailsPanel" class="section" style="width: 95% ; float: left;">
 							<div id="linkDetails" style="width: 100%;;">
-								<div style="width: 50%; float: left">
-									<div class="table" id="linkCurrentDetails" style="width: 100%">
-										<h4>Current Details</h4>
-										<div class="table-row">
-											<div class="label"><h5>From:</h5></div>
-											<div class="value">
-												<span class="clickable" id="linkFromAirport" data-link="airport"></span>
-											</div>
-
+								<div style="width: 50%; float: left" id="linkCurrentDetails">
+									<h4 class="section-title">Flight <span id="linkFlightCode"></span></h4>
+									<div class="pb-3" style="display:flex;">
+										<div class="link-decoration">
+											<div class="link-decoration-circle"></div>
+											<div style="border-right: 4px dotted #5f6368;flex: 1;margin-bottom: 4px;margin-top: 4px;width: 0px;"></div>
+											<div style="border: 2px solid #5f6368; border-radius:12px; height: 12px; width: 12px;"></div>
 										</div>
-										<div class="table-row">
-											<div class="label"><h5>To:</h5></div>
-											<div class="value">
-												<span class="clickable" id="linkToAirport" data-link="airport"></span>
-											</div>
+										<div>
+											<p class="text-lg pb-1"><span class="clickable" id="linkFromAirport" data-link="airport"></span></p>
+											<p class="leading-snug"><span id="linkDistance"></span> | <span id="linkDuration"></span></p>
+											<p class="pb-1"><i id="linkAirplaneModel"></i></p>
+											<p class="text-lg"><span class="clickable" id="linkToAirport" data-link="airport"></span></p>
 										</div>
-										<div class="table-row">
-											<div class="label"><h5>Flight Code:</h5></div>
-											<div class="value" id="linkFlightCode"></div>
-										</div>
-										<div class="table-row">
-											<div class="label"><h5>Distance:</h5></div>
-											<div class="value" id="linkDistance"></div>
-										</div>
-										<div class="table-row">
-											<div class="label"><h5>Duration:</h5></div>
-											<div class="value" id="linkDuration"></div>
-										</div>
-										<div class="table-row">
-											<div class="label"><h5>Airplane:</h5></div>
-											<div class="value" id="linkAirplaneModel"></div>
-										</div>
-										<div class="table-row">
-											<div class="label"><h5>Price:</h5></div>
-											<div class="value" id="linkCurrentPrice"></div>
-										</div>
-										<div class="table-row">
-											<div class="label">
-												<h5>
-													Overall Quality:
-													<div class="tooltip">
-													<img src='@routes.Assets.versioned("images/icons/information.png")'>
-													<span class="tooltiptext below">
-														Overall quality is determined by:<br/>
-														- Fleet Age per Route<br/>
-														- Service Star level per route<br/>
-														- Company wide Service Quality<br/>
-														<br/>
-<!--														<img src='@routes.Assets.versioned("images/clips/service-quality.gif")' loading="lazy">-->
-                                                        <img data-src='@routes.Assets.versioned("images/clips/service-quality.gif")' class="lazyload" alt="">
-													</span>
-												</div>
-												</h5>
-											</div>
-											<div class="value" id="linkQuality"></div>
-										</div>
-										<div class="table-row">
-											<div class="label"><h5>Capacity (Y/J/F):</h5></div>
-											<div class="value">
-												<span id="linkCurrentCapacity"></span>
-												<div class="future">
-													<div style="display:flex; align-items: center;">
-														&nbsp;(<img class="awaitingAirplanes" src='@routes.Assets.versioned("images/icons/information.png")' title="Capacity when all airplanes are delivered"><span class="capacity"></span>)
-													</div>
-												</div>
+									</div>
+									<h5 class="leading-tight">Price:</h5>
+									<div class="class-values">
+										<p class="class-value-child-helper">economy</p>
+										<p class="class-value-child-helper">business</p>
+										<p class="class-value-child-helper">first class</p>
+									</div>
+									<div class="text-base pb-2 font-mono" id="linkCurrentPrice"></div>
+									<h5 class="leading-tight">Capacity:</h5>
+									<div class="class-values">
+										<p class="class-value-child-helper">economy</p>
+										<p class="class-value-child-helper">business</p>
+										<p class="class-value-child-helper">first class</p>
+									</div>
+									<div class="pb-2">
+										<div class="text-base font-mono" id="linkCurrentCapacity"></div>
+										<div class="future">
+											<div style="display:flex; align-items: center;">
+												&nbsp;(<img class="awaitingAirplanes" src='@routes.Assets.versioned("images/icons/information.png")' title="Capacity when all airplanes are delivered"><span class="capacity"></span>)
 											</div>
 										</div>
 									</div>
@@ -507,9 +478,28 @@
 
 									<div class="divider"></div>
 									<div class="table" id="linkHistoryDetails" style="width: 100%">
-										<h4>
-											History
+										<h4 class="section-title">
+											Last week:
 										</h4>
+										<div class="table-row">
+											<div class="label">
+												<h5>
+													Overall Quality:
+												</h5>
+											</div>
+											<div class="value"><span id="linkQuality"></span><div class="tooltip">
+												<img src='@routes.Assets.versioned("images/icons/information.png")'>
+												<span class="tooltiptext below">
+														Overall quality is determined by:<br/>
+														- Fleet Age per Route<br/>
+														- Service Star level per route<br/>
+														- Company wide Service Quality<br/>
+														<br/>
+													<!--														<img src='@routes.Assets.versioned("images/clips/service-quality.gif")' loading="lazy">-->
+													<!--                                                        <img data-src='@routes.Assets.versioned("images/clips/service-quality.gif")' class="lazyload" alt="">-->
+													</span>
+											</div></div>
+										</div>
 										<div class="table-row">
 											<div class="label"><h5>Price:</h5></div>
 											<div class="value" id="linkHistoryPrice"></div>
@@ -520,7 +510,7 @@
 										</div>
 										<div class="table-row">
 											<div class="label"><h5>Load Factor:</h5></div>
-											<div class="value" id="linkLoadFactor"></div>
+											<div class="value" style="font-weight:600;" id="linkLoadFactor"></div>
 										</div>
 										<div class="table-row">
 											<div class="label"><h5>Profit:</h5></div>
@@ -611,59 +601,44 @@
 								<div id="linkPriceChart" style="width: 50%; float: left; height: 250px;"></div>
 							</div>
 							<div id="planLinkDetails" style="width: 100%; display: none;">
-								<h4>Plan Route Details</h4>
-								<div class="table" style="width: 100%">
-									<input type="hidden" id="planLinkFromAirportId"/>
-									<input type="hidden" id="planLinkToAirportId"/>
-									<div class="table-row">
-										<div class="label"><h5>From:</h5></div>
-										<div class="value">
-											<span id="planLinkFromAirportName" class="clickable" data-link="airport"></span>
-											<img class="clickable" src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(true)">
-											<img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport" data-link="airport">
+								<div class="pb-3" style="display:flex;">
+									<div class="link-decoration">
+										<div class="link-decoration-circle"></div>
+										<div style="border-right: 4px dotted #5f6368;flex: 1;margin-bottom: 4px;margin-top: 4px;width: 0px;"></div>
+										<div style="border: 2px solid #5f6368; border-radius:12px; height: 12px; width: 12px;"></div>
+									</div>
+									<div>
+										<p class="text-lg pb-1"><span class="clickable" id="planLinkFromAirportName" data-link="airport"></span><img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport" data-link="airport"></p>
+										<p class="leading-snug"><span id="planLinkDistance"></span></p>
+										<p class="text-lg"><span class="clickable" id="planLinkToAirportName" data-link="airport"></span></p>
+									</div>
+								</div>
+								<div class="pb-2" style="display:flex">
+									<div>
+										<p>Regulatory status at <span class="planToIata"></span>:</p>
+										<p>Country relations:</p>
+										<p>Airport affinity:</p>
+									</div>
+									<div class="pl-1">
+										<p>
+											<span class="pl-1 value" id="planLinkToCountryTitle"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle titleCue"></span></span>
+											, <span class="value" id="planLinkToCountryRelationship">
+												<span class="total"></span>
+												<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))" style="vertical-align: middle;">
+											</span>
+										</p>
+										<p class="leading-snug" id="planLinkMutualRelationship"></p>
+										<p class="leading-snug" id="planLinkAffinity"></p>
+									</div>
 
-											<div class="value"><select class="select-css" id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
-
-										</div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>To:</h5></div>
-										<div class="value">
-											<span id="planLinkToAirportName" class="clickable"></span>
-											<img class="clickable"  src='@routes.Assets.versioned("images/icons/star-info.png")' title="Flight Quality Expectation" onclick="showLinkExpectedQualityModal(false)">
-										</div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Flight Code:</h5></div>
-										<div class="value clickable" id="planLinkFlightCode"></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Relationship & Affinity:</h5></div>
-										<div class="value"><span id="planLinkMutualRelationship"></span><span id="planLinkAffinity"></span></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Relationship with Destination Country:</h5></div>
-										<div class="value" id="planLinkToCountryRelationship" style="display: flex; align-items: center;">
-											<span class="total"></span>
-											<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))" style="vertical-align: middle;">
-										</div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Title with Destination Country:</h5></div>
-										<div class="value" id="planLinkToCountryTitle" style="display: flex; align-items: center;"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle titleCue"></span></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Distance:</h5></div>
-										<div class="value" id="planLinkDistance"></div>
-									</div>
-									<div class="table-row">
-										<div class="label"><h5>Direct Demand (Y/J/F):</h5></div>
-										<div class="value">
-											<div style="display: flex; align-items : center">
-												<span id="planLinkDirectDemand"></span>
-												<div class="tooltip">
-													<img src='@routes.Assets.versioned("images/icons/information.png")'>
-													<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
+								</div>
+								<div class="label"><h5>Direct Demand (Y/J/F):</h5></div>
+								<div class="value">
+									<div style="display: flex; align-items : center">
+										<span id="planLinkDirectDemand"></span>
+										<div class="tooltip">
+											<img src='@routes.Assets.versioned("images/icons/information.png")'>
+											<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
 														<div class="fromAirport">
 															<h4 class="airportLabel"></h4>
 															<div> Business PAX : <span class="businessDemand"></span></div>
@@ -675,24 +650,21 @@
 															<div> Tourist PAX : <span class="touristDemand"></span></div>
 														</div>
 													</span>
-												</div>
-											</div>
 										</div>
 									</div>
-									<div class="table-row">
-										<div class="label"><h5>Direct Competitions:</h5></div>
-										<div class="value">
-											<div class="table data" id="planLinkCompetitons" style="width: 100%">
-												<div class='table-header'>
-													<div class="cell" style="width: 30%;"><h5>Airline</h5></div>
-													<div class="cell" style="width: 30%;"><h5>Price</h5></div>
-													<div class="cell" style="width: 25%;"><h5>Capacity</h5></div>
-													<div class="cell" style="width: 8%;"><h5>Quality</h5></div>
-                                                    <div class="cell" style="width: 7%;"><h5>Freq.</h5></div>
-												</div>
-											</div>
-										</div>
+								</div>
+								<div class="table data" id="planLinkCompetitons" style="width: 100%">
+									<div class='table-header'>
+										<div class="cell" style="width: 30%;"><h5>Airline</h5></div>
+										<div class="cell" style="width: 30%;"><h5>Price</h5></div>
+										<div class="cell" style="width: 25%;"><h5>Capacity</h5></div>
+										<div class="cell" style="width: 8%;"><h5>Quality</h5></div>
+										<div class="cell" style="width: 7%;"><h5>Freq.</h5></div>
 									</div>
+								</div>
+								<div class="table py-4" style="width: 100%">
+									<input type="hidden" id="planLinkFromAirportId"/>
+									<input type="hidden" id="planLinkToAirportId"/>
 									<div class="table-row">
 										<div class="label"><h5>Setup Cost:</h5></div>
 										<div class="value" id="planLinkCost"></div>
@@ -712,14 +684,35 @@
 										<div class="value" id="planLinkDuration"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Price (Y/J/F):</h5></div>
-										<div class="value">
-											<input type="text" id="planLinkEconomyPrice" data-class="economy" class="planLinkPrice"/>
-											<input type="text" id="planLinkBusinessPrice" data-class="business" class="planLinkPrice"/>
-											<input type="text" id="planLinkFirstPrice" data-class="first" class="planLinkPrice"/>
-											<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class='button' onclick='increasePrice()'  title="Increase all price by 5% of Default">
-											<img src='@routes.Assets.versioned("images/icons/minus-button.png")' class='button' onclick='decreasePrice()'  title="Decrease all price by 5% of Default">
-											<img src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' class='button' onclick='resetPrice()'  title="Reset to Default Ticket Prices">
+										<div class="label"><br>
+											<h5>Economy:</h5>
+											<h5>Business:</h5>
+											<h5>First:</h5>
+										</div>
+										<div class="value" style="display:flex;width: 100%;margin: 1rem 0;justify-content: space-between;">
+											<div style="display:flex;flex-direction:column;width:85px">
+												<p>Set price</p>
+												<input type="text" id="planLinkEconomyPrice" data-class="economy" class="planLinkPrice py-1 font-mono"/>
+												<input type="text" id="planLinkBusinessPrice" data-class="business" class="planLinkPrice py-1 font-mono"/>
+												<input type="text" id="planLinkFirstPrice" data-class="first" class="planLinkPrice py-1 font-mono"/>
+												<div>
+													<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class='button' onclick='increasePrice()'  title="Increase all price by 5% of Default">
+													<img src='@routes.Assets.versioned("images/icons/minus-button.png")' class='button' onclick='decreasePrice()'  title="Decrease all price by 5% of Default">
+													<img src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' class='button' onclick='resetPrice()'  title="Reset to Default Ticket Prices">
+												</div>
+											</div>
+											<div style="min-width:75px;margin:0 1rem;">
+												<p class="leading-none">Load factor<br><small style="font-size:10px">20 week average</small></p>
+												<p class="py-1" id="planLFEconomy">100%</p>
+												<p class="py-1" id="planLFBusiness">100%</p>
+												<p class="py-1" id="planLFFirst">100%</p>
+											</div>
+											<div style="min-width:85px;margin:0 0 0 1rem;">
+												<p class="leading-none">Markup<br><small style="font-size:10px">Or markdown</small></p>
+												<p class="py-1" id="planMarkupEconomy">100%</p>
+												<p class="py-1" id="planMarkupBusiness">100%</p>
+												<p class="py-1" id="planMarkupFirst">100%</p>
+											</div>
 										</div>
 									</div>
                                     <div class="table-row">
@@ -825,7 +818,7 @@
 <!--										<div class="value"><div id="seatConfigurationGauge"></div></div>-->
 <!--									</div>-->
 									<div class="table-row">
-										<div class="label"><h5>Service Level:</h5></div>
+										<h5 class="label">Service Level:<br><i>Service expectations from:</i><a class="planFromIata" onclick="showLinkExpectedQualityModal(true)"></a>, <a class="planToIata" onclick="showLinkExpectedQualityModal(false)"></a></h5>
 										<div class="value"><div id="serviceLevelBar"  data-empty-icon='@routes.Assets.versioned("images/icons/star-empty.png")' data-fill-icon='@routes.Assets.versioned("images/icons/star.png")'></div>
 										<input type="hidden" id="planLinkServiceLevel" value="1"/></div>
 									</div>
@@ -1027,10 +1020,10 @@
 											<div class="label" style="width: 25%">Rating:</div>
 											<div class="value economicRating rating" style="width: 75%"></div>
 										</div>
-										<div class="table-row">
-											<div class="label" style="width: 25%">Country:</div>
-											<div class="value countryRating rating" style="width: 75%"></div>
-										</div>
+<!--										<div class="table-row">-->
+<!--											<div class="label" style="width: 25%">Country:</div>-->
+<!--											<div class="value countryRating rating" style="width: 75%"></div>-->
+<!--										</div>-->
 										<div class="table-row">
 											<div class="label" style="width: 25%">Competition:</div>
 											<div class="value competitionRating rating" style="width: 75%"></div>
@@ -1159,6 +1152,18 @@
 							<h4><span id="airportDetailsName">Airport Details</span> | <i class="airportCityName"></i>, <i class="airportCountryName"></i></h4>
 							<div class="table verticalGroup" style="float: left">
 								<div class="table-row">
+									<div class="label">Airport level:</div>
+									<div class="value">
+										<span id="airportDetailsSize"></span>
+										<div class="tooltip">
+											<img src='@routes.Assets.versioned("images/icons/information.png")'>
+											<span class="tooltiptext alignLeft" style="width: 400px;">
+												<p>Larger airports with more gates, runways, and other facilities are a higher "<b>airport level</b>." Higher level airports are worth more reputation, however have higher aircraft landing fees and office costs.</p>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="table-row">
 									<div class="label">Population Coverage:</h5></div>
 									<div class="value" id="airportDetailsPopulation"></div>
 								</div>
@@ -1184,7 +1189,7 @@
 									<div class="value" id="airportDetailsIncomeLevel"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><span class="airportCountryName">Country</span> gini coefficient:</div>
+									<div class="label"><span class="airportCountryName">Country</span> Gini coefficient:</div>
 									<div class="value">
 										<span id="airportDetailsGini"></span>
 										<div class="tooltip">
@@ -1195,15 +1200,14 @@
 										</div>
 									</div>
 								</div>
-
 								<div class="table-row">
-									<div class="label">Airport level:</div>
+									<div class="label">Affinity affiliations:</div>
 									<div class="value">
-										<span id="airportDetailsSize"></span>
+										<span id="airportDetailsAffinityZone"></span>
 										<div class="tooltip">
 											<img src='@routes.Assets.versioned("images/icons/information.png")'>
 											<span class="tooltiptext alignLeft" style="width: 400px;">
-												<p>Larger airports with more gates, runways, and other facilities are a higher <b>Airport level</b>. Higher level airports are worth more reputation, however have higher aircraft landing fees and office costs.</p>
+												<p>If an airport shares trade agreements and widely spoken langauges with a foreign airport, they're listed as "<b>affinities</b>" and modify the demand up, especially over long distances.</p>
 											</span>
 										</div>
 									</div>
@@ -3508,7 +3512,7 @@
     <div style="display: none; width: 100%; white-space: normal;" id="airportPopup" class="mapPopup">
     	<input type="hidden" id="airportPopupId">
     	<div>
-    		<h4><span id="airportPopupName"></span>&nbsp;<i style="opacity:0.65;" id="airportPopupIata"></i>&nbsp;<span style="" id="airportPopupCustomsIcon"></span></h4>
+    		<h4 style="line-height:1.1;"><strong class="iata" id="airportPopupIata"></strong><span style="font-weight:400;" id="airportPopupName"></span>&nbsp;<span style="" id="airportPopupCustomsIcon"></span></h4>
     	</div>
 		<h5><span id="airportPopupCity"></span></h5>
     	<div id="airportIcons" class="airportFeatures">

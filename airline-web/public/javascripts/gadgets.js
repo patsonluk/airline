@@ -143,11 +143,24 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
 
 
-	if (economyValue >= 1_000_000 || businessValue >= 1_000_000 || firstValue >= 1_000_000) {
+	if (economyValue >= 10000 || businessValue >= 10000 || firstValue >= 10000) {
  	    return prefix + commaSeparateNumber(economyValue) + suffix + " / " + prefix + commaSeparateNumber(businessValue) + suffix + " / " + prefix + commaSeparateNumber(firstValue) + suffix
     } else {
         return prefix + economyValue + suffix + " / " + prefix + businessValue + suffix + " / " + prefix + firstValue + suffix
     }
+}
+
+function toLinkClassDiv(linkValues, prefix, suffix) {
+	if (!prefix) {
+		prefix = ""
+	}
+	if (!suffix) {
+		suffix = ""
+	}
+	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy : '-'
+	var businessValue = linkValues.hasOwnProperty('business') ? linkValues.business : '-'
+	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
+	return `<div class="class-values"><p class="class-value-child text-base font-mono">${prefix + economyValue + suffix}</p><p class="class-value-child text-base font-mono">${prefix + businessValue + suffix}</p><p class="class-value-child text-base font-mono">${prefix + firstValue + suffix}</p></div>`
 }
 
 function changeColoredElementValue(element, newValue) {
@@ -367,10 +380,10 @@ function getYearMonthText(weekDuration) {
 	}
 }
 
-function airportPopupCustomsIcon(openness, size=null, isDomesticAirport=false) {
+function getOpennessIcon(openness, size=null, isDomesticAirport=false) {
 	var description
 	var icon
-	if (size <= 2, isDomesticAirport){
+	if (size <= 2 || isDomesticAirport){
 	    description = "Limited International Flights"
         icon = "prohibition.png"
 	} else if (openness >= 7 || size >= 7) {
@@ -808,4 +821,32 @@ function toReadableDuration(duration) {
     result += " " + (hours == 1 ? "1 hour" : hours + " hours")
   }
   return result.trim()
+}
+
+/**
+ * from BAC
+ * https://gist.github.com/aphix/fdeeefbc4bef1ec580d72639bbc05f2d
+ * Aphix/Torus (original cost per PAX by Alrianne), mdons
+ **/
+function getLoadFactorsFor(consumption) {
+    var factor = {};
+    for (let key in consumption.capacity) {
+        factor[key] = getFactorPercent(consumption, key) || "-";
+    }
+    return factor;
+}
+function getFactorPercent(consumption, subType) {
+    return (consumption.capacity[subType] > 0)
+        ? parseInt(consumption.soldSeats[subType] / consumption.capacity[subType] * 100)
+        : null;
+}
+function _seekSubVal(val, ...subKeys) {
+    if (subKeys.length === 0) {
+        return val;
+    }
+    return _seekSubVal(val[subKeys[0]], ...subKeys.slice(1));
+}
+
+function averageFromSubKey(array, ...subKeys) {
+    return array.map((obj) => _seekSubVal(obj, ...subKeys)).reduce((sum, val) => (sum += val || 0), 0) / array.length;
 }

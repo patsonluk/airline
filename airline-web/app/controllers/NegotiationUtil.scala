@@ -216,7 +216,7 @@ object NegotiationUtil {
       airport.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
         case Some(_) =>
           val gatewayCost = flightTypeMultiplier * 0.5
-          requirements.append(NegotiationRequirement(GATEWAY, gatewayCost, "Crowded Gateway Airport"))
+          requirements.append(NegotiationRequirement(GATEWAY, gatewayCost, "Tough Gateway Airport Negotiation"))
         case None =>
       }
     }
