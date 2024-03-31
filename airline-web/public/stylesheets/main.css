@@ -79,7 +79,7 @@ html[data-theme='dark'] {
   --backdrop-filter: blur(2px);
   --menubar-background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
   --menubar-shadow: inset 0 -7px 9px -7px rgba(255,255,255,0.4);
-  --scrollbar-color: hsl(0, 50%, 90%) hsl(0, 50%, 100%);
+  --scrollbar-color: rgba(255, 255, 255, 0.5) rgba(125, 125, 125, 0.6);
   --scrollbar-shadow-color: rgba(255, 255, 255, 0.5);
 
   --tooltip-background-color: rgba(0, 0, 0, 0.5);

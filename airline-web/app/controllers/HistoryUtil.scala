@@ -100,24 +100,24 @@ object HistoryUtil {
     LinkHistory(0, groupedForwardLinks, groupedReverseLinks)
   }
   
-  def loadConsumptionByAirport(airportId : Int) : Map[Airport, Int] = {
-    val linksWithPassengers = ConsumptionHistorySource.loadConsumptionsByAirport(airportId)
-    //find all the "other" airport and sum up passenger count
-    val passengersByOtherAirport = scala.collection.mutable.Map[Airport, Int]()
-    linksWithPassengers.foreach {
-      case (link, passengers) => {
-        val otherAirport = if (link.from.id == airportId) {
-          link.to
-        } else {
-          link.from
-        }
-        
-        val sum = passengersByOtherAirport.getOrElse(otherAirport, 0)
-        passengersByOtherAirport.put(otherAirport, sum + passengers)
-      }
-    }
-    passengersByOtherAirport.toMap
-  }
+//  def loadConsumptionByAirport(airportId : Int) : Map[Airport, Int] = {
+//    val linksWithPassengers = ConsumptionHistorySource.loadConsumptionsByAirport(airportId)
+//    //find all the "other" airport and sum up passenger count
+//    val passengersByOtherAirport = scala.collection.mutable.Map[Airport, Int]()
+//    linksWithPassengers.foreach {
+//      case (link, passengers) => {
+//        val otherAirport = if (link.from.id == airportId) {
+//          link.to
+//        } else {
+//          link.from
+//        }
+//
+//        val sum = passengersByOtherAirport.getOrElse(otherAirport, 0)
+//        passengersByOtherAirport.put(otherAirport, sum + passengers)
+//      }
+//    }
+//    passengersByOtherAirport.toMap
+//  }
   
   private def computeRelatedLinks(relatedConsumption : List[(Route, (PassengerType.Value, Int))], airlineId : Int, selfOnly : Boolean) : List[RelatedLink] = {
     val relatedLinkConsumptions : List[(PassengerType.Value, Int, LinkConsideration)] = relatedConsumption.flatMap {

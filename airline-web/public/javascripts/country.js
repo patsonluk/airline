@@ -460,7 +460,7 @@ function getCountryDelegatesSummary(countryCode) {
     $delegateSection.data("countryCode", countryCode)
 
     updateAirlineDelegateStatus($('#airlineCountryRelationshipModal div.delegateStatus'), function(delegateInfo) {
-        $delegateSection.data("availableDelegates", delegateInfo.availableCount)
+        $delegateSection.data("availableDelegates", delegateInfo.permanentAvailableCount)
     })
 
 	$.ajax({

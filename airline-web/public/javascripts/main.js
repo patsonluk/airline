@@ -289,6 +289,7 @@ function initMap() {
    	minZoom : 2,
    	gestureHandling: 'greedy',
    	styles: getMapStyles(),
+	mapTypeId: getMapTypes(),
    	restriction: {
                 latLngBounds: { north: 85, south: -85, west: -180, east: 180 },
               }
@@ -300,6 +301,11 @@ function initMap() {
 	    $.each(markers, function( key, marker ) {
 	        marker.setVisible(isShowMarker(marker, zoom));
 	    })
+  });
+  
+  google.maps.event.addListener(map, 'maptypeid_changed', function() { 
+		var mapType = map.getMapTypeId();
+		$.cookie('currentMapTypes', mapType);
   });
 
   addCustomMapControls(map)
@@ -437,6 +443,7 @@ var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 
 function updateTime(cycle, fraction, cycleDurationEstimation) {
+	$(".currentTime").attr("title", "Current Cycle: " + cycle)
 	currrentCycle = cycle
 	currentTime = (cycle + fraction) * totalmillisecPerWeek 
 	if (refreshIntervalTimer) {

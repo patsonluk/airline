@@ -154,47 +154,47 @@ object ConsumptionHistorySource {
 //    }
 //  }
 
-  def loadConsumptionsByAirport(airportId : Int) : Map[Link, Int] = {
-    val connection = Meta.getConnection()
-    try {
-      val links = LinkSource.loadFlightLinksByFromAirport(airportId) ++ LinkSource.loadFlightLinksByToAirport(airportId)
-      if (links.isEmpty) {
-        Map.empty
-      } else {
-        val linksById = links.map(link => (link.id, link)).toMap
-        val queryString = new StringBuilder("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " where link IN (");
-        for (i <- 0 until links.size - 1) {
-          queryString.append("?,")
-        }
-        queryString.append("?)")
-
-        val preparedStatement = connection.prepareStatement(queryString.toString())
-
-        for (i <- 0 until links.size) {
-          preparedStatement.setInt(i + 1, links(i).id)
-        }
-
-        val resultSet = preparedStatement.executeQuery()
-        val result = scala.collection.mutable.HashMap[Link, Int]()
-        while (resultSet.next()) {
-          //        val passengerType = PassengerType.apply(resultSet.getInt("passenger_type"))
-          val passengerCount = resultSet.getInt("passenger_count")
-          val linkId = resultSet.getInt("link")
-          val link = linksById.getOrElse(linkId, Link.fromId(linkId))
-          if (result.contains(link)) {
-            result.put(link, result(link) + passengerCount)
-          } else {
-            result.put(link, passengerCount)
-          }
-        }
-
-        result.toMap
-      }
-    } finally {
-      connection.close()
-    }
-
-  }
+//  def loadConsumptionsByAirport(airportId : Int) : Map[Link, Int] = {
+//    val connection = Meta.getConnection()
+//    try {
+//      val links = LinkSource.loadFlightLinksByFromAirport(airportId) ++ LinkSource.loadFlightLinksByToAirport(airportId)
+//      if (links.isEmpty) {
+//        Map.empty
+//      } else {
+//        val linksById = links.map(link => (link.id, link)).toMap
+//        val queryString = new StringBuilder("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " where link IN (");
+//        for (i <- 0 until links.size - 1) {
+//          queryString.append("?,")
+//        }
+//        queryString.append("?)")
+//
+//        val preparedStatement = connection.prepareStatement(queryString.toString())
+//
+//        for (i <- 0 until links.size) {
+//          preparedStatement.setInt(i + 1, links(i).id)
+//        }
+//
+//        val resultSet = preparedStatement.executeQuery()
+//        val result = scala.collection.mutable.HashMap[Link, Int]()
+//        while (resultSet.next()) {
+//          //        val passengerType = PassengerType.apply(resultSet.getInt("passenger_type"))
+//          val passengerCount = resultSet.getInt("passenger_count")
+//          val linkId = resultSet.getInt("link")
+//          val link = linksById.getOrElse(linkId, Link.fromId(linkId))
+//          if (result.contains(link)) {
+//            result.put(link, result(link) + passengerCount)
+//          } else {
+//            result.put(link, passengerCount)
+//          }
+//        }
+//
+//        result.toMap
+//      }
+//    } finally {
+//      connection.close()
+//    }
+//
+//  }
 
   def loadConsumptionsByAirportPair(fromAirportId : Int, toAirportId : Int) : Map[Route, (PassengerType.Value, Int)] = {
     val connection = Meta.getConnection()

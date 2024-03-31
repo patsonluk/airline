@@ -259,6 +259,13 @@ function getAirlineSpan(airlineId, airlineName) {
 	return $airlineSpan[0].outerHTML
 }
 
+function getAirlineLogoSpan(airlineId, airlineName) {
+    var $airlineLogoSpan = $('<span></span>')
+	$airlineLogoSpan.append(getAirlineLogoImg(airlineId))
+	$airlineLogoSpan.attr("title", airlineName)
+    return $airlineLogoSpan
+}
+
 function getUserLevelImg(level) {
 	if (level <= 0) {
 		return ""

@@ -10,7 +10,7 @@ object AirportFacility {
     if (name.length() < 1 || name.length() > MAX_NAME_LENGTH) {
       Some("Name should be between 1 - " + MAX_NAME_LENGTH + " characters")
     } else if (!name.forall(char => char.isLetter || char == ' ')) {
-      Some("Alliance name can only contain space and characters")
+      Some("Lounge name can only contain space and characters")
     } else {
       None
     }

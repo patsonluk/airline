@@ -31,6 +31,7 @@
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/emojify/emojify.min.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting.css")'>
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("javascripts/splitting/splitting-cells.css")'>
+	  <link rel="stylesheet" type="text/css" href='/assets/stylesheets/classic.css' id="uiTheme">
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/mobile.css")'> <!-- this has to be last so it overrides the CSS if mobile-->
 
 
@@ -120,8 +121,18 @@
 
 	  </div>
 
-	<div id="hideAirportLinksButton" class="button glow" style="display: none;" onclick="hideAirportLinksView()">
-		Exit Airport Flight Map
+  	<div id="topAirportLinksPanel" class="section mapControlPanel" style="display: none; width: 600px; max-width: 95vw;">
+		<h4>Top Destinations</h4>
+	  	<div style="width : 100%; display: flex; flex-direction: column;">
+		  <div style="width : 100%" class="topDestinations table data">
+			  <div class="table-header">
+				  <div class="cell" style="width: 20%; min-width: 100px;">Destination</div>
+				  <div class="cell" style="width: 30%">Cap (Freq)</div>
+				  <div class="cell" style="width: 50%">Operators</div>
+			  </div>
+		  </div>
+		  <div class="button glow" onclick="hideAirportLinksView()" style="margin-top: 10px; align-self: center;">Exit Airport Flight Map</div>
+	  </div>
 	</div>
 
 	<div style="width: 100%; display: none;" class="extendedTopBarDetails">
@@ -134,7 +145,7 @@
 		</div>
 	</div>
   	<div id="topBar" data-scroll="false" class="menubar">
-  		<div class="desktopOnly">
+  		<div class="desktopOnly hide-empty">
   			<span class="topBarDetails" style="display: none;">
 				<span style="display: flex; flex-align: center;">
 					<span class="currentTime label" style="margin: 0px 10px"></span>
@@ -144,7 +155,7 @@
 					<span style="display: inline-block; margin-left: 5px;">
 						<span style="display: flex; flex-align: center;"><span class="reputationStars"></span></span>
 					</span>
-					<span style="display: inline-block; margin-left: 5px;" class="delegatesShortcut clickable" onclick="showDelegateStatusModal()">
+					<span style="display: inline-block; margin-left: 5px;" class="delegatesShortcut clickable" onclick="toggleDelegateStatusModal()">
 
 					</span>
 				</span>
@@ -154,14 +165,14 @@
 			<div class="topBarDetails">
 				<span class="currentAirline label" style="margin-left: 0px 5px; font-weight: bold"></span>
 				<span>$<span class="balance label"></span></span>
-				<span style="display: inline-block;" class="delegatesShortcut clickable" onclick="showDelegateStatusModal()">
+				<span style="display: inline-block;" class="delegatesShortcut clickable" onclick="toggleDelegateStatusModal()">
 				<span style="margin: 0px 10px; padding: 0 5px"  title="Latest Oil Price" class="latestOilPriceShortCut clickable" onclick="showOilCanvas()">
 					<span class="latest-price label" style=""></span>
 				</span>
 			</div>
 		</div>
   		<div style="display: flex; align-items: center; flex-wrap: wrap;">
-			<span  style="padding: 0 4px;"><img class="clickable" src='@routes.Assets.versioned("images/icons/24px/equalizer.png")' onclick="showSettings()" title="Settings"></span>
+			<span  style="padding: 0 4px;"><img class="clickable" src='@routes.Assets.versioned("images/icons/24px/equalizer.png")' onclick="toggleSettings()" title="Settings"></span>
 			<div style="display: none; display: flex; align-items: center;" id="loginDiv" class="topBarItem">
 				<input type="text" id="loginUserName" placeholder="username" tabindex=1/>
 				<a href="/forgot-id"  target="_blank" style="margin-right: 4px">
@@ -561,7 +572,7 @@
 											<div class="value" id="linkCancellations"></div>
 										</div>
 									</div>
-									<div class="button viewLinkHistory" onclick="showLinkHistoryView()">View Passenger Map</div>
+									<div class="button viewLinkHistory" onclick="showLinkHistoryView()">Passenger Map</div>
 									<div class="button viewLinkComposition" onclick="showLinkComposition($('#actionLinkId').val())">Survey</div>
 									<div class="button viewLinkEvent" onclick="showLinkEventHistory($('#actionLinkId').val())">Events</div>
 
@@ -2714,7 +2725,10 @@
 										</div>
 									</div>
 								</div>
-								<div class="button" onclick="showRivalMap()">Flight Map</div>
+								<div>
+									<div class="button" onclick="showRivalMap()">Flight Map</div>
+									<div class="button" data-link="history" onclick="showRivalHistory()">Recent Activities</div>
+								</div>
 
 								<div class="adminActions" style="display: none;">
 									<h4>Admin Action</h4>
@@ -2736,6 +2750,16 @@
 								<div class="superAdminActions" style="display: none;">
 									<h4>Super Admin Action</h4>
 									<div class="clickable" onclick="switchUser()">Switch to this user</div>
+									<div>
+										<span>User Level:</span>
+										<select class="setUserLevel">
+											<option value="0">0</option>
+											<option value="1">1</option>
+											<option value="2">2</option>
+											<option value="3">3</option>
+										</select>
+										<div class="button" onclick="setUserLevel()">Set user level</div>
+									</div>
 									<div>
 										<span>Loyalty Bonus:</span>
 										<select class="bannerLoyaltyBonus">
@@ -3658,17 +3682,21 @@
     	<input type="hidden" id="airportLinkPopupId">
     	<div class="table" style="width: 100%">
    			<div class="table-row">
-   				<div class="label" style="width:60%"><h5>From :</h5></div>
-   				<div class="value" style="width:40%" id="airportLinkPopupFrom"></div>
+   				<div class="label" style="width:30%"><h5>From :</h5></div>
+   				<div class="value" style="width:70%" id="airportLinkPopupFrom"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>To:</h5></div>
-   				<div class="value" id="airportLinkPopupTo"></div>
+   				<div class="label" style="width:30%"><h5>To:</h5></div>
+   				<div class="value" style="width:70%" id="airportLinkPopupTo"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Passengers:</h5></div>
-   				<div class="value" id="airportLinkPopupPassengers"></div>
+   				<div class="label" style="width:30%"><h5>Cap(Freq):</h5></div>
+   				<div class="value" style="width:70%" id="airportLinkPopupCapacity"></div>
    			</div>
+			<div class="table-row">
+				<div class="label" style="width:30%"><h5>Operators:</h5></div>
+				<div class="value" style="width:70%" id="airportLinkOperators"></div>
+			</div>
 		</div>
     </div>
 
@@ -4926,6 +4954,7 @@
 						  </div>
 					  </div>
 				  </div>
+				  <h5><span class="dot"/>Cannot assign temporary delegates awarded as bonus</h5>
 				  <h5><span class="dot"/>Require&nbsp;<span class="delegatesRequired"></span>&nbsp;delegates to maintain current bases in this country</h5>
 				  <h5><span class="dot"/>Each delegate level provides&nbsp;<span class="delegateMultiplier"></span>&nbsp;relationship points. Delegate starts at level 0 and progress over time. Hover over each delegate above to see details</h5>
 				  <div class="button" onclick="updateCountryDelegates()">Confirm</div>
@@ -5043,6 +5072,7 @@
 										</div>
 									</div>
 								</div>
+								<h5><span class="dot"/>Cannot assign temporary delegates awarded as bonus</h5>
 								<h5><span class="dot"/>Each delegate level provides&nbsp;<span class="loyaltyBonus"></span>&nbsp;loyalty. Delegate starts at level 0 and progress over time. Hover over each delegate above to see details</h5>
 							</div>
 						</div>
@@ -5307,6 +5337,30 @@
 					  </fieldset>
 				  </div>
 			  </div>
+			  <div class="table-row desktopOnly">
+				  <div class="cell">
+					  <h5>UI Theme</h5>
+				  </div>
+				  <div class="cell" style="vertical-align:middle; text-align:center;">
+					<select class="select-css" id="UIThemeSelect" onchange="changeUITheme($(this).val());" style="margin: auto;">
+					  <option value="classic">Classic</option>
+					  <option value="modern">Modern</option>
+					  <option value="modern-lite">Modern Lite (For slow systems)</option>
+					</select>
+				  </div>
+			  </div>
+			  <div class="table-row">
+				  <div class="cell">
+					  <h5>UI Theme</h5>
+				  </div>
+				  <div class="cell" style="vertical-align:middle; text-align:center;">
+					<select class="select-css" id="UIThemeSelect" onchange="changeUITheme($(this).val());" style="margin: auto;">
+					  <option value="classic">Classic</option>
+					  <option value="modern">Modern</option>
+					  <option value="modern-lite">Modern Lite (For slow systems)</option>
+					</select>
+				  </div>
+			  </div>
 			  <div class="table-row">
 				  <div class="cell">
 					  <h5>Default Wallpaper</h5>
@@ -5342,11 +5396,12 @@
 			  <div class="table-header">
 				  <div class="cell" style="width: 5%; border-bottom: none;"></div>
 				  <div class="cell" style="width: 25%; border-bottom: none;">Airline</div>
+				  <div class="cell" style="width: 10%; border-bottom: none;">Hq</div>
 				  <div class="cell" style="width: 15%; border-bottom: none;">User</div>
 				  <div class="cell" style="width: 10%; border-bottom: none;">User status</div>
-				  <div class="cell" style="width: 15%; border-bottom: none;">Modifiers</div>
+				  <div class="cell" style="width: 10%; border-bottom: none;">Modifiers</div>
 				  <div class="cell" style="width: 15%; border-bottom: none;">Last Seen</div>
-				  <div class="cell" style="width: 10%; border-bottom: none;">Occurrence</div>
+				  <div class="cell" style="width: 5%; border-bottom: none;">Occurrence</div>
 			  </div>
 		  </div>
 		  <div style="text-align: center">
@@ -5366,11 +5421,12 @@
 			  <div class="table-header">
 				  <div class="cell" style="width: 5%; border-bottom: none;"></div>
 				  <div class="cell" style="width: 25%; border-bottom: none;">Airline</div>
+				  <div class="cell" style="width: 10%; border-bottom: none;">Hq</div>
 				  <div class="cell" style="width: 15%; border-bottom: none;">User</div>
 				  <div class="cell" style="width: 10%; border-bottom: none;">User status</div>
-				  <div class="cell" style="width: 15%; border-bottom: none;">Modifiers</div>
+				  <div class="cell" style="width: 10%; border-bottom: none;">Modifiers</div>
 				  <div class="cell" style="width: 15%; border-bottom: none;">Last Seen</div>
-				  <div class="cell" style="width: 10%; border-bottom: none;">Occurrence</div>
+				  <div class="cell" style="width: 5%; border-bottom: none;">Occurrence</div>
 			  </div>
 		  </div>
 		  <div style="text-align: center">
@@ -5442,6 +5498,9 @@
   <script src='@routes.Assets.versioned("javascripts/local-storage.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/color.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/mobile.js")' defer></script>
+  <script src='@routes.Assets.versioned("javascripts/ui-theme.js")'></script>
+  <script src='@routes.Assets.versioned("javascripts/ui-theme.js")'></script>
+
 	
 	<audio id="christmasMusic" preload="none" loop>
 <!--	    <source src='@routes.Assets.versioned("music/silent-night.mp3")' type="audio/mp3" />-->

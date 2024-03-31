@@ -16,7 +16,7 @@ case class Model(name : String, family : String = "", capacity : Int, fuelBurn :
     } else {
       capacity match {
         case x if (x <= 15) => LIGHT
-        case x if (x <= 60) => SMALL
+        case x if (x <= 70) => SMALL
         case x if (x <= 150) => REGIONAL
         case x if (x <= 250) => MEDIUM
         case x if (x <= 350) => LARGE
@@ -159,6 +159,8 @@ object Model {
     Model("Bombardier DHC-8-300", "Bombardier DHC-8", capacity = 56, fuelBurn = (56 * 1.7).toInt, speed = 450, range = 1711, price = 22000000, lifespan = 35 * 52, constructionTime = 0, Manufacturer("Bombardier", countryCode = "CA"), runwayRequirement = 1085, imageUrl = "https://www.norebbo.com/2018/05/de-havilland-dhc-8-300-blank-illustration-templates/"),
     Model("Saab 2000", "Saab Regional", capacity = 58, fuelBurn = (58 * 2.2).toInt, speed = 594, range = 2868, price = 24500000, lifespan = 30 * 52, constructionTime = 4, Manufacturer("Saab", countryCode = "SE"), runwayRequirement = 1252, imageUrl = ""),
     Model("Fokker 50", "Fokker", capacity = 60, fuelBurn = (60 * 2.2).toInt, speed = 471, range = 2400, price = 24000000, lifespan = 30 * 52, constructionTime = 4, Manufacturer("Fokker", countryCode = "NL"), runwayRequirement = 1350, imageUrl = ""),
+    Model("Ilyushin Il-114-100", "Ilyushin Il-114", capacity = 64, fuelBurn = (64 * 3.3).toInt, speed = 470, range = 1000, price = 19_000_000, lifespan = 25 * 52, constructionTime = 8, Manufacturer("Ilyushin", countryCode = "RU"), runwayRequirement = 1500),
+    Model("Ilyushin Il-114-300", "Ilyushin Il-114", capacity = 68, fuelBurn = (68 * 3.4).toInt, speed = 470, range = 2000, price = 20_000_000, lifespan = 25 * 52, constructionTime = 8, Manufacturer("Ilyushin", countryCode = "RU"), runwayRequirement = 1600),
     Model("Embraer ERJ170", "Embraer ERJ", capacity = 72, fuelBurn = (72 * 3).toInt, speed = 870, range = 3982, price = 31500000, lifespan = 30 * 52, constructionTime = 4, Manufacturer("Embraer", countryCode = "BR"), runwayRequirement = 1644, imageUrl = "https://www.norebbo.com/2015/10/embraer-erj-175-templates-with-the-new-style-winglets/"),
     Model("Bombardier CRJ700", "Bombardier CRJ", capacity = 78, fuelBurn = (78 * 2.3).toInt, speed = 828, range = 3045, price = 42000000, lifespan = 35 * 52, constructionTime = 4, Manufacturer("Bombardier", countryCode = "CA"), runwayRequirement = 1605, imageUrl = "https://www.norebbo.com/2015/05/bombardier-canadair-regional-jet-700-blank-illustration-templates/"),
     Model("ATR 72-600", "ATR-Regional", capacity = 78, fuelBurn = (78 * 2.4).toInt, speed = 556, range = 1528, price = 26000000, lifespan = 20 * 52, constructionTime = 4, Manufacturer("ATR", countryCode = "FR"), runwayRequirement = 1367, imageUrl = "https://www.norebbo.com/2017/04/atr-72-blank-illustration-templates/"),
@@ -234,6 +236,7 @@ object Model {
     Model("Boeing 787-9 Dreamliner", "Boeing 787", capacity = 300, fuelBurn = (300 * 4.5).toInt, speed = 903, range = 13950, price = 175000000, lifespan = 35 * 52, constructionTime = 36, Manufacturer("Boeing", countryCode = "US"), runwayRequirement = 2800, imageUrl = "https://www.norebbo.com/2014/04/boeing-787-9-blank-illustration-templates/"),
     Model("Airbus A340-200", "Airbus A340", capacity = 315, fuelBurn = (315 * 4.7).toInt, speed = 880, range = 14800, price = 200000000, lifespan = 35 * 52, constructionTime = 36, Manufacturer("Airbus", countryCode = "NL"), runwayRequirement = 2900, imageUrl = "https://www.norebbo.com/2019/01/airbus-a340-200-side-view/"),
     Model("Lockheed L-1011-500", "Lockheed L", capacity = 330, fuelBurn = (330 * 5.1).toInt, speed = 972, range = 9899, price = 130000000, lifespan = 30 * 52, constructionTime = 36, Manufacturer("Lockheed", countryCode = "US"), runwayRequirement = 2865, imageUrl = "https://www.norebbo.com/2015/03/lockheed-l-1011-500-blank-illustration-templates/"),
+    Model("Ilyushin Il-86", "Ilyushin Il-96", capacity = 350, fuelBurn = (320 * 5.5).toInt, speed = 871, range = 5000, price = 105_000_000, lifespan = 25 * 52, constructionTime = 36, Manufacturer("Ilyushin", countryCode = "RU"), runwayRequirement = 2800),
     Model("Airbus A340-300", "Airbus A340", capacity = 350, fuelBurn = (350 * 4.7).toInt, speed = 880, range = 13350, price = 230000000, lifespan = 35 * 52, constructionTime = 36, Manufacturer("Airbus", countryCode = "NL"), runwayRequirement = 3000, imageUrl = "https://www.norebbo.com/2016/04/airbus-340-300-and-a340-300x-blank-illustration-templates/"),
     Model("Boeing 767-300ER", "Boeing 767", capacity = 350, fuelBurn = (350 * 4.5).toInt, speed = 913, range = 11093, price = 220000000, lifespan = 35 * 52, constructionTime = 36, Manufacturer("Boeing", countryCode = "US"), runwayRequirement = 2650, imageUrl = "https://www.norebbo.com/2014/07/boeing-767-300-blank-illustration-templates/"),
     Model("Boeing 787-10 Dreamliner", "Boeing 787", capacity = 360, fuelBurn = (360 * 4.4).toInt, speed = 903, range = 11750, price = 225000000, lifespan = 35 * 52, constructionTime = 36, Manufacturer("Boeing", countryCode = "US"), runwayRequirement = 2800, imageUrl = "https://www.norebbo.com/2017/06/boeing-787-10-blank-illustration-templates/"),
