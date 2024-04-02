@@ -442,7 +442,7 @@ object NegotiationUtil {
     NegotiationBonus.drawBonus(monetaryBaseValue, delegates, link.to)
   }
 
-  val MAX_NEXT_NEGOTIATION_DISCOUNT = 0.1
+  val MAX_NEXT_NEGOTIATION_DISCOUNT = 0.2
   def getNextNegotiationDiscount(link : Link, negotiationResult: NegotiationResult) = {
     if (!negotiationResult.isSuccessful) { //only gives discount if it was unsuccessful
       val ratio = negotiationResult.result / negotiationResult.threshold
@@ -537,7 +537,7 @@ case class NegotiationResult(threshold : Double, result : Double) {
   val isGreatSuccess = isSuccessful && result >= NegotiationUtil.GREAT_SUCCESS_THRESHOLD
   println(s"negotiation result: threshold $threshold vs result $result. Great success ? $isGreatSuccess")
 
-  val SESSION_COUNT = 10
+  val SESSION_COUNT = 5
   def getNegotiationSessions() : NegotiationSession = {
     //    val BASE_PASSING_SCORE = 100 //make it a more than 0...just for nicer display
     //

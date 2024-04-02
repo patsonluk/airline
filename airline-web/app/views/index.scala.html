@@ -447,7 +447,7 @@
 							<div id="linkDetails" style="width: 100%;;">
 								<div style="width: 50%; float: left" id="linkCurrentDetails">
 									<h4 class="section-title">Flight <span id="linkFlightCode"></span></h4>
-									<div class="pb-3" style="display:flex;">
+									<div class="pb-5" style="display:flex;">
 										<div class="link-decoration">
 											<div class="link-decoration-circle"></div>
 											<div style="border-right: 4px dotted #5f6368;flex: 1;margin-bottom: 4px;margin-top: 4px;width: 0px;"></div>
@@ -456,24 +456,24 @@
 										<div>
 											<p class="text-lg pb-1"><span class="clickable" id="linkFromAirport" data-link="airport"></span></p>
 											<p class="leading-snug"><span id="linkDistance"></span> | <span id="linkDuration"></span></p>
-											<p class="pb-1"><i id="linkAirplaneModel"></i></p>
+											<p class=""><i id="linkAirplaneModel"></i></p>
 											<p class="text-lg"><span class="clickable" id="linkToAirport" data-link="airport"></span></p>
 										</div>
 									</div>
-									<h5 class="leading-tight">Price:</h5>
+									<h5 class="leading-snug text-base">Price</h5>
 									<div class="class-values">
 										<p class="class-value-child-helper">economy</p>
 										<p class="class-value-child-helper">business</p>
 										<p class="class-value-child-helper">first class</p>
 									</div>
-									<div class="text-base pb-2 font-mono" id="linkCurrentPrice"></div>
-									<h5 class="leading-tight">Capacity:</h5>
+									<div class="text-base pb-3 font-mono" id="linkCurrentPrice"></div>
+									<h5 class="leading-snug text-base">Capacity</h5>
 									<div class="class-values">
 										<p class="class-value-child-helper">economy</p>
 										<p class="class-value-child-helper">business</p>
 										<p class="class-value-child-helper">first class</p>
 									</div>
-									<div class="pb-2">
+									<div class="pb-3">
 										<div class="text-base font-mono" id="linkCurrentCapacity"></div>
 										<div class="future">
 											<div style="display:flex; align-items: center;">
@@ -484,7 +484,7 @@
 									<input type="hidden" id="actionLinkId">
 									<input type="hidden" id="linkFromAirportId">
 									<input type="hidden" id="linkToAirportId">
-									<div class="button" onclick="editLink($('#actionLinkId').val())">Edit</div>
+									<div class="button ml-0" onclick="editLink($('#actionLinkId').val())">Edit</div>
 									<div class="button" onclick="deselectLink()">Cancel</div>
 
 									<div class="divider"></div>
@@ -572,9 +572,9 @@
 											<div class="value" id="linkCancellations"></div>
 										</div>
 									</div>
-									<div class="button viewLinkHistory" onclick="showLinkHistoryView()">Passenger Map</div>
+									<div class="button viewLinkHistory ml-0" onclick="showLinkHistoryView()">Passenger Map</div>
 									<div class="button viewLinkComposition" onclick="showLinkComposition($('#actionLinkId').val())">Survey</div>
-									<div class="button viewLinkEvent" onclick="showLinkEventHistory($('#actionLinkId').val())">Events</div>
+									<div class="button viewLinkEvent ml-0" onclick="showLinkEventHistory($('#actionLinkId').val())">Events</div>
 
 
 									<div class="divider"></div>
@@ -612,7 +612,7 @@
 								<div id="linkPriceChart" style="width: 50%; float: left; height: 250px;"></div>
 							</div>
 							<div id="planLinkDetails" style="width: 100%; display: none;">
-								<div class="pb-3" style="display:flex;">
+								<div class="pb-4" style="display:flex;">
 									<div class="link-decoration">
 										<div class="link-decoration-circle"></div>
 										<div style="border-right: 4px dotted #5f6368;flex: 1;margin-bottom: 4px;margin-top: 4px;width: 0px;"></div>
@@ -624,7 +624,7 @@
 										<p class="text-lg"><span class="clickable" id="planLinkToAirportName" data-link="airport"></span></p>
 									</div>
 								</div>
-								<div class="pb-2" style="display:flex">
+								<div class="pb-3" style="display:flex">
 									<div>
 										<p>Regulatory status at <span class="planToIata"></span>:</p>
 										<p>Country relations:</p>
@@ -638,8 +638,8 @@
 												<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'))" style="vertical-align: middle;">
 											</span>
 										</p>
-										<p class="leading-snug" id="planLinkMutualRelationship"></p>
-										<p class="leading-snug" id="planLinkAffinity"></p>
+										<p class="" id="planLinkMutualRelationship"></p>
+										<p class="" id="planLinkAffinity"></p>
 									</div>
 
 								</div>
@@ -702,24 +702,24 @@
 										</div>
 										<div class="value" style="display:flex;width: 100%;margin: 1rem 0;justify-content: space-between;">
 											<div style="display:flex;flex-direction:column;width:85px">
-												<p>Set price</p>
+												<p class="h-7">Set price</p>
 												<input type="text" id="planLinkEconomyPrice" data-class="economy" class="planLinkPrice py-1 font-mono"/>
 												<input type="text" id="planLinkBusinessPrice" data-class="business" class="planLinkPrice py-1 font-mono"/>
 												<input type="text" id="planLinkFirstPrice" data-class="first" class="planLinkPrice py-1 font-mono"/>
 												<div>
-													<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class='button' onclick='increasePrice()'  title="Increase all price by 5% of Default">
-													<img src='@routes.Assets.versioned("images/icons/minus-button.png")' class='button' onclick='decreasePrice()'  title="Decrease all price by 5% of Default">
-													<img src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' class='button' onclick='resetPrice()'  title="Reset to Default Ticket Prices">
+													<img src='@routes.Assets.versioned("images/icons/plus-button.png")' class='button pr-1 py-1' onclick='increasePrice()'  title="Increase all price by 5% of Default">
+													<img src='@routes.Assets.versioned("images/icons/minus-button.png")' class='button pr-1 py-1' onclick='decreasePrice()'  title="Decrease all price by 5% of Default">
+													<img src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' class='button pr-1 py-1' onclick='resetPrice()'  title="Reset to Default Ticket Prices">
 												</div>
 											</div>
 											<div style="min-width:75px;margin:0 1rem;">
-												<p class="leading-none">Load factor<br><small style="font-size:10px">20 week average</small></p>
+												<p class="leading-none h-7">Load factor<br><small style="font-size:10px">20 week average</small></p>
 												<p class="py-1" id="planLFEconomy">100%</p>
 												<p class="py-1" id="planLFBusiness">100%</p>
 												<p class="py-1" id="planLFFirst">100%</p>
 											</div>
 											<div style="min-width:85px;margin:0 0 0 1rem;">
-												<p class="leading-none">Markup<br><small style="font-size:10px">Or markdown</small></p>
+												<p class="leading-none h-7">Markup<br><small style="font-size:10px">Or markdown</small></p>
 												<p class="py-1" id="planMarkupEconomy">100%</p>
 												<p class="py-1" id="planMarkupBusiness">100%</p>
 												<p class="py-1" id="planMarkupFirst">100%</p>
@@ -740,7 +740,6 @@
                                                 </div>
                                             </h5>
 										</div>
-                                        <!-- 					    			<div class="value"><select id="planLinkAirplaneSelect" multiple="multiple" onchange="updateFrequencyBar($('#planLinkModelSelect').val())"></select></div> -->
                                         <div class="value">
                                             <div class="noAirplaneHelp" style="display: none">
 												<div class="tooltip">
@@ -748,10 +747,8 @@
 													<h5>
 														<span class="tooltiptext below">
 															Purchase airplane
-<!--															<img src='@routes.Assets.versioned("images/clips/buy-airplane.gif")' loading="lazy">-->
                                                             <img data-src='@routes.Assets.versioned("images/clips/buy-airplane.gif")' class="lazyload" alt="">
 															Or assign airplane to this airport
-<!--															<img src='@routes.Assets.versioned("images/clips/change-airplane-base.gif")' loading="lazy">-->
                                                             <img data-src='@routes.Assets.versioned("images/clips/change-airplane-base.gif")' class="lazyload" alt="">
 														 </span>
 													</h5>
@@ -808,30 +805,13 @@
 											</div>
 										</div>
 									</div>
-<!--									<div class="table-row">-->
-<!--										<div class="label">-->
-<!--											<h5>-->
-<!--												<span>Seat Configurations:</span>-->
-<!--												<div class="tooltip">-->
-<!--													<img src='@routes.Assets.versioned("images/icons/information.png")'>-->
-<!--													<span class="tooltiptext">-->
-<!--														Change class configuration of the cabin<br/>-->
-<!--														<br/>-->
-<!--														Y - Economy class<br/>-->
-<!--														J - Business class<br/>-->
-<!--														F - First class<br/>-->
-<!--														<br/>-->
-<!--														<img src='@routes.Assets.versioned("images/clips/seat-configuration.gif")'>-->
-<!--													</span>-->
-<!--												</div>-->
-<!--											</h5>-->
-<!--										</div>-->
-<!--										<div class="value"><div id="seatConfigurationGauge"></div></div>-->
-<!--									</div>-->
 									<div class="table-row">
-										<h5 class="label">Service Level:<br><i>Service expectations from:</i><a class="planFromIata" onclick="showLinkExpectedQualityModal(true)"></a>, <a class="planToIata" onclick="showLinkExpectedQualityModal(false)"></a></h5>
-										<div class="value"><div id="serviceLevelBar"  data-empty-icon='@routes.Assets.versioned("images/icons/star-empty.png")' data-fill-icon='@routes.Assets.versioned("images/icons/star.png")'></div>
-										<input type="hidden" id="planLinkServiceLevel" value="1"/></div>
+										<h5 class="label">Service Level:</h5>
+										<div class="value">
+											<div id="serviceLevelBar" data-empty-icon='@routes.Assets.versioned("images/icons/star-empty.png")' data-fill-icon='@routes.Assets.versioned("images/icons/star.png")'></div>
+											<p><i>Service expectation from:</i> <a class="planFromIata" onclick="showLinkExpectedQualityModal(true)"></a>, <a class="planToIata" onclick="showLinkExpectedQualityModal(false)"></a></p>
+											<input type="hidden" id="planLinkServiceLevel" value="1"/>
+										</div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Office Staff Req.:</h5></div>
@@ -881,8 +861,8 @@
 									$<span class="amount"></span>&nbsp;
 									will be charged per week for this change.
 								</div>
-								<div class="button modifyLink" id="addLinkButton" onclick="linkConfirmation()">Create</div>
-								<div class="button modifyLink" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
+								<div class="button modifyLink ml-0" id="addLinkButton" onclick="linkConfirmation()">Create</div>
+								<div class="button modifyLink ml-0" id="updateLinkButton" onclick="linkConfirmation()">Update</div>
 								<div class="button" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</div>
 								<div class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</div>
 							</div>
@@ -945,7 +925,7 @@
 										<div class="label"><h5>Delivery Time:</h5></div>
 										<div class="value delivery"></div>
 									</div>
-									<div class="button add" onclick="promptBuyNewAirplane($('#airplaneModelDetails .selectedModel').val(), true, $('#planLinkFromAirportId').val())">Purchase</div>
+									<div class="button add ml-0" onclick="promptBuyNewAirplane($('#airplaneModelDetails .selectedModel').val(), true, $('#planLinkFromAirportId').val())">Purchase</div>
 									<div class="button" onclick="showAirplaneBaseFromPlanLink($('#airplaneModelDetails .selectedModel').val())">Base</div>
 									<div class="button" onclick="showAirplaneModelConfigurationsFromPlanLink($('#airplaneModelDetails .selectedModel').val())">Config</div>
 									<input type="hidden" class="selectedModel"/>
@@ -3543,36 +3523,31 @@
     		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon" style="display: none">
     		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon" style="display:none">
     	</div>
-    	<div style="margin: 10px 0 10px 0;">
-   			<div style="display: flex; flex-wrap: wrap; width: 100%">
-				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
-					<img title="Population coverage" src='@routes.Assets.versioned("images/icons/users.png")' style="margin-right: 5px;">
-					<span id="airportPopupPopulation"></span>
-				</span>
-				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
-					<img title="Airport Scale (Max Runway Length)" src='@routes.Assets.versioned("images/icons/star.png")' style="margin-right: 5px;">
-					<span id="airportPopupSize"></span>&nbsp;(<span id="airportPopupMaxRunwayLength"></span>)
-				</span>
+		<div class="flex-container-width-half pt-2 pb-1">
+			<div style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+				<img title="Population coverage" src='@routes.Assets.versioned("images/icons/users.png")' style="margin-right: 5px;">
+				<span id="airportPopupPopulation"></span>
 			</div>
-
-			<div style="display: flex; flex-wrap: wrap; width: 100%">
-				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
-					<img title="Average income per capita" src='@routes.Assets.versioned("images/icons/moneys.png")' style="margin-right: 5px;">
-					<span id="airportPopupIncomeLevel"></span>
-				</span>
-				<span style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
-					<img title="Loyalty" src='@routes.Assets.versioned("images/icons/heart.png")' style="margin-right: 5px;">
-					<span class="airportLoyalty" id="airportPopupLoyalty"></span>
-					<span class="airportLoyaltyBonus"></span>
-					<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
-				</span>
+			<div style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+				<img title="Airport Scale (Max Runway Length)" src='@routes.Assets.versioned("images/icons/star.png")' style="margin-right: 5px;">
+				<span id="airportPopupSize"></span>&nbsp;(<span id="airportPopupMaxRunwayLength"></span>)
+			</div>
+			<div style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+				<img title="Average income per capita" src='@routes.Assets.versioned("images/icons/moneys.png")' style="margin-right: 5px;">
+				<span id="airportPopupIncomeLevel"></span>
+			</div>
+			<div style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
+				<img title="Loyalty" src='@routes.Assets.versioned("images/icons/heart.png")' style="margin-right: 5px;">
+				<span class="airportLoyalty" id="airportPopupLoyalty"></span>
+				<span class="airportLoyaltyBonus"></span>
+				<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
 			</div>
 		</div>
-		<div style="display: flex; flex-wrap: wrap; width: 100%">
-			<div class="button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()">Plan Flight</div>
-			<div class="button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
-			<div class="button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
-			<div class="button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
+		<div class="flex-container-width-half gap-2">
+			<div class="ml-0 button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()">Plan Flight</div>
+			<div class="mr-0 button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
+			<div class="ml-0 button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
+			<div class="mr-0 button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
 		</div>
     </div>
     <div id="appealBonusDetailsTooltip" class="customTooltip" style="display: none; position: fixed;">
@@ -4317,10 +4292,10 @@
 					  <div class="table-row">
 						  <div class="cell">
 							  <div style="float: left" class="assignedDelegatesIcons"></div>
-							  <div style="float: right" class="clickable" onclick="changeAssignedDelegateCount(-1)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Minus"/></div>
-							  <div style="float: right" class="clickable" onclick="changeAssignedDelegateCount(1)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Add"/></div>
-							  <div style="float: right" class="button" onclick="addMaximumRequiredDelegates()">Max</div>
-							  <div style="float: right" class="button" onclick="addMinimumRequiredDelegates()">Min</div>
+							  <div style="float: right" class="clickable px-1" onclick="changeAssignedDelegateCount(-1)"><img src='@routes.Assets.versioned("images/icons/minus-button.png")' title="Minus"/></div>
+							  <div style="float: right" class="clickable px-1" onclick="changeAssignedDelegateCount(1)"><img src='@routes.Assets.versioned("images/icons/plus-button.png")' title="Add"/></div>
+							  <button style="float: right" class="button hover:bg-red" onclick="addMaximumRequiredDelegates()">Max</button>
+							  <button style="float: right" class="button hover:bg-red" onclick="addMinimumRequiredDelegates()">Min</button>
 						  </div>
 						  <div class="cell successRate"></div>
 					  </div>
@@ -4448,21 +4423,21 @@
 	  <div class="modal-content" style="width : 520px; max-width : 95vw;">
 		  <span class="close" onclick="closeModal($('#negotiationAnimation'))">&times;</span>
 		  <h4 class="modalHeader" style="margin-bottom: 10px; text-align: center;">Negotiation in progress... Success Rate:&nbsp;<span class="successRate"></span>%</h4>
-		  <div class="clipContainer desktopOnly">
-		  	<iframe class="clip" width="480" height="270" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-			<div style="float: left;"><input type="checkbox" class="autoplay" onclick="toggleAutoplay()">&nbsp;Autoplay</div>
-			<div style="float: right;" class="animationLabel label"></div>
-		  	<div style="clear: both;"></div>
-		  </div>
-		  <div class="negotiationIcons" style="width: 260px; height: 35px; margin: auto;"></div>
-		  <div class="negotiationDescriptions" style="height: 15px; text-align: center;"></div>
+<!--		  <div class="clipContainer desktopOnly">-->
+<!--		  	<iframe class="clip" width="480" height="270" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>-->
+<!--			<div style="float: left;"><input type="checkbox" class="autoplay" onclick="toggleAutoplay()">&nbsp;Autoplay</div>-->
+<!--			<div style="float: right;" class="animationLabel label"></div>-->
+<!--		  	<div style="clear: both;"></div>-->
+<!--		  </div>-->
+		  <div class="negotiationIcons" style="width: 260px; height: 35px; margin: auto;text-align:center;"></div>
+		  <div class="negotiationDescriptions" class="py-2 px-8" style="height: 15px; text-align: center;"></div>
 		  <div class="negotiationBar progressbar" style="margin: auto;">
-			  <div class="bar"><span></span></div>
+<!--			  <div class="bar"><span></span></div>-->
+			  <div class="bar"></div>
+			  <div id="negotiationThreshold" style="position: absolute;right: 20px;width: 70px;height: 16px;background: green;top: 12px;border-radius: 0 10px 10px 0;opacity: .5;"></div>
 		  </div>
 
-		  <div class="negotiationBonus" style="text-align:center; height: 30px;">
-
-		  </div>
+		  <p class="negotiationBonus px-12 py-4" style="text-align:center; height: 30px;"></p>
 
 		  <div class="negotiationResult" style="text-align:center;">
 			  <div class="button result" onclick="closeModal($('#negotiationAnimation'));"></div>
@@ -5351,18 +5326,6 @@
 			  </div>
 			  <div class="table-row">
 				  <div class="cell">
-					  <h5>UI Theme</h5>
-				  </div>
-				  <div class="cell" style="vertical-align:middle; text-align:center;">
-					<select class="select-css" id="UIThemeSelect" onchange="changeUITheme($(this).val());" style="margin: auto;">
-					  <option value="classic">Classic</option>
-					  <option value="modern">Modern</option>
-					  <option value="modern-lite">Modern Lite (For slow systems)</option>
-					</select>
-				  </div>
-			  </div>
-			  <div class="table-row">
-				  <div class="cell">
 					  <h5>Default Wallpaper</h5>
 				  </div>
 				  <div class="cell" style="vertical-align:middle; text-align:center;">
@@ -5498,7 +5461,6 @@
   <script src='@routes.Assets.versioned("javascripts/local-storage.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/color.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/mobile.js")' defer></script>
-  <script src='@routes.Assets.versioned("javascripts/ui-theme.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/ui-theme.js")'></script>
 
 	

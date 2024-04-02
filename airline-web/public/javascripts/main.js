@@ -474,6 +474,8 @@ function updateTime(cycle, fraction, cycleDurationEstimation) {
 			    } else {
 			        $(".nextTickEstimation").text(minutesLeft + " minutes")
 			    }
+            } else {
+                $(".nextTickEstimation").text("Estimating...")
             }
 		}, refreshInterval);
 

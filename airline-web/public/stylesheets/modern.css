@@ -9,6 +9,7 @@ html {
 	--background-1: #fffa;
 	--background-2: #ccc5;
 	--background-3: #ccc5;
+	--background-section: #cccccc;
 	--input-background: #aaa3;
 
 	--color-1: #111;
@@ -25,6 +26,7 @@ html[data-theme="dark"] {
 	--background-1: #101010A0;
 	--background-2: #505050A0;
 	--background-3: #505050A0;
+	--background-section: #111111;
 	--input-background: #aaa3;
 
 	--color-1: #ccc;
@@ -33,29 +35,20 @@ html[data-theme="dark"] {
 
 html[data-ui-light-mode="true"] {
     --backdrop-blur: none;
-}
-
-/* fonts */
-@font-face {
-    font-family: "Open Sans";
-    src: local("Segoe UI"), local("Tahoma")
-}
-@font-face {
-    font-family: "Verdana";
-    src: local("Segoe UI Variable"), local("Segoe UI"), local("Verdana")
-}
-@font-face {
-    font-family: "Arial";
-    src: local("Segoe UI Variable"), local("Segoe UI"), local("Arial")
+    --background-1: #111111DD;
 }
 
 .section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
     /*disable this for now...seems to have issues with blur for tooltip*/
-	/*backdrop-filter: var(--backdrop-blur) !important;*/
+	backdrop-filter: var(--backdrop-blur) !important;
+	background-image: unset;
+	background-color: var(--background-1);
 }
 
 #detailsPanel { /*only enable it for details panel, we need this otherwise panel is hard to read with map beneath it*/
     backdrop-filter: var(--backdrop-blur) !important;
+    background-color: var(--background-1);
+    background-image: unset;
 }
 
 
@@ -87,10 +80,13 @@ html[data-theme="dark"] .airportCanvasLeftGroup > :first-child .section {
 div.section, #topBar > div {
 	box-shadow: var(--shadow-1);
 }
-div.button, .mapPopup div.button {
+div.button, .mapPopup div.button, button.button {
+    text-align: center;
 	box-shadow: var(--shadow-1);
 	background-color: var(--background-1);
 	transition: all 0.2s;
+	border-radius: 5px;
+	padding: 4px 12px;
 }
 div.button:hover:not([class*="disabled"]) {
 	background-color: var(--background-3);

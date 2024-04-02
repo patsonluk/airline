@@ -28,7 +28,7 @@ html {
   --scrollbar-shadow-color: rgba(0, 0, 0, 0.5);
 
   --tooltip-background-color: rgba(0, 0, 0, 0.75);
-  --modal-background-color: rgba(0,0,0,0.4);
+  --modal-background-color: rgba(0,0,0,0.75);
   --modal-content-background-image: var(--background-gradient-image);
   --chat-background: #ebebeb;
   --chat-current-background: #ffffff;
@@ -58,6 +58,7 @@ html[data-theme='dark'] {
   /*--background-gradient-color: background-color: rgba(0, 0, 0, 0.4);*/
   --background-gradient-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
   --section-background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6));
+  --section-background-color: rgba(0, 0, 0, 0.6);
   --button-shadow: inset 0 0 4px rgba(255, 255, 255, 0.4), 0 0 4px rgba(255, 255, 255, 0.2);
   --button-background: rgba(255, 255, 255, 0.2);
   --button-backdrop-filter: blur(2px);
@@ -587,13 +588,11 @@ div.section, div.selectedSection, .modal-content {
 }
 
 div.section {
-    background-image: var(--section-background-image);
+    background: var(--section-background-image);
 }
 
 .modal-content {
-	/*background-image: linear-gradient(to bottom, #FFFFFF, #FFFFFF 90%, #e8e8d8);*/
 	background-image: var(--modal-content-background-image);
-	/*backdrop-filter: var(--backdrop-filter);   backdrop filter is buggy, it might place items on top always. FF does not support backdrop-filter neither */
 }
 	
 	
@@ -1142,6 +1141,25 @@ iframe.clip {
     box-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.6);
 }
 
+button {
+  /* Appearance Resets */
+  background-color: transparent;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 0;
+  color: currentColor;
+  padding: 0;
+  font-size: 100%;
+  line-height: inherit;
+  text-decoration: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  transition: color, background-color 0.2s;
+}
+.hover\:bg-red:hover{
+    background-color: red;
+}
 i {
     font-style: italic
 }
@@ -1183,6 +1201,10 @@ i {
     line-height: 1.625;
 }
 /* Padding: Top, Right, Bottom, Left */
+.mt-0 { margin-top: 0px !important; }
+.mr-0 { margin-right: 0px !important; }
+.mb-0 { margin-bottom: 0px !important; }
+.ml-0 { margin-left: 0px !important; }
 .pt-0 { padding-top: 0px; }
 .pt-1 { padding-top: 4px; }
 .pt-2 { padding-top: 8px; }
@@ -1228,6 +1250,7 @@ i {
 .pl-12 { padding-left: 48px; }
 .pl-16 { padding-left: 64px; }
 .px-0 { padding-left: 0px; padding-right: 0px; }
+.px-05 { padding-left: 2px; padding-right: 2px; }
 .px-1 { padding-left: 4px; padding-right: 4px; }
 .px-2 { padding-left: 8px; padding-right: 8px; }
 .px-3 { padding-left: 12px; padding-right: 12px; }
@@ -1239,6 +1262,7 @@ i {
 .px-12 { padding-left: 48px; padding-right: 48px; }
 .px-16 { padding-left: 64px; padding-right: 64px; }
 .py-0 { padding-top: 0px; padding-bottom: 0px; }
+.py-05 { padding-top: 2px; padding-bottom: 2px; }
 .py-1 { padding-top: 4px; padding-bottom: 4px; }
 .py-2 { padding-top: 8px; padding-bottom: 8px; }
 .py-3 { padding-top: 12px; padding-bottom: 12px; }
@@ -1249,14 +1273,35 @@ i {
 .py-10 { padding-top: 40px; padding-bottom: 40px; }
 .py-12 { padding-top: 48px; padding-bottom: 48px; }
 .py-16 { padding-top: 64px; padding-bottom: 64px; }
-
-
-
+.h-1 { height: 4px; }
+.h-2 { height: 8px; }
+.h-3 { height: 12px; }
+.h-4 { height: 16px; }
+.h-5 { height: 20px; }
+.h-6 { height: 24px; }
+.h-7 { height: 28px; }
+.h-8 { height: 32px; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.flex-container-width-half {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+}
+.flex-container-width-half > div {
+    flex: 1 1 46%;
+    box-sizing: border-box;
+    margin: auto;
+}
 
 .section-title {
     width: 100%;
     font-size: 1em;
     font-weight: 600;
+}
+#planLinkExtendedDetails > .table-row > .value {
+    padding-bottom: 6px;
 }
 .link-decoration {
     display: flex;
