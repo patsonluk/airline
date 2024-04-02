@@ -22,14 +22,14 @@ object ModelDiscount {
   val MAKE_FAVORITE_RESET_THRESHOLD = 52 //1 year at least
 
   val getFavoriteDiscounts: Model => List[ModelDiscount] = (model : Model) => {
-    val constructionTimeDiscount = ModelDiscount(model.id, 0.25, DiscountType.CONSTRUCTION_TIME, DiscountReason.FAVORITE, None)
+    val constructionTimeDiscount = ModelDiscount(model.id, 0.10, DiscountType.CONSTRUCTION_TIME, DiscountReason.FAVORITE, None)
     val priceDiscount = model.airplaneType match {
-      case LIGHT => 0.20
-      case REGIONAL => 0.15
-      case SMALL => 0.10
-      case MEDIUM => 0.06
-      case LARGE => 0.04
-      case X_LARGE => 0.03
+      case LIGHT => 0.05
+      case SMALL => 0.05
+      case REGIONAL => 0.05
+      case MEDIUM => 0.04
+      case LARGE => 0.03
+      case X_LARGE => 0.02
       case JUMBO => 0.02
       case SUPERSONIC => 0.05
     }
@@ -86,11 +86,11 @@ object ModelDiscount {
         case Some(currentSuppliers) =>
           if (currentSuppliers.length == 1) {
             val discount = category match {
-              case Category.LIGHT => 0.1
-              case Category.REGIONAL => 0.07
-              case Category.MEDIUM => 0.05
+              case Category.LIGHT => 0.05
+              case Category.REGIONAL => 0.05
+              case Category.MEDIUM => 0.03
               case Category.LARGE => 0.02
-              case Category.SUPERSONIC => 0
+              case Category.SUPERSONIC => 0.02
             }
             if (discount > 0) {
               PreferredSupplierDiscountInfo(Some(discount), category, Some(currentSuppliers(0)), s"${(discount * 100).toInt}% off price for being preferred supplier")
