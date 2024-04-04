@@ -125,20 +125,21 @@ object AirlineSimulation {
 
         val othersSummary = Map[OtherIncomeItemType.Value, Long]()
         //calculate service funding required
-        val linksOfThisAirline = allFlightLinksByAirlineId.getOrElse(airline.id, List.empty)
-        var serviceFunding = getServiceFunding(airline.getTargetServiceQuality(), linksOfThisAirline)
-        val targetServiceQuality =
-          if (airline.getBalance() < 0) { //cease all funding, target will be 0
-            serviceFunding = 0
-            0
-          } else {
-            airline.getTargetServiceQuality()
-          }
+//        val linksOfThisAirline = allFlightLinksByAirlineId.getOrElse(airline.id, List.empty)
+//        var serviceFunding = getServiceFunding(airline.getTargetServiceQuality(), linksOfThisAirline)
+//        val targetServiceQuality =
+//          if (airline.getBalance() < 0) { //cease all funding, target will be 0
+//            serviceFunding = 0
+//            0
+//          } else {
+//            airline.getTargetServiceQuality()
+//          }
+        val targetServiceQuality = airline.getTargetServiceQuality()
         val currentServiceQuality = airline.getCurrentServiceQuality()
         airline.setCurrentServiceQuality(getNewQuality(currentServiceQuality, targetServiceQuality))
 
-        othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, serviceFunding * -1)
-        totalCashExpense += serviceFunding
+//        othersSummary.put(OtherIncomeItemType.SERVICE_INVESTMENT, serviceFunding * -1)
+//        totalCashExpense += serviceFunding
 
         val baseUpkeep = airline.bases.foldLeft(0L)((upkeep, base) => {
           upkeep + base.getUpkeep
@@ -572,18 +573,28 @@ object AirlineSimulation {
 //    }
 //  }
 
-  def getServiceFunding(targetQuality : Int, links : List[Link]) : Long = {
-    val totalPassengerMileCapacity = links.map { link => link.frequency * link.getAssignedModel().fold(0L)(_.capacity.toLong) * link.distance }.sum
-    getServiceFunding(targetQuality, totalPassengerMileCapacity)
+  def getServiceFunding(targetQuality: Int, links: List[Link]): Long = {
+    val totalPassengerDurationCapacity = links.map { link => link.frequency * link.getAssignedModel().fold(0L)(_.capacity.toLong) * link.duration }.sum
+    getServiceFunding(targetQuality, totalPassengerDurationCapacity)
   }
 
-  val getServiceFunding : (Int, Long) => Long = (targetQuality : Int, totalPassengerMileCapacity : Long) => {
-    val MIN_PASSENGER_MILE_CAPACITY = 1000 * 1000
-    val passengerMileCapacity = Math.max(totalPassengerMileCapacity, MIN_PASSENGER_MILE_CAPACITY).toDouble
-
-    val funding = Math.pow(targetQuality.toDouble / 40, 2.5) * (passengerMileCapacity / 4000) * 30
+  val getServiceFunding: (Int, Long) => Long = (targetQuality: Int, totalPassengerDurationCapacity: Long) => {
+    val funding = Math.pow(targetQuality.toDouble / 40, 2.5) * (totalPassengerDurationCapacity / 13)
     funding.toLong
   }
+
+//  def getServiceFunding(targetQuality : Int, links : List[Link]) : Long = {
+//    val totalPassengerMileCapacity = links.map { link => link.frequency * link.getAssignedModel().fold(0L)(_.capacity.toLong) * link.distance }.sum
+//    getServiceFunding(targetQuality, totalPassengerMileCapacity)
+//  }
+//
+//  val getServiceFunding : (Int, Long) => Long = (targetQuality : Int, totalPassengerMileCapacity : Long) => {
+//    val MIN_PASSENGER_MILE_CAPACITY = 1000 * 1000
+//    val passengerMileCapacity = Math.max(totalPassengerMileCapacity, MIN_PASSENGER_MILE_CAPACITY).toDouble
+//
+//    val funding = Math.pow(targetQuality.toDouble / 40, 2.5) * (passengerMileCapacity / 4000) * 30
+//    funding.toLong
+//  }
   
   val getNewQuality : (Double, Double) => Double = (currentQuality, targetQuality) =>  {
     val delta = targetQuality - currentQuality

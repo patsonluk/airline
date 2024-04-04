@@ -7,7 +7,7 @@ import java.util.{Calendar, Date}
 import scala.collection.mutable.ListBuffer
 
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
-  val airlineInfo = AirlineInfo(0, 0, 0, 0, 0, 0)
+  val airlineInfo = AirlineInfo(0, 15, 0, 15, 0, 0)
   var allianceId : Option[Int] = None
   var bases : List[AirlineBase] = List.empty
 
