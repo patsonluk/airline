@@ -800,9 +800,12 @@ function researchFlight(fromAirportId, toAirportId) {
                 loadAirportImage(fromAirportId, $('#researchSearchResult img.fromAirport') )
                 loadAirportImage(toAirportId, $('#researchSearchResult img.toAirport'))
                 $("#researchSearchResult .fromAirportText").text(result.fromAirportText)
+		        $("#researchSearchResult .fromAirportText")[0].setAttribute("onclick", `showAirportDetails(${fromAirportId})`)
                 $("#researchSearchResult .fromAirport .population").text(commaSeparateNumber(result.fromAirport.population))
                 $("#researchSearchResult .fromAirport .incomeLevel").text(result.fromAirport.incomeLevel)
                 $("#researchSearchResult .toAirportText").text(result.toAirportText)
+		        $("#researchSearchResult .toAirportText")[0].setAttribute("onclick", `showAirportDetails(${toAirportId})`)
+		        populateNavigation($("#researchSearchResult"))
                 $("#researchSearchResult .toAirport .population").text(commaSeparateNumber(result.toAirport.population))
                 $("#researchSearchResult .toAirport .incomeLevel").text(result.toAirport.incomeLevel)
 
