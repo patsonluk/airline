@@ -226,8 +226,8 @@ object Link {
       val lookup = FlightType.values.toList.map { flightType =>
         val basic = basicLookup(flightType)
         val multiplyFactor : Double = multiplyFactorLookup(flightType)
-        val staffPerFrequency = multiplyFactor * 0.5 //increasing 0.25 per flightType
-        val staffPer500Pax = multiplyFactor / 1.5 //increasing 0.33 per flightType
+        val staffPerFrequency = multiplyFactor * 0.5
+        val staffPer500Pax = multiplyFactor //increasing 1.0 per 500 pax
         (flightType, StaffSchemeBreakdown(basic, staffPerFrequency, staffPer500Pax))
       }.toMap
 
