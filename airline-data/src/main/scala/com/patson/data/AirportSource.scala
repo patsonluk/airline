@@ -769,7 +769,7 @@ object AirportSource {
     val connection = Meta.getConnection()
 
     try {
-      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, income = ?, population = ?, pop_middle_income = ?, pop_elite = ?, runway_length = ?  WHERE id = ?")
+      val preparedStatement = connection.prepareStatement("UPDATE " + AIRPORT_TABLE + " SET airport_size = ?, income = ?, population = ?, pop_middle_income = ?, runway_length = ?  WHERE id = ?")
 
       connection.setAutoCommit(false)
 

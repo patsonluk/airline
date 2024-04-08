@@ -166,7 +166,7 @@ object Meta {
     statement.execute()
     statement.close()
     
-    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(64), airport_size INTEGER, income BIGINT, population BIGINT, pop_middle_income BIGINT, pop_elite BIGINT, runway_length SMALLINT)")
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_TABLE + "( id INTEGER PRIMARY KEY AUTO_INCREMENT, iata VARCHAR(256), icao VARCHAR(256), name VARCHAR(256) CHARACTER SET 'utf8', latitude DOUBLE, longitude DOUBLE, country_code VARCHAR(256), city VARCHAR(256) CHARACTER SET 'utf8', zone VARCHAR(256), airport_size INTEGER, income BIGINT, population BIGINT, pop_middle_income BIGINT, pop_elite BIGINT, runway_length SMALLINT)")
     statement.execute()
     statement.close()
     
@@ -1533,8 +1533,8 @@ object Meta {
       "to_airport INTEGER, " +
       "from_country CHAR(2), " +
       "to_country CHAR(2), " +
-      "from_zone CHAR(64), " +
-      "to_zone CHAR(64), " +
+//      "from_zone CHAR(255), " +
+//      "to_zone CHAR(255), " +
       "airline INTEGER, " +
       "alliance INTEGER, " +
       "frequency SMALLINT, " +
@@ -1547,12 +1547,12 @@ object Meta {
       "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 3 + " (capacity_delta)," +
       "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 4 + " (from_country)," +
       "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 5 + " (to_country)," +
-      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 6 + " (from_zone)," +
-      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 7 + " (to_zone)," +
-      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 8 + " (airline)," +
-      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 9 + " (alliance)," +
-      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 10 + " (capacity)," +
-      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 11 + " (cycle)" +
+//      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 6 + " (from_zone)," +
+//      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 7 + " (to_zone)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 6 + " (airline)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 7 + " (alliance)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 8 + " (capacity)," +
+      "INDEX " + LINK_CHANGE_HISTORY_INDEX_PREFIX + 9 + " (cycle)" +
       ")")
 
     statement.execute()

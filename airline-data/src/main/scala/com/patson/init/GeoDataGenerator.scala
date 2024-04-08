@@ -35,8 +35,6 @@ object GeoDataGenerator extends App {
 
   import actorSystem.dispatcher
 
-  //implicit val materializer = FlowMaterializer()
-
   mainFlow
 
   def mainFlow() {
@@ -52,8 +50,6 @@ object GeoDataGenerator extends App {
     }
 
     val airports = buildAirportData(getAirport(), getRunway(), cities)
-
-    AirportAnimationPatcher.patchAirportAnimations()
 
     buildCountryData(airports)
 
@@ -161,11 +157,15 @@ object GeoDataGenerator extends App {
 
   def getAirport() : Future[List[CsvAirport]] = {
     Future {
+      println("loading affinity-patch-list.csv")
+      val airportZoneList = scala.io.Source.fromFile("affinity-patch-list.csv").getLines().map(_.split(",", -1)).map { tokens =>
+          (tokens(0),tokens(1))
+        }.toList
+      println(airportZoneList)
       println("setting zones via country-data-2022.csv")
       //csv = country-code,country-name,openness,gini,nominal-to-real-conversion-ratio,(5)zone,group1,group2,lang1,lang2,lang3
       val countryZoneMap = scala.io.Source.fromFile("country-data-2022.csv").getLines().map(_.split(",", -1)).map { tokens =>
         val innerString = List(
-//          if (tokens(5).isEmpty) "" else tokens(5),
           if (tokens(6).isEmpty) "" else tokens(6),
           if (tokens(7).isEmpty) "" else tokens(7),
           if (tokens(8).isEmpty) "" else tokens(8),
@@ -173,7 +173,6 @@ object GeoDataGenerator extends App {
           if (tokens(10).isEmpty) "" else tokens(10)
         ).filter(_.nonEmpty).mkString("-")
 
-        // Add to map only if the inner string is not empty
         if (innerString.nonEmpty) (tokens(0), innerString) else (tokens(0), "None")
       }.toMap
 
@@ -189,7 +188,9 @@ object GeoDataGenerator extends App {
           }
         }
 
-        val zone = countryZoneMap.getOrElse(info(8), info(7))
+        val airportZones = airportZoneList.filter(_._1 == info(13)).map(zone => s"-${zone._2}")
+//        val updatedInnerString = if (airportZones.isEmpty) innerString else innerString + airportZones.mkString
+        val zone = countryZoneMap.getOrElse(info(8), info(7)) + airportZones.mkString
 
         val airportSize =
           info(2) match {

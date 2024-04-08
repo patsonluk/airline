@@ -649,9 +649,9 @@ function refreshLinkDetails(linkId) {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(link) {
-	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + link.fromAirportCity + "<i class='pl-2 iata'>" + link.fromAirportCode + "</i>")
+	    	$("#linkFromAirport").attr("onclick", "showAirportDetails(" + link.fromAirportId + ")").html(getCountryFlagImg(link.fromCountryCode) + link.fromAirportCity + "<i class='pl-1 iata'>" + link.fromAirportCode + "</i>")
 	    	//$("#linkFromAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.fromAirportId + ")")
-	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + link.toAirportCity + "<i class='pl-2 iata'>" + link.toAirportCode + "</i>")
+	    	$("#linkToAirport").attr("onclick", "showAirportDetails(" + link.toAirportId + ")").html(getCountryFlagImg(link.toCountryCode) + link.toAirportCity + "<i class='pl-1 iata'>" + link.toAirportCode + "</i>")
 	    	//$("#linkToAirportExpectedQuality").attr("onclick", "loadLinkExpectedQuality(" + link.fromAirportId + "," + link.toAirportId + "," + link.toAirportId + ")")
 	    	$("#linkFlightCode").text(link.flightCode)
 	    	if (link.assignedAirplanes && link.assignedAirplanes.length > 0) {
@@ -965,7 +965,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
     $('.planToIata').text(linkInfo.toAirportCode)
     $('.planFromIata').text(linkInfo.fromAirportCode)
 	$('#planLinkMutualRelationship').html(getCountryFlagImg(linkInfo.fromCountryCode) + " ⇄ " + getCountryFlagImg(linkInfo.toCountryCode) + getCountryRelationshipDescription(linkInfo.mutualRelationship))
-	$('#planLinkAffinity').html(linkInfo.affinity)
+	$('#planLinkAffinity').html(buildAffinityText(linkInfo.affinity))
 
 	var relationship = linkInfo.toCountryRelationship
     var relationshipSpan = getAirlineRelationshipDescriptionSpan(relationship.total)

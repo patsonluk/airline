@@ -95,7 +95,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    //only apply to heading
 		$("h4 .airportCountryName").append("<img src='" + countryFlagUrl + "' />")
 	}
-	$("#airportDetailsAffinityZone").text(airport.zone.replaceAll("-", ", "))
+	$("#airportDetailsAffinityZone").text(buildAffinityText(airport.zone.replaceAll("-", ", ")))
 	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness, airport.size, airport.isDomesticAirport))
 	
 	refreshAirportExtendedDetails(airport)
