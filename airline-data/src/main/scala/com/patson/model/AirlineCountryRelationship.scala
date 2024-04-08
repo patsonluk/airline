@@ -74,7 +74,8 @@ object AirlineCountryRelationship {
         //home country vs target country
         val relationship = countryRelationships.getOrElse((homeCountryCode, countryCode), 0)
         val multiplier = if (relationship >= 0) HOME_COUNTRY_POSITIVE_RELATIONSHIP_MULTIPLIER else HOME_COUNTRY_NEGATIVE_RELATIONSHIP_MULTIPLIER
-        factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * multiplier)
+        val home_country_bonus = if (relationship >= 5) 5 else 0
+          factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * multiplier + home_country_bonus)
 
 
         val allTitles = CountryAirlineTitle.getTopTitlesByCountry(countryCode)

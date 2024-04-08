@@ -164,10 +164,10 @@ object NegotiationUtil {
       case MEDIUM_HAUL_DOMESTIC => 1
       case LONG_HAUL_DOMESTIC => 2
       case ULTRA_LONG_HAUL_DOMESTIC => 3
-      case SHORT_HAUL_INTERNATIONAL => 3
-      case MEDIUM_HAUL_INTERNATIONAL => 3
-      case LONG_HAUL_INTERNATIONAL => 4
-      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 5
+      case SHORT_HAUL_INTERNATIONAL => 2
+      case MEDIUM_HAUL_INTERNATIONAL => 2
+      case LONG_HAUL_INTERNATIONAL => 3
+      case ULTRA_LONG_HAUL_INTERCONTINENTAL => 4
     }
     val NEW_LINK_BASE_REQUIREMENT = 1
     val UPDATE_BASE_REQUIREMENT = 0.3
@@ -215,7 +215,7 @@ object NegotiationUtil {
       }
       airport.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
         case Some(_) =>
-          val gatewayCost = flightTypeMultiplier * 0.5
+          val gatewayCost = 1.0
           requirements.append(NegotiationRequirement(GATEWAY, gatewayCost, "Tough Gateway Airport Negotiation"))
         case None =>
       }
@@ -314,7 +314,7 @@ object NegotiationUtil {
       discount = Math.min(discount, 0.4)
       discounts.append(SimpleNegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     } else if (relationship < 0) { //very penalizing
-      val discount = relationship * 0.1
+      val discount = relationship * 0.025
       discounts.append(SimpleNegotiationDiscount(COUNTRY_RELATIONSHIP, discount))
     }
 
@@ -381,7 +381,7 @@ object NegotiationUtil {
     val totalFromDiscount = Math.min(MAX_TOTAL_DISCOUNT, fromAirportDiscounts.map(_.value).sum)
     val totalToDiscount = Math.min(MAX_TOTAL_DISCOUNT, toAirportDiscounts.map(_.value).sum)
     val fromAirportRequirementValue = fromRequirementBase * (1 - totalFromDiscount)
-    val toAirportRequirementValue = if(totalToDiscount >= 0) toRequirementBase * (1 - totalToDiscount) else toRequirementBase * totalToDiscount * -1
+    val toAirportRequirementValue = toRequirementBase * (1 - totalToDiscount)
     val finalRequirementValue = fromAirportRequirementValue + toAirportRequirementValue
 
     //check for freebie bonus
