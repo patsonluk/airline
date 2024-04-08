@@ -288,9 +288,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           }
         }
         //it should first has link to it
-        if (LinkSource.loadFlightLinksByAirlineId(airline.id).find(link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
-          return Some("No active flight route operated by your airline flying to this city yet")
-        }
+//        if (LinkSource.loadFlightLinksByAirlineId(airline.id).find(link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
+//          return Some("No active flight route operated by your airline flying to this city yet")
+//        }
 
         //check title
         targetBase.allowAirline(airline) match {
@@ -408,14 +408,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      if (base.scale == 1) { //cannot downgrade any further
        return Some("Cannot downgrade this base any further")
      }
-//     val airport = AirportCache.getAirport(base.airport.id, true).get
-//     val assignedSlots = airport.getAirlineSlotAssignment(base.airline.id)
-//     val preferredSlots = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = 0)
-//     val preferredSlotsAfterDowngrade = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = -1)
-//     if (assignedSlots > preferredSlotsAfterDowngrade) {
-//       return Some("This base can only be downgraded if there are " + (preferredSlots - preferredSlotsAfterDowngrade)  + " free slots")
-//     }
-//
+
      val totalOfficeStaffRequired = LinkSource.loadFlightLinksByFromAirportAndAirlineId(base.airport.id, base.airline.id).map(_.getFutureOfficeStaffRequired).sum
      val capacityAfterDowngrade = base.copy(scale = base.scale - 1).getOfficeStaffCapacity
      if (capacityAfterDowngrade < totalOfficeStaffRequired) {
@@ -441,17 +434,17 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (base.headquarter) {
       return Some("Cannot remove Headquarters")
     }
-    //check connectivity
-    val airlineBases = airline.getBases().filterNot(_.headquarter).map { _.airport.id} //non hq bases
-    val links = LinkSource.loadFlightLinksByAirlineId(airline.id)
-    links.filter(_.from.id == base.airport.id).foreach { link =>
-      if (airlineBases.contains(link.to.id)) {
-        //then make sure there's still some link other then this pointing to the target
-        if (links.filter(_.to.id == link.to.id).size <= 1) {
-          return Some(s"Cannot remove this base as this flies to ${link.to.displayText}. Removing this will create a disconnected network" )
-        }
-      }
-    }
+    //enforce connected network
+//    val airlineBases = airline.getBases().filterNot(_.headquarter).map { _.airport.id} //non hq bases
+//    val links = LinkSource.loadFlightLinksByAirlineId(airline.id)
+//    links.filter(_.from.id == base.airport.id).foreach { link =>
+//      if (airlineBases.contains(link.to.id)) {
+//        //then make sure there's still some link other then this pointing to the target
+//        if (links.filter(_.to.id == link.to.id).size <= 1) {
+//          return Some(s"Cannot remove this base as this flies to ${link.to.displayText}. Removing this will create a disconnected network" )
+//        }
+//      }
+//    }
     return None
   }
 
