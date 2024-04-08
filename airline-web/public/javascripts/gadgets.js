@@ -390,7 +390,7 @@ function getYearMonthText(weekDuration) {
 function getOpennessIcon(openness, size=null, isDomesticAirport=false) {
 	var description
 	var icon
-	if (size <= 2 || isDomesticAirport){
+	if (size && size <= 2 || isDomesticAirport){
 	    description = "Limited International Flights"
         icon = "prohibition.png"
 	} else if (openness >= 7 || size >= 7) {
@@ -406,7 +406,7 @@ function getOpennessIcon(openness, size=null, isDomesticAirport=false) {
 function getOpennessSpan(openness, size=null, isDomesticAirport=false) {
 	var description
 	var icon
-	if (size <= 2 || isDomesticAirport){
+	if (size && size <= 2 || isDomesticAirport){
 	    description = "Limited International Flights"
         icon = "prohibition.png"
 	} else if (openness >= 7 || size >= 7) {
@@ -828,6 +828,22 @@ function toReadableDuration(duration) {
     result += " " + (hours == 1 ? "1 hour" : hours + " hours")
   }
   return result.trim()
+}
+
+function buildAffinityText(text) {
+  const firstPipeIndex = text.indexOf("|");
+  text = (firstPipeIndex !== -1) ? text.slice(0, firstPipeIndex) + "Diaspora communities: " + text.slice(firstPipeIndex) : text;
+  text = text.replace("CC","Caribbean Community")
+  const parts = text.split(",");
+  const editedParts = parts.map((part) => {
+    if (part.trim().endsWith("|")) {
+      const updatedPart = part.replace(/\|(.*?)\|(.*?)\|/g,"$1");
+      return updatedPart;
+    } else {
+      return part;
+    }
+  });
+  return editedParts.join(",");
 }
 
 /**

@@ -27,7 +27,7 @@ html {
   --scrollbar-color: hsl(0, 0%, 60%) hsl(0, 0%, 80%);
   --scrollbar-shadow-color: rgba(0, 0, 0, 0.5);
 
-  --tooltip-background-color: rgba(0, 0, 0, 0.75);
+  --tooltip-background-color: rgba(0, 0, 0, 0.85);
   --modal-background-color: rgba(0,0,0,0.75);
   --modal-content-background-image: var(--background-gradient-image);
   --chat-background: #ebebeb;
@@ -83,7 +83,7 @@ html[data-theme='dark'] {
   --scrollbar-color: rgba(255, 255, 255, 0.5) rgba(125, 125, 125, 0.6);
   --scrollbar-shadow-color: rgba(255, 255, 255, 0.5);
 
-  --tooltip-background-color: rgba(0, 0, 0, 0.5);
+  --tooltip-background-color: rgba(0, 0, 0, 0.9);
   --modal-background-color: rgba(255,255,255,0.5);
   --modal-content-background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
   --chat-background: rgba(0, 0, 0, 0.4);
@@ -1201,6 +1201,7 @@ i {
     line-height: 1.625;
 }
 /* Padding: Top, Right, Bottom, Left */
+.m-0 { margin: 0px !important; }
 .mt-0 { margin-top: 0px !important; }
 .mr-0 { margin-right: 0px !important; }
 .mb-0 { margin-bottom: 0px !important; }
@@ -1283,18 +1284,39 @@ i {
 .h-8 { height: 32px; }
 .gap-2 { gap: 0.5rem; }
 .gap-4 { gap: 1rem; }
+
+.flex-row {
+    display: flex;
+    width: 100%;
+    gap: 0.5rem;
+}
+.flex-row > div {
+    flex-shrink: 0;
+}
 .flex-container-width-half {
     display: flex;
     flex-wrap: wrap;
     width: 100%;
     justify-content: space-between;
+    gap: 0.5rem;
 }
 .flex-container-width-half > div {
-    flex: 1 1 46%;
+    flex: 1 1 calc(50% - 0.5rem);
     box-sizing: border-box;
     margin: auto;
 }
-
+.flex-container-width-quarter {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.flex-container-width-quarter > div {
+    flex: 1 1 calc(25% - 0.5rem);
+    box-sizing: border-box;
+    margin: auto;
+}
 .section-title {
     width: 100%;
     font-size: 1em;
@@ -1307,15 +1329,14 @@ i {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 5px 16px 4px 0;
-    margin-right: 16px;
+    margin: 5px 10px 3px 0;
     align-self: stretch;
 }
 .link-decoration-circle {
     border: 2px solid #5f6368; border-radius:12px; height: 12px; width: 12px;
 }
 .link-decoration-line {
-    border-right: 4px dotted #5f6368;flex: 1;margin-bottom: 4px;margin-top: 4px;width: 0px;
+    border-right: 3.2px dotted #5f6368;flex: 1;margin-bottom: 2px;margin-top: 4px;width: 0px;
 }
 .class-values {
     display: flex;

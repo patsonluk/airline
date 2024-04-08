@@ -82,11 +82,12 @@ div.section, #topBar > div {
 }
 div.button, .mapPopup div.button, button.button {
     text-align: center;
-	box-shadow: var(--shadow-1);
-	background-color: var(--background-1);
-	transition: all 0.2s;
-	border-radius: 5px;
-	padding: 4px 12px;
+    box-shadow: var(--shadow-1);
+    background-color: var(--background-1);
+    transition: all 0.2s;
+    border-radius: 5px;
+    padding: 4px 12px;
+    box-sizing: border-box;
 }
 div.button:hover:not([class*="disabled"]) {
 	background-color: var(--background-3);
