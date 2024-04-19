@@ -30,7 +30,7 @@ object AirplaneSimulation {
         AirlineCache.getAirline(owner.id, true) match {
           case Some(airline) =>
             val readyAirplanes = airplanes.filter(_.isReady)
-            val readyAirplanesWithAfssignedLinks : Map[Airplane, LinkAssignments] = readyAirplanes.map { airplane =>
+            val readyAirplanesWithAssignedLinks : Map[Airplane, LinkAssignments] = readyAirplanes.map { airplane =>
               (airplane, linkAssignments.getOrElse(airplane.id, LinkAssignments(Map.empty)))
             }.toMap
             updatingAirplanesListBuffer ++= decayAirplanesByAirline(readyAirplanesWithAssignedLinks, airline)
