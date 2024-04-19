@@ -2,7 +2,7 @@ name := """airline-data"""
 
 version := "2.1"
 
-scalaVersion := "2.13.0"
+scalaVersion := "2.13.11"
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % "test",
