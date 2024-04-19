@@ -30,7 +30,7 @@ object AirplaneSimulation {
         AirlineCache.getAirline(owner.id, true) match {
           case Some(airline) =>
             val readyAirplanes = airplanes.filter(_.isReady)
-            val readyAirplanesWithAssignedLinks : Map[Airplane, LinkAssignments] = readyAirplanes.map { airplane =>
+            val readyAirplanesWithAfssignedLinks : Map[Airplane, LinkAssignments] = readyAirplanes.map { airplane =>
               (airplane, linkAssignments.getOrElse(airplane.id, LinkAssignments(Map.empty)))
             }.toMap
             updatingAirplanesListBuffer ++= decayAirplanesByAirline(readyAirplanesWithAssignedLinks, airline)
@@ -126,7 +126,7 @@ object AirplaneSimulation {
              if (newCost <= airlinesByid(airplane.owner.id).getBalance()) {
                println("auto renewing " + airplane)
                val lossOnSelling = sellValue - airplane.value
-               val gainOnDiscount = adjustedModel.price - originalModel.price
+               val gainOnDiscount = originalModel.price - adjustedModel.price
                val newCapitalGain = existingCapitalGain + lossOnSelling + gainOnDiscount
                costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalGain))
                if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
