@@ -3,7 +3,7 @@ package com.patson.model
 import com.patson.model.airplane.Model
 import com.patson.model.airplane.Model.Type
 import FlightType._
-import com.patson.model.AirportFeatureType.{AirportFeatureType, DOMESTIC_AIRPORT, FINANCIAL_HUB, GATEWAY_AIRPORT, INTERNATIONAL_HUB, ISOLATED_TOWN, OLYMPICS_IN_PROGRESS, OLYMPICS_PREPARATIONS, UNKNOWN, VACATION_HUB}
+import com.patson.model.AirportFeatureType.{AirportFeatureType, DOMESTIC_AIRPORT, FINANCIAL_HUB, ELITE_DESTINATION, GATEWAY_AIRPORT, INTERNATIONAL_HUB, ISOLATED_TOWN, OLYMPICS_IN_PROGRESS, OLYMPICS_PREPARATIONS, UNKNOWN, VACATION_HUB}
 import com.patson.model.IsolatedTownFeature.HUB_RANGE_BRACKETS
 
 
@@ -19,11 +19,12 @@ abstract class AirportFeature {
   lazy val getDescription = {
     featureType match {
       case INTERNATIONAL_HUB => "International Hub - More international passengers especially premium."
-      case VACATION_HUB => "Vacation Hub - Attracts more tourists."
-      case FINANCIAL_HUB => "Financial Hub - Attracts more business passengers."
+      case ELITE_DESTINATION => "Elite Destination – Elites travel here. "
+      case VACATION_HUB => "Vacation Destination - Tourists travel here."
+      case FINANCIAL_HUB => "Financial Hub - Center for business passengers."
       case DOMESTIC_AIRPORT => "Domestic Discount Airport – Lower base upkeep. If flight is international, only accepts small aircraft."
-      case ISOLATED_TOWN => s"Isolated Airport - Increased demand within ${this.asInstanceOf[IsolatedTownFeature].boostRange}km."
-      case GATEWAY_AIRPORT => "Gateway - More passengers with other gateway airports."
+      case ISOLATED_TOWN => s"Isolated - Increased demand within ${this.asInstanceOf[IsolatedTownFeature].boostRange}km."
+      case GATEWAY_AIRPORT => "Gateway - Has increased demand with other gateway airports."
       case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games."
       case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games."
       case UNKNOWN => "Unknown"
@@ -50,23 +51,23 @@ object AirportFeature {
 sealed case class InternationalHubFeature(baseStrength : Int, boosts : List[AirportBoost] = List.empty) extends AirportFeature {
   val featureType = AirportFeatureType.INTERNATIONAL_HUB
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType, relationship : Int) : Double = {
-    if (airportId == toAirport.id) { //only affect if as a destination
-      val multiplier =
-        if (passengerType == PassengerType.BUSINESS) { //more obvious for business travelers
-          2  
-        } else {
-          0.5
-        }
-      if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL ) {
-        (rawDemand * (strengthFactor * 0.5) * multiplier).toInt //at MAX_STREGTH, add 1x for business traveler, 0.2x for tourists (short haul)   
-      } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == ULTRA_LONG_HAUL_DOMESTIC || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
-        (rawDemand * (strengthFactor * 1) * multiplier).toInt //at MAX_STREGTH, add 2x for business traveler, 0.4x for tourists (long haul)
-      } else {
-        0
-      }
-    } else {
+//    if (airportId == toAirport.id) { //only affect if as a destination
+//      val multiplier =
+//        if (passengerType == PassengerType.BUSINESS) { //more obvious for business travelers
+//          2
+//        } else {
+//          0.5
+//        }
+//      if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL ) {
+//        (rawDemand * (strengthFactor * 0.5) * multiplier).toInt //at MAX_STREGTH, add 1x for business traveler, 0.2x for tourists (short haul)
+//      } else if (flightType == LONG_HAUL_INTERNATIONAL || flightType == ULTRA_LONG_HAUL_DOMESTIC || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL) {
+//        (rawDemand * (strengthFactor * 1) * multiplier).toInt //at MAX_STREGTH, add 2x for business traveler, 0.4x for tourists (long haul)
+//      } else {
+//        0
+//      }
+//    } else {
       0
-    }
+//    }
   }
 
   override lazy val strength = baseStrength + boosts.filter(_.boostType == AirportBoostType.INTERNATIONAL_HUB).map(_.value).sum.toInt
@@ -92,6 +93,14 @@ sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBo
           700
         }
       }
+      // val wealthModifier = fromAirport.income / 50_000
+
+      //Americans fly to Hawaii or French to Guadaloupe
+//      val domesticSlashDistanceModifier = distance
+//      if (affinity == 5) 1.0 else 0.2
+
+      // kill all demand if (affinity < 0)
+      //(affinity / 5.0 * fromPopIncomeAdjusted * wealthModifier / 52 * distanceModifier * strengthFactor / 20).toInt
       (fromAirport.population / goFactor / 52 * fromAirport.income / 50000  * strengthFactor).toInt //assume in a city of 50k income out of goFactor people, 1 will visit this spot at full strength (10)
     } else {
       0
@@ -103,7 +112,7 @@ sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBo
 
 sealed case class FinancialHubFeature(baseStrength : Int, boosts : List[AirportBoost] = List.empty) extends AirportFeature {
   val featureType = AirportFeatureType.FINANCIAL_HUB
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, affinity : Int) : Double = {
     if (toAirport.id == airportId && passengerType == PassengerType.BUSINESS) { //only affect if as a destination and tourists
       val goFactor = 500 //out of how many people, will there be 1 going to this spot per year
 
@@ -118,7 +127,7 @@ sealed case class FinancialHubFeature(baseStrength : Int, boosts : List[AirportB
 sealed case class DomesticAirportFeature() extends AirportFeature {
   val featureType = AirportFeatureType.DOMESTIC_AIRPORT
   def strength = 0
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, affinity : Int) : Double = {
     if (FlightType.getCategory(flightType) == FlightCategory.DOMESTIC) {
       rawDemand / 4
     } else {
@@ -130,10 +139,10 @@ sealed case class DomesticAirportFeature() extends AirportFeature {
 sealed case class GatewayAirportFeature() extends AirportFeature {
   val featureType = AirportFeatureType.GATEWAY_AIRPORT
   def strength = 0
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, affinity : Int) : Double = {
     if (airportId != fromAirport.id) {
       0
-    } else if (relationship < 0) {
+    } else if (affinity < 0) {
       0
     } else if (FlightType.getCategory(flightType) == FlightCategory.DOMESTIC) {
       0
@@ -168,7 +177,6 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
 
 object IsolatedTownFeature {
   val HUB_RANGE_BRACKETS = Array(300, 600, 1200, 2400) //if pop not within X km
-  val ISOLATED_COUNTRIES = Array("FO", "BS", "KY", "TC", "VC", "GD", "DM", "AG", "MS", "BQ", "BL", "MF", "SX", "AI", "VI", "VG", "MU", "MV", "CC", "CK") //always add 1 level, because island countries
 }
 
 sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
@@ -181,9 +189,9 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
     }
 
   import IsolatedTownFeature._
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, affinity : Int) : Double = {
     val distance = Computation.calculateDistance(fromAirport, toAirport)
-    if (distance <= boostRange && relationship >= 3) {
+    if (distance <= boostRange && affinity >= 3) {
       if (rawDemand < 0.01) { //up to 30
         5 + rawDemand / 0.01 * 25
       } else if (rawDemand <= 0.1) { //up to 60
@@ -199,14 +207,14 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
 
 sealed case class OlympicsPreparationsFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.OLYMPICS_PREPARATIONS
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, affinity : Int) : Double = {
     0
   }
 }
 
 sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.OLYMPICS_IN_PROGRESS
-  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, affinity : Int) : Double = {
     0
   }
 }
@@ -214,5 +222,5 @@ sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeatu
 
 object AirportFeatureType extends Enumeration {
     type AirportFeatureType = Value
-    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, DOMESTIC_AIRPORT, ISOLATED_TOWN, GATEWAY_AIRPORT, OLYMPICS_PREPARATIONS, OLYMPICS_IN_PROGRESS, UNKNOWN = Value
+    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, ELITE_DESTINATION, DOMESTIC_AIRPORT, ISOLATED_TOWN, GATEWAY_AIRPORT, OLYMPICS_PREPARATIONS, OLYMPICS_IN_PROGRESS, UNKNOWN = Value
 }

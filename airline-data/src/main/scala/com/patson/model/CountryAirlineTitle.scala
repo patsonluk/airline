@@ -56,12 +56,6 @@ object CountryAirlineTitle {
 
   }
 
-//  val getLinkLimitBonus : (Title.Value => Int) = {
-//    case Title.NATIONAL_AIRLINE => 10
-//    case Title.PARTNERED_AIRLINE => 5
-//    case _ => 0
-//  }
-
   val PRIVILEGED_AIRLINE_RELATIONSHIP_THRESHOLD = 40
   val ESTABLISHED_AIRLINE_RELATIONSHIP_THRESHOLD = 20
   val APPROVED_AIRLINE_RELATIONSHIP_THRESHOLD = 5

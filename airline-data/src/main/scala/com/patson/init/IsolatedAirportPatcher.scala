@@ -16,6 +16,16 @@ object IsolatedAirportPatcher {
   def patchIsolatedAirports() = {
     val allAirports = AirportSource.loadAllAirports(true)
     val isolationByAirport = Map[Airport, Int]()
+    val ISOLATED_ISLAND_AIRPORTS = Array(
+      "KOI", "SYY", "BEB", "TRE", "ILY", "CAL", "ISC", "GCI", "JER",
+      //carribean
+      "PVA", "ADZ", "CYB", "RTB", "UII", "GJA",
+      //europe
+      "IDY", "ACI", "ISC"
+      //add greek, usa, japan, australia
+    )
+    val ISOLATED_COUNTRIES = Array("FO", "BS", "KY", "TC", "VC", "GD", "DM", "AG", "MS", "BQ", "BL", "MF", "SX", "AI", "VI", "VG", "MU", "MV", "CC", "CK") //always add 1 level, because island countries and islands are inherently isolated
+
 
     allAirports.foreach { airport =>
       var isolationLevel : Int = 0
@@ -36,7 +46,7 @@ object IsolatedAirportPatcher {
         }
       }
       isolationLevel = (Math.floor( isolationLevel / 2 )).toInt
-      if (ISOLATED_COUNTRIES.contains(airport.countryCode) && airport.size <= 4){
+      if (ISOLATED_COUNTRIES.contains(airport.countryCode) && airport.size <= 4 || ISOLATED_ISLAND_AIRPORTS.contains(airport.iata)) {
         isolationLevel += 1
       }
       if (isolationLevel > 0) {

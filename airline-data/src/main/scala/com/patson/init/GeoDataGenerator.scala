@@ -42,7 +42,7 @@ object GeoDataGenerator extends App {
 
     //make sure cities are saved first as we need the id for airport info
     try {
-      //      AirportSource.deleteAllAirports()
+      AirportSource.deleteAllAirports()
       CitySource.deleteAllCitites()
       CitySource.saveCities(cities)
     } catch {
@@ -59,12 +59,6 @@ object GeoDataGenerator extends App {
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }
-
-  def isCity(placeCode : String, countryCode : String, population : Int) : Boolean = {
-    placeCode == "PPLC" || placeCode == "PPLA" || placeCode == "PPLA2" || placeCode == "PPLA3" || (placeCode == "PPL" && (population >= 100000 || !countryCode.equals("US")))
-  }
-
-
 
   def getRunway() : Future[Map[Int, List[Runway]]] = {
     Future {
@@ -110,14 +104,6 @@ object GeoDataGenerator extends App {
         } catch {
           case _ : NumberFormatException => None
         }
-
-        //
-        //        if (infoArray(6) == "P" && isCity(infoArray(7), infoArray(8)) && infoArray(14).toInt > 0) { //then a valid target
-        //          if (incomeInfo.get(infoArray(8)).isEmpty) {
-        //            println(infoArray(8) + " has no income info")
-        //          }
-        //          result += new City(infoArray(1), infoArray(4).toDouble, infoArray(5).toDouble, infoArray(8), infoArray(14).toInt, incomeInfo.get(infoArray(8)).getOrElse(Country.DEFAULT_UNKNOWN_INCOME)) //1, 4, 5, 8 - country code, 14
-        //        }
       }
 
 
@@ -163,12 +149,12 @@ object GeoDataGenerator extends App {
         }.toList
       println(airportZoneList)
       println("setting zones via country-data-2022.csv")
-      //csv = country-code,country-name,openness,gini,nominal-to-real-conversion-ratio,(5)zone,group1,group2,lang1,lang2,lang3
+      //csv = country-code,country-name,openness,gini,nominal-to-real-conversion-ratio,(5)zone,group1,lang1,group2,lang2,lang3
       val countryZoneMap = scala.io.Source.fromFile("country-data-2022.csv").getLines().map(_.split(",", -1)).map { tokens =>
         val innerString = List(
           if (tokens(6).isEmpty) "" else tokens(6),
           if (tokens(7).isEmpty) "" else tokens(7),
-          if (tokens(8).isEmpty) "" else tokens(8),
+//          if (tokens(8).isEmpty) "" else tokens(8),
           if (tokens(9).isEmpty) "" else tokens(9),
           if (tokens(10).isEmpty) "" else tokens(10)
         ).filter(_.nonEmpty).mkString("-")
@@ -282,7 +268,7 @@ object GeoDataGenerator extends App {
           if (largestAirport.size < airport.size) airport else largestAirport
         }.fold(0)(_.size)
 
-        val validAirports = if (dominateAirportSize >= 6) {
+        val validAirports = if (dominateAirportSize >= 7) {
           potentialAirports.filter(_._1.size >= 3)
         } else potentialAirports //there's a super airport within 125km, then other airports can only get some share if it's size >= 3
 
@@ -347,9 +333,9 @@ object GeoDataGenerator extends App {
             giniMap.getOrElse(airport.countryCode, 39.0) + 20 //need to account for global inequality?
           } else if (normalizedIncome <= 9000 && population <= 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" ) {
             giniMap.getOrElse(airport.countryCode, 39.0) + 14
-          } else if (normalizedIncome < 3000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" || List("BOM").contains(airport.iata)) {
+          } else if (normalizedIncome < 3000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" || List("DEL","BOM").contains(airport.iata)) {
             giniMap.getOrElse(airport.countryCode, 39.0) + 24 //cities have much more inequality, but can't spike rich cities
-          } else if (normalizedIncome < 6000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" || List("DEL","CCU","BLR").contains(airport.iata)) {
+          } else if (normalizedIncome < 6000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" || List("CCU","BLR").contains(airport.iata)) {
             giniMap.getOrElse(airport.countryCode, 39.0) + 18
           } else if (normalizedIncome < 9000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" || List("HYD","MAA","JAI","IXC","GOI","CAI").contains(airport.iata)) {
             giniMap.getOrElse(airport.countryCode, 39.0) + 14
@@ -363,7 +349,7 @@ object GeoDataGenerator extends App {
             giniMap.getOrElse(airport.countryCode, 39.0) + 13
           } else if (population > 3_000_000 && List("ES", "PT", "GB", "FR", "DE", "AT", "HU", "PL", "IT", "CH", "UA", "CA", "JP").contains(airport.countryCode)) {
             giniMap.getOrElse(airport.countryCode, 39.0) + 12
-          } else if (List("VKO","TSN","NKG","HGH","SZX","CAN","CTU","PKX","SHA","SIN","THR","PNQ","DED","AGR","AMD","COK").contains(airport.iata)) {
+          } else if (List("VKO","TSN","NKG","HGH","SZX","CAN","CTU","TFN","CKG","CSX","PKX","SHA","SIN","THR","PNQ","DED","AGR","AMD","COK").contains(airport.iata)) {
             giniMap.getOrElse(airport.countryCode, 39.0) + 9
           } else if (List("DME","SVO","LED","SJC","HNL","MIA","MSY","PBI","XNA","CLE","CVG","ISP","HPN","MEX","NLU").contains(airport.iata)) {
             giniMap.getOrElse(airport.countryCode, 39.0) + 7
@@ -390,7 +376,8 @@ object GeoDataGenerator extends App {
         //don't have to copy feature here as they are generated later
         airportCopy
       }
-    }.filter(_.population != 0).sortBy { airport =>
+//    }.filter(_.population != 0).sortBy { airport =>
+    }.sortBy { airport =>
       airport.baseIncome * airport.basePopulation
     }
 

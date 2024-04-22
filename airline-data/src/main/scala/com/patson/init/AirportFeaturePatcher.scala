@@ -321,7 +321,7 @@ object AirportFeaturePatcher extends App {
 "SLC" -> 53, //Salt Lake City
 "MTJ" -> 9, //Montrose (Ski resort)
 "TPA" -> 64, //Tampa
-"REP" -> 69, //Siem Reap
+"SAI" -> 69, //Siem Reap
 "PNH" -> 67, //Phnom Penh
 "KOS" -> 56, //Sihanukville
 "HAK" -> 90, //Haikou
@@ -355,7 +355,7 @@ object AirportFeaturePatcher extends App {
 "GYD" -> 30, //Baku
 "BAH" -> 76, //Manama
 "TBS" -> 14, //Tbilisi
-"ETM" -> 33, //Eilat
+"ETM" -> 7, //Eilat
 "MHD" -> 51, //Mashhad
 "IKA" -> 34, //Tehran
 "KIH" -> 34, //Kish Island
@@ -681,11 +681,15 @@ object AirportFeaturePatcher extends App {
       "PAE" -> 0,
       "PIE" -> 0,
       "SFB" -> 0,
+      "USA" -> 0,
       "PGD" -> 0,
       "LIH" -> 0,
       "OGG" -> 0,
       "AKN" -> 0,
+      "ORH" -> 0,
+      "SIG" -> 0,
       //canada
+      "YTZ" -> 0,
       "YHU" -> 0,
       "YZF" -> 0,
       "YFB" -> 0,
@@ -695,8 +699,10 @@ object AirportFeaturePatcher extends App {
       //EU
       "EIN" -> 0,
       "CRL" -> 0,
+      "ANR" -> 0,
       "BVA" -> 0,
       "HHN" -> 0,
+      "BRE" -> 0,
       "DTM" -> 0,
       "FMM" -> 0,
       "FAO" -> 0,
@@ -706,6 +712,7 @@ object AirportFeaturePatcher extends App {
       "CIA" -> 0,
       "TSF" -> 0,
       "NYO" -> 0,
+      "BMA" -> 0,
       "TRF" -> 0,
       "WMI" -> 0,
       //china
@@ -714,6 +721,10 @@ object AirportFeaturePatcher extends App {
       "SHA" -> 0,
       "ZUH" -> 0,
       "LXA" -> 0,
+      //japan
+      "ITM" -> 0,
+      "UKB" -> 0,
+      "IBR" -> 0,
       //argentina
       "AEP" -> 0,
       //brazil
@@ -724,6 +735,10 @@ object AirportFeaturePatcher extends App {
       "FLA" -> 0,
       //chile
       "LSC" -> 0,
+      //dominican-republic
+      "JBQ" -> 0,
+      //belize
+      "TZA" -> 0,
       //iran
       "THR" -> 0,
       "PGU" -> 0,
@@ -731,11 +746,14 @@ object AirportFeaturePatcher extends App {
       "KIH" -> 0,
       "AWZ" -> 0,
       //india
+      "HDO" -> 0,
       "DHM" -> 0,
       "BDQ" -> 0,
-      "TIR" -> 0,
+      "PNY" -> 0,
+      "AIP" -> 0,
+      "STV" -> 0,
+      "KNU" -> 0,
       //russia
-      "VKO" -> 0,
       "CEK" -> 0,
       "KEJ" -> 0,
       "BTK" -> 0,
@@ -752,6 +770,7 @@ object AirportFeaturePatcher extends App {
 
     )
   ) + (GATEWAY_AIRPORT -> getGatewayAirports().map(iata => (iata, 0)).toMap)
+//  + (ELITE_DESTINATION -> loadEliteDestinations().map(iata => (iata, strength)).toMap)
 
   patchFeatures()
 
@@ -776,8 +795,18 @@ object AirportFeaturePatcher extends App {
               println(s"Cannot find airport with iata $iata to patch $features")
           }
       }
-    IsolatedAirportPatcher.patchIsolatedAirports()
+      IsolatedAirportPatcher.patchIsolatedAirports()
   }
+
+//    def loadEliteDestinations() : List[String,Integer] = {
+//      //load CSV
+//      //parse
+//      //save into DB
+//      //flatten & return
+//      lazy val featureList = Map[String, Int](
+//      list.toList
+//    }
+
 
   def getGatewayAirports() : List[String] = {
     //The most powerful airport of every country
@@ -812,6 +841,7 @@ object AirportFeaturePatcher extends App {
     list -= "BLZ" //Malawi
     list += "LLW"
     list -= "KGA" //DRC
+    list -= "MJM"
     list += "FIH"
     list -= "KAN" //Nigeria
     list += "LOS"
@@ -841,6 +871,7 @@ object AirportFeaturePatcher extends App {
       "GIG", //Brazil
       "GRU",
       "NRT", //Japan
+      "XIX",
       "SVO", //Russia
       "LED",
       "FCO", //Italy
