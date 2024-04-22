@@ -31,7 +31,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "reputation" -> JsNumber(BigDecimal(airline.airlineInfo.reputation).setScale(2, BigDecimal.RoundingMode.HALF_EVEN)),
       "serviceQuality" -> JsNumber(airline.airlineInfo.currentServiceQuality),
       "targetServiceQuality" -> JsNumber(airline.airlineInfo.targetServiceQuality),
-      "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
+      "weeklyDividends" -> JsNumber(airline.airlineInfo.weeklyDividends),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
       "gradeValue" -> JsNumber(airline.airlineGrade.value),
       "airlineCode" -> JsString(airline.getAirlineCode()),

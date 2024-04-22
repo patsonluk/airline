@@ -140,7 +140,7 @@ object SqliteMeta {
                                                  "balance LONG," +
                                                  "service_quality DOUBLE," +
                                                  "service_funding INTEGER," +
-                                                 "maintenance_quality DOUBLE," +
+                                                 "weekly_dividends INTEGER," +
                                                  "reputation DOUBLE)")
          statement.execute()
          statement.close()

@@ -61,7 +61,7 @@ function showOfficeCanvas() {
 	updateMinimumRenewalBalanceDetails()
 	updateAirplaneRenewalDetails()
 	updateAirlineBases()
-	updateMaintenanceLevelDetails()
+	updateDividends()
 	updateAirlineColorPicker()
 	updateResetAirlineInfo()
 	updateHeadquartersMap($('#officeCanvas .headquartersMap'), activeAirline.id)
@@ -999,6 +999,38 @@ function updateAirplaneRenewalDetails() {
 	});
 }
 
+function editDividends() {
+	$('#weeklyDividendsDisplaySpan').hide()
+	$('#weeklyDividendsInputSpan').show()
+}
+
+function setDividendsLevel(dividends) {
+	var airlineId = activeAirline.id
+	var url = "airlines/" + airlineId + "/weeklyDividends"
+    var data = { "weeklyDividends" : parseInt(dividends) }
+	$.ajax({
+		type: 'PUT',
+		url: url,
+	    data: JSON.stringify(data),
+	    contentType: 'application/json; charset=utf-8',
+	    dataType: 'json',
+	    success: function() {
+	    	activeAirline.weeklyDividends = dividends
+	    	updateDividends()
+	    },
+        error: function(jqXHR, textStatus, errorThrown) {
+	            console.log(JSON.stringify(jqXHR));
+	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+	    }
+	});
+}
+
+function updateDividends() {
+	$('#dividends').text("$" + activeAirline.weeklyDividends)
+	$('#dividendsInput').val(activeAirline.weeklyDividends)
+	$('#weeklyDividendsDisplaySpan').show()
+	$('#weeklyDividendsInputSpan').hide()
+}
 
 function updateChampionedCountriesDetails() {
 	$('#championedCountriesList').children('div.table-row').remove()
@@ -1087,46 +1119,6 @@ function selectSheet(tab, sheet) {
 	sheet.siblings(".sheet").hide()
 	sheet.show()
 }
-
-
-
-function setMaintenanceLevel(maintenanceLevel) {
-	var airlineId = activeAirline.id
-	var url = "airlines/" + airlineId + "/maintenanceQuality"
-    var data = { "maintenanceQuality" : parseInt(maintenanceLevel) }
-	$.ajax({
-		type: 'PUT',
-		url: url,
-	    data: JSON.stringify(data),
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function() {
-	    	activeAirline.maintenanceQuality = maintenanceLevel
-	    	updateMaintenanceLevelDetails()
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
-}
-
-function editMaintenanceLevel() {
-	$('#maintenanceLevelDisplaySpan').hide()
-	$('#maintenanceLevelInputSpan').show()
-}
-
-function updateMaintenanceLevelDetails() {
-	$('#maintenanceLevel').text(activeAirline.maintenanceQuality + "%")
-	$('#maintenanceLevelInput').val(activeAirline.maintenanceQuality)
-	$("#maintenanceLevelGauge").empty()
-	$('#maintenanceLevelDisplaySpan').show()
-	$('#maintenanceLevelInputSpan').hide()
-	plotMaintenanceLevelGauge($("#maintenanceLevelGauge"), $("#maintenanceLevelInput"), function(newLevel) {
-		setMaintenanceLevel(newLevel)
-	})
-}
-
 
 function updateResetAirlineInfo() {
 	var airlineId = activeAirline.id

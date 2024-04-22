@@ -206,14 +206,14 @@ object Meta {
       "balance LONG," +
       "service_quality DECIMAL(5,2)," +
       "target_service_quality INTEGER," +
-      "maintenance_quality DECIMAL(5,2)," +
-      "reputation DECIMAL(5,2)," +
+      "weekly_dividends INTEGER DEFAULT 0," +
+      "reputation DECIMAL(6,2)," +
       "country_code CHAR(2)," +
       "airline_code CHAR(2)," +
       "color CHAR(7)," +
       "skip_tutorial TINYINT," +
       "initialized TINYINT," +
-      "minimum_renewal_balance BIGINT DEFAULT 0," +
+      "minimum_renewal_balance INTEGER DEFAULT 0," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
 

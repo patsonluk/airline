@@ -67,11 +67,12 @@ object AirlineGenerator extends App {
       
       val newAirline = Airline("Global Rats " + baseAirport.iata, isGenerated = true)
       newAirline.setBalance(1000000000)
-      newAirline.setMaintenanceQuality(50)
       newAirline.setTargetServiceQuality(49)
       newAirline.setCurrentServiceQuality(70)
+      newAirline.setReputation(80)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
+      newAirline.setSkipTutorial(true)
       
       val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 9, 1, true)
       
@@ -122,7 +123,6 @@ object AirlineGenerator extends App {
       
       val newAirline = Airline("MOUP " + baseAirport.countryCode, isGenerated = true)
       newAirline.setBalance(200000000)
-      newAirline.setMaintenanceQuality(55)
       newAirline.setTargetServiceQuality(55)
       newAirline.setCurrentServiceQuality(70)
       newAirline.setCountryCode(baseAirport.countryCode)
@@ -167,7 +167,6 @@ object AirlineGenerator extends App {
       
       val newAirline = Airline("Bark and Fly " + baseAirport.countryCode, isGenerated = true)
       newAirline.setBalance(200000000)
-      newAirline.setMaintenanceQuality(55)
       newAirline.setTargetServiceQuality(55)
       newAirline.setCurrentServiceQuality(65)
       newAirline.setCountryCode(baseAirport.countryCode)
@@ -210,7 +209,8 @@ object AirlineGenerator extends App {
       val distance = Computation.calculateDistance(fromAirport, toAirport)
       val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
       val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
-      val targetSeats = 3 * DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
+      val demand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
+      val targetSeats = demand.travelerDemand.total * 3
 
       if (targetSeats > 0) {
         var pickedModel = airplaneModelsByCapacity.find { model => model.capacity * Computation.calculateMaxFrequency(model, distance) >= targetSeats && model.range >= distance} //find smallest model that can cover all demand

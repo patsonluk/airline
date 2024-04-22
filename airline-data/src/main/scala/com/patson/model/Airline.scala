@@ -7,7 +7,7 @@ import java.util.{Calendar, Date}
 import scala.collection.mutable.ListBuffer
 
 case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0) extends IdObject {
-  val airlineInfo = AirlineInfo(0, 15, 0, 15, 0, 0)
+  val airlineInfo = AirlineInfo(0, 0, 0, 0, 0, 0)
   var allianceId : Option[Int] = None
   var bases : List[AirlineBase] = List.empty
 
@@ -31,8 +31,8 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
     airlineInfo.reputation = reputation
   }
 
-  def setMaintenanceQuality(maintenanceQuality : Double) {
-    airlineInfo.maintenanceQuality = maintenanceQuality
+  def setWeeklyDividends(weeklyDividends : Int) {
+    airlineInfo.weeklyDividends = weeklyDividends
   }
 
   def removeCountryCode() = {
@@ -120,7 +120,9 @@ case class Airline(name: String, isGenerated : Boolean = false, var id : Int = 0
 
   def getReputation() = airlineInfo.reputation
 
-  def getMaintenanceQuality() = airlineInfo.maintenanceQuality
+  def getWeeklyDividends() : Int = airlineInfo.weeklyDividends
+
+//  def getStockPrice : Double =
 
   def getDefaultAirlineCode() : String = {
     var code = name.split("\\s+").foldLeft("")((foldString, nameToken) => {
@@ -178,11 +180,11 @@ case class DelegateInfo(availableCount : Int, boosts : List[DelegateBoostAirline
 
 }
 
-case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var maintenanceQuality : Double, var targetServiceQuality : Int, var reputation : Double, var minimumRenewalBalance: Long, var countryCode : Option[String] = None, var airlineCode : String = "", var skipTutorial : Boolean = false, var initialized : Boolean = false)
+case class AirlineInfo(var balance : Long, var currentServiceQuality : Double, var weeklyDividends : Int, var targetServiceQuality : Int, var reputation : Double, var minimumRenewalBalance: Long, var countryCode : Option[String] = None, var airlineCode : String = "", var skipTutorial : Boolean = false, var initialized : Boolean = false)
 
 object TransactionType extends Enumeration {
   type TransactionType = Value
-  val CAPITAL_GAIN, CREATE_LINK = Value
+  val CAPITAL_GAIN, CREATE_LINK, PRIZE, DIVIDENDS = Value
 }
 
 object OtherIncomeItemType extends Enumeration {
@@ -403,25 +405,26 @@ case class AirlineGrade(value : Int, reputationCeiling : Int, description: Strin
 
 object AirlineGrade {
   val allGrades = ListBuffer[AirlineGrade]()
-  val NEW = AirlineGrade(1, 20, "New Airline")
-  val LOCAL = AirlineGrade(2, 40, "Local Airline")
-  val MUNICIPAL = AirlineGrade(3, 60, "Municipal Airline")
-  val REGIONAL = AirlineGrade(4, 80, "Regional Airline")
-  val CONTINENTAL = AirlineGrade(5, 100, "Continental Airline")
-  val LESSER_INTERNATIONAL = AirlineGrade(6, 125, "Lesser International Airline")
-  val THIRD_INTERNATIONAL = AirlineGrade(7, 150, "Third-class International Airline")
-  val SECOND_INTERNATIONAL = AirlineGrade(8, 175, "Second-class International Airline")
-  val MAJOR_INTERNATIONAL = AirlineGrade(9, 200, "Major International Airline")
-  val TOP_INTERNATIONAL = AirlineGrade(10, 250, "Top International Airline")
-  val TOP_INTERNATIONAL_2 = AirlineGrade(11, 300, "Top International Airline II")
-  val TOP_INTERNATIONAL_3 = AirlineGrade(12, 350, "Top International Airline III")
-  val TOP_INTERNATIONAL_4 = AirlineGrade(13, 400, "Top International Airline IV")
-  val TOP_INTERNATIONAL_5 = AirlineGrade(14, 450, "Top International Airline V")
-  val EPIC = AirlineGrade(15, 500, "Epic Airline")
-  val ULTIMATE = AirlineGrade(16, 550, "Ultimate Airline")
-  val LEGENDARY = AirlineGrade(17, 600, "Legendary Airline")
-  val CELESTIAL = AirlineGrade(18, 700, "Celestial Airline")
-  val MYTHIC = AirlineGrade(19, 800, "Mythic Airline")
+  val NEW = AirlineGrade(1, 20, "Shoddy")
+  val LOCAL = AirlineGrade(2, 40, "Shoddy")
+  val MUNICIPAL = AirlineGrade(3, 60, "Upstart")
+  val REGIONAL = AirlineGrade(4, 80, "Upstart")
+  val CONTINENTAL = AirlineGrade(5, 100, "Regional")
+  val LESSER_INTERNATIONAL = AirlineGrade(6, 125, "Successful")
+  val THIRD_INTERNATIONAL = AirlineGrade(7, 150, "Successful II")
+  val SECOND_INTERNATIONAL = AirlineGrade(8, 175, "Major I")
+  val MAJOR_INTERNATIONAL = AirlineGrade(9, 200, "Major II")
+  val TOP_INTERNATIONAL = AirlineGrade(10, 250, "Major III")
+  val TOP_INTERNATIONAL_2 = AirlineGrade(11, 300, "Leading")
+  val TOP_INTERNATIONAL_3 = AirlineGrade(12, 350, "Leading Superior")
+  val TOP_INTERNATIONAL_4 = AirlineGrade(13, 400, "Exceptional Superior")
+  val TOP_INTERNATIONAL_5 = AirlineGrade(14, 450, "Colossal")
+  val EPIC = AirlineGrade(15, 500, "Epic")
+  val ULTIMATE = AirlineGrade(16, 550, "Ultimate")
+  val LEGENDARY = AirlineGrade(17, 600, "Legendary")
+  val CELESTIAL = AirlineGrade(18, 700, "Celestial")
+  val MYTHIC = AirlineGrade(19, 800, "Mythic")
+  val COLOSSAL = AirlineGrade(20, 1000, "Rat")
 
   def addGrade(grade : AirlineGrade) = {
     allGrades.append(grade)

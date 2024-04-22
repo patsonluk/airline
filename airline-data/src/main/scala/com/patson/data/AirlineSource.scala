@@ -68,7 +68,7 @@ object AirlineSource {
           airline.setReputation(resultSet.getDouble("reputation"))
           airline.setCurrentServiceQuality(resultSet.getDouble("service_quality"))
           airline.setTargetServiceQuality(resultSet.getInt("target_service_quality"))
-          airline.setMaintenanceQuality(resultSet.getDouble("maintenance_quality"))
+          airline.setWeeklyDividends(resultSet.getInt("weekly_dividends"))
           airline.setAirlineCode(resultSet.getString("airline_code"))
           airline.setMinimumRenewalBalance(resultSet.getLong("minimum_renewal_balance"))
           val countryCode = resultSet.getString("country_code")
@@ -138,12 +138,12 @@ object AirlineSource {
             
 
             //insert airline info too
-            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, target_service_quality, maintenance_quality, reputation, country_code, airline_code, minimum_renewal_balance) VALUES(?,?,?,?,?,?,?,?,?)")
+            val infoStatement = connection.prepareStatement("INSERT INTO " + AIRLINE_INFO_TABLE + "(airline, balance, service_quality, target_service_quality, weekly_dividends, reputation, country_code, airline_code, minimum_renewal_balance) VALUES(?,?,?,?,?,?,?,?,?)")
             infoStatement.setInt(1, airline.id)
             infoStatement.setLong(2, airline.getBalance())
             infoStatement.setDouble(3, airline.getCurrentServiceQuality())
             infoStatement.setInt(4, airline.getTargetServiceQuality())
-            infoStatement.setDouble(5, airline.getMaintenanceQuality())
+            infoStatement.setInt(5, airline.getWeeklyDividends())
             infoStatement.setDouble(6, airline.getReputation())
             infoStatement.setString(7, airline.getCountryCode().getOrElse(null))
             infoStatement.setString(8, airline.getAirlineCode())
@@ -201,7 +201,7 @@ object AirlineSource {
       if (updateBalance) {
         query += "balance = ?, "
       }
-      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, country_code = ?, airline_code = ?, skip_tutorial = ?, initialized = ?, minimum_renewal_balance = ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, weekly_dividends = ?, reputation = ?, country_code = ?, airline_code = ?, skip_tutorial = ?, initialized = ?, minimum_renewal_balance = ? WHERE airline = ?"
       
       try {
         val updateStatement = connection.prepareStatement(query)
@@ -216,7 +216,7 @@ object AirlineSource {
         index += 1
         updateStatement.setInt(index, airline.getTargetServiceQuality())
         index += 1
-        updateStatement.setDouble(index, airline.getMaintenanceQuality())
+        updateStatement.setInt(index, airline.getWeeklyDividends())
         index += 1
         updateStatement.setDouble(index, airline.getReputation())
         index += 1
@@ -263,7 +263,7 @@ object AirlineSource {
       val connection = Meta.getConnection()
       
       var query = "UPDATE " + AIRLINE_INFO_TABLE + " SET "
-      query += "service_quality = ?, target_service_quality = ?, maintenance_quality = ?, reputation = ?, minimum_renewal_balance = ? WHERE airline = ?"
+      query += "service_quality = ?, target_service_quality = ?, weekly_dividends = ?, reputation = ?, minimum_renewal_balance = ? WHERE airline = ?"
       
       
       try {
@@ -278,7 +278,7 @@ object AirlineSource {
           index += 1
           updateStatement.setInt(index, airline.getTargetServiceQuality())
           index += 1
-          updateStatement.setDouble(index, airline.getMaintenanceQuality())
+          updateStatement.setInt(index, airline.getWeeklyDividends())
           index += 1
           updateStatement.setDouble(index, airline.getReputation())
           index += 1

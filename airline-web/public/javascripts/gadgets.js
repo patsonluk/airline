@@ -387,10 +387,10 @@ function getYearMonthText(weekDuration) {
 	}
 }
 
-function getOpennessIcon(openness, size=null, isDomesticAirport=false) {
+function getOpennessIcon(openness, size=null, isDomesticAirport=false, isGateway=false) {
 	var description
 	var icon
-	if (size && size <= 2 || isDomesticAirport){
+	if (size && size <= 2 && ! isGateway || isDomesticAirport){
 	    description = "Limited International Flights"
         icon = "prohibition.png"
 	} else if (openness >= 7 || size >= 7) {
@@ -637,9 +637,9 @@ function closeAllModals() {
 
 function disableButton(button, reason) {
     $(button).addClass("disabled")
-    if ($(button).is(':input')) { //then have to manually add overlay
-       $(button).after('<div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 50, 50, 0.2)"></div>')
-    }
+//    if ($(button).is(':input')) { //then have to manually add overlay
+//       $(button).after('<div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 50, 50, 0.2)"></div>')
+//    }
 
     $(button).each(function() {
       $(this).data("originalClickFunction", $(this).attr("onclick"))
