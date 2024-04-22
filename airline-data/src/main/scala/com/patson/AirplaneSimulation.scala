@@ -113,11 +113,11 @@ object AirplaneSimulation {
             && airplane.purchasedCycle <= currentCycle - airplane.model.constructionTime) { //only renew airplane if it has been purchased longer than the construction time required
              val airlineId = airplane.owner.id
              val (existingCost, existingBuyPlane, existingSellPlane, existingCapitalGain) : (Long, Long, Long, Long) = costsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
-             val sellValue = Computation.calculateAirplaneSellValue(airplane)
+             val sellValue = Computation.calculateAirplaneSellValue(airplane) //includes model popularity discounts
 
              val originalModel = airplane.model
 
-             val adjustedModel = originalModel.applyDiscount(ModelDiscount.getCombinedDiscountsByModelId(airlineId, originalModel.id))
+             val adjustedModel = originalModel.applyDiscount(ModelDiscount.getCombinedDiscountsByModelId(airlineId, originalModel.id)) //includes airline specific discounts + popularity discounts
              val renewCost = adjustedModel.price - sellValue
              val newCost = existingCost + renewCost
              val newBuyPlane = existingBuyPlane + adjustedModel.price
@@ -126,7 +126,7 @@ object AirplaneSimulation {
              if ((newCost <= airlinesByid(airplane.owner.id).getBalance()) && (airlinesByid(airplane.owner.id).getBalance() - newCost >= airlinesByid(airplane.owner.id).getMinimumRenewalBalance())) {
                println("auto renewing " + airplane)
                val lossOnSelling = sellValue - airplane.value
-               val gainOnDiscount = adjustedModel.price - originalModel.price
+               val gainOnDiscount = originalModel.price - adjustedModel.price
                val newCapitalGain = existingCapitalGain + lossOnSelling + gainOnDiscount
                costsByAirline.put(airlineId, (newCost, newBuyPlane, newSellPlane, newCapitalGain))
                if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
@@ -185,7 +185,6 @@ object AirplaneSimulation {
       case(airplane, linkAssignments) =>
         //val minDecay = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
         //val maxDecay = minDecay * 2
-        //val baseDecayRate = maxDecay - (maxDecay - minDecay) * (owner.getMaintenanceQuality() / Airline.MAX_MAINTENANCE_QUALITY)
         val baseDecayRate = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
 
         val decayRate = baseDecayRate / 3 + baseDecayRate * (2.0 / 3) * airplane.utilizationRate

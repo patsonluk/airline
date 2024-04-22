@@ -61,8 +61,7 @@ class AirplaneModelSpec extends WordSpecLike with Matchers with BeforeAndAfterAl
       price *= 1.5
     }
     val airline = Airline.fromId(1)
-    airline.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
-    
+
     val link = Link(fromAirport, toAirport, airline, price = price, distance = distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> capacity)), rawQuality = fromAirport.expectedQuality(flightType, ECONOMY), duration, frequency, flightType)
     val airplane = Airplane(airplaneModel, airline, constructedCycle = 0 , purchasedCycle = 0, Airplane.MAX_CONDITION, depreciationRate = 0, value = airplaneModel.price, configuration  = AirplaneConfiguration.default(airline, airplaneModel))
     airplane.setTestUtilizationRate(1)

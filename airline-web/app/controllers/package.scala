@@ -614,7 +614,6 @@ package object controllers {
         airportObject = airportObject + ("isDomesticAirport" -> JsBoolean(true))
       }
 
-
       if (airport.getRunways().length > 0) {
         airportObject = airportObject + ("runways" -> JsArray(airport.getRunways().sortBy(_.length).reverse.map { runway =>
           Json.obj("type" -> runway.runwayType.toString(), "length" -> runway.length, "code" -> runway.code)

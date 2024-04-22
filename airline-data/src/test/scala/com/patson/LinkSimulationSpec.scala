@@ -30,8 +30,6 @@ class LinkSimulationSpec(_system: ActorSystem) extends TestKit(_system) with Imp
  
   val testAirline1 = Airline("airline 1")
   val testAirline2 = Airline("airline 2")
-  testAirline1.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
-  testAirline2.setMaintenanceQuality(Airline.MAX_MAINTENANCE_QUALITY)
   val fromAirport = Airport.fromId(1).copy(size = 3, baseIncome = Country.HIGH_INCOME_THRESHOLD, basePopulation = 1)
   fromAirport.initAirlineBases(List.empty)
   val toAirport = Airport.fromId(2).copy(size = 3)

@@ -4,7 +4,6 @@ import com.patson.data.{AirplaneSource, LinkSource}
 import com.patson.model.{Airline, Airport, Computation, IdObject, Link, LinkClassValues}
 
 case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, var home : Airport = Airport.fromId(0), isReady : Boolean = true, var purchaseRate : Double = 1, version : Int = 0,var id : Int = 0) extends IdObject {
-  //val isReady = (currentCycle : Int) => currentCycle >= constructedCycle && !isSold
   val dealerValue = {
     (value * dealerRatio).toInt
   }
@@ -74,6 +73,6 @@ object Airplane {
   val MAX_CONDITION = 100
   val BAD_CONDITION = 40
   val CRITICAL_CONDITION = 20
-  val DEFAULT_DEALER_RATIO = 1.2
+  val DEFAULT_DEALER_RATIO = 1.0
   val MAX_FLIGHT_MINUTES : Int = (24 * 60 * 4).toInt
 }

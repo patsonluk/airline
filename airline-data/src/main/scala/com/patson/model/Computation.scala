@@ -160,24 +160,20 @@ def constructAffinityText(fromZone : String, toZone : String, relationship : Int
   } else {
     val set1 = fromZone.split("-").filter(_!="None")
     val set2 = toZone.split("-").filter(_!="None")
-    var affinity = 0
+    val affinity = calculateAffinityValue(fromZone, toZone, relationship)
     var matchingItems = set1.intersect(set2).toArray.toArray
     if (relationship < 0) {
-      affinity = -1 + matchingItems.size
       matchingItems = Array("Political Acrimony") ++ matchingItems
     } else if (relationship >= 4) {
-      affinity = 2 + matchingItems.size
       matchingItems = Array("Excellent Relations") ++ matchingItems
     } else if (relationship >= 2) {
-      affinity = 1 + matchingItems.size
       matchingItems = Array("Good Relations") ++ matchingItems
     } else {
-      affinity = matchingItems.size
       set1.intersect(set2).toArray
     }
     val introText = if (affinity == 0 && matchingItems.size == 0){
       "Neutral"
-    } else if (affinity > 0){
+    } else if (affinity == 0){
       "Neutral:"
     } else if (affinity > 0){
       s"+${affinity}:"

@@ -200,6 +200,7 @@ case class OlympicsVoteCashReward() extends EventReward(EventType.OLYMPICS, Rewa
   val CASH_BONUS = 10000000 //10 millions
   override def applyReward(event: Event, airline : Airline) = {
     AirlineSource.adjustAirlineBalance(airline.id, CASH_BONUS)
+    AirlineSource.saveTransaction(AirlineTransaction(airline.id, TransactionType.CAPITAL_GAIN, CASH_BONUS))
   }
 
   override val description: String = "$10,000,000 subsidy in cash"
@@ -230,6 +231,7 @@ case class OlympicsPassengerCashReward() extends EventReward(EventType.OLYMPICS,
 
   override def applyReward(event: Event, airline : Airline) = {
     val reward = computeReward(event.id, airline.id)
+    AirlineSource.saveTransaction(AirlineTransaction(airline.id, TransactionType.CAPITAL_GAIN, reward))
     AirlineSource.adjustAirlineBalance(airline.id, reward)
   }
 

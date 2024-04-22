@@ -406,19 +406,19 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   def slotFee(airplaneModel : Model, airline : Airline) : Int = {
     val baseSlotFee = size match {
       case 1 => 1 //small airport
-      case 2 => 5
-      case 3 => 25
-      case 4 => 75
-      case 5 => 150
-      case 6 => 300
-      case 7 => 600
-      case _ => 900 //mega
+      case 2 => 2
+      case 3 => 8
+      case 4 => 32
+      case 5 => 64
+      case 6 => 128
+      case 7 => 256
+      case _ => 512 //mega
     }
 
     import Model.Type._
     val multiplier = airplaneModel.airplaneType match {
-      case LIGHT => 1
-      case SMALL => 1
+      case LIGHT => 2
+      case SMALL => 2
       case REGIONAL => 3
       case MEDIUM => 6
       case LARGE => 12
@@ -454,7 +454,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
 
   val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
-    Math.max(0, Math.min(incomeLevel.toInt, 50) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //50% on income level, 50% on flight adjust
+    Math.max(0, Math.min((incomeLevel/1.5).toInt, 35) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //35% on income level, 50% on flight adjust, 5% for elite add-on, 10-20% for GOOD_QUALITY_DELTA
   }
 
   private[this] def getCountry() : Country = {
@@ -551,14 +551,15 @@ object Airport {
 
   import FlightType._
   val qualityExpectationFlightTypeAdjust =
-  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
-        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
-        MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 5, 15),
-        MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 10, 15),
-        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 10, 15),
-        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(10, 15, 20),
-        ULTRA_LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 15, 20),
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20)
+  Map(
+    SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-10, 5, 15),
+    MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 10, 25),
+    LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 40),
+    ULTRA_LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 20, 45),
+    SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 10, 25),
+    MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 20, 40),
+    LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(10, 35, 50),
+    ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 35, 50)
   )
 }
 

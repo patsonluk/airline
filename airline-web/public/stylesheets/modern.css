@@ -19,41 +19,37 @@ html {
 }
 html[data-theme="dark"] {
 	--section-background-image: linear-gradient(#111a, #111a);
-
 	--shadow-1: inset 0 0 2px rgba(255, 255, 255, 0.6);
-    --shadow-2: inset 0 0 2px rgba(255, 255, 255, 0.6);
-
-	--background-1: #101010A0;
+	--shadow-2: inset 0 0 2px rgba(255, 255, 255, 0.6);
+	--background-1: #10101070;
 	--background-2: #505050A0;
 	--background-3: #505050A0;
 	--background-section: #111111;
 	--input-background: #aaa3;
-
 	--color-1: #ccc;
-
 }
 
 html[data-ui-light-mode="true"] {
     --backdrop-blur: none;
-    --background-1: #111111DD;
+    --background-1: #212b3b;
 }
 
 .section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
     /*disable this for now...seems to have issues with blur for tooltip*/
-	backdrop-filter: var(--backdrop-blur) !important;
-	background-image: unset;
-	background-color: var(--background-1);
+    backdrop-filter: var(--backdrop-blur);
+    background-color: var(--background-1);
 }
 
-#detailsPanel { /*only enable it for details panel, we need this otherwise panel is hard to read with map beneath it*/
-    backdrop-filter: var(--backdrop-blur) !important;
+#detailsPanel, #extendedPanel { /*only enable it for details panel, we need this otherwise panel is hard to read with map beneath it*/
+    /* backdrop-filter: var(--backdrop-blur) !important; */
     background-color: var(--background-1);
-    background-image: unset;
+    margin: 0 0 20px;
 }
 
 
 div.section {
 	border-radius: 8px;
+	padding: 16px 8px 20px 16px;
 }
 /* sections broken with backdrop-filter */
 /* broken tooltips */
@@ -88,12 +84,13 @@ div.button, .mapPopup div.button, button.button {
     border-radius: 5px;
     padding: 4px 12px;
     box-sizing: border-box;
+    transition: .2s ease-in-out border-color;
 }
-div.button:hover:not([class*="disabled"]) {
-	background-color: var(--background-3);
+div.button:hover:not([class*="disabled"]), button.button:hover:not([class*="disabled"]) {
+	border-color: #eee;
 }
-div.button:active:not([class*="disabled"]) {
-	background-color: var(--background-1);
+div.button:active:not([class*="disabled"]), button.button:hover:not([class*="disabled"]) {
+	border-color: #ccc;
 }
 .gm-style-iw .gm-style-iw-d {
     overflow: clip !important;
@@ -115,25 +112,25 @@ div.button:active:not([class*="disabled"]) {
 #topBar > :last-child {
 	background-color: var(--background-1);
 	position: absolute;
-	top: 3px;
-	right: 3px;
-	padding-left: 5px;
-	padding-right: 2px;
-	border-radius: 6px
+	top: -1px;
+	right: -1px;
+	padding-left: 4px;
+	padding-right: 4px;
+	border-radius: 0 0 0 8px;
 }
 #topBar > :first-child {
 	background-color: var(--background-1);
 	position: absolute;
-	top: 3px;
-	left: 3px;
-	padding-right: 10px;
-	padding-left: 3px;
-	border-radius: 6px;
+	top: -1px;
+	left: -1px;
+	padding-right: 8px;
+	padding-left: 6px;
+	border-radius: 0 0 6px 0;
 	padding-block: 10px;
 }
 div#topBar {
 	box-shadow: none;
-	/* background: #111a;*/
+	background: #111a;
 	border: none;
 	position: fixed !important;
 	background: none;
@@ -178,6 +175,7 @@ div[jstcache="0"] > :has(> .gm-iv-address) {
 .gm-style .gm-style-iw-c {
 	background: var(--background-1);
 	box-shadow: var(--shadow-1);
+	backdrop-filter: var(--backdrop-blur);
 }
 .mapPopup, .mapPopup > div > h4, .gm-style .gm-style-iw-c {
 	color: var(--color-1);
@@ -250,15 +248,18 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	opacity: 1 !important
 }
 .tab-icon {
+    margin: 5px 0px;
+    border: 1px solid transparent;
     transition: all 0.1s;
     background: var(--background-1) !important;
-    box-shadow: var(--shadow-1) !important
+    box-shadow: var(--shadow-1) !important;
+    transition: .2s ease-in-out border-color;
 }
 .tab-icon:is(.selected, :hover) {
-    background: var(--background-2) !important;
+    border: 1px solid #eee;
 }
 .tab-icon:hover:active {
-    background: var(--background-3) !important;
+    border: 1px solid #ccc;
 }
 .canvas {
 	padding-left: 40px
@@ -274,26 +275,31 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	top: 48px !important
 }
 #linksCanvas .mainPanel {
-    width: 55%;
+    width: 50%;
 }
 #sidePanel {
 	position: absolute;
-	padding-left: 10px;
-	padding-right: 32px;
+	padding-left: 0px;
+	padding-right: 28px;
 	box-sizing: border-box;
-	width: 45%;
 	pointer-events: none;
 	border-radius: 8px !important;
 	right: 0;
+	top: 9px;
 }
 #sidePanel > * {
 	pointer-events: auto;
 }
+#linksCanvas #sidePanel {
+/* the div moves in the tree! */
+    padding-right: 0;
+    width: 48%;
+}
 #map .gmnoprint[role="menubar"] {
 	position: fixed !important;
-	top: 40px !important;
-	left: 40px !important;
-	width: 100px
+	top: 44px !important;
+	left: 44px !important;
+	width: 100px;
 }
 #map .gmnoprint[role="menubar"] > :first-child {
 	border-radius: 8px 8px 0 0 !important;
@@ -392,6 +398,9 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
     #topBar {
         height: 40px
     }
+    #tabGroup {
+        display: block;
+    }
     #topBar > :last-child {
         top: 0px;
         right: 0px;
@@ -399,11 +408,17 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
         padding-block: 5px
     }
     #sidePanel {
-        width: calc(100vw - 73px);
-        margin-top: 50vh
+        width: calc(100vw - 48px);
+        /* margin-top: 50vh; */
     }
     #live-chat {
         left: 0% !important;
+    }
+    .mainPanel {
+        height: 100%;
+    }
+    #map {
+        height: 75%;
     }
 }
 /* Always show map, kinda broken *
