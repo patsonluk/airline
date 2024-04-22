@@ -69,10 +69,10 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
         0
       } else {
         val airplaneConditionQuality = inServiceAirplanes.toList.map {
-          case ((airplane, assignmentPerAirplane)) => airplane.condition / Airplane.MAX_CONDITION * assignmentPerAirplane.frequency
+          case ((airplane, assignmentPerAirplane)) => math.max( 2 * airplane.condition / Airplane.MAX_CONDITION, 1 ) * assignmentPerAirplane.frequency
         }.sum / frequency * 20
 //        val airplaneTypeQuality = 1 + ((getAssignedModel().get.quality - 3) / 16.666667)
-//        computedQualityStore = Math.min(1, airplaneTypeQuality * (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality)).toInt
+//        computedQualityStore = Math.min(99, airplaneTypeQuality * (rawQuality.toDouble / Link.MAX_QUALITY * 35 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 45 + airplaneConditionQuality)).toInt
         computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
         hasComputedQuality = true
         computedQualityStore
@@ -249,7 +249,7 @@ object ExplicitLinkConsideration {
 }
 
 object LinkConsideration {
-  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new SimplePreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.BUSINESS)
+  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new DealPreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.BUSINESS)
   def getExplicit(link : Transport, cost : Double, linkClass : LinkClass, inverted : Boolean, id : Int = 0) : LinkConsideration = {
     LinkConsideration(link, linkClass, inverted, DUMMY_PASSENGER_GROUP, None, SimpleCostProvider(cost), id)
   }
@@ -298,6 +298,7 @@ case class CostStoreProvider() extends CostProvider {
         computedValue = linkConsideration.passengerGroup.preference.computeCost(
           linkConsideration.link,
           linkConsideration.linkClass,
+          linkConsideration.passengerGroup.passengerType,
           linkConsideration.modifier.map(_.value(linkConsideration.link, linkConsideration.linkClass)).getOrElse(1.0))
         computed = true
       }
@@ -312,13 +313,13 @@ case class CostStoreProvider() extends CostProvider {
 sealed abstract class LinkClass(val code : String, val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val priceSensitivity : Double, val level : Int) {
   def label : String //level for sorting/comparison purpose
 }
-case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 5, priceMultiplier = 9, priceSensitivity = 0.6, level = 3) {
+case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 4, priceMultiplier = 8, priceSensitivity = 0.7, level = 3) {
   override def label = "first"
 }
-case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 2, priceMultiplier = 3, priceSensitivity = 0.8, level = 2) {
+case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 1.5, priceMultiplier = 3, priceSensitivity = 0.85, level = 2) {
   override def label = "business"
 }
-case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, priceSensitivity = 1, level =1) {
+case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1.0, priceSensitivity = 1, level = 1) {
   override def label = "economy"
 }
 object LinkClass {

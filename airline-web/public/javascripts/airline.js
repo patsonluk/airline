@@ -980,17 +980,20 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
     var title = linkInfo.toCountryTitle
     updateAirlineTitle(title, $("#planLinkToCountryTitle img.airlineTitleIcon"), $("#planLinkToCountryTitle .airlineTitle"))
 
-	$('#planLinkDistance').html(linkInfo.distance + " km <i>" + linkInfo.flightType + '</i>')
+	$('#planLinkDistance').html(linkInfo.distance + " km")
+	$('.planLinkFlightType').html(linkInfo.flightType)
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
 
     var $breakdown = $("#planLinkDetails .directDemandBreakdown")
     $breakdown.find(".fromAirport .airportLabel").empty()
     $breakdown.find(".fromAirport .airportLabel").append(getAirportSpan({ "iata" : linkInfo.fromAirportCode, "countryCode" : linkInfo.fromCountryCode, "city" : linkInfo.fromAirportCity}))
+    $breakdown.find(".fromAirport .travelerDemand").text(toLinkClassValueString(linkInfo.fromAirportTravelerDemand))
     $breakdown.find(".fromAirport .businessDemand").text(toLinkClassValueString(linkInfo.fromAirportBusinessDemand))
     $breakdown.find(".fromAirport .touristDemand").text(toLinkClassValueString(linkInfo.fromAirportTouristDemand))
 
     $breakdown.find(".toAirport .airportLabel").empty()
     $breakdown.find(".toAirport .airportLabel").append(getAirportSpan({ "iata" : linkInfo.toAirportCode, "countryCode" : linkInfo.toCountryCode, "city" : linkInfo.toAirportCity}))
+    $breakdown.find(".toAirport .travelerDemand").text(toLinkClassValueString(linkInfo.toAirportTravelerDemand))
     $breakdown.find(".toAirport .businessDemand").text(toLinkClassValueString(linkInfo.toAirportBusinessDemand))
     $breakdown.find(".toAirport .touristDemand").text(toLinkClassValueString(linkInfo.toAirportTouristDemand))
 
@@ -1963,14 +1966,19 @@ function showLinkComposition(linkId) {
 	    success: function(result) {
 	        updateSatisfaction(result)
 
-	    	updateTopCountryComposition(result.country)
-	    	updatePassengerTypeComposition(result.passengerType)
-	    	updatePreferenceTypeComposition(result.preferenceType)
+	    	updateTopCountryComposition(result.homeCountry, "#passengerCompositionByHomeCountryTable")
+	    	updateTopCountryComposition(result.destinationCountry, "#passengerCompositionByDestinationCountryTable")
+//	    	updatePassengerTypeComposition(result.passengerType)
+//	    	updatePreferredClassComposition(result.preferredLinkClass)
+//	    	updatePreferenceTypeComposition(result.preferenceType)
 	    	updateTopAirportComposition($('#linkCompositionModal div.topHomeAirports'), result.homeAirports)
 	    	updateTopAirportComposition($('#linkCompositionModal div.topDestinationAirports'), result.destinationAirports)
-	    	plotPie(result.country, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
-	    	plotPie(result.passengerType, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
-	    	plotPie(result.preferenceType, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
+	    	plotPie(result.homeCountry, null , $("#passengerCompositionByHomeCountryPie"), "countryName", "passengerCount")
+	    	plotPie(result.destinationCountry, null , $("#passengerCompositionByDestinationCountryPie"), "countryName", "passengerCount")
+//	    	plotPie(result.destinationCountry, null , $("#passengerCompositionByCountryPie"), "countryName", "passengerCount")
+	    	plotPie(result.paxTypeSatisfaction, null , $("#passengerCompositionByPassengerTypePie"), "title", "passengerCount")
+	    	plotPie(result.linkClassSatisfaction, null , $("#passengerCompositionByPreferredClassPie"), "title", "passengerCount")
+	    	plotPie(result.preferenceSatisfaction, null , $("#passengerCompositionByPreferenceTypePie"), "title", "passengerCount")
 
 	    	$('#linkCompositionModal').fadeIn(200)
 	    },
@@ -2369,7 +2377,9 @@ function getCapacityImageBar(imageSrc, value, linkClass) {
 
 function updateSatisfaction(result) {
     var linkClassSatisfaction = result.linkClassSatisfaction
+    var paxTypeSatisfaction = result.paxTypeSatisfaction
     var preferenceSatisfaction = result.preferenceSatisfaction
+    $('#linkCompositionModal .paxTypeSatisfaction .table-row').remove()
     $('#linkCompositionModal .linkClassSatisfaction .table-row').remove()
     $('#linkCompositionModal .preferenceSatisfaction .table-row').remove()
     $('#linkCompositionModal .positiveComments .table-row').remove()
@@ -2379,33 +2389,55 @@ function updateSatisfaction(result) {
     var topPositiveCommentsByPreference = result.topPositiveCommentsByPreference
     var topNegativeCommentsByPreference = result.topNegativeCommentsByPreference
 
-    $.each(linkClassSatisfaction, function(index, entry) {
-        $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%; vertical-align: middle;'>" + entry.title + "</div></div>")
+    $.each(paxTypeSatisfaction, function(index, entry) {
+        $row = $("<div class='table-row data-row'><div class='cell' style='width: 50%; vertical-align: middle;'>" + entry.title + "</div></div>")
         var $icon = getSatisfactionIcon(entry.satisfaction)
         $icon.on('mouseover.breakdown', function() {
             showSatisfactionBreakdown($(this), topPositiveCommentsByClass[entry.level], topNegativeCommentsByClass[entry.level], entry.satisfaction)
         })
 
+        $row.append("<div class='cell' style='width: 15%;'>" + entry.passengerCount)
+
         $icon.on('mouseout.breakdown', function() {
             $('#satisfactionDetailsTooltip').hide()
         })
-        $iconCell = $("<div class='cell' style='width: 30%;'>").append($icon)
+        $iconCell = $("<div class='cell' style='width: 35%;'>").append($icon)
+        $row.append($iconCell)
+
+        $('#linkCompositionModal .paxTypeSatisfaction').append($row)
+    })
+    $.each(linkClassSatisfaction, function(index, entry) {
+        $row = $("<div class='table-row data-row'><div class='cell' style='width: 50%; vertical-align: middle;'>" + entry.title + "</div></div>")
+        var $icon = getSatisfactionIcon(entry.satisfaction)
+        $icon.on('mouseover.breakdown', function() {
+            showSatisfactionBreakdown($(this), topPositiveCommentsByClass[entry.level], topNegativeCommentsByClass[entry.level], entry.satisfaction)
+        })
+
+        $row.append("<div class='cell' style='width: 15%;'>" + entry.passengerCount)
+
+        $icon.on('mouseout.breakdown', function() {
+            $('#satisfactionDetailsTooltip').hide()
+        })
+        $iconCell = $("<div class='cell' style='width: 35%;'>").append($icon)
         $row.append($iconCell)
 
         $('#linkCompositionModal .linkClassSatisfaction').append($row)
     })
     $.each(preferenceSatisfaction, function(index, entry) {
-        $row = $("<div class='table-row data-row'><div class='cell' style='width: 70%; vertical-align: middle;'>" + entry.title + "</div></div>")
+        $row = $("<div class='table-row data-row'><div class='cell' style='width: 50%; vertical-align: middle;'>" + entry.title + "</div></div>")
         var $icon = getSatisfactionIcon(entry.satisfaction)
         $icon.on('mouseover.breakdown', function() {
             showSatisfactionBreakdown($(this), topPositiveCommentsByPreference[entry.id], topNegativeCommentsByPreference[entry.id], entry.satisfaction)
         })
 
+        $row.append("<div class='cell' style='width: 15%;'>" + entry.passengerCount)
+
+
         $icon.on('mouseout.breakdown', function() {
             $('#satisfactionDetailsTooltip').hide()
         })
 
-        $iconCell = $("<div class='cell' style='width: 30%;'>").append($icon)
+        $iconCell = $("<div class='cell' style='width: 35%;'>").append($icon)
         $row.append($iconCell)
 
         $('#linkCompositionModal .preferenceSatisfaction').append($row)
@@ -2500,16 +2532,16 @@ function showSatisfactionBreakdown($icon, positiveComments, negativeComments, sa
 }
 
 
-function updateTopCountryComposition(countryComposition) {
+function updateTopCountryComposition(countryComposition, selector) {
 	countryComposition = countryComposition.sort(function (a, b) {
 	    return b.passengerCount - a.passengerCount
 	});
 
 	var max = 5;
 	var index = 0;
-	$('#linkCompositionModal .topCountryTable .table-row').remove()
+	$(selector + ' .table-row').remove()
 	$.each(countryComposition, function(key, entry) {
-		$('#linkCompositionModal .topCountryTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.countryName
+		$(selector).append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.countryName
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 		index ++;
 		if (index >= max) {
@@ -2527,8 +2559,8 @@ function updateTopAirportComposition($container, airportComposition) {
 	    if (index % maxPerColumn == 0) { //flush a column (a table)
 	        $table = $('<div class="table data" style="flex : 1; min-width: 200px;"></div>').appendTo($container)
 	    }
-		$table.append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + getCountryFlagImg(entry.countryCode) + entry.airport
-	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+		$table.append("<div class='table-row data-row' style='max-width: 320px;'><div class='cell' style='width: 80%;'>" + getCountryFlagImg(entry.countryCode) + entry.airport
+	 			   + "</div><div class='cell' style='width: 20%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
 
@@ -2544,6 +2576,18 @@ function updatePassengerTypeComposition(typeComposition) {
 	});
 }
 
+function updatePreferredClassComposition(preferenceComposition) {
+	preferenceComposition = preferenceComposition.sort(function (a, b) {
+	    return b.passengerCount - a.passengerCount
+	});
+
+	$('#linkCompositionModal .preferredClassTable .table-row').remove()
+	$.each(preferenceComposition, function(key, entry) {
+		$('#linkCompositionModal .preferredClassTable').append("<div class='table-row data-row'><div class='cell' style='width: 70%;'>" + entry.title
+	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
+	});
+}
+
 function updatePreferenceTypeComposition(preferenceComposition) {
 	preferenceComposition = preferenceComposition.sort(function (a, b) {
 	    return b.passengerCount - a.passengerCount
@@ -2555,7 +2599,6 @@ function updatePreferenceTypeComposition(preferenceComposition) {
 	 			   + "</div><div class='cell' style='width: 30%; text-align: right;'>" + commaSeparateNumber(entry.passengerCount) + "</div></div>")
 	});
 }
-
 
 function updateAirlineBaseList(airlineId, table) {
 	table.children('.table-row').remove()

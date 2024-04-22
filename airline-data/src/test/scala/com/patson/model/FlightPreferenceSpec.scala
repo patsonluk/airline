@@ -662,18 +662,18 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
 
     }
   }
-   "A SimplePreference".must {
+   "A DealPreference".must {
       "adjust price accordingly due to price weight ". in {
       val expensiveLink = airline1Link.copy(price = LinkClassValues.getInstance(10000, 10000, 10000))
-      val cost1 = SimplePreference(fromAirport, 0.8, ECONOMY).computeCost(expensiveLink, ECONOMY)
-      val cost2 = SimplePreference(fromAirport, 1.2, ECONOMY).computeCost(expensiveLink, ECONOMY)
+      val cost1 = DealPreference(fromAirport, 0.8, ECONOMY).computeCost(expensiveLink, ECONOMY)
+      val cost2 = DealPreference(fromAirport, 1.2, ECONOMY).computeCost(expensiveLink, ECONOMY)
       val standardPrice = expensiveLink.standardPrice(ECONOMY)
       val delta1 = Math.abs(cost1 - standardPrice) //should be small delta as this group of customer care less about price
       val delta2 = Math.abs(cost2 - standardPrice)
       delta1.should(be < delta2)
     }
 //     "should not completely ignore price delta even at lowest price sensitivity". in {
-//      val cost1 = SimplePreference(0, 10, ECONOMY).computeCost(airline1Link)
+//      val cost1 = DealPreference(0, 10, ECONOMY).computeCost(airline1Link)
 //      val standardPrice = Pricing.computeStandardPrice(airline1Link, ECONOMY)
 //      val delta1 = Math.abs(cost1 - standardPrice) 
 //      delta1.should(be > 0.0)
@@ -681,39 +681,39 @@ class FlightPreferenceSpec(_system: ActorSystem) extends TestKit(_system) with I
       
    }
    
-   "A SpeedPreference".must {
-     "almost no overlap if frequency diff is huge". in {
-      val link1 = airline1Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD)
-      val link2 = airline2Link.copy(frequency = 1)
-      var airline1Picked = 0
-      var airline2Picked = 0
-      for (i <- 0 until 100000) {
-        val preference = SpeedPreference(fromAirport, ECONOMY)
-        val link1Cost = preference.computeCost(link1, ECONOMY)
-        val link2Cost = preference.computeCost(link2, ECONOMY)
-        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
-      }
-      val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 10)
-     }
-     
-      "some overlap if frequency diff is small". in {
-      val link1 = airline1Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD)
-      val link2 = airline2Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD - 4)
-      var airline1Picked = 0
-      var airline2Picked = 0
-      for (i <- 0 until 100000) {
-        val preference = SpeedPreference(fromAirport, ECONOMY)
-        val link1Cost = preference.computeCost(link1, ECONOMY)
-        val link2Cost = preference.computeCost(link2, ECONOMY)
-        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
-      }
-      val ratio = airline1Picked.toDouble / airline2Picked 
-      assert(ratio > 2)
-      assert(ratio < 4)
-     }
-     
-   }
+//   "A SpeedPreference".must {
+//     "almost no overlap if frequency diff is huge". in {
+//      val link1 = airline1Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+//      val link2 = airline2Link.copy(frequency = 1)
+//      var airline1Picked = 0
+//      var airline2Picked = 0
+//      for (i <- 0 until 100000) {
+//        val preference = SpeedPreference(fromAirport, ECONOMY)
+//        val link1Cost = preference.computeCost(link1, ECONOMY)
+//        val link2Cost = preference.computeCost(link2, ECONOMY)
+//        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+//      }
+//      val ratio = airline1Picked.toDouble / airline2Picked
+//      assert(ratio > 10)
+//     }
+//
+//      "some overlap if frequency diff is small". in {
+//      val link1 = airline1Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD)
+//      val link2 = airline2Link.copy(frequency = Link.HIGH_FREQUENCY_THRESHOLD - 4)
+//      var airline1Picked = 0
+//      var airline2Picked = 0
+//      for (i <- 0 until 100000) {
+//        val preference = SpeedPreference(fromAirport, ECONOMY)
+//        val link1Cost = preference.computeCost(link1, ECONOMY)
+//        val link2Cost = preference.computeCost(link2, ECONOMY)
+//        if (link1Cost < link2Cost) airline1Picked += 1  else airline2Picked += 1
+//      }
+//      val ratio = airline1Picked.toDouble / airline2Picked
+//      assert(ratio > 2)
+//      assert(ratio < 4)
+//     }
+//
+//   }
    
   
   //this is from DemandGenerator... 

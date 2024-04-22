@@ -19,11 +19,14 @@ object LinkCommentUtil {
     val result = mutable.Map[(LinkClass, FlightPreferenceType.Value), ListBuffer[LinkComment]]()
     topConsumptionEntriesByHomeAirport.foreach {
       case (airportId, consumptions) => AirportCache.getAirport(airportId, true).foreach { homeAirport =>
-        val pool : immutable.Map[(LinkClass, FlightPreferenceType.Value), List[FlightPreference]] = DemandGenerator.getFlightPreferencePoolOnAirport(homeAirport).pool.toList.map {
-          case ((linkClass, preferences)) => preferences.groupBy(_.getPreferenceType).map {
-            case ((preferenceType, preferences)) => ((linkClass, preferenceType), preferences)
-          }
-        }.flatten.toMap
+        val pool: immutable.Map[(LinkClass, FlightPreferenceType.Value), List[FlightPreference]] = DemandGenerator.getFlightPreferencePoolOnAirport(homeAirport).pool.toList.flatMap {
+          case (passengerType, preferencesByLinkClass) =>
+            preferencesByLinkClass.flatMap {
+              case (linkClass, preferences) => preferences.groupBy(_.getPreferenceType).map {
+                case (preferenceType, group) => ((linkClass, preferenceType), group)
+              }
+            }
+        }.toMap
         consumptions.foreach { consumption =>
           pool.get((consumption.preferredLinkClass, consumption.preferenceType)).foreach { preferences =>
             result.getOrElseUpdate((consumption.linkClass, consumption.preferenceType), ListBuffer()).appendAll(generateCommentsPerConsumption(preferences, consumption, homeAirport, airline, link, random))
@@ -67,6 +70,7 @@ object LinkCommentUtil {
     implicit val randomImplicit : Random = random
     //pricing
     val linkClass = consumption.linkClass
+    val paxType = consumption.passengerType
     val flightType = link.flightType
     val preferredLinkClass = consumption.preferredLinkClass
     val sampleSize = Math.min(MAX_SAMPLE_SIZE_PER_CONSUMPTION, consumption.passengerCount)
@@ -78,8 +82,8 @@ object LinkCommentUtil {
       val adjustRatioByGroup : Map[controllers.LinkCommentGroup.Value, Double] = Map(
          PRICE -> preference.priceAdjustRatio(link, linkClass),
          LOYALTY -> preference.loyaltyAdjustRatio(link),
-         QUALITY -> preference.qualityAdjustRatio(homeAirport, link, linkClass),
-         DURATION -> preference.tripDurationAdjustRatio(link, linkClass),
+         QUALITY -> preference.qualityAdjustRatio(homeAirport, link, linkClass, paxType),
+         DURATION -> preference.tripDurationAdjustRatio(link, linkClass, paxType),
          LOUNGE -> preference.loungeAdjustRatio(link, preference.loungeLevelRequired, linkClass)
       )
 
@@ -97,13 +101,14 @@ object LinkCommentUtil {
       val commentsOfThisSample = ListBuffer[LinkComment]()
       for (j <- 0 until commentGenerationCount) {
         val commentWeight = poolByPreference(preference).drawCommentWeight(random)
-        //println(s"${consumption.preferenceType} : $commentWeight")
+        println(s"${consumption.preferenceType} : $commentWeight")
         commentWeight.foreach { weight =>
           val comments = weight.commentGroup match {
             case PRICE => generateCommentsForPrice(weight.adjustRatio)
             case LOYALTY => generateCommentsForLoyalty(weight.adjustRatio)
-            case QUALITY => generateCommentsForQuality(link.rawQuality, airline.getCurrentServiceQuality(), link.getAssignedAirplanes().keys.toList, homeAirport.expectedQuality(flightType, linkClass), flightType)
-            case DURATION => generateCommentsForFlightDuration(link.frequency, preference.frequencyThreshold, link.duration, standardDuration)
+            case QUALITY => generateCommentsForQuality(link.computedQuality, link.rawQuality, airline.getCurrentServiceQuality(), link.getAssignedAirplanes().keys.toList, homeAirport.expectedQuality(flightType, linkClass), flightType, paxType)
+            case DURATION => generateCommentsForFlightDuration(link.duration, standardDuration)
+            case DURATION =>generateCommentsForFlightFrequency(link.duration, link.frequency, preference.frequencyThreshold)
             case LOUNGE => generateCommentsForLounge(preference.loungeLevelRequired, link.from, link.to, airline.id, airline.getAllianceId())
             case _ => List.empty
 
@@ -148,16 +153,15 @@ object LinkCommentUtil {
     List(LinkComment.loyaltyComment(ratio, expectedRatio)).flatten
   }
 
-  def generateCommentsForQuality(rawQuality : Int, serviceQuality : Double, airplanes : List[Airplane], expectedQuality : Int, flightType : FlightType.Value)(implicit random : Random) = {
+  def generateCommentsForQuality(computedQuality: Int, rawQuality : Int, serviceQuality : Double, airplanes : List[Airplane], expectedQuality : Int, flightType : FlightType.Value)(implicit random : Random) = {
     List(
-      generateCommentForRawQuality(rawQuality, serviceQuality, expectedQuality, flightType),
+      generateCommentForRawQuality(rawQuality, computedQuality, expectedQuality, flightType),
       generateCommentForServiceQuality(serviceQuality, expectedQuality, flightType),
       generateCommentForAirplaneCondition(airplanes)).flatten
-
   }
 
   def generateCommentForRawQuality(rawQuality : Int, serviceQuality : Double, expectedQuality : Int, flightType : FlightType.Value)(implicit random : Random) = {
-    val adjustedExpectation = expectedQuality + com.patson.Util.getBellRandom(0, 60, Some(random.nextInt()))
+//    val adjustedExpectation = expectedQuality + com.patson.Util.getBellRandom(0, 60, Some(random.nextInt()))
     List(LinkComment.rawQualityComment(rawQuality, serviceQuality, adjustedExpectation, flightType)).flatten
   }
 
@@ -184,13 +188,16 @@ object LinkCommentUtil {
 //    }.flatten
 //  }
 
-  def generateCommentsForFlightDuration(frequency: Int, expectedFrequency : Int, flightDuration : Int, expectedDuration : Int)(implicit random : Random) = {
-    val adjustedExpectedDuration = (expectedDuration * com.patson.Util.getBellRandom(1, 0.7, Some(random.nextInt()))).toInt
+  def generateCommentsForFlightFrequency(flightDuration : Int, frequency: Int, expectedFrequency: Int)(implicit random: Random) = {
     val adjustedExceptedFrequency = (expectedFrequency * com.patson.Util.getBellRandom(1, 0.7, Some(random.nextInt()))).toInt
 
-    List(
-      LinkComment.frequencyComment(frequency, adjustedExceptedFrequency, flightDuration),
-      LinkComment.flightDurationComment(flightDuration, adjustedExpectedDuration)).flatten
+    List(LinkComment.frequencyComment(frequency, adjustedExceptedFrequency, flightDuration)).flatten
+  }
+
+  def generateCommentsForFlightDuration(flightDuration : Int, expectedDuration : Int)(implicit random : Random) = {
+    val adjustedExpectedDuration = (expectedDuration * com.patson.Util.getBellRandom(1, 0.7, Some(random.nextInt()))).toInt
+
+    List(LinkComment.flightDurationComment(flightDuration, adjustedExpectedDuration)).flatten
    }
 
   def generateCommentsForLounge(loungeRequirement: Int, fromAirport : Airport, toAirport : Airport, airlineId : Int, allianceIdOption : Option[Int])(implicit random : Random) = {
@@ -249,7 +256,7 @@ object LinkComment {
     }
   }
 
-  val rawQualityComment = (rawQuality : Int, serviceQuality: Double, expectedQuality : Double, flightType : FlightType.Value) => { //top comment requires good research ie serviceQuality
+  val rawQualityComment = (rawQuality : Int, serviceQuality: Int, expectedQuality : Double, flightType : FlightType.Value) => { //top comment requires good research ie serviceQuality
     val qualityDelta = rawQuality - expectedQuality
     val random = Random.nextInt(3)
     import FlightType._

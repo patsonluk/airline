@@ -354,7 +354,7 @@ object ConsumptionHistorySource {
                 homeAirport = AirportCache.getAirport(resultSet.getInt("home_airport")).get,
                 destinationAirport = AirportCache.getAirport(resultSet.getInt("destination_airport")).get,
                 passengerType = PassengerType(resultSet.getInt("passenger_type")),
-                preferredLinkClass = preferredLinkClass,
+                preferredLinkClass = LinkClass.fromCode(resultSet.getString("preferred_link_class")),
                 preferenceType = FlightPreferenceType(resultSet.getInt("preference_type")),
                 linkClass = LinkClass.fromCode(resultSet.getString("link_class")),
                 satisfaction = Computation.computePassengerSatisfaction(resultSet.getInt("cost"), standardPrice(preferredLinkClass))

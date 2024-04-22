@@ -753,15 +753,19 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
         val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, distance)
 
-        val directFromAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.BUSINESS, (fromDemand * 0.5).toInt)
-        val directToAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.BUSINESS, (toDemand * 0.5).toInt)
+        val directFromAirportTravelerDemand = fromDemand.travelerDemand
+        val directToAirportTravelerDemand = toDemand.travelerDemand
+        val directTravelerDemand = directFromAirportTravelerDemand + directToAirportTravelerDemand
+
+        val directFromAirportBusinessDemand = fromDemand.businessDemand
+        val directToAirportBusinessDemand = toDemand.businessDemand
         val directBusinessDemand = directFromAirportBusinessDemand + directToAirportBusinessDemand
 
-        val directFromAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.TOURIST, (fromDemand * 0.5).toInt)
-        val directToAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.TOURIST, (toDemand * 0.5).toInt)
+        val directFromAirportTouristDemand = fromDemand.touristDemand
+        val directToAirportTouristDemand = toDemand.touristDemand
         val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
-        val directDemand = directBusinessDemand + directTouristDemand
+        val directDemand = directTravelerDemand + directBusinessDemand + directTouristDemand
 
         val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
         val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
@@ -804,6 +808,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
           "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
           "directDemand" -> directDemand,
+          "fromAirportTravelerDemand" -> directFromAirportTravelerDemand,
+          "toAirportTravelerDemand" -> directToAirportTravelerDemand,
           "fromAirportBusinessDemand" -> directFromAirportBusinessDemand,
           "toAirportBusinessDemand" -> directToAirportBusinessDemand,
           "fromAirportTouristDemand" -> directFromAirportTouristDemand,
@@ -887,7 +893,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val countryRelationships = CountrySource.getCountryMutualRelationships()
         val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
 
-        if (! toAirport.isGateway() && toAirport.size <= 2 && relationship != 5) {
+        if (!toAirport.isGateway() && toAirport.size <= 2 && relationship != 5) {
           return Some("Destination airport is too small to serve international destinations.", REQUIRES_CUSTOMS)
         }
         if (!toAirport.isGateway() && fromAirport.size <= 2 && relationship != 5) {
@@ -1041,21 +1047,21 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
   }
 
-  def updateMaintenanceQuality(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
+  def updateWeeklyDividends(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
-      val maintenanceQualityTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("maintenanceQuality").as[Int])
-      maintenanceQualityTry match {
-        case Success(maintenanceQuality) =>
+      val weeklyDividendsTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("weeklyDividends").as[Int])
+      weeklyDividendsTry match {
+        case Success(weeklyDividends) =>
           val airline = request.user
-          airline.setMaintenanceQuality(maintenanceQuality)
+          airline.setWeeklyDividends(weeklyDividends)
           AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-          Ok(Json.obj("serviceFunding" -> JsNumber(maintenanceQuality)))
+          Ok(Json.obj("weeklyDividends" -> JsNumber(weeklyDividends)))
         case Failure(_) =>
-          BadRequest("Cannot Update maintenance quality")
+          BadRequest("Cannot update dividends")
       }
 
     } else {
-      BadRequest("Cannot Update maintenance quality")
+      BadRequest("Cannot updates dividends")
     }
   }
 
@@ -1063,18 +1069,27 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) { request =>
     val consumptionEntries : List[LinkConsumptionHistory] = ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
     val consumptionByCountry = consumptionEntries.groupBy(_.homeAirport.countryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByDestinationCountry = consumptionEntries.groupBy(_.destinationAirport.countryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByHomeAirport = consumptionEntries.groupBy(_.homeAirport).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByDestinationAirport = consumptionEntries.groupBy(_.destinationAirport).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPreferredLinkClass = consumptionEntries.groupBy(_.preferredLinkClass).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).view.mapValues(entries => entries.map(_.passengerCount).sum)
 
-    var countryJson = Json.arr()
+    var homeCountryJson = Json.arr()
     consumptionByCountry.foreach {
       case (countryCode, passengerCount) =>
-        countryByCode.get(countryCode).foreach { country => //just in case the first turn after patch this will be ""
-          countryJson = countryJson.append(Json.obj("countryName" -> country.name, "countryCode" -> countryCode, "passengerCount" -> passengerCount))
+        countryByCode.get(countryCode).foreach { country =>
+          homeCountryJson = homeCountryJson.append(Json.obj("countryName" -> country.name, "countryCode" -> countryCode, "passengerCount" -> passengerCount))
         }
+    }
 
+    var destinationCountryJson = Json.arr()
+    consumptionByDestinationCountry.foreach {
+      case (countryCode, passengerCount) =>
+        countryByCode.get(countryCode).foreach { country =>
+          destinationCountryJson = destinationCountryJson.append(Json.obj("countryName" -> country.name, "countryCode" -> countryCode, "passengerCount" -> passengerCount))
+        }
     }
 
     var homeAirportsJson = Json.arr()
@@ -1089,17 +1104,23 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         destinationAirportsJson = destinationAirportsJson.append(Json.obj("airport" -> airport.displayText, "countryCode" -> airport.countryCode, "passengerCount" -> passengerCount))
     }
 
-    var passengerTypeJson = Json.arr()
-    consumptionByPassengerType.foreach {
-      case (passengerType, passengerCount) => passengerTypeJson = passengerTypeJson.append(Json.obj("title" -> getPassengerTypeTitle(passengerType), "passengerCount" -> passengerCount))
-    }
-
-    var preferenceTypeJson = Json.arr()
-    consumptionByPreferenceType.foreach {
-      case (preferenceType, passengerCount) => preferenceTypeJson = preferenceTypeJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "passengerCount" -> passengerCount))
-    }
+//    var passengerTypeJson = Json.arr()
+//    consumptionByPassengerType.foreach {
+//      case (passengerType, passengerCount) => passengerTypeJson = passengerTypeJson.append(Json.obj("title" -> getPassengerTypeTitle(passengerType), "passengerCount" -> passengerCount))
+//    }
+//
+//    var preferredLinkClassJson = Json.arr()
+//    consumptionByPreferredLinkClass.foreach {
+//      case (preferredLinkClass, passengerCount) => preferredLinkClassJson = preferredLinkClassJson.append(Json.obj("title" -> preferredLinkClass.label, "passengerCount" -> passengerCount))
+//    }
+//
+//    var preferenceTypeJson = Json.arr()
+//    consumptionByPreferenceType.foreach {
+//      case (preferenceType, passengerCount) => preferenceTypeJson = preferenceTypeJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "passengerCount" -> passengerCount))
+//    }
 
     var satisfactionByClassJson = Json.arr()
+    var satisfactionByTypeJson = Json.arr()
     var satisfactionByPreferenceJson = Json.arr()
     var topPositiveCommentsJson = Json.arr()
     var topNegativeCommentsJson = Json.arr()
@@ -1110,11 +1131,16 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
     LinkSource.loadFlightLinkById(linkId).foreach { link =>
-      val consumptionByLinkClass = consumptionEntries.groupBy(_.linkClass)
-      val satisfactionByLinkClass = consumptionByLinkClass.view.mapValues(entries => (entries.map( entry => entry.satisfaction * entry.passengerCount)).sum / entries.map(_.passengerCount).sum)
-
+      val consumptionByLinkClass = consumptionEntries.groupBy(_.preferredLinkClass)
+      val satisfactionByLinkClass = consumptionByLinkClass.view.mapValues(entries => ((entries.map( entry => entry.satisfaction * entry.passengerCount)).sum / entries.map(_.passengerCount).sum, entries.map(_.passengerCount).sum))
       satisfactionByLinkClass.foreach {
-        case (linkClass, satisfaction) => satisfactionByClassJson = satisfactionByClassJson.append(Json.obj("title" -> linkClass.label, "level" -> linkClass.level, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP)))
+        case (linkClass, (satisfaction, count)) => satisfactionByClassJson = satisfactionByClassJson.append(Json.obj("title" -> linkClass.label, "level" -> linkClass.level, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP), "passengerCount" -> count))
+      }
+
+      val consumptionByType = consumptionEntries.groupBy(_.passengerType)
+      val satisfactionByType = consumptionByType.view.mapValues(entries => ((entries.map(entry => entry.satisfaction * entry.passengerCount)).sum / entries.map(_.passengerCount).sum, entries.map(_.passengerCount).sum))
+      satisfactionByType.foreach {
+        case (passengerType, (satisfaction, count)) => satisfactionByTypeJson = satisfactionByTypeJson.append(Json.obj("title" -> PassengerType.label(passengerType), "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP), "passengerCount" -> count))
       }
 
       //value is List[(PassengerCount, Satisfaction)], group by actual link class taken, but computation satisfaction based on the preferred link class
@@ -1124,12 +1150,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       consumptionSatisfactionByPreferenceAndLinkClass.foreach {
         case((preference, linkClass), passengerCountWithSatisfaction) => consumptionSatisfactionByPreference.getOrElseUpdate(preference, ListBuffer()).appendAll(passengerCountWithSatisfaction)
       }
-      val averageSatisfactionByPreference : MapView[FlightPreferenceType.Value, Double] = consumptionSatisfactionByPreference.view.mapValues { entries =>
-        entries.map(entry => entry._1 * entry._2).sum / entries.map(_._1).sum
+      val averageSatisfactionByPreference : MapView[FlightPreferenceType.Value, (Double, Int)] = consumptionSatisfactionByPreference.view.mapValues { entries =>
+        val totalSatisfaction = entries.map(entry => entry._1 * entry._2).sum
+        val totalPassengerCount = entries.map(_._1).sum
+        (totalSatisfaction / totalPassengerCount, totalPassengerCount)
       }
-
       averageSatisfactionByPreference.foreach {
-        case (preferenceType, satisfaction) => satisfactionByPreferenceJson = satisfactionByPreferenceJson.append(Json.obj("title" -> preferenceType.title, "id" -> preferenceType.id, "description" -> preferenceType.description, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP)))
+        case (preferenceType, (satisfaction, count)) => satisfactionByPreferenceJson = satisfactionByPreferenceJson.append(Json.obj("title" -> preferenceType.title, "id" -> preferenceType.id, "description" -> preferenceType.description, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP), "passengerCount" -> count))
       }
 
 
@@ -1174,20 +1201,19 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       topNegativeStatsByPreference.foreach {
         case (preference, stats) =>  topNegativeCommentsByPreferenceJson = topNegativeCommentsByPreferenceJson + (preference.id.toString -> Json.toJson(stats))
       }
-
-//      println(topPositiveStatsByClass.toMap)
-//      println(topNegativeStatsByClass.toMap)
-//      println(topPositiveStatsByPreference.toMap)
-//      println(topNegativeStatsByPreference.toMap)
     }
 
 
 
-    Ok(Json.obj("country" -> countryJson,
+    Ok(Json.obj(
+      "homeCountry" -> homeCountryJson,
+      "destinationCountry" -> destinationCountryJson,
       "homeAirports" -> homeAirportsJson,
       "destinationAirports" -> destinationAirportsJson,
-      "passengerType" -> passengerTypeJson,
-      "preferenceType" -> preferenceTypeJson,
+//      "preferredLinkClass" -> preferredLinkClassJson,
+//      "passengerType" -> passengerTypeJson,
+//      "preferenceType" -> preferenceTypeJson,
+      "paxTypeSatisfaction" -> satisfactionByTypeJson,
       "linkClassSatisfaction" -> satisfactionByClassJson,
       "preferenceSatisfaction" -> satisfactionByPreferenceJson,
       "topPositiveComments" -> topPositiveCommentsJson,

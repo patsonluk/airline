@@ -378,7 +378,8 @@ object AirportAssetType extends Enumeration {
 
     trait PassengerCostAssetModifier extends PassengerCostModifier {
         override def computeDiscount(linkConsideration : LinkConsideration, paxGroup : PassengerGroup) : Option[Double] = {
-            if (paxGroup.preference.getPreferenceType == FlightPreferenceType.SPEED || !isOperational()) {
+            if (!isOperational()) {
+//                if (paxGroup.preference.getPreferenceType == FlightPreferenceType.SPEED || !isOperational()) {
                 None
             } else if (ThreadLocalRandom.current().nextInt(100) < Math.max(1, probability * level / AirportAsset.MAX_LEVEL)){
                 Some(computeAssetDiscount(paxGroup))

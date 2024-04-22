@@ -8,6 +8,7 @@ import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CountrySou
 import com.patson.model.AirlineBaseSpecialization.BrandSpecialization
 import com.patson.model.FlightType.Value
 import com.patson.model._
+import FlightPreferenceType._
 
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Set}
@@ -92,9 +93,10 @@ object PassengerSimulation {
         missedDemandChunks.add(demandChunk)
       }
       isConnected
-    }).sortWith((entry1, entry2) =>
-      if (entry1._1.passengerType == PassengerType.OLYMPICS && entry2._1.passengerType == PassengerType.OLYMPICS) false else entry1._1.passengerType == PassengerType.OLYMPICS
-    ) //olympics always come first
+    }).sortWith {
+      case ((pg1, _, demand1), (pg2, _, demand2)) =>
+        pg1.preference.getPreferenceType.priority < pg2.preference.getPreferenceType.priority //sort by pax preference purchase order
+    }
 
     println("After pruning : " + demandChunks.size);
 
@@ -148,9 +150,9 @@ object PassengerSimulation {
 
       //og AC at 4, 5, 6
        val iterationCount =
-        if (consumptionCycleCount < 3) 3
-        else if (consumptionCycleCount < 6) 4
-        else 5
+        if (consumptionCycleCount < 4) 3
+        else if (consumptionCycleCount < 7) 4
+        else 6
       val allRoutesMap = mutable.HashMap[PassengerGroup, Map[Airport, Route]]()
 
        //start consuming routes
@@ -664,7 +666,7 @@ object PassengerSimulation {
             if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
               isValid = false
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
-              connectionCost = 25
+              connectionCost = 5
             } else {
               connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency

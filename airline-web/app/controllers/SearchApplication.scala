@@ -434,15 +434,19 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
     val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, distance)
 
-    val directFromAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.BUSINESS, (fromDemand * 0.5).toInt)
-    val directToAirportBusinessDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.BUSINESS, (toDemand * 0.5).toInt)
+    val directFromAirportTravelerDemand = fromDemand.travelerDemand
+    val directToAirportTravelerDemand = toDemand.travelerDemand
+    val directTravelerDemand = directFromAirportTravelerDemand + directToAirportTravelerDemand
+
+    val directFromAirportBusinessDemand = fromDemand.businessDemand
+    val directToAirportBusinessDemand = toDemand.businessDemand
     val directBusinessDemand = directFromAirportBusinessDemand + directToAirportBusinessDemand
 
-    val directFromAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.TOURIST, (fromDemand * 0.5).toInt)
-    val directToAirportTouristDemand = DemandGenerator.computeClassDemandBetweenAirports(toAirport, fromAirport, relationship, distance, PassengerType.TOURIST, (toDemand * 0.5).toInt)
+    val directFromAirportTouristDemand = fromDemand.touristDemand
+    val directToAirportTouristDemand = toDemand.touristDemand
     val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
-    val directDemand = directBusinessDemand + directTouristDemand
+    val directDemand = directTravelerDemand + directBusinessDemand + directTouristDemand
 
 
     //basic details
@@ -455,6 +459,8 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       "flightType" -> FlightType.label(Computation.getFlightType(fromAirport, toAirport, distance)),
       "directDemand" -> directDemand,
       "mutualRelationship" -> relationship,
+      "fromAirportTravelerDemand" -> directFromAirportTravelerDemand,
+      "toAirportTravelerDemand" -> directToAirportTravelerDemand,
       "fromAirportBusinessDemand" -> directFromAirportBusinessDemand,
       "toAirportBusinessDemand" -> directToAirportBusinessDemand,
       "fromAirportTouristDemand" -> directFromAirportTouristDemand,

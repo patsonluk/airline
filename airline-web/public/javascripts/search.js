@@ -820,11 +820,13 @@ function researchFlight(fromAirportId, toAirportId) {
                 var $breakdown = $("#researchSearchResult .directDemandBreakdown")
                 $breakdown.find(".fromAirport .airportLabel").empty()
                 $breakdown.find(".fromAirport .airportLabel").append(getAirportSpan(fromAirport))
+                $breakdown.find(".fromAirport .travelerDemand").text(toLinkClassValueString(linkInfo.fromAirportTravelerDemand))
                 $breakdown.find(".fromAirport .businessDemand").text(toLinkClassValueString(result.fromAirportBusinessDemand))
                 $breakdown.find(".fromAirport .touristDemand").text(toLinkClassValueString(result.fromAirportTouristDemand))
 
                 $breakdown.find(".toAirport .airportLabel").empty()
                 $breakdown.find(".toAirport .airportLabel").append(getAirportSpan(toAirport))
+                $breakdown.find(".toAirport .travelerDemand").text(toLinkClassValueString(linkInfo.toAirportTravelerDemand))
                 $breakdown.find(".toAirport .businessDemand").text(toLinkClassValueString(result.toAirportBusinessDemand))
                 $breakdown.find(".toAirport .touristDemand").text(toLinkClassValueString(result.toAirportTouristDemand))
 
