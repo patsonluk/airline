@@ -251,7 +251,7 @@ case class OlympicsPassengerLoyaltyReward() extends EventReward(EventType.OLYMPI
 }
 
 case class OlympicsPassengerReputationReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.REPUTATION) {
-  val REPUTATION_BONUS = 100
+  val REPUTATION_BONUS = 55
   override def applyReward(event: Event, airline : Airline) = {
     AirlineSource.adjustAirlineReputation(airline.id, REPUTATION_BONUS)
   }
