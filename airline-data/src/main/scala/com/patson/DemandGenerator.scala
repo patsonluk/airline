@@ -17,7 +17,7 @@ import scala.util.Random
 object DemandGenerator {
 
   private[this] val FIRST_CLASS_INCOME_MAX = 135_000
-  private[this] val FIRST_CLASS_PERCENTAGE_MAX: Map[PassengerType.Value, Double] = Map(PassengerType.TRAVELER -> 0, PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0, PassengerType.ELITE -> 1, PassengerType.OLYMPICS -> 0)
+  private[this] val FIRST_CLASS_PERCENTAGE_MAX: Map[PassengerType.Value, Double] = Map(PassengerType.TRAVELER -> 0, PassengerType.BUSINESS -> 0.09, PassengerType.TOURIST -> 0, PassengerType.ELITE -> 1, PassengerType.OLYMPICS -> 0)
   private[this] val BUSINESS_CLASS_INCOME_FLOOR = 8_000 //effectively boost low-income
   private[this] val BUSINESS_CLASS_INCOME_MAX = 135_000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX: Map[PassengerType.Value, Double] = Map(PassengerType.TRAVELER -> 0.15, PassengerType.BUSINESS -> 0.42, PassengerType.TOURIST -> 0.07, PassengerType.ELITE -> 0, PassengerType.OLYMPICS -> 0.15)
@@ -176,11 +176,13 @@ object DemandGenerator {
   def computeClassCompositionFromIncome(demand: Double, income: Int, passengerType: PassengerType.Value, hasFirstClass: Boolean) : LinkClassValues = {
 
     val firstClassDemand = if (hasFirstClass) demand * FIRST_CLASS_PERCENTAGE_MAX(passengerType) * income  / FIRST_CLASS_INCOME_MAX else 0
-    val firstClassCutoff = if (firstClassDemand > 1) firstClassDemand.toInt else 0
     val businessClassDemand = demand * BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * income  / (income.toDouble + BUSINESS_CLASS_INCOME_FLOOR)
-    val economyClassDemand = demand - firstClassCutoff - businessClassDemand
+    //adding cutoffs to reduce the tail and have fewer passenger groups to calculate
+    //    val firstClassCutoff = if (firstClassDemand > 1) firstClassDemand.toInt else 0
+    val businessClassCutoff = if (businessClassDemand > 1) businessClassDemand.toInt else 0
+    val economyClassDemand = demand - firstClassDemand - businessClassCutoff
 
-    LinkClassValues.getInstance(economyClassDemand.toInt, firstClassCutoff, firstClassDemand.toInt)
+    LinkClassValues.getInstance(economyClassDemand.toInt, businessClassCutoff.toInt, firstClassDemand.toInt)
   }
 
   def generateEventDemand(cycle : Int, airports : List[Airport]) : List[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])] = {
