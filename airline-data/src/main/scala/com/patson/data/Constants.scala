@@ -58,6 +58,7 @@ object Constants {
   val AIRPORT_ASSET_BOOST_TABLE = "airport_asset_boost"
   val AIRPORT_ASSET_PROPERTY_HISTORY_TABLE = "airport_asset_property_history"
   val AIRPORT_ASSET_BOOST_HISTORY_TABLE = "airport_asset_boost_history"
+  val DESTINATIONS_TABLE = "destinations"
 
   val AIRLINE_APPEAL_TABLE = "airline_appeal"
   val AIRLINE_APPEAL_INDEX_1 = "airline_appeal_index_1"
@@ -73,7 +74,7 @@ object Constants {
   val AIRLINE_MODIFIER_INDEX_PREFIX = "airline_modifier_index_"
   val AIRLINE_MODIFIER_PROPERTY_TABLE = "airline_modifier_property"
 
-  
+  val AIRLINE_STATISTICS_TABLE = "airline_statistics"
   val AIRLINE_OPERATIONS_STRATEGY = "airline_operations_strategy"
   val INCOME_TABLE = "income"
   val CASH_FLOW_TABLE = "cash_flow"
@@ -107,8 +108,8 @@ object Constants {
   val BANNED_IP_TABLE = "banned_ip"
   val USER_UUID_TABLE = "user_uuid"
   val USER_AIRLINE_TABLE = "user_airline"
-  val VIP_ROUTE_TABLE = "vip_route"
-  val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"
+//  val VIP_ROUTE_TABLE = "vip_route"
+//  val VIP_ROUTE_ENTRY_TABLE = "vip_route_entry"
   val PASSENGER_HISTORY_TABLE = "passenger_history"
   val PASSENGER_HISTORY_TABLE_TEMP = "passenger_history_temp"
   val PASSENGER_HISTORY_INDEX_1 = "passenger_history_index_1"
