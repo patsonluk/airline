@@ -33,5 +33,5 @@ For the banners to work properly, need to setup google photo API. Download the o
 
 
 ## Attribution
-Some icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/). Licensed under a [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/)
-Flag icons by [famfamfam](https://github.com/legacy-icons/famfamfam-flags)
+1. Some icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/). Licensed under a [Creative Commons Attribution 3.0 License](http://creativecommons.org/licenses/by/3.0/)
+1. Flag icons by [famfamfam](https://github.com/legacy-icons/famfamfam-flags)
