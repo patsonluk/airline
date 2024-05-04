@@ -1,4 +1,4 @@
-var noFlags = ["BL", "CW", "IM", "GG", "JE", "BQ", "MF", "SS", "SX", "XK"]
+var noFlags = ["BL", "GG", "JE", "BQ", "MF", "SS"]
 
 function htmlEncode(str){
   return String(str).replace(/[^\w. ]/gi, function(c){
