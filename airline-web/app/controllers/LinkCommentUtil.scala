@@ -153,21 +153,21 @@ object LinkCommentUtil {
     List(LinkComment.loyaltyComment(ratio, expectedRatio)).flatten
   }
 
-  def generateCommentsForQuality(computedQuality: Int, rawQuality : Int, serviceQuality : Double, airplanes : List[Airplane], expectedQuality : Int, flightType : FlightType.Value)(implicit random : Random) = {
+  def generateCommentsForQuality(computedQuality: Int, rawQuality : Int, serviceQuality : Double, airplanes : List[Airplane], expectedQuality : Int, flightType : FlightType.Value, paxType: PassengerType.Value)(implicit random : Random) = {
     List(
       generateCommentForRawQuality(rawQuality, computedQuality, expectedQuality, flightType),
       generateCommentForServiceQuality(serviceQuality, expectedQuality, flightType),
       generateCommentForAirplaneCondition(airplanes)).flatten
   }
 
-  def generateCommentForRawQuality(rawQuality : Int, serviceQuality : Double, expectedQuality : Int, flightType : FlightType.Value)(implicit random : Random) = {
+  def generateCommentForRawQuality(rawQuality : Int, computedQuality : Int, expectedQuality : Int, flightType : FlightType.Value)(implicit random : Random) = {
 //    val adjustedExpectation = expectedQuality + com.patson.Util.getBellRandom(0, 60, Some(random.nextInt()))
-    List(LinkComment.rawQualityComment(rawQuality, serviceQuality, adjustedExpectation, flightType)).flatten
+    List(LinkComment.rawQualityComment(rawQuality, computedQuality, expectedQuality, flightType)).flatten
   }
 
   def generateCommentForServiceQuality(serviceQuality : Double, expectedQuality : Double, flightType : FlightType.Value)(implicit random : Random) = {
-    val adjustedExpectation = expectedQuality + com.patson.Util.getBellRandom(0, 60, Some(random.nextInt()))
-    List(LinkComment.serviceQualityComment(serviceQuality, adjustedExpectation, flightType)).flatten
+//    val adjustedExpectation = expectedQuality + com.patson.Util.getBellRandom(0, 60, Some(random.nextInt()))
+    List(LinkComment.serviceQualityComment(serviceQuality, expectedQuality, flightType)).flatten
   }
 
   def generateCommentForAirplaneCondition(airplanes : List[Airplane])(implicit random : Random) = {
@@ -256,7 +256,7 @@ object LinkComment {
     }
   }
 
-  val rawQualityComment = (rawQuality : Int, serviceQuality: Int, expectedQuality : Double, flightType : FlightType.Value) => { //top comment requires good research ie serviceQuality
+  val rawQualityComment = (rawQuality : Int, computedQuality: Int, expectedQuality : Double, flightType : FlightType.Value) => { //top comment requires good research ie serviceQuality
     val qualityDelta = rawQuality - expectedQuality
     val random = Random.nextInt(3)
     import FlightType._
@@ -298,7 +298,7 @@ object LinkComment {
           } else {
             Some("This snack cracker tastes cheap!")
           }
-        } else if (rawQuality == 100 && serviceQuality >= 60 && qualityDelta > 20) {
+        } else if (rawQuality == 100 && computedQuality >= 60 && qualityDelta > 20) {
           if (random == 0) {
             Some("Wow! I was served a full course meal and the dessert was delicious!")
           } else if (random == 1) {

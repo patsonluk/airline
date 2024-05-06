@@ -23,7 +23,7 @@ class AirportSpec(_system: ActorSystem) extends TestKit(_system) with ImplicitSe
   otherAirport.country = Some(Country(countryCode = "B", name = "Country B", airportPopulation = 1000000, income = 500000, openness = 3))
   
   val highReputationLocalHqAirline = Airline("airline 1", id = 1)
-  highReputationLocalHqAirline.setReputation(AirlineGrade.CONTINENTAL.reputationCeiling)
+  highReputationLocalHqAirline.setReputation(125)
   highReputationLocalHqAirline.setCountryCode("A")
   val base1 = AirlineBase(highReputationLocalHqAirline, airport, countryCode = "A", scale = 1, foundedCycle = 1, headquarter = true) 
   highReputationLocalHqAirline.setBases(List[AirlineBase](base1))

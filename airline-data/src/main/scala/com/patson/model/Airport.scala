@@ -96,18 +96,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   lazy val population = basePopulation + populationBoost
   lazy val power = income * population.toLong
   val basePower = baseIncome * basePopulation.toLong
-
-
   lazy val features : List[AirportFeature] = computeFeatures()
-
-//  def availableSlots : Int = {
-//    if (slotAssignmentsLoaded) {
-//      slots - slotAssignments.foldLeft(0)(_ + _._2)
-//    } else {
-//      throw new IllegalStateException("airline slot assignment is not properly initialized! If loaded from DB, please use fullload")
-//    }
-//  }
-
   lazy val rating =  AirportRating.rateAirport(this)
 
   def addCityServed(city : City, share : Double) {
@@ -182,20 +171,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     allAirlineBonuses.asScala.toMap
   }
   
-//  def setAirlineBaseLoyalty(airlineId : Int, value : Double) = {
-//    if (!airlineAppealsLoaded) {
-//      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
-//    }
-//    val oldAppeal = airlineBaseAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
-//    airlineBaseAppeals.put(airlineId, AirlineAppeal(value, oldAppeal.awareness))
-//  }
-//  def setAirlineBaseAwareness(airlineId : Int, value : Double) = {
-//    if (!airlineAppealsLoaded) {
-//      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
-//    }
-//    val oldAppeal = airlineAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
-//    airlineBaseAppeals.put(airlineId, AirlineAppeal(oldAppeal.loyalty, value))
-//  }
   def getAirlineLoyalty(airlineId : Int) : Double = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
@@ -309,11 +284,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
     airlineAppealsLoaded = true
   }
-//  def initSlotAssignments(slotAssignments : Map[Int, Int]) = {
-//    this.slotAssignments.clear()
-//    this.slotAssignments ++= slotAssignments
-//    slotAssignmentsLoaded = true
-//  }
+
   def initAirlineBases(airlineBases : List[AirlineBase]) = {
     this.airlineBases.clear()
     airlineBases.foreach { airlineBase =>
@@ -544,9 +515,6 @@ object Airport {
   }
 
   val MAJOR_AIRPORT_LOWER_THRESHOLD = 5
-  val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
-  val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
-  val NON_BASE_MAX_SLOT = 70
   val MIN_RUNWAY_LENGTH = 750
 
   import FlightType._
@@ -569,5 +537,3 @@ object RunwayType extends Enumeration {
     type RunwayType = Value
     val Asphalt, Concrete, Grass, Bitumen, Clay, Chipseal, Composite, Coral, Rock, Dirt, Hardcore, Laterite, Paved, Pavement, Sand, Sealed, Soil, Tarmac, Turf, Unpaved, Water, Cement, MarstonMat, Grout, Steel, Gravel, Unknown, abandoned, military, old, closed = Value
 }
-
-//case class AssetDiscount(waitTimeDiscount : Double, stopOverDiscount : Double)

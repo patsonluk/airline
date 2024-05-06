@@ -281,32 +281,6 @@ def constructAffinityText(fromZone : String, toZone : String, relationship : Int
     
     (baseCost * airportSizeMultiplier * distanceMultiplier * internationalMultiplier).toInt 
   }
-  
-//  def computeReputationBoost(country : Country, ranking : Int) : Double = {
-//    //US gives boost of (rank : boost)
-//    // 1st : 30
-//    // 2nd : 24
-//    // 3rd : 19
-//    // 4th : 16
-//    // 5th : 13
-//    // 6th : 10
-//    // 7th : 8
-//    // 8th : 6
-//    // 9th : 4
-//    // 10th : 2
-//
-//    val ratioToModelPower = country.airportPopulation * country.income.toDouble / MODEL_COUNTRY_POWER
-//
-//    val boost = math.log10(ratioToModelPower * 100) / 2 * reputationBoostTop10(ranking)
-//
-//    if (boost < 1 && ranking <= 3) {
-//      1
-//    } else if (boost < 0.5) {
-//      0.5
-//    } else {
-//      BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
-//    }
-//  }
 
   val REDUCED_COMPENSATION_SERVICE_LEVEL_THRESHOLD = 40 //airline with service level below this will pay less compensation
   

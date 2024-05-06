@@ -3,12 +3,11 @@
 #live-chat {
 	bottom: 0;
 	font-size: 12px;
-	left: 10px;
+	left: -12px;
 	position: fixed;
-	width: 59px;
+	width: 50px;
 	z-index: 99;
-	box-shadow: var(--chat-shadow);
-	border-radius: 5px 5px 0 0;
+	border-radius: 0px 5px 0 0;
 }
 
 #live-chat header {

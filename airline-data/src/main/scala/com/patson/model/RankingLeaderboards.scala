@@ -1,14 +1,11 @@
 package com.patson.model
 
-import com.patson.data.{AirlineSource, CycleSource, LinkSource, LoungeHistorySource}
+import com.patson.data.{AirlineSource, AirlineStatisticsSource, CycleSource, LinkSource, LoungeHistorySource}
 
 
 object RankingLeaderboards {
   var loadedCycle = 0
   var cachedRankings : Map[RankingType.Value, List[Ranking]] = Map.empty
-
-  //  val generatedLogo = ImageUtil.generateLogo("logo/star.bmp", Color.CYAN.getRGB, Color.RED.getRGB)
-  //  LogoUtil.saveLogo(1, generatedLogo)
 
   def getRankings() : Map[RankingType.Value, List[Ranking]] = {
     checkCache()
@@ -44,7 +41,7 @@ object RankingLeaderboards {
     updatedRankings.put(RankingType.PASSENGER_MILE, getPassengerMileRanking(flightConsumptionsByAirline, airlinesById))
     updatedRankings.put(RankingType.PASSENGER_QUALITY, getPassengerQualityRanking(flightConsumptionsByAirline, airlinesById))
     //    updatedRankings.put(RankingType.REPUTATION, getReputationRanking(airlinesById))
-    updatedRankings.put(RankingType.SERVICE_QUALITY, getServiceQualityRanking(airlinesById))
+//    updatedRankings.put(RankingType.SERVICE_QUALITY, getServiceQualityRanking(airlinesById))
     updatedRankings.put(RankingType.PASSENGER_SATISFACTION, getPassengerSFRanking(flightConsumptionsByAirline,airlinesById))
     updatedRankings.put(RankingType.LINK_COUNT, getLinkCountRanking(links, airlinesById))
     updatedRankings.put(RankingType.UNIQUE_COUNTRIES, getCountriesRanking(links, airlinesById))
@@ -54,6 +51,10 @@ object RankingLeaderboards {
     updatedRankings.put(RankingType.LINK_DISTANCE, getLinkLongest(flightConsumptions, airlinesById))
     updatedRankings.put(RankingType.LOUNGE, getLoungeRanking(LoungeHistorySource.loadAll, airlinesById))
     updatedRankings.put(RankingType.AIRPORT, getAirportRanking(flightConsumptions))
+
+//    updatedRankings.put(RankingType.TOURIST_COUNT, getPaxRanking(tourist))
+//    updatedRankings.put(RankingType.BUSINESS_COUNT, getPaxRanking(business))
+
     //    val linkConsumptionsByAirlineAndZone = getPassengersByZone(linkConsumptionsByAirline)
     //    updatedRankings.put(RankingType.PASSENGER_AS, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AS, "AS"))
     //    updatedRankings.put(RankingType.PASSENGER_AF, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AF, "AF"))
@@ -368,7 +369,6 @@ object RankingLeaderboards {
       rankings.map(ranking => (ranking.key, ranking.ranking)).toMap
     }.toMap
 
-
     newRankings.foreach {
       case(rankingType, rankings) =>  {
         val previousRankingOfThisType = previousRankingsByKey.get(rankingType)
@@ -387,7 +387,7 @@ object RankingLeaderboards {
 
 object RankingType extends Enumeration {
   type RankingType = Value
-  val PASSENGER_MILE, PASSENGER_QUALITY, PASSENGER_SATISFACTION, UNIQUE_COUNTRIES, UNIQUE_IATA, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LINK_DISTANCE, LINK_FREQUENCY, LOUNGE, AIRPORT, AIRPORT_TRANSFERS = Value
+  val PASSENGER_MILE, PASSENGER_QUALITY, ELITE_COUNT, TOURIST_COUNT, BUSINESS_COUNT, STOCK_PRICE, PASSENGER_SATISFACTION, UNIQUE_COUNTRIES, UNIQUE_IATA, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LINK_DISTANCE, LINK_FREQUENCY, LOUNGE, AIRPORT, AIRPORT_TRANSFERS = Value
 }
 
 

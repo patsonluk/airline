@@ -345,66 +345,18 @@ function initAirportMap() { //only called once, see https://stackoverflow.com/qu
 
 
 function populateAirportDetails(airport) {
-    if (!airportMap) {
-        initAirportMap()
-    }
-
-    // cleanup first
-    for (var i = 0; i < airportMapMarkers.length; i++ ) {
-        airportMapMarkers[i].setMap(null);
-    }
-    airportMapMarkers = []
-
-    if (airportMapCircle) { //remove the old circle
-        airportMapCircle.setMap(null)
-    }
-
     if (airport) {
-		addCityMarkers(airportMap, airport)
-		airportMap.setZoom(6)
-        airportMap.setCenter({lat: airport.latitude, lng: airport.longitude}); //this would eventually trigger an idle
-
-		var airportMarkerIcon = $("#airportMap").data("airportMarker")
-		var airportMarker = new google.maps.Marker({
-		    position: {lat: airport.latitude, lng: airport.longitude},
-		    map: airportMap,
-		    title: airport.name,
-		    icon : airportMarkerIcon,
-		    zIndex : 999
-		  });
-
-		airportMapMarkers.push(airportMarker)
-
-		
-		airportMapCircle = new google.maps.Circle({
-		        center: {lat: airport.latitude, lng: airport.longitude},
-		        radius: airport.radius * 1000, //in meter
-		        strokeColor: "#32CF47",
-		        strokeOpacity: 0.2,
-		        strokeWeight: 2,
-		        fillColor: "#32CF47",
-		        fillOpacity: 0.3,
-		        map: airportMap
-		    });
 		loadAirportStatistics(airport)
 		loadGenericTransits(airport)
 		updateAirportLoyalistDetails(airport)
 		showAirportAssets(airport)
-
-		google.maps.event.addListenerOnce(airportMap, 'idle', function() {
-           setTimeout(function() { //set a timeout here, otherwise it might not render part of the map...
-             airportMap.setCenter({lat: airport.latitude, lng: airport.longitude}); //this would eventually trigger an idle
-             google.maps.event.trigger(airportMap, 'resize'); //this refreshes the map
-           }, 2000);
-        });
+        updateAirportCities(airport)
 
         if (christmasFlag) {
             initSantaClaus()
         }
 	}
 }
-
-
 
 function loadAirportStatistics(airport) {
 	$.ajax({
@@ -458,6 +410,34 @@ function loadGenericTransits(airport) {
         }
 	});
 
+}
+
+function updateAirportCities(airport) {
+    $('#airportDetailsCityList').children('.table-row').remove()
+    var cities = airport.citiesServed
+    cities.sort(sortByProperty("population", false))
+	var count = 0
+	$.each(cities, function( key, city ) {
+		if (++ count > 50) { //do it for top 50 cities only
+			return false
+		}
+		var row = $("<div class='table-row'></div>")
+		row.append("<div class='cell' style='text-align: right;'>" + city.name + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + Number(city.population).toLocaleString() + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>$" + Number(city.income).toLocaleString() + "</div>")
+    })
+}
+function updateAirportDestinations(airport) {
+    $('#airportDetailsDestinationList').children('.table-row').remove()
+    var destinations = airport.destinations
+	var count = 0
+	$.each(destinations, function( key, destination ) {
+		var row = $("<div class='table-row'></div>")
+		row.append("<div class='cell' style='text-align: right;'>" + destination.name + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + destination.type + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + destination.strength + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + destination.description + "</div>")
+    })
 }
 
 function updateAirportRating(rating) {

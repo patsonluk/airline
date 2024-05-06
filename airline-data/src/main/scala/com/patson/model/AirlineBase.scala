@@ -42,29 +42,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
       0.3 + airport.size * 0.1
     }
 
-//  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
-//    val base = 5
-//    val titleBonus = titleOption match {
-//      case Some(title) => CountryAirlineTitle.getLinkLimitBonus(title)
-//      case None => 0
-//    }
-//
-//    val scaleBonus =
-//      if (headquarter) {
-//        4 * scale
-//      } else {
-//        2 * scale
-//      }
-//
-//    base + titleBonus + scaleBonus
-//  }
-
   val getOfficeStaffCapacity = AirlineBase.getOfficeStaffCapacity(scale, headquarter)
-
-//  val HQ_BASIC_DELEGATE = 7
-//  val NON_HQ_BASIC_DELEGATE = 3
-//  val delegateCapacity : Int =
-//    (if (headquarter) HQ_BASIC_DELEGATE else NON_HQ_BASIC_DELEGATE) + scale / (if (headquarter) 1 else 2)
 
   val delegatesRequired : Int = {
     if (headquarter) {
@@ -73,7 +51,6 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
       1 + scale / 2
     }
   }
-
 
   def getOvertimeCompensation(staffRequired : Int) = {
     if (getOfficeStaffCapacity >= staffRequired) {

@@ -21,7 +21,7 @@ $( document ).ready(function() {
 
 	window.addEventListener('orientationchange', refreshMobileLayout)
 
-    populateLookups()
+//    populateLookups()
 	if ($.cookie('sessionActive')) {
 		loadUser(false)
 	} else {
@@ -592,24 +592,27 @@ function populateDataPropertyTooltips() {
 
 }
 
-var airlineGradeLookup
-function populateLookups() {
-    loadAllCountries()
-    $.ajax({
-		type: 'GET',
-		url: "lookups",
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    async: false,
-	    success: function(result) {
-	    	airlineGradeLookup = result.airlineGradeLookup
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
-}
+//var airlineGradeLookup
+//function populateLookups() {
+//    loadAllCountries()
+//    $.ajax({
+//		type: 'GET',
+//		url: "lookups",
+//	    contentType: 'application/json; charset=utf-8',
+//	    dataType: 'json',
+//	    async: false,
+//	    success: function(result) {
+//	    	airlineGradeLookup = result.airlineGradeLookup
+//	    	airlineGradeTourists = result.airlineGradeTourists
+//	    	airlineGradeElites = result.airlineGradeElites
+//	    	airlineGradeStockPrice = result.airlineGradeStockPrice
+//	    },
+//	    error: function(jqXHR, textStatus, errorThrown) {
+//	            console.log(JSON.stringify(jqXHR));
+//	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+//	    }
+//	});
+//}
 
 function showTutorial() {
 	// Get the modal

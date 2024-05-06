@@ -4,7 +4,7 @@ $('#live-chat header span i').on('click', function() {
 			var final_state = $(this).is(':hidden');
 			if (final_state) {
 				//Collapsed
-				$("#live-chat").css({"left":"10px", "width":"59px"});
+				$("#live-chat").css({"left":"10px", "width":"52px"});
 				//$("#live-chat h4").text("");
 				$("#live-chat h4").hide();
 				$(".chatOption").hide();

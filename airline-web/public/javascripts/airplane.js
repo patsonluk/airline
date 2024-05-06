@@ -530,8 +530,6 @@ function updateModelInfo(modelId) {
 	loadAirplaneModels()
 	model = loadedModelsById[modelId]
 	var $stars = $(getAirplaneStarsImgs(model.quality))
-	console.log("updating model panel")
-	console.log(stars)
 	$('#airplaneModelDetails .selectedModel').val(modelId)
 	$('#airplaneModelDetails #modelName').text(model.name)
 	$('#airplaneModelDetails .modelFamily').text(model.family)

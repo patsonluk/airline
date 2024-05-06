@@ -817,6 +817,7 @@ object AirportFeaturePatcher extends App {
 
     val list: mutable.ListBuffer[String] = collection.mutable.ListBuffer(baseList:_*)
 
+    list -= "HND"
     list -= "CGO" //China
     list -= "OSS" //Uzbekistan
     list += "FRU"
@@ -871,7 +872,7 @@ object AirportFeaturePatcher extends App {
       "GIG", //Brazil
       "GRU",
       "NRT", //Japan
-      "XIX",
+      "KIX",
       "SVO", //Russia
       "LED",
       "FCO", //Italy

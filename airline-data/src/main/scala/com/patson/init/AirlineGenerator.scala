@@ -70,10 +70,10 @@ object AirlineGenerator extends App {
       newAirline.setTargetServiceQuality(49)
       newAirline.setCurrentServiceQuality(70)
       newAirline.setReputation(80)
+      newAirline.setSkipTutorial(true)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
-      newAirline.setSkipTutorial(true)
-      
+
       val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 9, 1, true)
       
       AirlineSource.saveAirlines(List(newAirline))
