@@ -23,7 +23,7 @@ object LinkSimulation {
   private val CREW_UNIT_COST = 16 //for now...
 
 
-  def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
+  def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], immutable.Map[(PassengerGroup, Airport, Route), Int], List[AirlineStat]) = {
     println("Loading all links")
     val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
     val flightLinks = links.filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link])
@@ -39,19 +39,18 @@ object LinkSimulation {
     simulateLinkError(flightLinks)
     
     val PassengerConsumptionResult(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], missedPassengerResult : immutable.Map[(PassengerGroup, Airport), Int])= PassengerSimulation.passengerConsume(demand, links)
-    
-    //generate statistic 
+
+    println("Generating Airline Stats")
+    val airlineStats = tallyPassengerTypesByAirline(consumptionResult, cycle)
+    AirlineStatisticsSource.deleteAirlineStatsBeforeCycle(cycle - 40)
+    AirlineStatisticsSource.saveAirlineStats(airlineStats)
+
+    //used for airport stats
     println("Generating flight stats")
     val linkStatistics = generateFlightStatistics(consumptionResult, cycle)
     println("Saving generated stats to DB")
-    LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 5)
+    LinkStatisticsSource.deleteLinkStatisticsBeforeCycle(cycle - 2) //was cycle - 5
     LinkStatisticsSource.saveLinkStatistics(linkStatistics)
-
-    println("Generating Pax Type Stats")
-    val passengerTypes = tallyPassengerTypesByAirline(consumptionResult)
-    passengerTypes.foreach { case ((airlineId, passengerType), count) =>
-      println(s"Airline ID: $airlineId, Passenger Type: $passengerType, Count: $count")
-    }
 
     //generate country market share
     println("Generating country market share")
@@ -80,25 +79,12 @@ object LinkSimulation {
 
     }
 
-
     //save all consumptions
     var startTime = System.currentTimeMillis()
     println("Saving " + consumptionResult.size +  " consumptions")
     ConsumptionHistorySource.updateConsumptions(consumptionResult)
     var endTime = System.currentTimeMillis()
     println(s"Saved all consumptions. Took ${endTime - startTime} millisecs")
-
-
-    //generate link history
-//    println("Generating link history")
-//    val linkHistory = generateLinkHistory(consumptionResult)
-//    println("Saving " + linkHistory.size + " generated history to DB")
-//    LinkHistorySource.updateLinkHistory(linkHistory)
-
-//    println("Generating VIP")
-//    val vipRoutes = generateVipRoutes(consumptionResult)
-//    RouteHistorySource.deleteVipRouteBeforeCycle(cycle)
-//    RouteHistorySource.saveVipRoutes(vipRoutes, cycle)
 
     println("Calculating profits by links")
     startTime = System.currentTimeMillis()
@@ -152,7 +138,7 @@ object LinkSimulation {
     LoungeHistorySource.deleteConsumptionsBeforeCycle(cycle)
 
 
-    (linkConsumptionDetails.toList, loungeResult, consumptionResult)
+    (linkConsumptionDetails.toList, loungeResult, consumptionResult, airlineStats)
   }
 
   case class PassengerCost(group : PassengerGroup, passengerCount : Int, cost : Double)
@@ -470,23 +456,28 @@ object LinkSimulation {
     
   }
 
-  def tallyPassengerTypesByAirline(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int]): scala.collection.immutable.Map[(Int, String), Int] = {
-    val passengerTypeCountsByAirline = Map[(Int, String), Int]()
+  def tallyPassengerTypesByAirline(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int], cycle: Int): List[AirlineStat] = {
+    val passengerTypeCountsByAirline = Map[Int, (Int, Int, Int, Int)]()
 
     consumptionResult.foreach {
       case ((passengerGroup, _, route), passengerCount) =>
         route.links.filter(_.link.transportType == TransportType.FLIGHT).foreach { link =>
           val airlineId = link.link.airline.id
-          val passengerType = passengerGroup.passengerType.toString()
-          val key = (airlineId, passengerType)
-          val currentCount = passengerTypeCountsByAirline.getOrElse(key, 0)
-          passengerTypeCountsByAirline.put(key, currentCount + passengerCount)
+          val countInstance = passengerTypeCountsByAirline.getOrElse(airlineId, (0, 0, 0, 0))
+          val paxTypeCount = passengerGroup.passengerType match {
+            case PassengerType.TOURIST => passengerTypeCountsByAirline.put(airlineId, (countInstance._1 + passengerCount, countInstance._2, countInstance._3, countInstance._4 + passengerCount))
+            case PassengerType.ELITE => passengerTypeCountsByAirline.put(airlineId, (countInstance._1, countInstance._2 + passengerCount, countInstance._3, countInstance._4 + passengerCount))
+            case PassengerType.BUSINESS => passengerTypeCountsByAirline.put(airlineId, (countInstance._1, countInstance._2, countInstance._3 + passengerCount, countInstance._4 + passengerCount))
+            case _ => passengerTypeCountsByAirline.put(airlineId, (countInstance._1, countInstance._2, countInstance._3, countInstance._4 + passengerCount))
+          }
         }
     }
 
-    passengerTypeCountsByAirline.toMap
+    passengerTypeCountsByAirline.map {
+      case (airlineId, (tourist, elite, business, total)) =>
+        AirlineStat(airlineId, cycle, tourist, elite, business, total)
+    }.toList
   }
-
   
   def generateCountryMarketShares(consumptionResult: scala.collection.immutable.Map[(PassengerGroup, Airport, Route), Int]) : List[CountryMarketShare] = {
     val countryAirlinePassengers = Map[String, Map[Int, Long]]()

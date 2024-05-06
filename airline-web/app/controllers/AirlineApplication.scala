@@ -33,7 +33,19 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "targetServiceQuality" -> JsNumber(airline.airlineInfo.targetServiceQuality),
       "weeklyDividends" -> JsNumber(airline.airlineInfo.weeklyDividends),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
-      "gradeValue" -> JsNumber(airline.airlineGrade.value),
+      "gradeLevel" -> JsNumber(airline.airlineGrade.level),
+      "gradeFloor" -> JsNumber(airline.airlineGrade.reputationFloor),
+      "gradeCeiling" -> JsNumber(airline.airlineGrade.reputationCeiling),
+        "stockPrice" -> JsNumber(airline.airlineInfo.stockPrice),
+        "stockDescription" -> JsString(airline.airlineGradeStockPrice.description),
+      "stockLevel" -> JsNumber(airline.airlineGradeStockPrice.level),
+      "stockCeiling" -> JsNumber(airline.airlineGradeStockPrice.reputationCeiling),
+      "stockFloor" -> JsNumber(airline.airlineGradeStockPrice.reputationFloor),
+        "tourists" -> JsNumber(airline.stats.tourists),
+        "touristsDescription" -> JsString(airline.airlineGradeTourists.description),
+      "touristsLevel" -> JsNumber(airline.airlineGradeTourists.level),
+      "touristsCeiling" -> JsNumber(airline.airlineGradeTourists.reputationCeiling),
+      "touristsFloor" -> JsNumber(airline.airlineGradeTourists.reputationFloor),
       "airlineCode" -> JsString(airline.getAirlineCode()),
       "skipTutorial" -> JsBoolean(airline.isSkipTutorial),
       "initialized" -> JsBoolean(airline.isInitialized))
@@ -162,7 +174,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "Access-Control-Allow-Credentials" -> "true"
     )
   }
-
   
   def getAirline(airlineId : Int, extendedInfo : Boolean) = AuthenticatedAirline(airlineId) { request =>
      val airline = request.user
@@ -305,12 +316,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
     }
 
-//
-//        val existingBaseCount = airline.getBases().length
-//        val allowedBaseCount = airline.airlineGrade.getBaseLimit
-//        if (existingBaseCount >= allowedBaseCount) {
-//          return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
-//        }
     //check delegates requirement
     val delegatesAssignedToThisCountry = airline.getDelegateInfo().busyDelegates.filter { delegate =>
       val targetCountryCode = targetBase.countryCode
@@ -735,7 +740,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      val airline = request.user
      val incomes = IncomeSource.loadIncomesByAirline(airlineId)
      val cashFlows = CashFlowSource.loadCashFlowsByAirline(airlineId)
-     Ok(Json.obj("incomes" -> Json.toJson(incomes), "cashFlows" -> Json.toJson(cashFlows)))
+     val stats = AirlineStatisticsSource.loadAirlineStats(airlineId)
+
+     Ok(Json.obj("incomes" -> Json.toJson(incomes), "cashFlows" -> Json.toJson(cashFlows), "airlineStats" -> Json.toJson(stats)))
   }
 
   def getFleet(airlineId : Int) = Action { request =>
@@ -820,8 +827,8 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (allianceMemberOption.isDefined && allianceMemberOption.get.role == AllianceRole.LEADER) {
         return Some("Cannot reset airline as your airline is the leader of an alliance. Either promote another member as leader or disband the alliance before proceeding")
     }
-    if (rebuild && airline.getReputation() < AirlineGrade.CONTINENTAL.reputationCeiling) {
-        return Some(s"Cannot rebuild airline when reputation is lower than ${AirlineGrade.CONTINENTAL.reputationCeiling}")
+    if (rebuild && airline.getReputation() < 100) {
+        return Some(s"Cannot rebuild airline when reputation is lower than 100")
     }
     return None
   }

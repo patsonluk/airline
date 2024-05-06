@@ -28,10 +28,10 @@ object IncomeSource {
   def saveIncomes(incomes: List[AirlineIncome]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
-    val incomePreparedStatement = connection.prepareStatement("REPLACE INTO " + INCOME_TABLE + "(airline, profit, revenue, expense, period, cycle) VALUES(?,?,?,?,?,?)")
+    val incomePreparedStatement = connection.prepareStatement("REPLACE INTO " + INCOME_TABLE + "(airline, profit, revenue, expense, stock_price, period, cycle) VALUES(?,?,?,?,?,?,?)")
     val linksPreparedStatement = connection.prepareStatement("REPLACE INTO " + LINKS_INCOME_TABLE + "(airline, profit, revenue, expense, ticket_revenue, airport_fee, fuel_cost, crew_cost, inflight_cost, delay_compensation, maintenance_cost, lounge_cost, depreciation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     val transactionsPreparedStatement = connection.prepareStatement("REPLACE INTO " + TRANSACTIONS_INCOME_TABLE + "(airline, profit, revenue, expense, capital_gain, create_link, period, cycle) VALUES(?,?,?,?,?,?,?,?)")
-    val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, service_investment, advertisement, lounge_upkeep, lounge_cost, lounge_income, asset_expense, asset_revenue, fuel_profit, depreciation, overtime_compensation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val othersPreparedStatement = connection.prepareStatement("REPLACE INTO " + OTHERS_INCOME_TABLE + "(airline, profit, revenue, expense, loan_interest, base_upkeep, dividends, advertisement, lounge_upkeep, lounge_cost, lounge_income, asset_expense, asset_revenue, fuel_profit, depreciation, overtime_compensation, period, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     
     try {
       connection.setAutoCommit(false)
@@ -41,8 +41,9 @@ object IncomeSource {
           incomePreparedStatement.setLong(2, income.profit)
           incomePreparedStatement.setLong(3, income.revenue)
           incomePreparedStatement.setLong(4, income.expense)
-          incomePreparedStatement.setInt(5, period.id)
-          incomePreparedStatement.setInt(6, income.cycle)
+          incomePreparedStatement.setDouble(5, income.stockPrice)
+          incomePreparedStatement.setInt(6, period.id)
+          incomePreparedStatement.setInt(7, income.cycle)
           incomePreparedStatement.addBatch()
           
           linksPreparedStatement.setInt(1, income.airlineId)
@@ -81,7 +82,7 @@ object IncomeSource {
           othersPreparedStatement.setLong(4, income.others.expense)
           othersPreparedStatement.setLong(5, income.others.loanInterest)
           othersPreparedStatement.setLong(6, income.others.baseUpkeep)
-          othersPreparedStatement.setLong(7, income.others.serviceInvestment)
+          othersPreparedStatement.setLong(7, income.others.dividends)
           othersPreparedStatement.setLong(8, income.others.advertisement)
           othersPreparedStatement.setLong(9, income.others.loungeUpkeep)
           othersPreparedStatement.setLong(10, income.others.loungeCost)
@@ -201,6 +202,7 @@ object IncomeSource {
           val totalProfit = resultSet.getLong("i.profit")
           val totalRevenue = resultSet.getLong("i.revenue") 
           val totalExpense = resultSet.getLong("i.expense")
+          val stockPrice = resultSet.getDouble("i.stock_price")
           val period = Period(resultSet.getInt("i.period"))
           val cycle = resultSet.getInt("i.cycle")
            
@@ -239,7 +241,7 @@ object IncomeSource {
                          loanInterest = resultSet.getLong("o.loan_interest"), 
                          baseUpkeep = resultSet.getLong("o.base_upkeep"),
                          overtimeCompensation = resultSet.getLong("o.overtime_compensation"),
-                         serviceInvestment = resultSet.getLong("o.service_investment"), 
+                         dividends = resultSet.getLong("o.dividends"), 
                          advertisement = resultSet.getLong("o.advertisement"),
                          loungeUpkeep = resultSet.getLong("o.lounge_upkeep"),
                          loungeCost = resultSet.getLong("o.lounge_cost"),
@@ -251,7 +253,7 @@ object IncomeSource {
                          period = Period(resultSet.getInt("o.period")),
                          cycle = resultSet.getInt("o.cycle"))
           
-          incomes += AirlineIncome(airlineId, totalProfit, totalRevenue, totalExpense, linksBalance, transactionsBalance, othersBalance, period, cycle)
+          incomes += AirlineIncome(airlineId, totalProfit, totalRevenue, totalExpense, stockPrice, linksBalance, transactionsBalance, othersBalance, period, cycle)
       }
        
        incomes.toList

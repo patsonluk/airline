@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.model.{Airline, AirlineGrade}
+import com.patson.model.{Airline}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -49,7 +49,7 @@ object TileUtil {
 
 
   def generateHeadquartersTiles(airline : Airline) : TileLayout = {
-    val buildingLevel = Math.min(6, airline.airlineGrade.value / 3 + 1)
+    val buildingLevel = Math.min(6, airline.airlineGrade.level / 3 + 1)
 
     val mainBuildingSource = buildingSourceByLevel(buildingLevel)(airline.id % buildingSourceByLevel(buildingLevel).length)
     val backRowSource = tileSourceByY(1)(airline.id % tileSourceByY(1).length)

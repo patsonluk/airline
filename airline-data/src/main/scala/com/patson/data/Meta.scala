@@ -207,6 +207,7 @@ object Meta {
       "service_quality DECIMAL(5,2)," +
       "target_service_quality INTEGER," +
       "weekly_dividends INTEGER DEFAULT 0," +
+      "stock_price DOUBLE DEFAULT 0," +
       "reputation DECIMAL(6,2)," +
       "country_code CHAR(2)," +
       "airline_code CHAR(2)," +
@@ -620,7 +621,6 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + USER_AIRLINE_TABLE + "(" +
       "airline INTEGER PRIMARY KEY," +
       "user_name VARCHAR(100)," +
-      "user_name INTEGER," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(user_name) REFERENCES " + USER_TABLE + "(user_name) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -787,6 +787,7 @@ object Meta {
       "profit LONG, " +
       "revenue LONG, " +
       "expense LONG," +
+      "stock_price DOUBLE," +
       "period INTEGER," +
       "cycle INTEGER," +
       "PRIMARY KEY (airline, period, cycle)" +
@@ -849,7 +850,7 @@ object Meta {
       "expense LONG, " +
       "loan_interest LONG," +
       "base_upkeep LONG," +
-      "service_investment LONG," +
+      "dividends LONG," +
       "advertisement LONG," +
       "lounge_upkeep LONG, " +
       "lounge_cost LONG, " +
@@ -2039,7 +2040,7 @@ object Meta {
       "tourists INTEGER, " +
       "elites INTEGER, " +
       "business INTEGER, " +
-      "stock_price DOUBLE, " +
+      "total INTEGER, " +
       "PRIMARY KEY (airline, cycle)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
@@ -2068,7 +2069,6 @@ object Meta {
       "longitude DOUBLE, " +
       "country_code CHAR(2)" +
       ")")
-    println(statement)
     statement.execute()
     statement.close()
   }

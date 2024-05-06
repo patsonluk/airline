@@ -60,14 +60,14 @@ function refreshTopBar(airline) {
 
 	//mobile
 	$(".reputation").text(airline.reputation)
-	$(".reputationLevel").text(" " + airline.gradeDescription + " (Next Grade: " + airlineGradeLookup[airline.gradeValue] + ")")
+	//$(".reputationLevel").text(" " + airline.gradeDescription + " (Next Grade: " + airlineGradeLookup[airline.gradeValue] + ")")
 
 	//desktop
 	//$(getGradeStarsImgs(airline.gradeValue)).attr('title', "Reputation: " + airline.reputation).appendTo($(".reputationStars"))
-	var reputationText = "Reputation: " + airline.reputation + " (" + airline.gradeDescription + ") Next Grade: " + airlineGradeLookup[airline.gradeValue]
+//	var reputationText = "Reputation: " + airline.reputation + " (" + airline.gradeDescription + ") Next Grade: " + airlineGradeLookup[airline.gradeValue]
 	var $starBar = $(getGradeStarsImgs(airline.gradeValue))
 	$(".reputationStars").append($starBar)
-	addTooltip($(".reputationStars"), reputationText, {'top' : 0, 'width' : '350px', 'white-space' : 'nowrap'})
+//	addTooltip($(".reputationStars"), reputationText, {'top' : 0, 'width' : '350px', 'white-space' : 'nowrap'})
 
 	//updateTopBarDelegatesStatus
 	refreshTopBarDelegates(airline)

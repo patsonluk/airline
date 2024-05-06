@@ -34,7 +34,7 @@ package object controllers {
         "id" -> airline.id,
         "name" -> airline.name,
         "reputation" -> airline.getReputation(),
-        "gradeValue" -> airline.airlineGrade.value,
+        "gradeValue" -> airline.airlineGrade.level,
         "gradeDescription" -> airline.airlineGrade.description,
         "airlineCode" -> airline.getAirlineCode(),
         "baseCount" -> airline.getBases().size,
@@ -380,6 +380,7 @@ package object controllers {
      def writes(airlineIncome : AirlineIncome): JsValue = {
       JsObject(List(
         "airlineId" -> JsNumber(airlineIncome.airlineId),
+        "stockPrice" -> JsNumber(airlineIncome.stockPrice),
         "totalProfit" -> JsNumber(airlineIncome.profit),
         "totalRevenue" -> JsNumber(airlineIncome.revenue),
         "totalExpense" -> JsNumber(airlineIncome.expense),
@@ -411,7 +412,7 @@ package object controllers {
         "othersLoungeIncome" -> JsNumber(airlineIncome.others.loungeIncome),
         "othersAssetExpense" -> JsNumber(airlineIncome.others.assetExpense),
         "othersAssetRevenue" -> JsNumber(airlineIncome.others.assetRevenue),
-        "othersServiceInvestment" -> JsNumber(airlineIncome.others.serviceInvestment),
+        "othersDividends" -> JsNumber(airlineIncome.others.dividends),
         "othersAdvertisement" -> JsNumber(airlineIncome.others.advertisement),
         "othersFuelProfit" -> JsNumber(airlineIncome.others.fuelProfit),
         "othersDepreciation" -> JsNumber(airlineIncome.others.depreciation),
@@ -437,6 +438,18 @@ package object controllers {
         "assetTransactions" -> JsNumber(airlineCashFlow.assetTransactions),
         "period" -> JsString(airlineCashFlow.period.toString()),
         "cycle" -> JsNumber(airlineCashFlow.cycle)))
+    }
+  }
+
+  implicit object AirlineStatWrite extends Writes[AirlineStat] {
+    def writes(airlineStat: AirlineStat): JsValue = {
+      JsObject(List(
+        "airlineId" -> JsNumber(airlineStat.airlineId),
+        "tourists" -> JsNumber(airlineStat.tourists),
+        "elites" -> JsNumber(airlineStat.elites),
+        "business" -> JsNumber(airlineStat.business),
+        "total" -> JsNumber(airlineStat.total),
+        "cycle" -> JsNumber(airlineStat.cycle)))
     }
   }
 

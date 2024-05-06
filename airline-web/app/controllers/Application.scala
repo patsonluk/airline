@@ -581,11 +581,16 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
     Ok(result)
   }
 
-  def getLookups() = Action {
-    val airlineGradeLookup = AirlineGrade.allGrades.map(grade => (grade.value.toString, grade.reputationCeiling)).toMap
-
-    Ok(Json.obj("airlineGradeLookup" -> airlineGradeLookup))
-  }
+//  def getLookups() = Action {
+//    val airlineGradeLookup = AirlineGrades.grades
+////    val airlineGradeTourists = AirlineGradeTourists.grades.keys.toList.sorted
+////    val airlineGradeElites = AirlineGradeElites.grades.keys.toList.sorted
+////    val airlineGradeStockPrice = AirlineGradeStockPrice.grades.keys.toList.sorted
+////val output = Json.obj("airlineGradeTourists" -> airlineGradeTourists, "airlineGradeElites" -> airlineGradeElites, "airlineGradeLookup" -> airlineGradeLookup)
+//    val output = Json.obj("airlineGradeLookup" -> airlineGradeLookup)
+////
+//    Ok(output)
+//  }
 
   def getAirportChampions(airportId : Int, airlineId : Option[Int]) = Action {
     var result = Json.obj()

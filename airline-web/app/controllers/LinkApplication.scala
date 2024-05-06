@@ -1053,7 +1053,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       weeklyDividendsTry match {
         case Success(weeklyDividends) =>
           val airline = request.user
-          airline.setWeeklyDividends(weeklyDividends)
+          airline.setWeeklyDividends(weeklyDividends * 1000000)
           AirlineSource.saveAirlineInfo(airline, updateBalance = false)
           Ok(Json.obj("weeklyDividends" -> JsNumber(weeklyDividends)))
         case Failure(_) =>

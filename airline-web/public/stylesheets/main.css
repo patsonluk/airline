@@ -167,19 +167,19 @@ a {
 }
 
 
-#main-tabs .left-tab div.tab-icon {
+#main-tabs .left-tab .tab-icon {
     width: 40px;
     height: 40px;
     object-fit: cover;
     border-radius: 50%;
     /* background-color: rgba(0, 0, 0, 0.4); */
     backdrop-filter: blur(2px);
-    /* margin: 5px; */
+    margin: 5px;
     box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6), 0 0 4px rgba(0, 0, 0, 1);
     position: relative;
 }
 
-#main-tabs .left-tab div.tab-icon:hover, #main-tabs .left-tab div.tab-icon.selected {
+#main-tabs .left-tab .tab-icon:hover, #main-tabs .left-tab .tab-icon.selected {
     cursor: pointer;
     box-shadow: inset 0 0 10px rgba(220, 220, 255, 0.8), 0 0 3px rgba(255, 255, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.8);
     /* background-color: rgba(255, 255, 255, 0.5); */
@@ -191,18 +191,34 @@ a {
   height: 100%;
 }
 
+#sidePanel {
+    position: absolute;
+}
+
 .sidePanel {
-  width: 50%;
+    width: 50%;
+    padding-left: 0px;
+    box-sizing: border-box;
+    right: 0;
+}
+
+#linkDetails {
+    display: flex;
+}
+
+#linkCharts {
+    display: flex;
+    flex-direction: column;
 }
 
 #detailsPanel {
-    width: 100%;
-    float: left;
+  /*  width: 100%;
+    float: left; */
 }
 
 .airplaneCanvasLeftGroup {
-   width: 65%;
-   height: 95%
+   width: 70%;
+   height: 99%
 }
 
 .bankCanvasLeftGroup, .oilCanvasLeftGroup {
@@ -214,11 +230,14 @@ a {
 }
 
 .airplaneCanvasRightGroup {
-   width: 35%;
+   width: 30%;
 }
 
 .officeCanvasLeftGroup  {
-    width: 70%;
+    width: 66%;
+}
+#airportCanvas {
+        padding-top: 8px;
 }
 .airportCanvasLeftGroup {
 }
@@ -229,10 +248,19 @@ a {
 }
 
 .officeCanvasRightGroup {
-    width: 30%;
+    width: 34%;
 }
 .airportCanvasRightGroup {
     width: 20%;
+}
+
+#rankingCanvas {
+    width: 100%;
+}
+
+.rankingTable {
+    margin: 0 !important;
+    padding: 2px !important;
 }
 
 #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, .campaignDetails .verticalGroup, #allianceCanvas .verticalGroup {
@@ -241,6 +269,7 @@ a {
 
 .assetsDetails div.blueprint {
     filter : grayscale(100%);
+    margin: 4px;
 }
 
 .assetsDetails div.blueprint:hover {
@@ -338,12 +367,13 @@ body.christmas {
 
 .table .table-header .cell:not(:empty) {
     background: var(--table-header-background);
-    padding: 5px;
+    padding: 6px;
     box-sizing: border-box;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color : var(--table-header-color);
     overflow: hidden;
+    letter-spacing: 0.5px;
 }
 
 
@@ -358,11 +388,18 @@ body.christmas {
 }
 
 .table .table-header .cell:first-child{
-  border-radius:5px 0 0 0;
+  border-radius:6px 0 0 0;
 }
 
 .table .table-header .cell:last-child{
-  border-radius:0 5px 0 0;
+  border-radius:0 6px 0 0;
+}
+
+.table .table-row:last-child .cell:last-child {
+    border-bottom-right-radius: 6px;
+}
+.table .table-row:last-child .cell:first-child {
+    border-bottom-left-radius: 6px;
 }
 
 .table.data div.table-row:nth-child(even) {
@@ -419,8 +456,8 @@ div.header, span.header {
 	font-size: 18px;
 }
 
-div.button, .ajax-file-upload, .button.disabled:after {
-   	border-radius: 7px;
+.button, .ajax-file-upload, .button.disabled:after {
+   	border-radius: 8px;
 }
 
 div.button, button.button, .ajax-file-upload {
@@ -578,7 +615,7 @@ div.section, div.selectedSection, .modal-content {
 	border-radius: 5px 5px 5px 5px;
 	box-shadow: inset 0 0 2px white, 0 0 3px rgba(0, 0, 0, 0.5);
 	border-radius: 0.5em 0.5em 0.5em 0.5em;
-	margin: 10px;
+	margin: 8px 0;
 	padding: 10px 10px 20px 16px;
 	box-sizing:border-box;
 }
@@ -754,14 +791,18 @@ div.future {
 } 
 
 
-div#canvas {
+#canvas {
+
 	width: 100%;
     height: 100%;
 }
 
-
 .canvas {
+    box-sizing: border-box;
+    display: flex;
+    gap: 8px;
     padding-left: 20px;
+    padding-right: 8px;
 }
 
 .highlight-text {
@@ -1023,6 +1064,7 @@ div {
 input:disabled, .button.disabled, .clickable.disabled, .round-button.disabled {
   color: #a0a0a0;
   position: relative;
+  filter: brightness(0.5);
 }
 
 input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover, .round-button.disabled:hover {
@@ -1030,8 +1072,7 @@ input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover, .round-
   color: #444444;
 }
 
-
-.button.disabled:after, .clickable.disabled:after {
+/*.button.disabled:after, .clickable.disabled:after {
   content: '';
   position: absolute;
   top: 0;
@@ -1039,8 +1080,7 @@ input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover, .round-
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.4);
-}
-
+}*/
 
 .button.loading {
     position: relative; /*not sure if it's safe to apply to everything*/
@@ -1137,6 +1177,29 @@ iframe.clip {
     box-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.6);
 }
 
+.threshold-section {
+    max-width: 180px;
+}
+.threshold-bar {
+    position: relative;
+    height: 24px;
+    width: 128px;
+    border: 2px solid #333;
+    border-radius: 25px;
+    margin: auto;
+    overflow: hidden;
+}
+.threshold-bar .text-center {
+    font-size: 1.2rem;
+    line-height: 1.3;
+}
+.threshold-bar-bg {
+    background: darkgreen;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    z-index: -1;
+}
 button {
   /* Appearance Resets */
   background-color: transparent;
@@ -1155,6 +1218,9 @@ button {
 }
 .hover\:bg-red:hover{
     background-color: red;
+}
+small, .small {
+    font-size: 85%;
 }
 i {
     font-style: italic
@@ -1200,6 +1266,7 @@ i {
     line-height: 1.625;
 }
 /* Padding: Top, Right, Bottom, Left */
+.mx-auto { margin-left: auto; margin-right: auto; }
 .m-0 { margin: 0px !important; }
 .mt-0 { margin-top: 0px !important; }
 .mr-0 { margin-right: 0px !important; }
@@ -1282,6 +1349,7 @@ i {
 .h-7 { height: 28px; }
 .h-8 { height: 32px; }
 .w-full { width: 100% !important; }
+.max-w-32 {max-width: 8rem;}
 .gap-2 { gap: 0.5rem; }
 .gap-4 { gap: 1rem; }
 .text-left { text-align: left; }
@@ -1337,7 +1405,6 @@ i {
 .flex-container-width-quarter > div, .flex-container-width-quarter > button {
     flex: 1 1 calc(25% - 0.5rem);
     box-sizing: border-box;
-    margin: auto;
 }
 .section-title {
     width: 100%;

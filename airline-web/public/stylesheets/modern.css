@@ -34,7 +34,7 @@ html[data-ui-light-mode="true"] {
     --background-1: #212b3b;
 }
 
-.section, div.modal-content, div.tab-icon, #live-chat header, .chat, input, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
+.section, div.modal-content, .tab-icon, #live-chat header, .chat, input, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
     /*disable this for now...seems to have issues with blur for tooltip*/
     backdrop-filter: var(--backdrop-blur);
     background-color: var(--background-1);
@@ -43,13 +43,15 @@ html[data-ui-light-mode="true"] {
 #detailsPanel, #extendedPanel { /*only enable it for details panel, we need this otherwise panel is hard to read with map beneath it*/
     /* backdrop-filter: var(--backdrop-blur) !important; */
     background-color: var(--background-1);
-    margin: 0 0 20px;
 }
 
 
 div.section {
 	border-radius: 8px;
-	padding: 16px 8px 20px 16px;
+	padding: 16px 8px 20px 12px;
+}
+div.section.tight {
+	padding: 8px 4px;
 }
 /* sections broken with backdrop-filter */
 /* broken tooltips */
@@ -137,8 +139,7 @@ div#topBar {
 	backdrop-filter: none !important;
 }
 #live-chat {
-	left: 50px !important;
-	box-shadow: var(--shadow-1);
+	left: -4px !important;
 }
 /* disable screen dimming on some modals */
 @media screen and (min-width: 640px) {
@@ -186,7 +187,7 @@ html[data-theme="dark"] [title="Close"] > span {
 .tooltip .tooltiptext {
 	box-shadow: var(--shadow-1);
 }
-.modal-content, #live-chat header, div.tab-icon, #main-tabs .left-tab div.tab-icon, input, .select-css {
+.modal-content, #live-chat header, .tab-icon, #main-tabs .left-tab .tab-icon, input, .select-css {
 	box-shadow: var(--shadow-1);
 }
 .table .cell.detailsSelection {
@@ -206,20 +207,29 @@ html[data-theme="dark"] [title="Close"] > span {
 	color: var(--color-1) !important;
 	box-shadow: none !important;
 }
+.gm-style-mtc ul {
+    display: none !important;
+}
 /* arrow that's part of the airport box */
 .gm-style .gm-style-iw-tc::after {
 	display: none
 }
 .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active {
 	background: var(--background-1) !important;
+	right: -6px !important;
 }
 /* this was the only way to select these that i could find */
 /* zoom buttons */
 div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"] {
-	background: var(--background-3) !important
+	right: 4px;
+	top: 8px;
+	background: var(--background-3) !important;
 }
 div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"] {
 	background: none !important
+}
+.gm-svpc {
+    display: none;
 }
 input, .select-css {
 	background: var(--input-background);
@@ -248,7 +258,7 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	opacity: 1 !important
 }
 .tab-icon {
-    margin: 5px 0px;
+    margin: 5px 0px !important;
     border: 1px solid transparent;
     transition: all 0.1s;
     background: var(--background-1) !important;
@@ -262,7 +272,7 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
     border: 1px solid #ccc;
 }
 .canvas {
-	padding-left: 40px
+	padding-left: 50px;
 }
 /*===== vv fullscreen map vv =====*/
 #map {
@@ -278,26 +288,37 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
     width: 50%;
 }
 #sidePanel {
-	position: absolute;
-	padding-left: 0px;
-	padding-right: 28px;
+	pa  dding-left: 0px;
+	padding-right: 48px;
 	box-sizing: border-box;
 	pointer-events: none;
 	border-radius: 8px !important;
 	right: 0;
-	top: 9px;
+	top: 8px;
 }
 #sidePanel > * {
 	pointer-events: auto;
 }
+.modelIllustration {
+    margin: 0 -8px;
+}
+.officeCanvasRightGroup .section {
+    padding: 16px 4px 4px 4px;
+}
+.officeCanvasRightGroup h4, .officeCanvasRightGroup li, .officeCanvasRightGroup .button, .sidePanel .tight h4 {
+    padding-left: 8px;
+}
+.officeCanvasRightGroup h4 {
+    padding-bottom: 8px;
+}
 #linksCanvas #sidePanel {
+    position: unset;
+    padding: 0;
 /* the div moves in the tree! */
-    padding-right: 0;
-    width: 48%;
 }
 #map .gmnoprint[role="menubar"] {
 	position: fixed !important;
-	top: 44px !important;
+	top: 40px !important;
 	left: 44px !important;
 	width: 100px;
 }
@@ -309,8 +330,8 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 }
 #map .gmnoprint[role="menubar"] > * {
 	transition: all 0.2s !important;
-	width: 100px;
-	height: 40px !important
+	/* width: 100px; */
+	/* height: 40px !important; */
 }
 #map .gmnoprint[role="menubar"] > * button {
 	width: 100px;
@@ -334,13 +355,14 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 }
 .gm-fullscreen-control {
 	position: fixed !important;
-	top: 40px !important;
+	top: 48px !important;
 	border-radius: 8px !important;
 	box-shadow: var(--shadow-2) !important;
 }
+/* zoom buttons */
 #map div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"] {
 	position: fixed !important;
-	top: 96px !important;
+	top: 102px !important;
 	border-radius: 8px !important;
 	box-shadow: var(--shadow-2) !important;
 }
@@ -357,16 +379,16 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
     box-shadow: var(--shadow-2) !important;
 }
 #map #toggleMapHeatmapButton {
-	top: 183px
+	top: 190px
 }
 #map #toggleChampionButton {
-	top: 229px
+	top: 236px
 }
 #map #toggleMapAnimationButton {
-	top: 275px
+	top: 283px
 }
 #map #toggleMapLightButton {
-	top: 321px
+	top: 330px
 }
 #map .gm-svpc {
 	position: fixed !important;

@@ -37,14 +37,17 @@
 
     
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js" defer></script>
-    <script src="https://code.jquery.com/jquery-2.2.4.min.js"
-			  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
-			  crossorigin="anonymous"></script>
-			  
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
-			  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
-			  crossorigin="anonymous"></script>
-<!--    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>-->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+			integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+			crossorigin="anonymous"></script>
+  	<script
+		  src="https://code.jquery.com/jquery-migrate-3.4.1.min.js"
+		  integrity="sha256-UnTxHm+zKuDPLfufgEMnKGXDl6fEIjtM+n1Q6lL73ok="
+		  crossorigin="anonymous"></script>
+	  <script
+		  src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
+		  integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
+		  crossorigin="anonymous"></script>
     <script src='@routes.Assets.versioned("javascripts/libs/jquery.cookie.js")'></script>
 
     <script src='@routes.Assets.versioned("javascripts/libs/reconnecting-websocket.min.js")'></script>
@@ -319,21 +322,21 @@
 
 			<div style="position: fixed; z-index: 1; top: 40px; display: none; height: calc(100% - 40px); overflow-y: scroll;" id="tabGroup">
 	<!-- 	  		<ul class="tabs" id="main-tabs" style="display: none;"> -->
-				<ul class="tabs" id="main-tabs" style="padding: 10px 0 60px 0;">
+				<ul class="tabs" id="main-tabs" style="padding: 4px 4px 60px">
 
 				  <li class="left-tab worldMapCanvasTab">
                       <div style="display:flex; align-items: center;">
-                          <div class="tab-icon" data-link="/" onclick="showWorldMap();">
+                          <button class="tab-icon" data-link="/" onclick="showWorldMap();">
                             <img src='@routes.Assets.versioned("images/icons/globe-green.png")' style="margin: auto;">
-                          </div>
+                          </button>
                           <span class="label floatLabel">World Map</span>
                       </div>
                   </li>
 				  <li class="button left-tab user-specific-tab linksCanvasTab">
                       <div style="display:flex; align-items: center;">
-                          <div class="tab-icon" data-link="link" onclick="showLinksDetails();">
+                          <button class="tab-icon" data-link="link" onclick="showLinksDetails();">
                               <img src='@routes.Assets.versioned("images/icons/arrow-step-over.png")' style="margin: auto;">
-                          </div>
+                          </button>
                           <span class="label floatLabel">Flights</span>
                       </div>
                   </li>
@@ -342,90 +345,90 @@
 
                     <li class="button left-tab user-specific-tab airplaneCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="airplane" onclick="showAirplaneCanvas();">
+                            <button class="tab-icon" data-link="airplane" onclick="showAirplaneCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/airplane-gear.png")' style="margin: auto;">
-                            </div>
+                            </button>
                             <span class="label floatLabel">Airplane</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab officeCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="office" onclick="showOfficeCanvas();">
+                            <button class="tab-icon" data-link="office" onclick="showOfficeCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/building-hedge.png")' style="margin: auto;">
-                            </div>
+                            </button>
                             <span class="label floatLabel">Office</span>
                         </div>
                     </li>
 					<li class="button left-tab rankingCanvasTab">
 						<div style="display:flex; align-items: center;">
-							<div class="tab-icon" data-link="ranking" onclick="showRankingCanvas();">
+							<button class="tab-icon" data-link="ranking" onclick="showRankingCanvas();">
 								<img src='@routes.Assets.versioned("images/icons/trophy.png")' style="margin: auto;">
-							</div>
+							</button>
 							<span class="label floatLabel">Ranking</span>
 						</div>
 					</li>
                     <li class="button left-tab user-specific-tab bankCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="bank" onclick="showBankCanvas();">
+                            <button class="tab-icon" data-link="bank" onclick="showBankCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/bank.png")' style="margin: auto;">
-                            </div>
+                            </button>
                             <span class="label floatLabel">Bank</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab oilCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="oil" onclick="showOilCanvas();">
+                            <button class="tab-icon" data-link="oil" onclick="showOilCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/oil-barrel.png")' style="margin: auto;">
-                            </div>
+                            </button>
                             <span class="label floatLabel">Oil</span>
                         </div>
                     </li>
                     <li class="button left-tab user-specific-tab rivalsCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="rival" onclick="showRivalsCanvas();">
+                            <button class="tab-icon" data-link="rival" onclick="showRivalsCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/user-silhouette-question.png")' style="margin: auto;">
-                            </div>
+                            </button>
                             <span class="label floatLabel">Rivals</span>
                         </div>
                     </li>
 
                     <li class="button left-tab allianceCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="alliance" onclick="showAllianceCanvas();">
+                            <button class="tab-icon" data-link="alliance" onclick="showAllianceCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/puzzle.png")' style="margin: auto;">
-                            </div>
+                            </button>
                             <span class="label floatLabel">Alliance</span>
                         </div>
                     </li>
 					<li class="button left-tab user-specific-tab countryCanvasTab">
 						<div style="display:flex; align-items: center;">
-							<div class="tab-icon" data-link="country" onclick="showCountryView();">
+							<button class="tab-icon" data-link="country" onclick="showCountryView();">
 								<img src='@routes.Assets.versioned("images/icons/locale.png")'>
-							</div>
+							</button>
 							<span class="label floatLabel">Country</span>
 						</div>
 					</li>
 <!--                    <li class="button left-tab user-specific-tab logCanvasTab">-->
 <!--                        <div style="display:flex; align-items: center;">-->
-<!--                            <div class="tab-icon" data-link="log" onclick="showLogCanvas();">-->
+<!--                            <button class="tab-icon" data-link="log" onclick="showLogCanvas();">-->
 <!--                                <img src='@routes.Assets.versioned("images/icons/book-open-text.png")' style="margin: auto;">-->
-<!--                            </div>-->
+<!--                            </button>-->
 <!--                            <span class="label floatLabel">Log</span>-->
 <!--                        </div>-->
 <!--                    </li>-->
                     <li class="button left-tab user-specific-tab eventCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="event" onclick="showEventCanvas();">
+                            <button class="tab-icon" data-link="event" onclick="showEventCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/olympics-medal.png")' style="margin: auto;">
-                            </div>
+                            </button>
                             <span class="label floatLabel">Event</span>
                         </div>
                     </li>
                     <li class="button left-tab searchCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="search" onclick="showSearchCanvas();">
+                            <button class="tab-icon" data-link="search" onclick="showSearchCanvas();">
                                 <img src='@routes.Assets.versioned("images/icons/magnifier.png")' style="margin: auto;">
-                            </div>
+                            </button>
                             <span class="label floatLabel">Search</span>
                         </div>
                     </li>
@@ -435,7 +438,7 @@
 		<!-- main canvas start -->
 			<div id="canvas" style="float: left;" >
 				<div id="worldMapCanvas" class="canvas" style="height: 100%; padding-left: 0px">
-					<div id="map" class="mainPanel" style="float:left"
+					<div id="map" class="mainPanel"
 						 data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")'
 						 data-base-marker='@routes.Assets.versioned("images/markers/base.png")'
 						 data-large-airport-marker='@routes.Assets.versioned("images/markers/airport-darker.png")'
@@ -444,10 +447,10 @@
 						 data-gateway-airport-marker='@routes.Assets.versioned("images/markers/airport-gateway.png")'
 						 data-domestic-airport-marker='@routes.Assets.versioned("images/markers/airport-domestic.png")'
 						 data-disabled-airport-marker='@routes.Assets.versioned("images/markers/airport-transparent.png")'></div>
-					<div id="sidePanel" class="sidePanel" style="float: left; display:none;" >
-						<div id="detailsPanel" class="section" style="width: 95% ; float: left;">
+					<div id="sidePanel" class="sidePanel" style="display:none;" >
+						<div id="detailsPanel" class="section">
 							<div id="linkDetails" style="width: 100%;;">
-								<div style="width: 50%; float: left" id="linkCurrentDetails">
+								<div style="width: 50%;" id="linkCurrentDetails">
 									<h4 class="section-title">Flight <span id="linkFlightCode"></span></h4>
 									<div class="pb-5" style="display:flex;">
 										<div class="link-decoration">
@@ -456,7 +459,7 @@
 											<div style="border: 2px solid #5f6368; border-radius:12px; height: 12px; width: 12px;"></div>
 										</div>
 										<div>
-											<p class="text-base pb-1 leading-tight"><span class="clickable" id="linkFromAirport" data-link="airport"></span></p>
+											<p class="text-base pb-2 leading-tight"><span class="clickable" id="linkFromAirport" data-link="airport"></span></p>
 											<p class="leading-snug"><span id="linkDistance"></span> | <span id="linkDuration"></span></p>
 											<p class="pb-2"><i id="linkAirplaneModel"></i></p>
 											<p class="text-base leading-tight"><span class="clickable" id="linkToAirport" data-link="airport"></span></p>
@@ -620,7 +623,7 @@
 									</div>
 									<div id=linkCompetitionsPie align="center"></div>
 								</div>
-								<div style="width: 50%; float: left;">
+								<div style="width: 50%;" id="linkCharts">
 									<fieldset>
 										<div class="switch" style="float: right;">
 											<input type="radio" class="switch-input" name="view" value="month" id="switchMonth" onchange="refreshLinkCharts()">
@@ -631,11 +634,11 @@
 										</div>
 									</fieldset>
 									<div style="clear: both;"></div>
+									<div id="linkProfitChart" style="height: 180px;"></div>
+									<div id="linkRidershipChart" style="height: 260px;"></div>
+									<div id="linkRevenueChart" style="height: 260px;"></div>
+									<div id="linkPriceChart" style="height: 260px;"></div>
 								</div>
-								<div id="linkProfitChart" style="width: 50%; float: left; height: 170px;"></div>
-								<div id="linkRidershipChart" style="width: 50%; float: left; height: 250px;"></div>
-								<div id="linkRevenueChart" style="width: 50%; float: left; height: 250px;"></div>
-								<div id="linkPriceChart" style="width: 50%; float: left; height: 250px;"></div>
 							</div>
 							<div id="planLinkDetails" style="width: 100%; display: none; max-width: 36rem;">
 								<div class="pb-4" style="display:flex;">
@@ -679,19 +682,19 @@
 											<span class="tooltiptext below directDemandBreakdown" style="width: 200px;">
 												<div class="fromAirport">
 													<h4>From <span class="airportLabel"></span></h4>
-													<div> Traveler: <span class="travelerDemand"></span></div>
-													<div> Business: <span class="businessDemand"></span></div>
-													<div> Tourist: <span class="touristDemand"></span></div>
-													<div> Elite: - / - / ?</div>
+													<p> Traveler: <span class="travelerDemand"></span></p>
+													<p> Business: <span class="businessDemand"></span></p>
+													<p> Tourist: <span class="touristDemand"></span></p>
+													<p> Elite: - / - / ??</p>
 												</div>
-												<div class="toAirport" style="margin-top: 10px;">
+												<div class="toAirport" class="py-2">
 													<h4>From <span class="airportLabel"></span></h4>
-													<div> Traveler: <span class="travelerDemand"></span></div>
-													<div> Business: <span class="businessDemand"></span></div>
-													<div> Tourist: <span class="touristDemand"></span></div>
-													<div> Elite: - / - / ?</div>
+													<p> Traveler: <span class="travelerDemand"></span></p>
+													<p> Business: <span class="businessDemand"></span></p>
+													<p> Tourist: <span class="touristDemand"></span></p>
+													<p> Elite: - / - / ??</p>
 												</div>
-												<p>Elite demand can't be estimated because it changes every cycle!</p>
+												<p class="leading-snug py-1">Elite demand can't be estimated because it changes every cycle!</p>
 											</span>
 										</div>
 									</div>
@@ -901,13 +904,13 @@
 							</div>
 						</div>
 		<!-- 		    	end details panel -->
-						<div id="extendedPanel" class="section" style="width: 95%; float: left; display: none;">
+						<div id="extendedPanel" class="section" style="display: none;">
 							<div id="airplaneModelDetails" style="width: 100%; display: none;">
 								<div class="table">
 									<h4>Airplane Model Details</h4>
 				<!-- 					Model : <select id="airplaneModelOption" onchange="updateModelInfo()"></select><br/> -->
 									<div class="table-row">
-										<div class="label"><h5>Model:</h5></div>
+										<div class="label" style="width: 50%;"><h5>Model:</h5></div>
 										<div class="value" id="modelName"></div>
 									</div>
 									<div class="table-row">
@@ -919,12 +922,16 @@
 										<div class="value" id="capacity"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Max Flying Range:</h5></div>
+										<div class="label"><h5>Range:</h5></div>
 										<div class="value" id="range"></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Fuel Burn:</h5></div>
 										<div class="value" id="fuelBurn"></div>
+									</div>
+									<div class="table-row">
+										<div class="label"><h5>Quality:</h5></div>
+										<div class="value" id="airplaneTypeQuality"></div>
 									</div>
 									<div class="table-row">
 										<div class="label"><h5>Category:</h5></div>
@@ -935,7 +942,7 @@
 										<div class="value"><span class="turnaroundTime"></span>&nbsp;min</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Runway requirement:</h5></div>
+										<div class="label"><h5>Runway required:</h5></div>
 										<div class="value"><span class="runwayRequirement"></span>&nbsp;m</div>
 									</div>
 									<div class="table-row">
@@ -943,7 +950,7 @@
 										<div class="value" id="speed"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Max Lifespan:</h5></div>
+										<div class="label"><h5>Lifespan:</h5></div>
 										<div class="value" id="lifespan"></div>
 									</div>
 									<div class="table-row">
@@ -960,7 +967,7 @@
 									</div>
 									<button type="button" class="button add ml-0" onclick="promptBuyNewAirplane($('#airplaneModelDetails .selectedModel').val(), true, $('#planLinkFromAirportId').val())">Purchase</button>
 									<button type="button" class="button" onclick="showAirplaneBaseFromPlanLink($('#airplaneModelDetails .selectedModel').val())">Base</button>
-									<button type="button" class="button" onclick="showAirplaneModelConfigurationsFromPlanLink($('#airplaneModelDetails .selectedModel').val())">Config</button>
+									<button type="button" class="button ml-0" onclick="showAirplaneModelConfigurationsFromPlanLink($('#airplaneModelDetails .selectedModel').val())">Config</button>
 									<input type="hidden" class="selectedModel"/>
 								</div>
 							</div>
@@ -971,9 +978,9 @@
 				</div>
 	<!--   			end world map canvas -->
 				<div id="linksCanvas"  class="canvas" style="display: none; height: 100%; min-width: 400px;">
-					<div style="float: left;" class="mainPanel">
-						<div class="section" style="height: 95% ; width : 98%; float: left;">
-							<div style="height: 20px; padding-left: 30px;">
+					<div class="mainPanel">
+						<div class="section tight">
+							<div style="height: 20px; text-align: right;">
 								<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
 							</div>
 							<div style="width: 100%; height: 100%; overflow:auto;">
@@ -1034,10 +1041,10 @@
 
 				<div id="airportCanvas" class="canvas" style="display: none; min-width: 500px;">
 					<!-- left panel -->
-					<div style="float:left; max-width: 100%" class="verticalGroup airportCanvasLeftGroup">
-						<div style="width: 100%; display: flex; flex-flow: row; flex-wrap: wrap; gap: 10px; margin-top : 5px;">
+					<div style="max-width: 100%" class="verticalGroup">
+						<div style="width: 100%; display: flex; flex-flow: row; flex-wrap: wrap; gap: 8px;">
 							<div style="flex-basis : 28%; flex-grow: 1; box-sizing:border-box;">
-								<div class="section" style="box-sizing:border-box; size: 100%; margin-left: 0; margin-right: 0; margin-top: 0;">
+								<div class="section" style="box-sizing:border-box; margin-left: 0; margin-right: 0; margin-top: 0;">
 									<h4>Airport Rating</h4>
 									<div class="table" style="width: 100%">
 										<div class="table-row">
@@ -1062,7 +1069,7 @@
 										</div>
 									</div>
 								</div>
-								<div id="airportBaseDetails" class="section" style="box-sizing:border-box; size: 100%; margin-left: 0; margin-right: 0; margin-bottom:0px;">
+								<div id="airportBaseDetails" class="section" style="box-sizing:border-box; margin-left: 0; margin-right: 0; margin-bottom:0px;">
 									<h4>Your Airline Headquarters/Base</h4>
 									<div class="table" style="width: 100%">
 										<div class="table-row">
@@ -1135,11 +1142,9 @@
 									<button type="button" class="button ml-0" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade</button>
 									<button type="button" class="button mr-0" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade</button>
 									<button type="button" class="button ml-0" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs. All assets of this Airport will be sold.", deleteBase)'>Remove</button>
-
-			<!--     					<div class="button" onclick="showWorldMap()">Cancel</div> -->
 								</div>
 							</div>
-							<div class="section loyalistDetails" style="flex-basis : 15%; flex-grow: 1; box-sizing:border-box; margin: 0px; ">
+							<div class="section tight loyalistDetails" style="flex-basis : 15%; flex-grow: 1; box-sizing:border-box; margin: 0px; ">
 								<h4>
 									Loyalist Trend
 									<span class="tooltip">
@@ -1172,17 +1177,17 @@
 								</div>
 							</div>
 						</div>
-						<div id="airportDetails" class="section" style="box-sizing:border-box; min-width: 100%; float:left; margin:10px 0 10px 0;">
-							<h4><span id="airportDetailsName">Airport Details</span> | <i class="airportCityName"></i>, <i class="airportCountryName"></i></h4>
-							<div class="table verticalGroup" style="float: left">
+						<div id="airportDetails" class="section mb-0" style="width: 100%; display: flex; flex: 1 1 50%; flex-wrap: wrap;">
+							<h4 style="width:100%;"><span id="airportDetailsName">Airport Details</span> | <i class="airportCityName"></i>, <i class="airportCountryName"></i></h4>
+							<div class="table verticalGroup">
 								<div class="table-row">
-									<div class="label" style="width:50%;">Airport level:</div>
+									<div class="label" style="width:50%;">Airport scale:</div>
 									<div class="value" style="width:50%;">
 										<span id="airportDetailsSize"></span>
 										<div class="tooltip">
 											<img src='@routes.Assets.versioned("images/icons/information.png")'>
 											<span class="tooltiptext alignLeft" style="width: 400px;">
-												<p>Larger airports with more gates, runways, and other facilities are a higher "<b>airport level</b>." Higher level airports are worth more reputation, however have higher aircraft landing fees and office costs.</p>
+												<p>Larger airports with more gates, runways, and other facilities are a higher "<b>airport scale</b>." Higher scale airports are worth more reputation, however have higher aircraft landing fees and base maintenace costs.</p>
 											</span>
 										</div>
 									</div>
@@ -1247,7 +1252,7 @@
 								<div class="table-row runwayTable table data" style="width: 95%;">
 								</div>
 							</div>
-							<div class="table verticalGroup" style="float: left;">
+							<div class="table verticalGroup">
 								<div class="table-row">
 									<div class="label">
 										<h5>
@@ -1321,7 +1326,7 @@
 									<div class="value" id="airportDetailsAirlineCount"></div>
 								</div>
 							</div>
-							<div id="airportStatistics" style="width: 100%; float: left;">
+							<div id="airportStatistics" class="py-2" style="width: 100%;">
 								<div style="float: left;">
 									<h5 align="center">Airline share (as Departure)</h5>
 									<div id="airlineDeparturePie" style="height: 160px; width: 250px;" align="center"></div>
@@ -1336,11 +1341,10 @@
 								</div>
 							</div>
 						</div>
-						<div style="clear: both;"></div>
-	<!-- 		    		end main details -->
-						<div style="display: flex; flex-wrap: wrap;">
-							<div class="section" style="box-sizing:border-box; width: 30%; min-width: 300px; margin-left: 0;">
-								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/crown.png")'></div><div style="float: left;"><h4>Rankings</h4></div>
+						<div style="width: 100%; display: flex; flex-wrap: wrap; gap: 8px;">
+							<div class="section" style="box-sizing:border-box; width: 30%; min-width: 300px;">
+								<img style="float: left;" src='@routes.Assets.versioned("images/icons/crown.png")'>
+								<h4 style="width:100%">Rankings</h4>
 								<div id="airportDetailsChampionList" style="width: 100%; margin-bottom: 15px;" class="table data">
 									<div class="table-header">
 										<div class="cell" style="width: 5%">&nbsp;</div>
@@ -1351,8 +1355,8 @@
 									</div>
 								</div>
 							</div>
-							<div class="section" style="box-sizing:border-box; width: 60%; flex-grow: 1; min-width: 400px; margin:10px 0 10px 0;">
-								<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><div style="float: left;"><h4>Airline Headquarters</h4></div>
+							<div class="section" style="box-sizing:border-box; width: 60%; flex-grow: 1; min-width: 400px;">
+								<div style="float: left;position:relative;bottom: -3px;"><img src='@routes.Assets.versioned("images/icons/building-hedge.png")'></div><h4>Airline Headquarters</h4>
 								<div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;" class="table data">
 									<div class="table-header">
 										<div class="cell" style="width: 30%">Airline</div>
@@ -1385,12 +1389,14 @@
 								</div>
 							</div>
 						</div>
-
 					</div>
-					<!-- airport map, pictures -->
-					<div style="" class="verticalGroup airportCanvasRightGroup">
-						<div id="airportMap" style="width: 100%; padding-top: 100%; postition: relative;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>
+					
+					<div class="section flex-container-width-quarter" style="width: 100%; min-height: 200px;">
+<!--						<div id="airportMap" style="width: 100%; padding-top: 100%; postition: relative;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>-->
 						<!--   				<div id="airportSchedule" style="width: 900px; height: 400px; float: left;"></div> -->
+						<div>
+							<table id="airportDetailsCityList"></table>
+						</div>
 						<div id="airportDetailsCityImage" style="width: 50%; float:left;"></div>
 						<div id="airportDetailsAirportImage" style="width: 50%;  float:left;"></div>
 						<div style="clear: both;"></div>
@@ -1449,112 +1455,107 @@
 				</div>
 				<!--  end departures canvas -->
 				<div id="countryCanvas" class="canvas" style="height: 100%; display: none;">
-					<div class="mainPanel" style="float: left;">
-						<div style="height: 95% ; width : 95%; float: left;" class="section">
-							<div style="width: 100%; height: 100%; overflow: auto;">
-								<div id="countryTableHeader" class="table data" style="width: 100%; height: 20px; min-width: 400px;">
-									<div class="table-header">
-										<div class="cell clickable" style="width: 22%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
-										<div class="cell clickable selected" style="width: 22%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Pop Coverage</div>
-										<div class="cell clickable" style="width: 14%" align="right" data-sort-property="income" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">GDP per Pop</div>
-										<div class="cell clickable" style="width: 14%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
-										<div class="cell clickable" style="width: 14%" align="right" data-sort-property="gini" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Gini Coefficient</div>
-	<!--									<div class="cell clickable" style="width: 20%" align="right" data-sort-property="baseCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Base Count</div>-->
-										<div class="cell clickable" style="width: 14%" align="right" data-sort-property="delegatesCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Country Delegates</div>
-									</div>
+					<div class="mainPanel section tight">
+						<div style="width: 100%; height: 100%; overflow: auto;">
+							<div id="countryTableHeader" class="table data" style="width: 100%; height: 20px; min-width: 400px;">
+								<div class="table-header">
+									<div class="cell clickable" style="width: 22%" data-sort-property="name" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Name</div>
+									<div class="cell clickable selected" style="width: 22%" align="right" data-sort-property="airportPopulation" data-sort-order="descending" onclick="toggleCountryTableSortOrder($(this))">Airport Pop Coverage</div>
+									<div class="cell clickable" style="width: 14%" align="right" data-sort-property="income" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">GDP per Pop</div>
+									<div class="cell clickable" style="width: 14%" align="right" data-sort-property="openness" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Openness</div>
+									<div class="cell clickable" style="width: 14%" align="right" data-sort-property="gini" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Gini Coefficient</div>
+									<div class="cell clickable" style="width: 14%" align="right" data-sort-property="delegatesCount" data-sort-order="ascending" onclick="toggleCountryTableSortOrder($(this))">Country Delegates</div>
 								</div>
-								<div style="height:  calc(100% - 40px); width: 100%; overflow-y: auto; min-width: 400px;">
-									<div id="countryTable" class="table data" style="height: 100%; width: 100%;">
-										<div class="table-header">
-											<div class="cell" style="width: 22%; border-bottom: none;"></div>
-											<div class="cell" style="width: 22%; border-bottom: none;"></div>
-											<div class="cell" style="width: 14%; border-bottom: none;"></div>
-											<div class="cell" style="width: 14%; border-bottom: none;"></div>
-											<div class="cell" style="width: 14%; border-bottom: none;"></div>
-											<div class="cell" style="width: 14%; border-bottom: none;"></div>
-										</div>
+							</div>
+							<div style="height:  calc(100% - 40px); width: 100%; overflow-y: auto; min-width: 400px;">
+								<div id="countryTable" class="table data" style="height: 100%; width: 100%;">
+									<div class="table-header">
+										<div class="cell" style="width: 22%; border-bottom: none;"></div>
+										<div class="cell" style="width: 22%; border-bottom: none;"></div>
+										<div class="cell" style="width: 14%; border-bottom: none;"></div>
+										<div class="cell" style="width: 14%; border-bottom: none;"></div>
+										<div class="cell" style="width: 14%; border-bottom: none;"></div>
+										<div class="cell" style="width: 14%; border-bottom: none;"></div>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-					<div class="sidePanel" style="float: left; display: none;">
-						<div class="section" style="width: 95%; float: left;">
-							<div id="countryDetails" class="table" style="width: 100%;">
-								<div class="table-row">
-									<div class="label"><h5>Country:</h5></div>
-									<div class="value" id="countryDetailsName"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Income Level:</h5></div>
-									<div class="value" id="countryDetailsIncomeLevel"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Market Openness:</h5></div>
-									<div class="value" id="countryDetailsOpenness" style="display: flex; align-items: center;"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Relationship with your airline:</h5></div>
-									<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'), showCountryView)"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Your airline title with this country:</h5></div>
-									<div class="value"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle"></span></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Large Airports:</h5></div>
-									<div class="value" id="countryDetailsLargeAirportCount"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Medium Airports:</h5></div>
-									<div class="value" id="countryDetailsMediumAirportCount"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Small Airports:</h5></div>
-									<div class="value" id="countryDetailsSmallAirportCount"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Airline Headquarters:</h5></div>
-									<div class="value" id="countryDetailsAirlineHeadquarters"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Airline Bases:</h5></div>
-									<div class="value" id="countryDetailsAirlineBases"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>National Airline:</h5></div>
-									<div class="value" style="padding-bottom : 10px;">
-										<div class="table data nationalAirlines" style="width : 100%">
-										</div>
-									</div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Partnered Airline:</h5></div>
-									<div class="value" style="padding-bottom : 10px;">
-										<div class="table data partneredAirlines" style="width : 100%">
-										</div>
-									</div>
-								</div>
-								<div class="table-row">
-									<div class="label"><h5>Top Airline:</h5></div>
-									<div class="value" style="padding-bottom : 10px;">
-										<div class="table data countryDetailsChampion" style="width : 100%">
-										</div>
+					<div class="sidePanel section">
+						<div id="countryDetails" class="table" style="width: 100%;">
+							<div class="table-row">
+								<div class="label"><h5>Country:</h5></div>
+								<div class="value" id="countryDetailsName"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Income Level:</h5></div>
+								<div class="value" id="countryDetailsIncomeLevel"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Market Openness:</h5></div>
+								<div class="value" id="countryDetailsOpenness" style="display: flex; align-items: center;"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Relationship with your airline:</h5></div>
+								<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'), showCountryView)"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Your airline title with this country:</h5></div>
+								<div class="value"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle"></span></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Large Airports:</h5></div>
+								<div class="value" id="countryDetailsLargeAirportCount"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Medium Airports:</h5></div>
+								<div class="value" id="countryDetailsMediumAirportCount"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Small Airports:</h5></div>
+								<div class="value" id="countryDetailsSmallAirportCount"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Airline Headquarters:</h5></div>
+								<div class="value" id="countryDetailsAirlineHeadquarters"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Airline Bases:</h5></div>
+								<div class="value" id="countryDetailsAirlineBases"></div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>National Airline:</h5></div>
+								<div class="value" style="padding-bottom : 10px;">
+									<div class="table data nationalAirlines" style="width : 100%">
 									</div>
 								</div>
 							</div>
-							<div id="countryDetailsSharesChart" style="height: 170px;"></div>
+							<div class="table-row">
+								<div class="label"><h5>Partnered Airline:</h5></div>
+								<div class="value" style="padding-bottom : 10px;">
+									<div class="table data partneredAirlines" style="width : 100%">
+									</div>
+								</div>
+							</div>
+							<div class="table-row">
+								<div class="label"><h5>Top Airline:</h5></div>
+								<div class="value" style="padding-bottom : 10px;">
+									<div class="table data countryDetailsChampion" style="width : 100%">
+									</div>
+								</div>
+							</div>
 						</div>
+						<div id="countryDetailsSharesChart" style="height: 170px;"></div>
 					</div>
 				</div>
 	<!--   			end country canvas -->
 				<div id="airplaneCanvas"  class="canvas" style="height: 100%; display: none; min-width: 600px;">
-					<div style="float: left;" class="mainPanel airplaneCanvasLeftGroup">
-						<div style="height: 95% ; width : 98%; float: left;"  class="section">
+					<div class="mainPanel airplaneCanvasLeftGroup">
+						<div class="section tight">
 							<div class="table" style="width: 30%; margin-bottom: 10px;">
 								<div class="table-header">
-									<div class="cell detailsSelection clickable selected" data-type="hangar" onclick="selectAirplaneTab($(this));" style="border-radius: 0 5px 5px 0">Hangar</div>
-									<div class="cell detailsSelection clickable" data-type="market" onclick="selectAirplaneTab($(this))" style="border-radius: 5px 0 0 5px">Market</div>
+									<div class="cell detailsSelection clickable selected" data-type="hangar" onclick="selectAirplaneTab($(this));" style="border-radius: 5px 0 0 5px">Hangar</div>
+									<div class="cell detailsSelection clickable" data-type="market" onclick="selectAirplaneTab($(this))" style="border-radius: 0 5px 5px 0">Market</div>
 								</div>
 							</div>
 
@@ -1563,36 +1564,37 @@
 									<div class="table data" style="height: 20px; width: 100%; min-width: 500px">
 										<div class="table-header" id="airplaneModelSortHeader">
 											<div class="cell clickable" style="width: 20%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
-											<div class="cell clickable" style="width: 15%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
+											<div class="cell clickable" style="width: 12%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
 											<div class="cell clickable selected" style="width: 10%" align="right" data-sort-property="price" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Price</div>
-											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
-											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Max Range</div>
+											<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
+											<div class="cell clickable" style="width: 10%" align="right" data-sort-property="quality" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Quality</div>
+											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Range</div>
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="fuelBurn" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Fuel Burn</div>
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="lifespan" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Lifespan</div>
 											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="speed" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Speed</div>
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="runwayRequirement" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Runway Req.</div>
-											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>
+<!--											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>-->
 										</div>
 									</div>
 									<div style="height: calc(100% - 60px); width: 100%; overflow-y: auto; min-width: 500px">
 										<div class="table data" id="airplaneModelTable" style="max-height: 100%; width: 100%; ">
 											<div class="table-header">
 												<div class="cell" style="width: 20%; border-bottom: none;"></div>
-												<div class="cell" style="width: 15%; border-bottom: none;"></div>
+												<div class="cell" style="width: 12%; border-bottom: none;"></div>
 												<div class="cell" style="width: 10%; border-bottom: none;"></div>
-												<div class="cell" style="width: 7%; border-bottom: none;"></div>
+												<div class="cell" style="width: 8%; border-bottom: none;"></div>
+												<div class="cell" style="width: 10%; border-bottom: none;"></div>
 												<div class="cell" style="width: 9%; border-bottom: none;"></div>
 												<div class="cell" style="width: 7%; border-bottom: none;"></div>
 												<div class="cell" style="width: 7%; border-bottom: none;"></div>
 												<div class="cell" style="width: 9%; border-bottom: none;"></div>
 												<div class="cell" style="width: 7%; border-bottom: none;"></div>
-												<div class="cell" style="width: 9%; border-bottom: none;"></div>
 											</div>
 										</div>
 									</div>
 								</div>
 								<div class="hangar details" style="width: 100%; height: calc(100% - 30px); overflow:auto; display: none;">
-									<div class="section" style="width: 98%;">
+									<div class="section">
 										<h4>Maintenance Cost Factor</h4>
 										<div class="maintenanceFactorSection">
 											<span class="factor" style="font-weight: bold; padding-left: 10px; font-size: x-large;">1.0</span>
@@ -1657,18 +1659,17 @@
 						</div>
 					</div>
 	<!-- 				end left panel				  					 -->
-					<div style="float: left" class="sidePanel airplaneCanvasRightGroup">
+					<div class="sidePanel airplaneCanvasRightGroup">
 						<div id="airplaneModelDetail" style="width: 100%; float: left; display: none;">
-							<div class="section" style="width: 95%;">
-								<div class="modelIllustration" style="width:100%; position: relative; max-width: 500px;">
+							<div class="section">
+								<div class="modelIllustration pb-4" style="max-width: 500px;position: relative;">
 									<img src='#' style="width: 100%;">
-									<div class="label" style="right: 0px; bottom: 0px; position: absolute; font-style: italic;"><a href='#' target="_blank">Illustration courtesy of Norebbo</a></div>
+									<div class="label" style="right: 0px; bottom: 0px; position: absolute; font-style: italic;"><a href='#' target="_blank" style="font-size: 85%;">Illustration courtesy of Norebbo</a></div>
 								</div>
 
 								<div class="table" style="width: 100%;">
-	<!-- 								<h4>Airplane Model Details</h4> -->
 									<div class="table-row">
-										<div class="label"><h5>Model:</h5></div>
+										<div class="label" style="width: 50%;"><h5>Model:</h5></div>
 										<div class="value"><span class="modelName"></span><img class="favorite clickable-no-highlight" onclick="promptSetFavorite()"></div>
 									</div>
 									<div class="table-row">
@@ -1680,6 +1681,10 @@
 										<div class="value" id="capacity"></div>
 									</div>
 									<div class="table-row">
+										<div class="label"><h5>Quality:</h5></div>
+										<div class="value" id="airplaneTypeQuality"></div>
+									</div>
+									<div class="table-row">
 										<div class="label"><h5>Category:</h5></div>
 										<div class="value" id="airplaneType"></div>
 									</div>
@@ -1688,11 +1693,11 @@
 										<div class="value"><span class="turnaroundTime"></span>&nbsp;min</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Runway Requirement:</h5></div>
+										<div class="label"><h5>Runway Required:</h5></div>
 										<div class="value"><span class="runwayRequirement"></span>&nbsp;m</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Max Flying Range:</h5></div>
+										<div class="label"><h5>Range:</h5></div>
 										<div class="value" id="range"></div>
 									</div>
 									<div class="table-row">
@@ -1704,7 +1709,7 @@
 										<div class="value" id="speed"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Max Lifespan:</h5></div>
+										<div class="label"><h5>Lifespan:</h5></div>
 										<div class="value" id="lifespan"></div>
 									</div>
 									<div class="table-row">
@@ -1730,7 +1735,7 @@
 								<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneCanvas .selectedModel').val())">Config</div>
 								<div class="button" onclick="showAllAirplaneInventory($('#airplaneCanvas .selectedModel').val())">Inventory</div>
 							</div>
-							<div class="section" style="width : 95%; float: left; overflow: auto;">
+							<div class="section tight">
 								<h4>Used Airplane Market</h4>
 								<div class="table data" style="height: 20px; width: 100%">
 									<div class="table-header" id="usedAirplaneSortHeader">
@@ -1753,7 +1758,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="section stats" style="width : 95%; float: left; overflow: auto;">
+							<div class="section stats tight" style="">
 								<h4>Top Operators</h4>
 								<div style="height: 150px; width: 100%; overflow: auto;">
 									<div class="table data topOperators" style="max-height: 100%; width: 100%">
@@ -1766,7 +1771,7 @@
 								</div>
 							</div>
 						</div>
-<!--						<div class="section" style="width : 95%; float: left; overflow: auto;">-->
+<!--						<div class="section" style="width : 98%; float: left; overflow: auto;">-->
 <!--							<h4>Inventory</h4>-->
 <!--							<div id="airplaneInventoryList"></div>-->
 <!--						</div>-->
@@ -1775,185 +1780,162 @@
 				</div>
 	<!--   			end airplane canvas -->
 				<div id="officeCanvas" class="canvas" style="height: 100%; display: none; min-width: 400px;">
-					<div style="float: left; padding-right: 10px; box-sizing: border-box;" class="verticalGroup officeCanvasLeftGroup">
-						<div class="section" style="width: 100%; display: flex;">
-                            <div style="float: left;" class="verticalGroup">
-                                <h4>
-									<span class="airlineName"></span>
-									<span class="clickable editButton"><img src='@routes.Assets.versioned("images/icons/gear.png")'style="vertical-align: middle;" onclick="editAirlineName()"/></span>
-									<span class="airlineNameInputSpan" style="display: none;">
-										<input class="airlineNameInput" type="text" oninput="validateAirlineName($(this).val())"/>
-										<span class="button confirm"><img src='@routes.Assets.versioned("images/icons/tick.png")' style="vertical-align: middle;" onclick="confirmAirlineRename($('#officeCanvas .airlineNameInput').val())"/></span>
-										<img src='@routes.Assets.versioned("images/icons/cross.png")' class='button cancel' style="vertical-align: middle;" onclick="cancelAirlineRename()"/>
-										<div class="warning" style="display:none;"></div>
-									</span>
-								</h4>
-                                <div class="table verticalGroup" style="float: left;">
-									<div class="table-row">
-										<div class="cell label">Reputation:</div>
-										<div class="cell value">
-											<span style="display: flex; align-items: center">
-												<span class="reputationDetails"></span>&nbsp;
-											</span>
-										</div>
+					<div style="box-sizing: border-box;" class="verticalGroup officeCanvasLeftGroup">
+
+						<div class="section" style="">
+							<h2 class="airlineName pb-2">Airline Name</h2>
+							<div class="flex-container-width-quarter py-2">
+
+								<div class="threshold-section">
+									<h3 class="text-center leading-tight pb-1">Reputation</h3>
+									<p class="text-center leading-tight"><i class="reputationLevel">Level 1</i></p>
+									<p class="text-center leading-tight pb-2 reputationText">Baby Airline</p>
+									<div class="threshold-bar">
+										<p class="text-center font-mono reputationValueCurrent">0</p>
+										<div id="reputationBar" class="threshold-bar-bg"></div>
 									</div>
-                                    <div class="table-row">
-                                        <div class="cell label">Airline Code:</div>
-                                        <div class="cell value">
-                                            <span id="airlineCodeDisplaySpan">
-                                                <span id="airlineCode"></span>
-                                                <img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineCode()"/>
-                                            </span>
-                                            <span id="airlineCodeInputSpan" style="display: none;">
-                                                <input id="airlineCodeInput" type="text" onkeyup="validateAirlineCode($(this).val())"/>
-                                                <img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setAirlineCode($('#airlineCodeInput').val())"/>
-                                                <span class="warning" style="display:none;">Code should be exactly 2 letters</span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="table-row">
-										<div class="cell label">Logo:</div>
-                                        <div class="cell value">
-											<span style="display: flex; align-items: center">
-												<img class="airlineLogo" src='#'>
-												<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineLogo()"/>
-												<img src='@routes.Assets.versioned("images/icons/picture--plus.png")' class='button' style="vertical-align: middle;" onclick="showUploadLogo()"/>
-											</span>
-                                        </div>
-                                    </div>
-                                    <div class="table-row airlineColor">
-										<div class="cell label">Color:</div>
-										<div class="cell value">
-											<input type="color" class="picker">
-										</div>
+									<p class="small max-w-32 mx-auto flex-container-width-half"><span class="font-mono reputationValuePrev text-left">0</span><span class="font-mono reputationValueNext">10</span></p>
+									<p class="text-right small max-w-32 mx-auto">trending to: <span class="font-mono reputationTrend">10</span></p>
+									<p>Reputation Breakdown</p>
+									<ul class="reputationDetails"></ul>
+								</div>
+
+								<div class="threshold-section">
+									<h4 class="text-center leading-tight">Stock Price</h4>
+									<p class="text-center leading-tight"><i class="stockLevel">Level 1</i></p>
+									<p class="text-center leading-tight pb-2 stockText">Worthless</p>
+									<div class="threshold-bar">
+										<p class="text-center font-mono stockValueCurrent">0</p>
+										<p class="text-center font-mono stockValueNext"></p>
+										<div id="stockBar" class="threshold-bar-bg"></div>
 									</div>
-                                    <div class="table-row">
-                                        <div class="cell label">Destinations:</div>
-                                        <div id="destinations" class="cell value"></div>
-                                    </div>
-                                    <div class="table-row">
-                                        <div class="cell label">Fleet Size:</div>
-                                        <div id="fleetSize" class="cell value"></div>
-                                    </div>
-                                    <div class="table-row">
-                                        <div class="cell label">Fleet Age:</div>
-                                        <div id="fleetAge" class="cell value"></div>
-                                    </div>
-                                    <div class="table-row">
-                                        <div class="cell label">Assets:</div>
-                                        <div id="assets" class="cell value"></div>
-                                    </div>
-                                </div>
-                                <div class="table verticalGroup" style="float: left;">
-                                    <div class="table-row">
-                                        <div class="cell label" style="width: 60%">Total Routes:</div>
-                                        <div class="linkCount" class="cell value" style="width: 40%"></div>
-                                    </div>
-                                    <div class="table-row">
-                                        <div class="cell label">Current Employee Quality:<span class="tooltip">
-											<img src='@routes.Assets.versioned("images/icons/information.png")'>
-											<span class="tooltiptext alignLeft below" style="width: 280px;">
-												<p><b>Employee quality</b> is 50% of a flight's <b>overall quality</b>.</p>
-												<p>Adjusting this global parameter affects the crew cost of each flight.</p>
-											</span>
-										</span></div>
-                                        <div id="currentServiceQuality" class="cell value"></div>
-                                    </div>
-                                    <div class="table-row">
-                                        <div class="cell label">Target Employee Quality:</div>
-                                        <div class="cell value">
-                                            <span id="serviceFundingDisplaySpan">
-                                                <span id="targetServiceQuality"></span>
-                                                <img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editTargetServiceQuality()"/>
-                                            </span>
-                                            <span id="serviceFundingInputSpan">
-                                                <input id="targetServiceQualityInput" type="number" size="3" maxlength="3" onkeyup="checkTargetServiceQualityInput($(this).val())"/>
-												<span class="warning" style="display: none;">Value must be an integer 0 - 100</span>
-                                                <img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setTargetServiceQuality($('#targetServiceQualityInput').val())"/>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="table-row">
-                                        <div class="cell label">Projected Employee Costs:</div>
-                                        <div class="cell value">$<span id="fundingProjection"></span></div>
-                                    </div>
-                                    <div class="table-row">
-                                        <div class="cell label">Auto Airplane Renewal:</div>
-                                        <div class="cell value">
-                                            <span id="airplaneRenewalDisplaySpan">
-                                                <span id="airplaneRenewal"></span>
-                                                <img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirplaneRenewal()"/>
-                                            </span>
-                                            <span id="airplaneRenewalInputSpan" style="display:none;">
-                                                Condition Below&nbsp;<input id="airplaneRenwalInput" type="number" maxlength="2" size="2"/>%
-                                                <img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setAirplaneRenewal($('#airplaneRenwalInput').val())"/>
-                                                <img src='@routes.Assets.versioned("images/icons/cross.png")' class='button' style="vertical-align: middle;" onclick="setAirplaneRenewal()"/>
-                                            </span>
-                                        </div>
-                                    </div>
-									<div class="table-row">
-										<div class="cell label">Minimum Renewal Balance:</div>
-										<div class="cell value">
-											<span id="minimumRenewalBalanceDisplaySpan">
-												<span id="minimumRenewalBalance"></span>
-												<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editMinimumRenewalBalance()"/>
-											</span>
-											<span id="minimumRenewalBalanceInputSpan" style="display:none;">
+									<p class="small max-w-32 mx-auto flex-container-width-half"><span class="font-mono stockValuePrev text-left">0</span><span class="font-mono stockValueNext text-right">10</span></p>
+									<p class="py-4 text-center">Weekly Dividends:<br>
+										<span id="weeklyDividendsDisplaySpan">
+											<span id="dividends"></span>
+											<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editDividends()"/>
+											<br><small>(in millions)</small>
+										</span>
+										<span class="warning" id="weeklyDividendsMin">Company value must be > $100m</span>
+										<span id="weeklyDividendsInputSpan">
+											<input id="weeklyDividendsInput" size="1" type="number" title="Weekly Dividends Input"/>
+											<span class="warning" style="display: none;">Value must be a number</span>
+											<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setDividendsLevel($('#weeklyDividendsInput').val())"/>
+										</span>
+									</p>
+								</div>
+
+								<div class="threshold-section">
+									<h4 class="text-center leading-tight">Tourists Ticketed</h4>
+									<p class="text-center leading-tight"><i class="touristsLevel">Level 1</i></p>
+									<p class="text-center leading-tight pb-2 touristsText">Worthless</p>
+									<div class="threshold-bar">
+										<p class="text-center font-mono touristsValueCurrent">0</p>
+										<p class="text-center font-mono touristsValueNext"></p>
+										<div id="touristsBar" class="threshold-bar-bg"></div>
+									</div>
+									<p class="small max-w-32 mx-auto flex-container-width-half"><span class="font-mono touristsValuePrev text-left">0</span> <span class="font-mono touristsValueNext text-right">10</span></p>
+								</div>
+
+								<div class="threshold-section">
+									<h4 class="text-center leading-tight">Elites Ticketed</h4>
+									<p class="text-center leading-tight"><i class="elitesLevel">Level 1</i></p>
+									<p class="text-center leading-tight pb-2 elitesText">Worthless</p>
+									<div class="threshold-bar">
+										<p class="text-center font-mono elitesValueCurrent">0</p>
+										<p class="text-center font-mono elitesValueNext"></p>
+										<div id="elitesBar" class="threshold-bar-bg"></div>
+									</div>
+									<p class="text-right small max-w-32 mx-auto flex-container-width-half">goal: <span class="font-mono elitesValueNext">10</span></p>
+									<p class="pt-4">Employee Quality:
+										<span id="serviceFundingDisplaySpan">
+											<span id="targetServiceQuality"></span>
+											<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editTargetServiceQuality()"/>
+										</span>
+										<span id="serviceFundingInputSpan">
+											<input id="targetServiceQualityInput" type="number" size="3" maxlength="3" onkeyup="checkTargetServiceQualityInput($(this).val())"/>
+											<span class="warning" style="display: none;">Value must be an integer 0 - 100</span>
+											<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setTargetServiceQuality($('#targetServiceQualityInput').val())"/>
+										</span>
+									</p>
+									<p class="">Projected Employee Costs: $<span id="fundingProjection"></span></p>
+									<p class="cell label">Current Employee Quality: <span id="currentServiceQuality"></span>
+<!--										<span class="tooltip">-->
+<!--											<img src='@routes.Assets.versioned("images/icons/information.png")'>-->
+<!--											<span class="tooltiptext alignLeft below" style="width: 280px;">-->
+<!--												<p><b>Employee quality</b> is 50% of a flight's <b>overall quality</b>.</p>-->
+<!--												<p>Adjusting this global parameter affects the crew cost of each flight.</p>-->
+<!--											</span>-->
+<!--										</span>-->
+									</p>
+									<p class="pt-4">Auto Airplane Renewal:
+										<span id="airplaneRenewalDisplaySpan">
+											<span id="airplaneRenewal"></span>
+											<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirplaneRenewal()"/>
+										</span>
+										<span id="airplaneRenewalInputSpan" style="display:none;">
+											Condition Below&nbsp;<input id="airplaneRenwalInput" type="number" maxlength="2" size="2"/>%
+											<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setAirplaneRenewal($('#airplaneRenwalInput').val())"/>
+											<img src='@routes.Assets.versioned("images/icons/cross.png")' class='button' style="vertical-align: middle;" onclick="setAirplaneRenewal()"/>
+										</span>
+									</p>
+									<p class="py-4">Minimum Renewal Balance: <span id="minimumRenewalBalanceDisplaySpan">
+											<span id="minimumRenewalBalance"></span>
+											<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editMinimumRenewalBalance()"/>
+										</span>
+										<span id="minimumRenewalBalanceInputSpan" style="display:none;">
 												Minimum Renewal Balance&nbsp;<input id="minimumRenewalBalanceInput" type="number" maxlength="12" size="2" onkeyup="checkEditMinimumRenewalBalanceInput($(this).val())"/>
 												<span class="warning" style="display: none;">Value must be a positive integer less than 999,999,999,999</span>
 												<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setMinimumRenewalBalance($('#minimumRenewalBalanceInput').val())"/>
 										</span>
-										</div>
-									</div>
-									<div class="table-row">
-										<div class="cell label">Weekly Dividends:</div>
-										<div class="cell value">
-                                            <span id="weeklyDividendsDisplaySpan">
-                                                <span id="dividends"></span>
-                                                <img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editDividends()"/>
-                                            </span>
-											<span id="weeklyDividendsInputSpan">
-                                                <input id="weeklyDividendsInput" size="3" type="number" title="Weekly Dividends Input"/>
-												<span class="warning" style="display: none;">Value must be an integer 0 - 100</span>
-                                                <img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setDividendsLevel($('#weeklyDividendsInput').val())"/>
-                                            </span>
-										</div>
-									</div>
-                                    <div class="button" onclick="promptConfirm('Reset all tutorials?', setSkipTutorial, false)">Reset Tutorials</div>
+									</p>
+								</div>
+<!--								<span class="clickable editButton"><img src='@routes.Assets.versioned("images/icons/gear.png")'style="vertical-align: middle;" onclick="editAirlineName()"/></span>-->
+<!--								<span class="airlineNameInputSpan" style="display: none;">-->
+<!--										<input class="airlineNameInput" type="text" oninput="validateAirlineName($(this).val())"/>-->
+<!--										<span class="button confirm"><img src='@routes.Assets.versioned("images/icons/tick.png")' style="vertical-align: middle;" onclick="confirmAirlineRename($('#officeCanvas .airlineNameInput').val())"/></span>-->
+<!--										<img src='@routes.Assets.versioned("images/icons/cross.png")' class='button cancel' style="vertical-align: middle;" onclick="cancelAirlineRename()"/>-->
+<!--										<div class="warning" style="display:none;"></div>-->
+<!--									</span>-->
 
-                                </div>
-                            </div>
-                            <div class="table verticalGroup" style="float: left; display: flex; flex-direction: column; max-height: 200px;">
-                                <h4>Airline Bases</h4>
-								<div style="width: 100%;" class="table">
-									<div class="table-header">
-										<div class="cell" style="width: 15%">Scale</div>
-										<div class="cell" style="width: 25%">Airport</div>
-										<div class="cell" style="width: 20%">Office Staff Capacity</div>
-										<div class="cell" style="width: 20%">Office Staff Required</div>
-										<div class="cell" style="width: 20%">Overtime Comp.</div>
+
+							</div>
+
+							<div class="">
+								<h4>Milestones</h4>
+								<div class="table-row">
+									<div class="cell label">Reputation:</div>
+									<div class="cell value">
+
 									</div>
 								</div>
-								<div style="width: 100%;  overflow-y:auto; flex: 1;">
-									<div style="width: 100%;" class="table data bases">
-										<div class="table-header">
-											<div class="cell" style="width: 15%; border-bottom: none;"></div>
-											<div class="cell" style="width: 25%; border-bottom: none;"></div>
-											<div class="cell" style="width: 20%; border-bottom: none;"></div>
-											<div class="cell" style="width: 20%; border-bottom: none;"></div>
-											<div class="cell" style="width: 20%; border-bottom: none;"></div>
-										</div>
-									</div>
-								</div>
-                            </div>
-							<div style="clear: both;"></div>
+							</div>
+
+
+
+<!--                                    <div class="table-row">-->
+<!--                                        <div class="cell label">Destinations:</div>-->
+<!--                                        <div id="destinations" class="cell value"></div>-->
+<!--                                    </div>-->
+<!--                                    <div class="table-row">-->
+<!--                                        <div class="cell label">Fleet Size:</div>-->
+<!--                                        <div id="fleetSize" class="cell value"></div>-->
+<!--                                    </div>-->
+<!--                                    <div class="table-row">-->
+<!--                                        <div class="cell label">Fleet Age:</div>-->
+<!--                                        <div id="fleetAge" class="cell value"></div>-->
+<!--                                    </div>-->
+<!--                                    <div class="table-row">-->
+<!--                                        <div class="cell label">Assets:</div>-->
+<!--                                        <div id="assets" class="cell value"></div>-->
+<!--                                    </div>-->
+<!--									<div class="table-row">-->
+<!--										<div class="cell label" style="width: 60%">Total Routes:</div>-->
+<!--										<div class="linkCount" class="cell value" style="width: 40%"></div>-->
+<!--									</div>-->
 						</div>
 
-						<div style="width : 100%;" class="section">
-<!--							<div style="float: left;" class="clickable selected selection" onclick="selectSheet($(this), $('#incomeSheet'))"><h4>Income Sheet</h4></div>-->
-<!--							<div style="float: left;"><h4>&nbsp;|&nbsp;</h4></div>-->
-<!--							<div style="float: left;" class="clickable selection" onclick="selectSheet($(this), $('#cashFlowSheet'))"><h4>Cash Flow Sheet</h4></div>-->
-<!--							<div style="clear: both;"></div>-->
+						<div style="width : 100%;" class="section tight">
                             <div class="controllers" style="width: 95%; margin-bottom: 5px;">
                                 <div class="table" style="width: 30%; float: left;">
                                     <div class="table-header sheetOptions">
@@ -2091,6 +2073,10 @@
 											<div id="othersLoanInterest" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
+											<div class="cell">Dividends:</div>
+											<div id="othersDividends" class="cell" style="text-align: right;"></div>
+										</div>
+										<div class="table-row">
 											<div class="cell">Office Upkeep:</div>
 											<div id="othersBaseUpkeep" class="cell" style="text-align: right;"></div>
 										</div>
@@ -2216,11 +2202,72 @@
 		<!--          		end cashflow sheet -->
 						</div>
 	<!-- 					end statements -->
+						<div class="section" style="width: 100%; display: flex;">
+							<h4>Settings</h4>
+
+							<div class="button" onclick="promptConfirm('Reset all tutorials?', setSkipTutorial, false)">Reset Tutorials</div>
+
+							<div class="table-row">
+								<div class="cell label">Airline Code:</div>
+								<div class="cell value">
+									<span id="airlineCodeDisplaySpan">
+										<span id="airlineCode"></span>
+										<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineCode()"/>
+									</span>
+									<span id="airlineCodeInputSpan" style="display: none;">
+										<input id="airlineCodeInput" type="text" onkeyup="validateAirlineCode($(this).val())"/>
+										<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setAirlineCode($('#airlineCodeInput').val())"/>
+										<span class="warning" style="display:none;">Code should be exactly 2 letters</span>
+									</span>
+								</div>
+							</div>
+							<div class="table-row airlineColor">
+								<div class="cell label">Color:</div>
+								<div class="cell value">
+									<input type="color" class="picker">
+								</div>
+							</div>
+							<div class="table-row">
+								<div class="cell label">Logo:</div>
+								<div class="cell value">
+									<span style="display: flex; align-items: center">
+										<img class="airlineLogo" src='#'>
+										<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editAirlineLogo()"/>
+										<img src='@routes.Assets.versioned("images/icons/picture--plus.png")' class='button' style="vertical-align: middle;" onclick="showUploadLogo()"/>
+									</span>
+								</div>
+							</div>
+
+						</div>
+
 					</div>
-	<!-- 				end left section  -->
-					<div style="float: left;" class="verticalGroup officeCanvasRightGroup">
-						<div class="section" style="width: 95%;">
-							<h4>Assets</h4>
+<!-- end left section  -->
+					<div class="verticalGroup officeCanvasRightGroup">
+                        <div class="section">
+                            <h4>Headquarters</h4>
+							<div style="position: relative; height: 125px; width: 150px; margin: auto;box-sizing: border-box;" class="headquartersMap"></div>
+							<h4 style="margin-bottom:0;padding-bottom:0;padding-top:1rem;">Airline Bases</h4>
+							<div style="width: 100%;" class="table">
+								<div class="table-header">
+									<div class="cell" style="width: 14%">Scale</div>
+									<div class="cell" style="width: 33%">Airport</div>
+									<div class="cell" style="width: 31%">Staff <br><small>Required | Available</small></div>
+									<div class="cell" style="width: 22%">Overtime</div>
+								</div>
+							</div>
+							<div style="width: 100%;  overflow-y:auto; flex: 1;">
+								<div style="width: 100%;" class="table data bases">
+									<div class="table-header">
+										<div class="cell" style="width: 14%; border-bottom: none;"></div>
+										<div class="cell" style="width: 33%; border-bottom: none;"></div>
+										<div class="cell" style="width: 31%; border-bottom: none;"></div>
+										<div class="cell" style="width: 22%; border-bottom: none;"></div>
+									</div>
+								</div>
+							</div>
+                        </div>
+						<div class="section">
+							<h4>Airport Assets</h4>
 							<div class="table data" style="width: 100%;">
 								<div class="table-header">
 									<div class="cell" style="width: 15%">Airport</div>
@@ -2242,18 +2289,8 @@
 								</div>
 							</div>
 						</div>
-                        <div class="section" style="width: 95%;">
-                            <h4>Headquarters</h4>
-							<div style="position: relative; height: 150px; width: 100%" class="headquartersMap">
-<!--								<img src='@routes.Assets.versioned("images/buildings/office-3.png")' style="position: absolute; bottom: 42px; left: 36px;  z-index: 1;  width: 72px;"/>-->
-<!--								<img src='@routes.Assets.versioned("images/buildings/office-1.png")' style="position: absolute; bottom: 21px; left: 0px; z-index: 2; width: 72px"/>-->
-<!--								<img src='@routes.Assets.versioned("images/buildings/office-2.png")' style="position: absolute; bottom: 21px; left: 72px;  z-index: 2; width: 72px;"/>-->
-<!--								<img src='@routes.Assets.versioned("images/buildings/office-1.png")' style="position: absolute; bottom: 0px; left: 36px; z-index: 3; width: 72px"/>-->
-	<!--							<img src='@routes.Assets.versioned("images/buildings/road-1.png")' style="position: absolute; bottom: 0px; left: 78px; z-index: 3; width: 60px"/>-->
-							</div>
-                        </div>
 
-						<div class="section" style="width: 95%;">
+						<div class="section">
 							<h4>Airplane Livery
 								<img src='@routes.Assets.versioned("images/icons/picture--plus.png")' class='button' style="vertical-align: middle;" onclick="showUploadLivery()">
 								<img src='@routes.Assets.versioned("images/icons/picture--minus.png")' class='button' style="vertical-align: middle;" onclick="deleteLivery()">
@@ -2381,15 +2418,15 @@
 	<!--   			end office canvas -->
 
 				<div id="bankCanvas" class="canvas" style="height: 100%; display: none; min-width: 600px;">
-					<div style="float: left;" class="verticalGroup bankCanvasLeftGroup">
-						<div style="width : 95%; float: left;" class="section">
+					<div class="verticalGroup bankCanvasLeftGroup">
+						<div class="section">
 							<h4>Interest Rate History</h4>
 							<div id="loanInterestRateChart"></div>
 						</div>
 					</div>
-					<div style="float: left;" class="verticalGroup bankCanvasRightGroup">
+					<div class="verticalGroup bankCanvasRightGroup">
 					<!--  new loan -->
-						<div style="width : 95%; float: left;" class="section">
+						<div class="section">
 							<h4>New Loan</h4>
 							<div class="table" style="width: 100%; margin-bottom: 15px; min-width: 400px;">
 								<div class="table-row">
@@ -2421,7 +2458,7 @@
 								</div>
 							</div>
 						</div>
-						<div style="width : 95%; float: left;" class="section">
+						<div class="section">
 							<h4>Outstanding Loans</h4>
 							<div class="table data" id="outstandingLoansTable" style="height: 100%; width: 100%; min-width: 400px;">
 								<div class="table-header">
@@ -2442,15 +2479,15 @@
 	<!--   			end bank canvas -->
 
 				<div id="oilCanvas" class="canvas" style="height: 100%; display: none;">
-					<div style="float: left;" class="verticalGroup oilCanvasLeftGroup">
-						<div style="width : 95%; float: left;" class="section">
+					<div class="verticalGroup oilCanvasLeftGroup">
+						<div class="section">
 							<h4>Oil Price History</h4>
 							<div id="oilPriceChart"></div>
 						</div>
 					</div>
-					<div style="float: left;" class="verticalGroup oilCanvasRightGroup">
+					<div class="verticalGroup oilCanvasRightGroup">
 					<!--  new loan -->
-						<div style="width : 95%; float: left;" class="section">
+						<div class="section">
 							<h4>Fuel Consumption History
 								<span class="tooltip">
 									<img src='@routes.Assets.versioned("images/icons/information.png")'>
@@ -2552,7 +2589,7 @@
 								<span id="signOilContractRejection" class="warning"></span>
 							</div>
 						</div>
-						<div style="width : 95%; float: left;" class="section">
+						<div class="section">
 							<h4>Active Oil Contracts</h4>
 							<div class="table data" id="existingContractsTable" style="height: 100%; width: 100%">
 								<div class="table-header">
@@ -2572,12 +2609,12 @@
 	<!--   			end oil canvas -->
 
 
-				<div id="rankingCanvas" class="canvas" style="display: none; padding-bottom: 30px;">
+				<div id="rankingCanvas" class="canvas" style="display: none; width: 100%;">
 					<style type="text/css">
 						//.rankingTable {min-width: 520px}
 					</style>
-					<div style="display: grid;grid-gap: 10px;grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));">
-						<div class="table data section rankingTable" id="passengerMileRank">
+					<div style="display: grid;grid-gap: 16px;grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));width: 100%;margin-top: 10px;">
+						<div class="table data section tight rankingTable" id="passengerMileRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2586,7 +2623,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section" id="satisfactionRank">
+						<div class="table data section tight rankingTable" id="satisfactionRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2595,7 +2632,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section rankingTable" id="passengerMileQualityRank">
+						<div class="table data section tight rankingTable" id="passengerMileQualityRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2604,7 +2641,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section rankingTable" id="loungeRank">
+						<div class="table data section tight rankingTable" id="loungeRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2613,7 +2650,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section rankingTable" id="linkFrequency">
+						<div class="table data section tight rankingTable" id="linkFrequency">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2622,7 +2659,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section rankingTable" id="linkProfitRank">
+						<div class="table data section tight rankingTable" id="linkProfitRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2631,7 +2668,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section" id="linkDistanceRank">
+						<div class="table data section tight rankingTable" id="linkDistanceRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2640,7 +2677,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section rankingTable" id="uniqueIataRank">
+						<div class="table data section tight rankingTable" id="uniqueIataRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2649,7 +2686,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section" id="uniqueCountriesRank">
+						<div class="table data section tight rankingTable" id="uniqueCountriesRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2658,7 +2695,7 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section rankingTable" id="serviceQualityRank">
+						<div class="table data section tight rankingTable" id="serviceQualityRank">
 							<div class="table-header">
 								<div class="cell" style="width: 9%">Rank</div>
 								<div class="cell" style="width: 7%">Change</div>
@@ -2666,7 +2703,7 @@
 								<div class="cell" style="width: 24%" align="right">Service Quality</div>
 							</div>
 						</div>
-						<div class="table data section rankingTable" id="airportRank">
+						<div class="table data section tight rankingTable" id="airportRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
@@ -2674,13 +2711,12 @@
 								<div class="cell" style="width: 34%" align="right">Weekly Enplanements</div>
 							</div>
 						</div>
-						<div class="table data section rankingTable" id="linkCountRank">
+						<div class="table data section tight rankingTable" id="linkCountRank">
 							<div class="table-header">
-								<div class="cell" style="width: 7%">Rank</div>
-								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 10%">Rank</div>
+								<div class="cell" style="width: 10%">Change</div>
 								<div class="cell" style="width: 50%">Airline with Most Routes</div>
-								<div class="cell" style="width: 27%" align="right">Routes</div>
-								<div class="cell" style="width: 7%" align="right">Prize</div>
+								<div class="cell" style="width: 30%" align="right">Routes</div>
 							</div>
 						</div>
 					</div>
@@ -2688,8 +2724,8 @@
 				</div>
 	<!--   			end ranking canvas -->
 				<div id="rivalsCanvas" class="canvas" style="height: 100%; display: none;">
-					<div style="float: left;" class="mainPanel">
-						<div style="width : 95%; height: 95%; float: left;" class="section">
+					<div class="mainPanel">
+						<div class="section tight">
 							<div style="height: 20px;">
 								<input type="checkbox" id="hideInactive" onchange="toggleHideInactive(this.checked)" checked/><span class="label">Hide Inactive Airlines</span>
 								<span id="rivalIdSortButton" data-sort-property="id" data-sort-order="descending" class="button adminActions" title="Sort by created date"
@@ -2722,8 +2758,8 @@
 						</div>
 					</div>
 
-					<div id="rivalDetails" class="sidePanel" style="float: left; display: none;">
-						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+					<div id="rivalDetails" class="sidePanel" style="display: none;">
+						<div class="section" style="display: flex; flex-wrap: wrap; gap: 8px;">
 							<div style="min-width: 200px; flex: 1;">
 								<h4><span class="airlineName"></span></h4>
 
@@ -2815,7 +2851,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+						<div class="section" style="display: flex; flex-wrap: wrap; gap: 8px;">
 							<div style="min-width: 200px; flex: 1;">
 								<h4>Airline Headquarters</h4>
 								<div style="position: relative; height: 150px; width: 100%" class="headquartersMap"></div>
@@ -2828,7 +2864,7 @@
 							</div>
 						</div>
 
-						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+						<div class="section tight" style="display: flex; flex-wrap: wrap; gap: 8px;">
 							<div style="min-width: 200px; flex: 1;">
 								<h4>National Airline of</h4>
 								<div class="table data nationalAirlineCountryList" style="width: 100%;">
@@ -2873,7 +2909,7 @@
 								</div>
 							</div>
 						</div>
-						<div style="width: 95%; height: 50%" class="section">
+						<div style="width: 95%; height: 50%" class="section tight">
 							<h4>Routes</h4>
 							<div class="table data" style="width: 100%; height: 20px;">
 								<div class="table-header">
@@ -2883,7 +2919,7 @@
 									<div class="cell clickable" style="width: 25%" align="right" data-sort-property="totalCapacity" data-sort-order="descending" onclick="toggleRivalLinksTableSortOrder($(this))">Capacity</div>
 								</div>
 							</div>
-							<div style="max-height: 500px; overflow: auto;">
+							<div style="max-height: 600px; overflow: auto;">
 								<div id="rivalLinksTable" class="table data" style="width: 100%;">
 									<div class="table-header">
 										<div class="cell" style="width: 25%; border-bottom: none;"></div>
@@ -3300,7 +3336,7 @@
 				<!-- end event canvas -->
 
 			  <div id="searchCanvas" class="canvas" style="height: 100%; display: none; justify-content: center;">
-				  <div style="width : 90%; max-width: 800px; height: 95%; display: flex; flex-flow: column;" class="section mainSection">
+				  <div style="width : 90%; max-width: 800px; height: 98%; display: flex; flex-flow: column;" class="section mainSection">
 					  <div style="width: 100%; min-height: 80px;" class="titlesContainer">
 						  <div class="titleNavigation">
 							  <div style="float:left;" class="left" onclick="titleNavigate($(this), -1)"><img class='button' src='@routes.Assets.versioned("images/icons/24px/arrow-180.png")' style="opacity: 0.8"></div>
@@ -3558,7 +3594,6 @@
 			</div>
   			<!-- main canvas end -->
 		</div> <!-- end container for main canvas and the landing blur -->
-		<div style="clear: both;"></div>
     </div>
     
     <!-- popups and overlay buttons below. Hidden by default -->
@@ -3572,7 +3607,7 @@
     		<img title="Your Headquarter" src='@routes.Assets.versioned("images/icons/building-hedge.png")' id="popupHeadquarterIcon" class="baseIcon" style="display: none">
     		<img title="Your Base" src='@routes.Assets.versioned("images/icons/building-low.png")' id="popupBaseIcon" class="baseIcon" style="display:none">
     	</div>
-		<div class="flex-container-width-half pt-2 pb-1">
+		<div class="flex-container-width-half py-2 gap-2">
 			<div style="min-width: 100px; flex: 1; display: inline-flex; align-items: center;">
 				<img title="Population coverage" src='@routes.Assets.versioned("images/icons/users.png")' style="margin-right: 5px;">
 				<span id="airportPopupPopulation"></span>
@@ -3592,11 +3627,11 @@
 				<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
 			</div>
 		</div>
-		<div class="flex-container-width-half gap-2">
-			<div class="ml-0 button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()">Plan Flight</div>
-			<div class="mr-0 button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</div>
-			<div class="ml-0 button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</div>
-			<div class="mr-0 button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
+		<div class="flex-container-width-half gap-2 pb-2">
+			<button class="ml-0 button" id="planToAirportButton" onclick="planToAirportFromInfoWindow()">Plan Flight</button>
+			<button class="mr-0 button" id="viewAirportButton" data-link="airport" onclick="showAirportDetails($('#airportPopupId').val())">View Airport</button>
+			<button class="ml-0 button" id="toggleAirportLinksButton" onclick="toggleAirportLinksView()">Flight Map</button>
+			<button class="mr-0 button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</button>
 		</div>
     </div>
     <div id="appealBonusDetailsTooltip" class="customTooltip" style="display: none; position: fixed;">
@@ -4679,7 +4714,7 @@
 			</div>
 			<h6 style="font-style: italic;">* Drag and drop airplane icon to another box to switch home base</h6>
 			<h6 style="font-style: italic;">* Drag and drop airplane icon to another airplane icon to swap schedules and settings</h6>
-			<div class="inventoryContainer" style="width: 100%; height: 95%; overflow: auto;"></div>
+			<div class="inventoryContainer" style="width: 100%; height: 98%; overflow: auto;"></div>
 		</div>
 	</div>
 
@@ -4694,7 +4729,7 @@
 			  <h6 style="font-style: italic;">* Drag and drop airplane icon to another airplane icon to swap schedules and settings</h6>
 		  </div>
 
-		  <div class="inventoryContainer" style="width: 100%; height: 95%; overflow: auto;"></div>
+		  <div class="inventoryContainer" style="width: 100%; height: 98%; overflow: auto;"></div>
 	  </div>
   </div>
 
@@ -5248,9 +5283,9 @@
 
 	  <div id="profilesModal" class="modal">
 		<input type="hidden" id="profileId" name="profileId" value="0"/>
-		  <div class="modal-content transparent-modal" style="max-width : 90vw; width: 1300px;">
+		  <div class="modal-content" style="max-width : 90vw; width: 1300px;">
 			  <h2 style="margin-bottom: 20px">Please select your profile</h2>
-			  <div id ="profiles" style="padding: 10px;">
+			  <div id ="profiles" style="padding: 10px;display: flex;">
 
 			  </div>
 			  <div style="text-align: center">
@@ -5569,7 +5604,7 @@
   <script src='@routes.Assets.versioned("javascripts/campaign.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/profile.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/settings.js")'></script>
-  <script src='@routes.Assets.versioned("javascripts/prompt.js")'></script>
+  <script src='@routes.Assets.versioned("javascripts/prompt.js")' defer></script>
   <script src='@routes.Assets.versioned("javascripts/pending-action.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/map-style.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/local-storage.js")'></script>

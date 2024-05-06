@@ -53,7 +53,7 @@ object UserSimulation {
     if (user.status != UserStatus.INACTIVE) {
       var hasLargeAirline = false
       user.getAccessibleAirlines().foreach { airline =>
-        if (airline.airlineGrade.value >= AirlineGrade.LESSER_INTERNATIONAL.value) {
+        if (airline.airlineGrade.level >= 150) {
           hasLargeAirline = true
         }
       }

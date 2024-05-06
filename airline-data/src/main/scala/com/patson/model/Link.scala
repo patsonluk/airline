@@ -249,7 +249,7 @@ object ExplicitLinkConsideration {
 }
 
 object LinkConsideration {
-  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new DealPreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.BUSINESS)
+  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new DealPreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.TRAVELER)
   def getExplicit(link : Transport, cost : Double, linkClass : LinkClass, inverted : Boolean, id : Int = 0) : LinkConsideration = {
     LinkConsideration(link, linkClass, inverted, DUMMY_PASSENGER_GROUP, None, SimpleCostProvider(cost), id)
   }

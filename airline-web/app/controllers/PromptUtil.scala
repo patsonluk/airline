@@ -40,9 +40,9 @@ object PromptUtil {
       case Some(completedLevelUpNotices) => completedLevelUpNotices.map(_.asInstanceOf[LevelNotice].level).max
       case None => -1
     }
-    if (airline.airlineGrade.value > notifiedLevel) { //level up!
-      notices.append(AirlineNotice(airline, LevelNotice(airline.airlineGrade.value), airline.airlineGrade.description))
-      if (!airline.isSkipTutorial && airline.airlineGrade.value > 1) {
+    if (airline.airlineGrade.level > notifiedLevel) { //level up!
+      notices.append(AirlineNotice(airline, LevelNotice(airline.airlineGrade.level), airline.airlineGrade.description))
+      if (!airline.isSkipTutorial && airline.airlineGrade.level > 1) {
         if (completedTutorials.isEmpty) {
           tutorials.append(AirlineTutorial(airline, Tutorial("airlineGrade", "")))
         }
