@@ -2609,16 +2609,14 @@
 	<!--   			end oil canvas -->
 
 
-				<div id="rankingCanvas" class="canvas" style="display: none; width: 100%;">
-					<style type="text/css">
-						//.rankingTable {min-width: 520px}
-					</style>
+				<div id="rankingCanvas" class="canvas" style="display: none; width: 100%; flex-direction: column">
+					<div class="section" style="width: 100%;height: min-content;flex-shrink: 0;"><p><i>All rankings are best per airline. Prizes are rewarded in reputation. </i></p></div>
 					<div style="display: grid;grid-gap: 16px;grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));width: 100%;margin-top: 10px;">
 						<div class="table data section tight rankingTable" id="passengerMileRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Largest Airline by Passenger mile</div>
+								<div class="cell" style="width: 50%">Largest by Passenger mile</div>
 								<div class="cell" style="width: 27%" align="right">Pax miles</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
@@ -2627,7 +2625,7 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Airline with Happiest Customers</div>
+								<div class="cell" style="width: 50%">Happiest Customers</div>
 								<div class="cell" style="width: 27%" align="right">SF per pax km</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
@@ -2636,7 +2634,7 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Highest Quality Average Flight Service</div>
+								<div class="cell" style="width: 50%">Highest Average Quality</div>
 								<div class="cell" style="width: 27%" align="right">Quality per pax km</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
@@ -2645,8 +2643,8 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Airline with Busiest Lounge</div>
-								<div class="cell" style="width: 27%" align="right">Weekly Visitors</div>
+								<div class="cell" style="width: 55%">Busiest Lounge</div>
+								<div class="cell" style="width: 22%" align="right">Weekly Visitors</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
@@ -2654,8 +2652,8 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Highest Frequency Route per Airline</div>
-								<div class="cell" style="width: 27%" align="right">Frequency</div>
+								<div class="cell" style="width: 55%">Highest Frequency Route <br><small>With more than 2400 sold seats</small></div>
+								<div class="cell" style="width: 22%" align="right">Frequency</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
@@ -2663,7 +2661,7 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Most Profitable Route per Airline</div>
+								<div class="cell" style="width: 50%">Most Profitable Route</div>
 								<div class="cell" style="width: 27%" align="right">Weekly Profit</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
@@ -2672,8 +2670,8 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Longest Route per Airline <small>With more than 200 sold seats</small></div>
-								<div class="cell" style="width: 27%" align="right">Distance</div>
+								<div class="cell" style="width: 55%">Longest Route <br><small>With more than 200 sold seats</small></div>
+								<div class="cell" style="width: 22%" align="right">Distance</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
@@ -2690,17 +2688,27 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Most Unique Countries</div>
+								<div class="cell" style="width: 50%">Most Unique Country Destinations</div>
 								<div class="cell" style="width: 27%" align="right">Countries</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section tight rankingTable" id="serviceQualityRank">
+						<div class="table data section tight rankingTable" id="linksSmallTown">
 							<div class="table-header">
-								<div class="cell" style="width: 9%">Rank</div>
-								<div class="cell" style="width: 7%">Change</div>
-								<div class="cell" style="width: 60%">Airline</div>
-								<div class="cell" style="width: 24%" align="right">Service Quality</div>
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Town Flyer</div>
+								<div class="cell" style="width: 27%" align="right">Small Airports<br><small>500k pop or less</small></div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
+							</div>
+						</div>
+						<div class="table data section tight rankingTable" id="linksLowIncome">
+							<div class="table-header">
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Low Income Champion</div>
+								<div class="cell" style="width: 27%" align="right">Airports<br><small>$10k income or less</small></div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
 						<div class="table data section tight rankingTable" id="airportRank">
@@ -2709,14 +2717,6 @@
 								<div class="cell" style="width: 9%">Change</div>
 								<div class="cell" style="width: 50%">Busiest Airport</div>
 								<div class="cell" style="width: 34%" align="right">Weekly Enplanements</div>
-							</div>
-						</div>
-						<div class="table data section tight rankingTable" id="linkCountRank">
-							<div class="table-header">
-								<div class="cell" style="width: 10%">Rank</div>
-								<div class="cell" style="width: 10%">Change</div>
-								<div class="cell" style="width: 50%">Airline with Most Routes</div>
-								<div class="cell" style="width: 30%" align="right">Routes</div>
 							</div>
 						</div>
 					</div>

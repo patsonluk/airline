@@ -20,7 +20,7 @@ object AirlineSimulation {
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
   val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUTATION_DELTA = 1
-  val BANKRUPTCY_CASH_THRESHOLD = -100000000 //-100M
+  val BANKRUPTCY_THRESHOLD = -10000000 //-10M
 
   def airlineSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane], airlineStats : List[AirlineStat]) = {
     //compute profit
@@ -61,7 +61,7 @@ object AirlineSimulation {
     println("Generating Rankings")
     //todo: pass airline stats so don't need to recalculate
     val rankings :scala.collection.immutable.Map[RankingType.Value, List[Ranking]] = RankingLeaderboards.getRankings()
-    val rankingsByAirlineId :scala.collection.immutable.Map[Int, Double] = rankings.values.flatten.groupBy(_.key.asInstanceOf[Int]).map {
+    val rankingsByAirlineId : scala.collection.immutable.Map[Int, Double] = rankings.values.flatten.groupBy(_.key.asInstanceOf[Int]).map {
      case (key, rankings) =>
       val totalReputationPrize = rankings.flatMap(_.reputationPrize).sum
       (key, totalReputationPrize)
@@ -127,6 +127,10 @@ object AirlineSimulation {
         val dividendsFunding = airline.getWeeklyDividends()
         othersSummary.put(OtherIncomeItemType.DIVIDENDS, dividendsFunding.toLong * -1)
         totalCashExpense += dividendsFunding
+
+        val oldStockPrice = airline.getStockPrice()
+        val stockPrice = getNewStockPrice(dividendsFunding, totalAirlineValue, oldStockPrice)
+        airline.setStockPrice(stockPrice)
 
         val baseUpkeep = airline.bases.foldLeft(0L)((upkeep, base) => {
           upkeep + base.getUpkeep
@@ -291,9 +295,7 @@ object AirlineSimulation {
         val airlineRevenue = linksIncome.revenue + transactionsIncome.revenue + othersIncome.revenue
         val airlineExpense = linksIncome.expense + transactionsIncome.expense + othersIncome.expense
         val airlineProfit = airlineRevenue - airlineExpense
-        val oldStockPrice = airline.getStockPrice()
-        val stockPrice = getNewStockPrice(dividendsFunding, totalAirlineValue, oldStockPrice)
-        airline.setStockPrice(stockPrice)
+
         val airlineWeeklyIncome = AirlineIncome(airline.id, airlineProfit, airlineRevenue, airlineExpense, stockPrice, linksIncome, transactionsIncome, othersIncome, cycle = currentCycle)
         allIncomes += airlineWeeklyIncome
         allIncomes ++= computeAccumulateIncome(airlineWeeklyIncome)
@@ -409,14 +411,15 @@ object AirlineSimulation {
 
         airline.setReputation(targetReputation)
 
-        //check bankruptcy
-        if (totalAirlineValue < BANKRUPTCY_CASH_THRESHOLD) {
-          val shouldReset = airlineProfit < -10000000
+        //check bankruptcy: if total value & total profit is less than -10m, only then reset
+        if (totalAirlineValue < BANKRUPTCY_THRESHOLD) {
+          val shouldReset = airlineProfit < BANKRUPTCY_THRESHOLD
           if (shouldReset) {
             var resetBalance = Computation.getResetAmount(airline.id).overall
             if (resetBalance < 0) {
               resetBalance = 0
             }
+            //todd: add public notice of bankruptcy with stats
             println(s"Resetting $airline due to negative cash and unprofitable flights")
             Airline.resetAirline(airline.id, newBalance = resetBalance)
           }
@@ -499,10 +502,11 @@ object AirlineSimulation {
       0.0
     }
     val weightedStockPrice = if (newStockPrice > oldStockPrice) {
-      (newStockPrice * 0.3 + oldStockPrice * 0.7) / 2
+      newStockPrice * 0.55 + oldStockPrice * 0.45
     } else {
-      (newStockPrice * 0.8 + oldStockPrice * 0.2) / 2
+      newStockPrice * 0.85 + oldStockPrice * 0.15
     }
+    println(s"stock prices: ${oldStockPrice} ${newStockPrice} ${weightedStockPrice}")
     weightedStockPrice
   }
   

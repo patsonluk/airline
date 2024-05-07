@@ -69,7 +69,7 @@ object AirlineSource {
           airline.setCurrentServiceQuality(resultSet.getDouble("service_quality"))
           airline.setTargetServiceQuality(resultSet.getInt("target_service_quality"))
           airline.setWeeklyDividends(resultSet.getInt("weekly_dividends"))
-          airline.setStockPrice(resultSet.getInt("stock_price"))
+          airline.setStockPrice(resultSet.getDouble("stock_price"))
           airline.setAirlineCode(resultSet.getString("airline_code"))
           airline.setMinimumRenewalBalance(resultSet.getLong("minimum_renewal_balance"))
           val countryCode = resultSet.getString("country_code")

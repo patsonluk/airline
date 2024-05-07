@@ -544,34 +544,28 @@ object AirlineGradeElites {
 
 object AirlineGradeTourists {
   val grades = List(
-    75 -> "Unknown",
     100 -> "Unknown",
-    150 -> "Luggage Loser",
     200 -> "Discount Disaster",
-    300 -> "Shoestring?",
-    450 -> "Shoestring!",
+    300 -> "Leisure Loser II",
+    450 -> "Recreation Disapointment",
     650 -> "Semi Bargain Bin",
-    950 -> "Bargain Bin",
-    1400 -> "Bargains Galore",
+    950 -> "Resort Runner",
+    1400 -> "Bargain Bin",
     2050 -> "Deal Seeker Favorite",
-    3000 -> "Crying Baby Central",
-    //"Detours Delight"
-    //Travel + Leisure Nominee
-    //Sunburn Special
-    //Authentic Tourist Trap Transport
-    4400 -> "Bulk Buy Bonanza",
-    6450 -> "Resort Runner",
-    9500 -> "Resort Runner II",
+    3000 -> "Bargain Bin Bonanza",
+    4400 -> "Theme Park Express",
+    6450 -> "Detours Delight",
+    9500 -> "Package Deal Pal",
     13950 -> "Tourist Favorite",
     20500 -> "Mega Mover",
-    30150 -> "Mega Mover II",
-    44300 -> "Package Deal Pal",
-    65100 -> "Tourists Favorite",
-    95700 -> "Theme Park Express",
-    140700 -> "Cheapo Cruiser Champion",
-    206850 -> "Mega Mega Mover",
-    304050 -> "Penny-Pinchers' Paradise",
-    446950 -> "Budget Behemoth"
+    30150 -> "Mega Mega Mover",
+    44300 -> "Cheapo Champion",
+    65100 -> "Budget Behemoth",
+    95700 -> "Travel + Leisure Best Airline Nominee",
+    140700 -> "The Tourist Trap Transport",
+    206850 -> "Mega Mega Mega Mover",
+    304050 -> "Penny Pinchers Paradise",
+    446950 -> "Travel + Leisure Best Airline Winner"
   )
 
   def findGrade(pax: Double): AirlineGrade = {
