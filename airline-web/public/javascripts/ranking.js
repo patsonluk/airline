@@ -41,6 +41,14 @@ function updateRankingTable(rankingType, rankings) {
         rankingTable = $('#passengerRank')
     } else if (rankingType == "PASSENGER_MILE") {
         rankingTable = $('#passengerMileRank')
+    } else if (rankingType == "TOURIST_COUNT") {
+        rankingTable = $('#touristCountRank')
+    } else if (rankingType == "BUSINESS_COUNT") {
+        rankingTable = $('#businessCountRank')
+    } else if (rankingType == "ELITE_COUNT") {
+        rankingTable = $('#eliteCountRank')
+    } else if (rankingType == "STOCK_VALUE") {
+        rankingTable = $('#stockRank')
     } else if (rankingType == "PASSENGER_QUALITY") {
         rankingTable = $('#passengerMileQualityRank')
     } else if (rankingType == "LINK_DISTANCE") {
@@ -61,10 +69,18 @@ function updateRankingTable(rankingType, rankings) {
         rankingTable = $('#uniqueIataRank')
     } else if (rankingType == "UNIQUE_COUNTRIES") {
         rankingTable = $('#uniqueCountriesRank')
-	} else if (rankingType == "LOUNGE") {
+	} else if (rankingType == "LINK_COUNT_SMALL_TOWN") {
+        rankingTable = $('#linksSmallTown')
+    } else if (rankingType == "LINK_COUNT_LOW_INCOME") {
+        rankingTable = $('#linksLowIncome')
+    } else if (rankingType == "LOUNGE") {
 		rankingTable = $('#loungeRank')
 	} else if (rankingType == "AIRPORT") {
 		rankingTable = $('#airportRank')
+    } else if (rankingType == "INTERNATIONAL_PAX") {
+        rankingTable = $('#internationPaxRank')
+    } else if (rankingType == "DOMESTIC_PAX") {
+        rankingTable = $('#domesticPaxRank')
 	} else {
 		console.log("Unknown ranking type " + rankingType)
 	}

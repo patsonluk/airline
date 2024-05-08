@@ -36,16 +36,30 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "gradeLevel" -> JsNumber(airline.airlineGrade.level),
       "gradeFloor" -> JsNumber(airline.airlineGrade.reputationFloor),
       "gradeCeiling" -> JsNumber(airline.airlineGrade.reputationCeiling),
+      "stock" -> JsObject(List(
         "stockPrice" -> JsNumber(airline.airlineInfo.stockPrice),
         "stockDescription" -> JsString(airline.airlineGradeStockPrice.description),
-      "stockLevel" -> JsNumber(airline.airlineGradeStockPrice.level),
-      "stockCeiling" -> JsNumber(airline.airlineGradeStockPrice.reputationCeiling),
-      "stockFloor" -> JsNumber(airline.airlineGradeStockPrice.reputationFloor),
+        "stockLevel" -> JsNumber(airline.airlineGradeStockPrice.level),
+        "stockCeiling" -> JsNumber(airline.airlineGradeStockPrice.reputationCeiling),
+        "stockFloor" -> JsNumber(airline.airlineGradeStockPrice.reputationFloor),
+      )),
+      "tourists" -> JsObject(List(
         "tourists" -> JsNumber(airline.stats.tourists),
         "touristsDescription" -> JsString(airline.airlineGradeTourists.description),
-      "touristsLevel" -> JsNumber(airline.airlineGradeTourists.level),
-      "touristsCeiling" -> JsNumber(airline.airlineGradeTourists.reputationCeiling),
-      "touristsFloor" -> JsNumber(airline.airlineGradeTourists.reputationFloor),
+        "touristsLevel" -> JsNumber(airline.airlineGradeTourists.level),
+        "touristsCeiling" -> JsNumber(airline.airlineGradeTourists.reputationCeiling),
+        "touristsFloor" -> JsNumber(airline.airlineGradeTourists.reputationFloor),
+      )),
+      "elites" -> JsObject(List(
+        "elites" -> JsNumber(airline.stats.elites),
+        "elitesDescription" -> JsString(airline.airlineGradeElites.description),
+        "elitesLevel" -> JsNumber(airline.airlineGradeElites.level),
+        "elitesCeiling" -> JsNumber(airline.airlineGradeElites.reputationCeiling),
+        "elitesFloor" -> JsNumber(airline.airlineGradeElites.reputationFloor),
+      )),
+
+
+
       "airlineCode" -> JsString(airline.getAirlineCode()),
       "skipTutorial" -> JsBoolean(airline.isSkipTutorial),
       "initialized" -> JsBoolean(airline.isInitialized))
@@ -322,7 +336,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       delegate.assignedTask.getTaskType == DelegateTaskType.COUNTRY && delegate.assignedTask.asInstanceOf[CountryDelegateTask].country.countryCode == targetCountryCode
     }
 
-    val upgradeDelegatesRequired = if (targetBase.scale == 1) targetBase.delegatesRequired else targetBase.delegatesRequired - targetBase.copy(scale = targetBase.scale - 1).delegatesRequired
+    val upgradeDelegatesRequired = if (targetBase.scale == 1) 1 else targetBase.delegatesRequired - targetBase.copy(scale = targetBase.scale - 1).delegatesRequired
 
     val requiredDelegates = airline.getBases().filter(_.countryCode == targetBase.countryCode).map(_.delegatesRequired).sum + upgradeDelegatesRequired
     if (delegatesAssignedToThisCountry.length < requiredDelegates) {

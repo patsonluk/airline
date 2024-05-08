@@ -1796,8 +1796,8 @@
 									</div>
 									<p class="small max-w-32 mx-auto flex-container-width-half"><span class="font-mono reputationValuePrev text-left">0</span><span class="font-mono reputationValueNext">10</span></p>
 									<p class="text-right small max-w-32 mx-auto">trending to: <span class="font-mono reputationTrend">10</span></p>
-									<p>Reputation Breakdown</p>
-									<ul class="reputationDetails"></ul>
+									<p class="pt-4 center">Reputation Breakdown</p>
+									<ul class="reputationDetails small"></ul>
 								</div>
 
 								<div class="threshold-section">
@@ -1846,7 +1846,7 @@
 										<p class="text-center font-mono elitesValueNext"></p>
 										<div id="elitesBar" class="threshold-bar-bg"></div>
 									</div>
-									<p class="text-right small max-w-32 mx-auto flex-container-width-half">goal: <span class="font-mono elitesValueNext">10</span></p>
+									<p class="text-right small max-w-32 mx-auto flex-container-width-half"><span class="font-mono elitesValuePrev text-left">0</span> <span class="font-mono elitesValueNext">10</span></p>
 									<p class="pt-4">Employee Quality:
 										<span id="serviceFundingDisplaySpan">
 											<span id="targetServiceQuality"></span>
@@ -1939,11 +1939,12 @@
                             <div class="controllers" style="width: 95%; margin-bottom: 5px;">
                                 <div class="table" style="width: 30%; float: left;">
                                     <div class="table-header sheetOptions">
-                                        <div class="cell clickable selected" data-type="income" onclick="selectSheet($(this), $('#incomeSheet'))">Income Sheet</div>
-                                        <div class="cell clickable" data-type="cashFlow" onclick="selectSheet($(this), $('#cashFlowSheet'))">Cash Flow Sheet</div>
+                                        <div class="cell clickable selected" data-type="income" onclick="selectSheet($(this), $('#incomeSheet')); $('.controllers-period').show();">Income Sheet</div>
+										<div class="cell clickable" data-type="cashFlow" onclick="selectSheet($(this), $('#cashFlowSheet')); $('.controllers-period').show();">Cash Flow Sheet</div>
+										<div class="cell clickable" data-type="airlineStats" onclick="selectSheet($(this), $('#airlineStatsSheet')); $('.controllers-period').hide();">Passenger Stats</div>
                                     </div>
                                 </div>
-                                <div style="display: flex; align-items: center; float: right;">
+                                <div style="display: flex; align-items: center; float: right;" class="controllers-period">
                                     <img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class="button" onclick="officeHistoryStep(-1)"/>
                                     &nbsp;
                                     <select class="select-css period" onchange="changeOfficePeriod($(this).val())">
@@ -2200,6 +2201,9 @@
 								</div>
 							</div>
 		<!--          		end cashflow sheet -->
+							<div style="width : 100%; display: none;" id="airlineStatsSheet" class="sheet">
+								<div id="airlineStatsChart" style="width: 100%; height: 300px; margin: 0 auto;"></div>
+							</div>
 						</div>
 	<!-- 					end statements -->
 						<div class="section" style="width: 100%; display: flex;">
@@ -2612,12 +2616,30 @@
 				<div id="rankingCanvas" class="canvas" style="display: none; width: 100%; flex-direction: column">
 					<div class="section" style="width: 100%;height: min-content;flex-shrink: 0;"><p><i>All rankings are best per airline. Prizes are rewarded in reputation. </i></p></div>
 					<div style="display: grid;grid-gap: 16px;grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));width: 100%;margin-top: 10px;">
-						<div class="table data section tight rankingTable" id="passengerMileRank">
+						<div class="table data section tight rankingTable" id="touristCountRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Largest by Passenger mile</div>
-								<div class="cell" style="width: 27%" align="right">Pax miles</div>
+								<div class="cell" style="width: 55%">Tourist Boardings</div>
+								<div class="cell" style="width: 22%" align="right">Passengers</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
+							</div>
+						</div>
+						<div class="table data section tight rankingTable" id="businessCountRank">
+							<div class="table-header">
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Business Boardings</div>
+								<div class="cell" style="width: 27%" align="right">Passengers</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
+							</div>
+						</div>
+						<div class="table data section tight rankingTable" id="eliteCountRank">
+							<div class="table-header">
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 55%">Elite Boardings</div>
+								<div class="cell" style="width: 22%" align="right">Passengers</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
@@ -2625,20 +2647,29 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Happiest Customers</div>
-								<div class="cell" style="width: 27%" align="right">SF per pax km</div>
+								<div class="cell" style="width: 55%">Happiest Customers</div>
+								<div class="cell" style="width: 22%" align="right">Average SF<br><small>by pax km</small></div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section tight rankingTable" id="passengerMileQualityRank">
+						<div class="table data section tight rankingTable" id="stockRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Highest Average Quality</div>
-								<div class="cell" style="width: 27%" align="right">Quality per pax km</div>
+								<div class="cell" style="width: 50%">Best Business</div>
+								<div class="cell" style="width: 27%" align="right">Stock Price</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
+<!--						<div class="table data section tight rankingTable" id="passengerMileQualityRank">-->
+<!--							<div class="table-header">-->
+<!--								<div class="cell" style="width: 7%">Rank</div>-->
+<!--								<div class="cell" style="width: 9%">Change</div>-->
+<!--								<div class="cell" style="width: 50%">Highest Average Quality</div>-->
+<!--								<div class="cell" style="width: 27%" align="right">Quality per pax km</div>-->
+<!--								<div class="cell" style="width: 7%" align="right">Prize</div>-->
+<!--							</div>-->
+<!--						</div>-->
 						<div class="table data section tight rankingTable" id="loungeRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
@@ -2675,21 +2706,12 @@
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
-						<div class="table data section tight rankingTable" id="uniqueIataRank">
-							<div class="table-header">
-								<div class="cell" style="width: 7%">Rank</div>
-								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Most Unique Destinations</div>
-								<div class="cell" style="width: 27%" align="right">Airports</div>
-								<div class="cell" style="width: 7%" align="right">Prize</div>
-							</div>
-						</div>
 						<div class="table data section tight rankingTable" id="uniqueCountriesRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Most Unique Country Destinations</div>
-								<div class="cell" style="width: 27%" align="right">Countries</div>
+								<div class="cell" style="width: 55%">Most Countries Served</div>
+								<div class="cell" style="width: 22%" align="right">Countries</div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
@@ -2706,17 +2728,45 @@
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
-								<div class="cell" style="width: 50%">Low Income Champion</div>
-								<div class="cell" style="width: 27%" align="right">Airports<br><small>$10k income or less</small></div>
+								<div class="cell" style="width: 55%">Low Income Champion</div>
+								<div class="cell" style="width: 22%" align="right">Airports<br><small>$10k income or less</small></div>
 								<div class="cell" style="width: 7%" align="right">Prize</div>
 							</div>
 						</div>
+					</div>
+					<div class="section" style="width: 100%;height: min-content;flex-shrink: 0;"><p>Informational Rankings!<br/><i>No prizes</i></p></div>
+					<div style="display: grid;grid-gap: 16px;grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));width: 100%;margin-top: 10px;">
 						<div class="table data section tight rankingTable" id="airportRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
 								<div class="cell" style="width: 9%">Change</div>
 								<div class="cell" style="width: 50%">Busiest Airport</div>
 								<div class="cell" style="width: 34%" align="right">Weekly Enplanements</div>
+							</div>
+						</div>
+						<div class="table data section tight rankingTable" id="passengerMileRank">
+							<div class="table-header">
+								<div class="cell" style="width: 7%">Rank</div>
+								<div class="cell" style="width: 9%">Change</div>
+								<div class="cell" style="width: 50%">Largest by Passenger mile</div>
+								<div class="cell" style="width: 27%" align="right">Pax miles</div>
+								<div class="cell" style="width: 7%" align="right">Prize</div>
+							</div>
+						</div>
+						<div class="table data section tight rankingTable" id="internationPaxRank">
+							<div class="table-header">
+								<div class="cell" style="width: 10%">Rank</div>
+								<div class="cell" style="width: 10%">Change</div>
+								<div class="cell" style="width: 60%">Top International Routes</div>
+								<div class="cell" style="width: 20%" align="right">Weekly Pax</div>
+							</div>
+						</div>
+						<div class="table data section tight rankingTable" id="domesticPaxRank">
+							<div class="table-header">
+								<div class="cell" style="width: 10%">Rank</div>
+								<div class="cell" style="width: 10%">Change</div>
+								<div class="cell" style="width: 60%">Top Domestic Routes</div>
+								<div class="cell" style="width: 20%" align="right">Weekly Pax</div>
 							</div>
 						</div>
 					</div>

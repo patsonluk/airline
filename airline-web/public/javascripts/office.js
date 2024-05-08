@@ -223,32 +223,33 @@ function updateProgress(stats, stockPrice){
 
     $('.reputationValueCurrent').text(activeAirline.reputation)
     $('.stockValueCurrent').text("$" + stockPrice.toFixed(2))
-    $('.touristsValueCurrent').text(shortNumber(stats.tourists))
-    $('.elitesValueCurrent').text(shortNumber(stats.elites))
+    $('.touristsValueCurrent').text(shortNumber(activeAirline.tourists.tourists))
+    $('.elitesValueCurrent').text(shortNumber(activeAirline.elites.elites))
 
-    $('.reputationText').text(activeAirline.gradeDescription + " Airline")
-    $('.stockText').text(activeAirline.stockDescription)
-    $('.touristsText').text(activeAirline.touristsDescription)
-//        $('.elitesText').text(elitesCount())
+    $('.reputationText').text(activeAirline.gradeDescription)
+    $('.stockText').text(activeAirline.stock.stockDescription)
+    $('.touristsText').text(activeAirline.tourists.touristsDescription)
+    $('.elitesText').text(activeAirline.elites.elitesDescription)
 
     $('.reputationLevel').text("Level " + activeAirline.gradeLevel)
-    $('.stockLevel').text("Level " + activeAirline.stockLevel)
-    $('.touristsLevel').text("Level " + activeAirline.touristsLevel)
-//    $('.elitesLevel').text("Level " + activeAirline.gradeLevel)
+    $('.stockLevel').text("Level " + activeAirline.stock.stockLevel)
+    $('.touristsLevel').text("Level " + activeAirline.tourists.touristsLevel)
+    $('.elitesLevel').text("Level " + activeAirline.elites.elitesLevel)
 
     $('.reputationTrend').text((activeAirline.reputationBreakdowns.total).toFixed(0))
     $('.reputationValueNext').text(activeAirline.gradeCeiling)
-    $('.stockValueNext').text(activeAirline.stockCeiling)
-    $('.touristsValueNext').text(activeAirline.touristsCeiling)
-//    $('.elitesValueNext').text(activeAirline.gradeCeiling)
+    $('.stockValueNext').text("$"+activeAirline.stock.stockCeiling)
+    $('.touristsValueNext').text(activeAirline.tourists.touristsCeiling)
+    $('.elitesValueNext').text(activeAirline.elites.elitesCeiling)
     $('.reputationValuePrev').text(activeAirline.gradeFloor)
-    $('.stockValuePrev').text(activeAirline.stockFloor)
-    $('.touristsValuePrev').text(activeAirline.touristsFloor)
+    $('.stockValuePrev').text("$"+activeAirline.stock.stockFloor)
+    $('.touristsValuePrev').text(activeAirline.tourists.touristsFloor)
+    $('.elitesValuePrev').text(activeAirline.elites.elitesFloor)
 
     setProgressWidth("#reputationBar", activeAirline.reputation, activeAirline.gradeFloor, activeAirline.gradeCeiling)
-    setProgressWidth("#stockBar", stockPrice, activeAirline.stockFloor, activeAirline.stockCeiling)
-    setProgressWidth("#touristsBar", stats.tourists, activeAirline.touristsFloor, activeAirline.touristsCeiling)
-//    setProgressWidth("#elitesBar", stats.elites, activeAirline.elitesFloor, activeAirline.elitesCeiling)
+    setProgressWidth("#stockBar", stockPrice, activeAirline.stock.stockFloor, activeAirline.stock.stockCeiling)
+    setProgressWidth("#touristsBar", activeAirline.tourists.tourists, activeAirline.tourists.touristsFloor, activeAirline.tourists.touristsCeiling)
+    setProgressWidth("#elitesBar", activeAirline.elites.elites, activeAirline.elites.elitesFloor, activeAirline.elites.elitesCeiling)
 }
 
 function updateAirlineColorPicker() {
@@ -280,7 +281,7 @@ function updateAirlineDetails() {
 //            }
             var breakdownList = $("<ul></ul>")
             $.each(airline.reputationBreakdowns.breakdowns, function(index, breakdown) {
-                breakdownList.append("<li>" + breakdown.description + " : " + breakdown.value.toFixed(2) + "</li>")
+                breakdownList.append("<li>" + breakdown.description + ": <span class='rep-value'>" + breakdown.value.toFixed(2) + "</span></li>")
             })
             $('#officeCanvas .reputationDetails').html(breakdownList)
 //            reputationHtml.append(breakdownList)
@@ -368,6 +369,8 @@ function loadSheets() {
 	    	
 	    	updateCashFlowChart()
 
+	    	plotAirlineStats(data.airlineStats, $("#officeCanvas #airlineStatsChart"))
+
 	    	var stockPrice = loadedIncomes['WEEKLY'].length > 0 ? loadedIncomes['WEEKLY'][loadedIncomes['WEEKLY'].length - 1].stockPrice : null
             var airlineStats = data.airlineStats[data.airlineStats.length - 1] ?? null
             updateProgress(airlineStats, stockPrice)
@@ -386,8 +389,6 @@ function updateIncomeChart() {
 function updateCashFlowChart() {
 	plotCashFlowChart(loadedCashFlows[officePeriod], officePeriod, $("#officeCanvas #totalCashFlowChart"))
 }
-
-
 
 function officeHistoryStep(step) {
     var type = $('#officeCanvas .sheetOptions').find('.cell.selected').data('type')
