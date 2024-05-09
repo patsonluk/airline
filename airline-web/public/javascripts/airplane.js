@@ -98,22 +98,6 @@ function loadAirplaneModelOwnerInfo() {
 	});
 }
 
-function getAirplaneStarsImgs(value) {
-	var fullStars = Math.floor(value)
-	var halfStar = value % 2
-	var html = ""
-	for (i = 0 ; i < fullStars; i ++) {
-		html += "<img src='assets/images/icons/star.png'/>"
-	}
-	if (halfStar) {
-		html += "<img src='assets/images/icons/star-half.png'/>"
-	}
-	for (i = 0 ; i < 5 - fullStars - halfStar; i ++) {
-		html += "<img src='assets/images/icons/star-empty.png'/>"
-	}
-	return html
-}
-
 function updateAirplaneModelTable(sortProperty, sortOrder) {
     if (!sortProperty && !sortOrder) {
         var selectedSortHeader = $('#airplaneModelSortHeader .cell.selected')
@@ -129,7 +113,7 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 	
 	$.each(loadedModelsOwnerInfo, function(index, modelOwnerInfo) {
 		var row = $("<div class='table-row clickable' data-model-id='" + modelOwnerInfo.id + "' onclick='selectAirplaneModel(loadedModelsById[" + modelOwnerInfo.id + "])'></div>")
-		var stars = $("<div class='cell' align='right'>").append(getAirplaneStarsImgs(modelOwnerInfo.quality)).append("</div>")
+		var stars = $("<div class='cell' align='right'>").append(getGradeStarsImgs(modelOwnerInfo.quality * 2)).append("</div>")
 		if (modelOwnerInfo.isFavorite) {
 		    row.append("<div class='cell'>" + modelOwnerInfo.name + "<img src='assets/images/icons/heart.png' height='10px'></div>")
         } else {
@@ -529,7 +513,7 @@ function buyUsedAirplane(airplaneId, homeAirportId, configurationId) {
 function updateModelInfo(modelId) {
 	loadAirplaneModels()
 	model = loadedModelsById[modelId]
-	var $stars = $(getAirplaneStarsImgs(model.quality))
+	var $stars = $(getGradeStarsImgs(model.quality * 2))
 	$('#airplaneModelDetails .selectedModel').val(modelId)
 	$('#airplaneModelDetails #modelName').text(model.name)
 	$('#airplaneModelDetails .modelFamily').text(model.family)
@@ -587,7 +571,7 @@ function selectAirplaneModel(model) {
 	} else {
 		$('#airplaneCanvas .modelIllustration').hide()
 	}
-	var $stars = $(getAirplaneStarsImgs(model.quality))
+	var $stars = $(getGradeStarsImgs(model.quality * 2))
 	
 	$('#airplaneCanvas .selectedModel').val(model.id)
 	$('#airplaneCanvas .modelName').text(model.name)

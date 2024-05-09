@@ -149,20 +149,16 @@
 	</div>
   	<div id="topBar" data-scroll="false" class="menubar">
   		<div class="desktopOnly hide-empty">
-  			<span class="topBarDetails" style="display: none;">
-				<span style="display: flex; flex-align: center;">
-					<span class="currentTime label" style="margin: 0px 10px"></span>
-					<span style="margin: 0px 10px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span class="nextTickEstimation label" style="font-weight: bold;">-</span></span>
-					<span style="margin: 0px 10px" title="Airline Balance">$<span class="balance label"></span></span>
-					<span class="currentAirline label" style="margin: 0; font-weight: bold"></span>
-					<span style="display: inline-block; margin-left: 5px;">
-						<span style="display: flex; flex-align: center;"><span class="reputationStars"></span></span>
-					</span>
-					<span style="display: inline-block; margin-left: 5px;" class="delegatesShortcut clickable" onclick="toggleDelegateStatusModal()">
-
-					</span>
-				</span>
-  			</span>
+  			<div class="topBarDetails font-mono" style="display: none;">
+				<div style="display: flex;align-items: center;justify-content: center;height: 16px;">
+					<p class="currentTime label"></p>
+					<p style="margin: 0px 8px" title="An estimation of how long until next cycle/week"><img src='@routes.Assets.versioned("images/icons/clock-moon-phase.png")' style="vertical-align: middle;"><span class="nextTickEstimation label" style="font-weight: bold;">-</span></p>
+					<p style="margin: 0px 16px" title="Balance">$<span class="balance"></span></p>
+					<p style="font-size: 13px;" class="currentAirline label font-display"></p>
+					<div class="reputationStars"></div>
+					<div class="delegatesShortcut clickable" onclick="toggleDelegateStatusModal()"></div>
+				</div>
+  			</div>
   		</div>
 		<div style="max-width: 35%;" class="mobileOnly">
 			<div class="topBarDetails">
@@ -364,7 +360,7 @@
 							<button class="tab-icon" data-link="ranking" onclick="showRankingCanvas();">
 								<img src='@routes.Assets.versioned("images/icons/trophy.png")' style="margin: auto;">
 							</button>
-							<span class="label floatLabel">Ranking</span>
+							<span class="label floatLabel">Leaderboards</span>
 						</div>
 					</li>
                     <li class="button left-tab user-specific-tab bankCanvasTab">
@@ -436,8 +432,8 @@
 			</div>
 
 		<!-- main canvas start -->
-			<div id="canvas" style="float: left;" >
-				<div id="worldMapCanvas" class="canvas" style="height: 100%; padding-left: 0px">
+			<div id="canvas">
+				<div id="worldMapCanvas" class="canvas" style="height: 100%; padding: 0px">
 					<div id="map" class="mainPanel"
 						 data-headquarter-marker='@routes.Assets.versioned("images/markers/headquarter.png")'
 						 data-base-marker='@routes.Assets.versioned("images/markers/base.png")'
@@ -449,8 +445,8 @@
 						 data-disabled-airport-marker='@routes.Assets.versioned("images/markers/airport-transparent.png")'></div>
 					<div id="sidePanel" class="sidePanel" style="display:none;" >
 						<div id="detailsPanel" class="section">
-							<div id="linkDetails" style="width: 100%;;">
-								<div style="width: 50%;" id="linkCurrentDetails">
+							<div id="linkDetails" class="flex-container-width-half">
+								<div id="linkCurrentDetails">
 									<h4 class="section-title">Flight <span id="linkFlightCode"></span></h4>
 									<div class="pb-5" style="display:flex;">
 										<div class="link-decoration">
@@ -499,9 +495,7 @@
 										</h4>
 										<div class="table-row">
 											<div class="label" style="width:45%">
-												<h5>
 													Overall Quality:
-												</h5>
 											</div>
 											<div class="value"><span id="linkQuality"></span><div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
@@ -518,27 +512,27 @@
 											</div></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Price:</h5></div>
+											<div class="label">Price:</div>
 											<div class="value" id="linkHistoryPrice"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Capacity:</h5></div>
+											<div class="label">Capacity:</div>
 											<div class="value" id="linkHistoryCapacity"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Load Factor:</h5></div>
+											<div class="label">Load Factor:</div>
 											<div class="value" id="linkLoadFactor"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Profit:</h5></div>
+											<div class="label">Profit:</div>
 											<div class="value" id="linkProfit"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Revenue:</h5></div>
+											<div class="label">Revenue:</div>
 											<div class="value" id="linkRevenue"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Delays & Cancellations:</h5></div>
+											<div class="label">Delays & Cancellations:</div>
 											<div class="value"><span id="linkDelays"></span> | <span id="linkCancellations"></span> <div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
 												<span class="tooltiptext below" style="width: 280px;">
@@ -548,7 +542,7 @@
 										</div>
 										<h4 class="section-title pt-3">Costs:</h4>
 										<div class="table-row">
-											<div class="label" style="width:45%"><h5>Fuel:</h5></div>
+											<div class="label" style="width:45%">Fuel:</div>
 											<div class="value"><span id="linkFuelCost"></span> <div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
 												<span class="tooltiptext below" style="width: 280px;">
@@ -557,7 +551,7 @@
 											</div></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Labor / Crew:</h5></div>
+											<div class="label">Labor / Crew:</div>
 											<div class="value"><span id="linkCrewCost"></span> <div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
 												<span class="tooltiptext below" style="width: 280px;">
@@ -566,7 +560,7 @@
 											</div></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Airport Fees:</h5></div>
+											<div class="label">Airport Fees:</div>
 											<div class="value"><span id="linkAirportFees"></span> <div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
 												<span class="tooltiptext below" style="width: 280px;">
@@ -575,7 +569,7 @@
 											</div></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Service Costs:</h5></div>
+											<div class="label">Service Costs:</div>
 											<div class="value"><span id="linkServiceSupplies"></span> <div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
 												<span class="tooltiptext below" style="width: 280px;">
@@ -585,19 +579,19 @@
 											</div></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Depreciation:</h5></div>
+											<div class="label">Depreciation:</div>
 											<div class="value" id="linkDepreciation"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Lounge Use:</h5></div>
+											<div class="label">Lounge Use:</div>
 											<div class="value" id="linkLoungeCost"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Maintenance:</h5></div>
+											<div class="label">Maintenance:</div>
 											<div class="value" id="linkMaintenance"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Delay Compensation:</h5></div>
+											<div class="label">Delay Compensation:</div>
 											<div class="value" id="linkCompensation"></div>
 										</div>
 									</div>
@@ -623,7 +617,7 @@
 									</div>
 									<div id=linkCompetitionsPie align="center"></div>
 								</div>
-								<div style="width: 50%;" id="linkCharts">
+								<div id="linkCharts">
 									<fieldset>
 										<div class="switch" style="float: right;">
 											<input type="radio" class="switch-input" name="view" value="month" id="switchMonth" onchange="refreshLinkCharts()">
@@ -744,19 +738,19 @@
 									<input type="hidden" id="planLinkFromAirportId"/>
 									<input type="hidden" id="planLinkToAirportId"/>
 									<div class="table-row">
-										<div class="label"><h5>Setup Cost:</h5></div>
+										<div class="label">Setup Cost:</div>
 										<div class="value" id="planLinkCost"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Estimated Difficulty:</h5></div>
+										<div class="label">Estimated Difficulty:</div>
 										<div class="value" id="planLinkEstimatedDifficulty"></div>
 									</div>
 									<div class="table-row" id="planLinkModelRow">
-										<div class="label"><h5>Airplane Model (max freq):</h5></div>
+										<div class="label">Airplane Model (max freq):</div>
 										<div class="value"><select class="select-css" id="planLinkModelSelect" onchange="updatePlanLinkInfoWithModelSelected($(this).val()); updateModelInfo($(this).val())"></select></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Flight Duration:</h5></div>
+										<div class="label">Flight Duration:</div>
 										<div class="value" id="planLinkDuration"></div>
 									</div>
 									<div class="table-row">
@@ -828,7 +822,7 @@
 										</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Capacity (Y/J/F):</h5></div>
+										<div class="label">Capacity (Y/J/F):</div>
 										<div class="value">
 											<span id="planLinkCapacity"></span>
 											<div class="future">
@@ -847,7 +841,7 @@
 										</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Staff Requried:</h5></div>
+										<div class="label">Staff Requried:</div>
 										<div class="value" style="">
 											<span class="staffRequired"></span>
 											<span id="linkStaffBreakdownTooltip" class="tooltip">
@@ -856,23 +850,23 @@
 													<h4 style="margin-bottom: 10px;">Office Staff Requirement Breakdown <span class="airlineName"></span></h4>
 													<div class="table data" style="width: 100%;">
 														<div class="table-row">
-															<div class="label"><h5>Flight Type:</h5></div>
+															<div class="label">Flight Type:</div>
 															<div class="value flightType"></div>
 														</div>
 														<div class="table-row">
-															<div class="label"><h5>Base flight type cost:</h5></div>
+															<div class="label">Base flight type cost:</div>
 															<div class="value basic"></div>
 														</div>
 														<div class="table-row">
-															<div class="label"><h5>Frequency support:</h5></div>
+															<div class="label">Frequency support:</div>
 															<div class="value frequency"></div>
 														</div>
 														<div class="table-row">
-															<div class="label"><h5>Capacity support:</h5></div>
+															<div class="label">Capacity support:</div>
 															<div class="value capacity"></div>
 														</div>
 														<div class="table-row">
-															<div class="label"><h5>Modifier:</h5></div>
+															<div class="label">Modifier:</div>
 															<div class="value modifier"></div>
 														</div>
 													</div>
@@ -914,55 +908,55 @@
 										<div class="value" id="modelName"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Family:</h5></div>
+										<div class="label">Family:</div>
 										<div class="value modelFamily"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Max Capacity:</h5></div>
+										<div class="label">Max Capacity:</div>
 										<div class="value" id="capacity"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Range:</h5></div>
+										<div class="label">Range:</div>
 										<div class="value" id="range"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Fuel Burn:</h5></div>
+										<div class="label">Fuel Burn:</div>
 										<div class="value" id="fuelBurn"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Quality:</h5></div>
+										<div class="label">Quality:</div>
 										<div class="value" id="airplaneTypeQuality"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Category:</h5></div>
+										<div class="label">Category:</div>
 										<div class="value" id="airplaneType"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Turnaround Time:</h5></div>
+										<div class="label">Turnaround Time:</div>
 										<div class="value"><span class="turnaroundTime"></span>&nbsp;min</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Runway required:</h5></div>
+										<div class="label">Runway required:</div>
 										<div class="value"><span class="runwayRequirement"></span>&nbsp;m</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Speed:</h5></div>
+										<div class="label">Speed:</div>
 										<div class="value" id="speed"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Lifespan:</h5></div>
+										<div class="label">Lifespan:</div>
 										<div class="value" id="lifespan"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Manufacturer:</h5></div>
+										<div class="label">Manufacturer:</div>
 										<div class="value manufacturer"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Purchase Price:</h5></div>
+										<div class="label">Purchase Price:</div>
 										<div class="value price"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Delivery Time:</h5></div>
+										<div class="label">Delivery Time:</div>
 										<div class="value delivery"></div>
 									</div>
 									<button type="button" class="button add ml-0" onclick="promptBuyNewAirplane($('#airplaneModelDetails .selectedModel').val(), true, $('#planLinkFromAirportId').val())">Purchase</button>
@@ -977,46 +971,46 @@
 	<!-- 	    	   end bottom panel -->
 				</div>
 	<!--   			end world map canvas -->
-				<div id="linksCanvas"  class="canvas" style="display: none; height: 100%; min-width: 400px;">
+				<div id="linksCanvas"  class="canvas" style="display: none; height: 100%;">
 					<div class="mainPanel">
 						<div class="section tight">
-							<div style="height: 20px; text-align: right;">
+							<div style="height: 20px; text-align: left;">
 								<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
 							</div>
-							<div style="width: 100%; height: 100%; overflow:auto;">
-								<div class="table data" style="height: 20px; width: 100%; min-width: 600px;">
-									<div class="table-header" id="linksTableSortHeader">
-										<div class="cell clickable selected" style="width: 16%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
-										<div class="cell clickable" style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></div> <!--hidden column for last update (cannot be first otherwise the left round corner would not work -->
-										<div class="cell clickable" style="width: 16%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
-										<div class="cell clickable" style="width: 15%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
-										<div class="cell clickable" style="width: 8%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
-										<div class="cell clickable" style="width: 8%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity (Freq.)</div>
-										<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Pax</div>
-										<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalLoadFactor" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))" title="Load Factor">LF</div>
-                                        <div class="cell clickable" style="width: 5%" align="right" data-sort-property="satisfaction" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))" title="Satisfaction Factor">SF</div>
-										<div class="cell clickable" style="width: 11%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
-										<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
-									</div>
-								</div>
-								<div style="height: calc(100% - 40px); width: 100%; overflow-y:auto; min-width: 600px;">
-									<div class="table data" id="linksTable" style="max-height: 100%; width: 100%">
-										<div class="table-header">
-											<div class="cell" style="width: 16%; border-bottom: none;"></div>
-											<div class="cell" style="width: 16%; border-bottom: none;"></div>
-											<div class="cell" style="width: 15%; border-bottom: none;"></div>
-											<div class="cell" style="width: 8%; border-bottom: none;"></div>
-											<div class="cell" style="width: 8%; border-bottom: none;"></div>
-											<div class="cell" style="width: 5%; border-bottom: none;"></div>
-											<div class="cell" style="width: 5%; border-bottom: none;"></div>
-                                            <div class="cell" style="width: 5%; border-bottom: none;"></div>
-											<div class="cell" style="width: 11%; border-bottom: none;"></div>
-											<div class="cell" style="width: 11%; border-bottom: none;"></div>
+							<div style="overflow-x: scroll;">
+								<div style="width: 840px; height: 100%;overflow-x: auto;overflow-y: hidden;">
+									<div class="table data" style="height: 20px;">
+										<div class="table-header" id="linksTableSortHeader">
+											<div class="cell clickable selected" style="width: 16%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
+											<div class="cell clickable" style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></div> <!--hidden column for last update (cannot be first otherwise the left round corner would not work -->
+											<div class="cell clickable" style="width: 16%" data-sort-property="toAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">To Airport</div>
+											<div class="cell clickable" style="width: 15%" data-sort-property="model" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Model</div>
+											<div class="cell clickable" style="width: 8%" align="right" data-sort-property="distance" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Distance</div>
+											<div class="cell clickable" style="width: 8%" align="right" data-sort-property="totalCapacity" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Capacity (Freq.)</div>
+											<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalPassengers" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Pax</div>
+											<div class="cell clickable" style="width: 5%" align="right" data-sort-property="totalLoadFactor" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))" title="Load Factor">LF</div>
+											<div class="cell clickable" style="width: 5%" align="right" data-sort-property="satisfaction" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))" title="Satisfaction Factor">SF</div>
+											<div class="cell clickable" style="width: 11%" align="right" data-sort-property="revenue" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Revenue</div>
+											<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 										</div>
 									</div>
-									<div style="height: 100px; width: 100%; min-width: 600px; display:none;" class="noLinkTips">
-										<div style="height: 100%; width: 100%; display:flex; justify-content: center; align-items: center;">
-<!--											<div>-->
+									<div style="height: calc(100% - 40px); overflow-y:auto;">
+										<div class="table data" id="linksTable" style="max-height: 100%;">
+											<div class="table-header">
+												<div class="cell" style="width: 16%; border-bottom: none;"></div>
+												<div class="cell" style="width: 16%; border-bottom: none;"></div>
+												<div class="cell" style="width: 15%; border-bottom: none;"></div>
+												<div class="cell" style="width: 8%; border-bottom: none;"></div>
+												<div class="cell" style="width: 8%; border-bottom: none;"></div>
+												<div class="cell" style="width: 5%; border-bottom: none;"></div>
+												<div class="cell" style="width: 5%; border-bottom: none;"></div>
+												<div class="cell" style="width: 5%; border-bottom: none;"></div>
+												<div class="cell" style="width: 11%; border-bottom: none;"></div>
+												<div class="cell" style="width: 11%; border-bottom: none;"></div>
+											</div>
+										</div>
+										<div style="height: 100px; width: 100%; min-width: 600px; display:none;" class="noLinkTips">
+											<div style="height: 100%; width: 100%; display:flex; justify-content: center; align-items: center;">
 												<div class="tooltip clickable">
 													<span style="vertical-align:middle">No flights yet</span>
 													<img src='@routes.Assets.versioned("images/icons/information.png")' style="vertical-align:middle">
@@ -1027,11 +1021,10 @@
 														<img data-src='@routes.Assets.versioned("images/tutorial/plan-link-1.gif")' class="lazyload" alt="">
 													</span>
 												</div>
-<!--											</div>-->
+											</div>
 										</div>
 									</div>
 								</div>
-
 							</div>
 						</div>
 					</div>
@@ -1041,10 +1034,10 @@
 
 				<div id="airportCanvas" class="canvas" style="display: none; min-width: 500px;">
 					<!-- left panel -->
-					<div style="max-width: 100%" class="verticalGroup">
+					<div style="max-width: 100%" class="vertical-group">
 						<div style="width: 100%; display: flex; flex-flow: row; flex-wrap: wrap; gap: 8px;">
-							<div style="flex-basis : 28%; flex-grow: 1; box-sizing:border-box;">
-								<div class="section" style="box-sizing:border-box; margin-left: 0; margin-right: 0; margin-top: 0;">
+							<div class="vertical-group" style="flex-basis : 28%; flex-grow: 1; box-sizing:border-box;">
+								<div class="section">
 									<h4>Airport Rating</h4>
 									<div class="table" style="width: 100%">
 										<div class="table-row">
@@ -1077,19 +1070,19 @@
 											<div class="value" id="airportDetailsBaseType" style="width: 40% !important"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Base Scale:</h5></div>
+											<div class="label">Base Scale:</div>
 											<div class="value" id="airportDetailsBaseScale"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Base Upkeep:</h5></div>
+											<div class="label">Base Upkeep:</div>
 											<div class="value" id="airportDetailsBaseUpkeep"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Country Delegates Required:</h5></div>
+											<div class="label">Country Delegates Required:</div>
 											<div class="value" id="airportDetailsBaseDelegatesRequired"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Office Staff: (req/cap)</h5></div>
+											<div class="label">Office Staff: (req/cap)</div>
 											<div class="value" style="display: flex; align-items: center;">
 												<span id="airportDetailsStaff"></span>
 
@@ -1118,22 +1111,22 @@
 										</div>
 
 										<div class="table-row">
-											<div class="label"><h5>Build/Upgrade Cost:</h5></div>
+											<div class="label">Build/Upgrade Cost:</div>
 											<div class="value" id="airportDetailsBaseUpgradeCost"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Base Upkeep after upgrade:</h5></div>
+											<div class="label">Base Upkeep after upgrade:</div>
 											<div class="value" id="airportDetailsBaseUpgradeUpkeep"></div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Specialization:</h5></div>
+											<div class="label">Specialization:</div>
 											<div class="value">
 												<span class="baseSpecializations"></span>
 												<img src='@routes.Assets.versioned("images/icons/gear.png")' class='specialization button' style="vertical-align: middle; margin-left: 20px;" onclick="showSpecializationModal()"/>
 											</div>
 										</div>
 										<div class="table-row">
-											<div class="label"><h5>Facilities:</h5></div>
+											<div class="label">Facilities:</div>
 											<div class="value" id="airportDetailsFacilities"></div>
 										</div>
 									</div>
@@ -1144,7 +1137,7 @@
 									<button type="button" class="button ml-0" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs. All assets of this Airport will be sold.", deleteBase)'>Remove</button>
 								</div>
 							</div>
-							<div class="section tight loyalistDetails" style="flex-basis : 15%; flex-grow: 1; box-sizing:border-box; margin: 0px; ">
+							<div class="section loyalistDetails" style="flex-basis : 15%; flex-grow: 1; box-sizing:border-box; margin: 0px; ">
 								<h4>
 									Loyalist Trend
 									<span class="tooltip">
@@ -1179,7 +1172,7 @@
 						</div>
 						<div id="airportDetails" class="section mb-0" style="width: 100%; display: flex; flex: 1 1 50%; flex-wrap: wrap;">
 							<h4 style="width:100%;"><span id="airportDetailsName">Airport Details</span> | <i class="airportCityName"></i>, <i class="airportCountryName"></i></h4>
-							<div class="table verticalGroup">
+							<div class="table">
 								<div class="table-row">
 									<div class="label" style="width:50%;">Airport scale:</div>
 									<div class="value" style="width:50%;">
@@ -1252,10 +1245,10 @@
 								<div class="table-row runwayTable table data" style="width: 95%;">
 								</div>
 							</div>
-							<div class="table verticalGroup">
+							<div class="table">
 								<div class="table-row">
 									<div class="label">
-										<h5>
+										<div>
 											<span>Loyalty to your airline:</span>
 											<div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
@@ -1273,7 +1266,7 @@
 													</ul>
 												</span>
 											</div>
-										</h5>
+										</div>
 									</div>
 									<div class="value">
 										<span style="display: flex; align-items: center;">
@@ -1284,45 +1277,45 @@
 									</div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Your Relationship:</h5></div>
+									<div class="label">Your Relationship:</div>
 									<div class="value countryRelationship" style="display: flex; align-items: center;">
 										<span class="total"></span>
 										<img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon titleCue" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'), function(){ showAirportDetails(activeAirportId) })" style="vertical-align: middle;">
 									</div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Your Title:</h5></div>
+									<div class="label">Your Title:</div>
 									<div class="value countryTitle" style="display: flex; align-items: center;"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle titleCue"></span></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Weekly Passengers:</h5></div>
+									<div class="label">Weekly Passengers:</div>
 									<div class="value" id="airportDetailsPassengerCount"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Total Flight Routes:</h5></div>
+									<div class="label">Total Flight Routes:</div>
 									<div class="value" id="airportDetailsLinkCount"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Weekly Flight Movements:</h5></div>
+									<div class="label">Weekly Flight Movements:</div>
 									<div class="value" id="airportDetailsFlightFrequency"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Nearby Airports:</h5></div>
+									<div class="label">Nearby Airports:</div>
 									<div class="value">
 										<span id="airportDetailsNearbyAirportCount"></span>
 										<img src='@routes.Assets.versioned("images/icons/shuttle.png")' title='Connections' class="clickable" onclick="showGenericTransitModal()" style="vertical-align: middle;">
 									</div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Connected Airports:</h5></div>
+									<div class="label">Connected Airports:</div>
 									<div class="value" id="airportDetailsConnectedAirportCount"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Connected Countries:</h5></div>
+									<div class="label">Connected Countries:</div>
 									<div class="value" id="airportDetailsConnectedCountryCount"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Served By Airlines:</h5></div>
+									<div class="label">Served By Airlines:</div>
 									<div class="value" id="airportDetailsAirlineCount"></div>
 								</div>
 							</div>
@@ -1484,61 +1477,61 @@
 					<div class="sidePanel section">
 						<div id="countryDetails" class="table" style="width: 100%;">
 							<div class="table-row">
-								<div class="label"><h5>Country:</h5></div>
+								<div class="label">Country:</div>
 								<div class="value" id="countryDetailsName"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Income Level:</h5></div>
+								<div class="label">Income Level:</div>
 								<div class="value" id="countryDetailsIncomeLevel"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Market Openness:</h5></div>
+								<div class="label">Market Openness:</div>
 								<div class="value" id="countryDetailsOpenness" style="display: flex; align-items: center;"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Relationship with your airline:</h5></div>
+								<div class="label">Relationship with your airline:</div>
 								<div class="value relationship" style="display: flex; align-items: center;"><span class="total"></span><img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship' class="clickable detailsIcon" onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'), showCountryView)"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Your airline title with this country:</h5></div>
+								<div class="label">Your airline title with this country:</div>
 								<div class="value"><img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>&nbsp;<span class="airlineTitle"></span></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Large Airports:</h5></div>
+								<div class="label">Large Airports:</div>
 								<div class="value" id="countryDetailsLargeAirportCount"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Medium Airports:</h5></div>
+								<div class="label">Medium Airports:</div>
 								<div class="value" id="countryDetailsMediumAirportCount"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Small Airports:</h5></div>
+								<div class="label">Small Airports:</div>
 								<div class="value" id="countryDetailsSmallAirportCount"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Airline Headquarters:</h5></div>
+								<div class="label">Airline Headquarters:</div>
 								<div class="value" id="countryDetailsAirlineHeadquarters"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Airline Bases:</h5></div>
+								<div class="label">Airline Bases:</div>
 								<div class="value" id="countryDetailsAirlineBases"></div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>National Airline:</h5></div>
+								<div class="label">National Airline:</div>
 								<div class="value" style="padding-bottom : 10px;">
 									<div class="table data nationalAirlines" style="width : 100%">
 									</div>
 								</div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Partnered Airline:</h5></div>
+								<div class="label">Partnered Airline:</div>
 								<div class="value" style="padding-bottom : 10px;">
 									<div class="table data partneredAirlines" style="width : 100%">
 									</div>
 								</div>
 							</div>
 							<div class="table-row">
-								<div class="label"><h5>Top Airline:</h5></div>
+								<div class="label">Top Airline:</div>
 								<div class="value" style="padding-bottom : 10px;">
 									<div class="table data countryDetailsChampion" style="width : 100%">
 									</div>
@@ -1660,7 +1653,7 @@
 					</div>
 	<!-- 				end left panel				  					 -->
 					<div class="sidePanel airplaneCanvasRightGroup">
-						<div id="airplaneModelDetail" style="width: 100%; float: left; display: none;">
+						<div id="airplaneModelDetail" style="gap: 8px; display: flex; flex-direction: column">
 							<div class="section">
 								<div class="modelIllustration pb-4" style="max-width: 500px;position: relative;">
 									<img src='#' style="width: 100%;">
@@ -1673,59 +1666,59 @@
 										<div class="value"><span class="modelName"></span><img class="favorite clickable-no-highlight" onclick="promptSetFavorite()"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Family:</h5></div>
+										<div class="label">Family:</div>
 										<div class="value modelFamily"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Max Capacity:</h5></div>
+										<div class="label">Max Capacity:</div>
 										<div class="value" id="capacity"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Quality:</h5></div>
+										<div class="label">Quality:</div>
 										<div class="value" id="airplaneTypeQuality"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Category:</h5></div>
+										<div class="label">Category:</div>
 										<div class="value" id="airplaneType"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Turnaround Time:</h5></div>
+										<div class="label">Turnaround Time:</div>
 										<div class="value"><span class="turnaroundTime"></span>&nbsp;min</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Runway Required:</h5></div>
+										<div class="label">Runway Required:</div>
 										<div class="value"><span class="runwayRequirement"></span>&nbsp;m</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Range:</h5></div>
+										<div class="label">Range:</div>
 										<div class="value" id="range"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Fuel Burn:</h5></div>
+										<div class="label">Fuel Burn:</div>
 										<div class="value" id="fuelBurn"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Speed:</h5></div>
+										<div class="label">Speed:</div>
 										<div class="value" id="speed"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Lifespan:</h5></div>
+										<div class="label">Lifespan:</div>
 										<div class="value" id="lifespan"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Manufacturer:</h5></div>
+										<div class="label">Manufacturer:</div>
 										<div class="value manufacturer"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Purchase Price:</h5></div>
+										<div class="label">Purchase Price:</div>
 										<div class="value price"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Delivery Time:</h5></div>
+										<div class="label">Delivery Time:</div>
 										<div class="value delivery"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Total in Circulation:</h5></div>
+										<div class="label">Total in Circulation:</div>
 										<div class="value total"></div>
 									</div>
 									<input type="hidden" class="selectedModel"/>
@@ -1779,27 +1772,31 @@
 	<!-- 			    end right panel -->
 				</div>
 	<!--   			end airplane canvas -->
-				<div id="officeCanvas" class="canvas" style="height: 100%; display: none; min-width: 400px;">
-					<div style="box-sizing: border-box;" class="verticalGroup officeCanvasLeftGroup">
+				<div id="officeCanvas" class="canvas" style="display: none; min-width: 400px;">
+					<div style="box-sizing: border-box;display: flex;gap: 8px;flex-wrap: wrap;" class="officeCanvasLeftGroup">
 
-						<div class="section" style="">
-							<h2 class="airlineName pb-2">Airline Name</h2>
-							<div class="flex-container-width-quarter py-2">
-
-								<div class="threshold-section">
-									<h3 class="text-center leading-tight pb-1">Reputation</h3>
-									<p class="text-center leading-tight"><i class="reputationLevel">Level 1</i></p>
-									<p class="text-center leading-tight pb-2 reputationText">Baby Airline</p>
-									<div class="threshold-bar">
-										<p class="text-center font-mono reputationValueCurrent">0</p>
-										<div id="reputationBar" class="threshold-bar-bg"></div>
-									</div>
-									<p class="small max-w-32 mx-auto flex-container-width-half"><span class="font-mono reputationValuePrev text-left">0</span><span class="font-mono reputationValueNext">10</span></p>
-									<p class="text-right small max-w-32 mx-auto">trending to: <span class="font-mono reputationTrend">10</span></p>
-									<p class="pt-4 center">Reputation Breakdown</p>
+						<div class="section" style="min-width:240px;">
+							<h2 class="airlineName text-center text-underline">Airline Name</h2>
+							<div class="reputationStars pb-4 text-center"></div>
+							<div class="threshold-section">
+<!--								<h3 class="text-center leading-tight pb-1">Reputation</h3>-->
+								<p class="text-center leading-tight"><i class="reputationLevel">Level 1</i></p>
+								<p class="text-center leading-tight pb-2 reputationText">Baby Airline</p>
+								<div class="threshold-bar">
+									<p class="text-center font-mono reputationValueCurrent">0</p>
+									<div id="reputationBar" class="threshold-bar-bg"></div>
+								</div>
+								<p class="small max-w-32 mx-auto flex-container-width-half"><span class="font-mono reputationValuePrev text-left">0</span><span class="font-mono reputationValueNext">10</span></p>
+								<p class="text-right small max-w-32 mx-auto pb-4">trending to: <span class="font-mono reputationTrend">10</span></p>
+								<div class="section">
+									<p class="text-center">Reputation Breakdown</p>
 									<ul class="reputationDetails small"></ul>
 								</div>
+							</div>
+						</div>
 
+						<div class="section" style="flex:1">
+							<div class="flex-container-width-third py-2">
 								<div class="threshold-section">
 									<h4 class="text-center leading-tight">Stock Price</h4>
 									<p class="text-center leading-tight"><i class="stockLevel">Level 1</i></p>
@@ -1935,12 +1932,12 @@
 <!--									</div>-->
 						</div>
 
-						<div style="width : 100%;" class="section tight">
-                            <div class="controllers" style="width: 95%; margin-bottom: 5px;">
+						<div style="width: 100%; min-height: 1000px;" class="section tight">
+                            <div class="controllers" style="margin: 5px;">
                                 <div class="table" style="width: 30%; float: left;">
                                     <div class="table-header sheetOptions">
-                                        <div class="cell clickable selected" data-type="income" onclick="selectSheet($(this), $('#incomeSheet')); $('.controllers-period').show();">Income Sheet</div>
-										<div class="cell clickable" data-type="cashFlow" onclick="selectSheet($(this), $('#cashFlowSheet')); $('.controllers-period').show();">Cash Flow Sheet</div>
+                                        <div class="cell clickable selected" data-type="income" onclick="selectSheet($(this), $('#incomeSheet')); $('.controllers-period').show();">Income</div>
+										<div class="cell clickable" data-type="cashFlow" onclick="selectSheet($(this), $('#cashFlowSheet')); $('.controllers-period').show();">Cash Flow</div>
 										<div class="cell clickable" data-type="airlineStats" onclick="selectSheet($(this), $('#airlineStatsSheet')); $('.controllers-period').hide();">Passenger Stats</div>
                                     </div>
                                 </div>
@@ -1962,8 +1959,8 @@
 							<div style="width : 100%;" id="incomeSheet" class="sheet">
 								<div id="totalProfitChart" style="width: 100%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
-								<div style="height: 100%; float: left; padding-right: 10px; box-sizing: border-box;" class="verticalGroup">
-									<div class="table data section" style="width: 100%;">
+								<div style="height: 100%; float: left; padding-right: 10px; box-sizing: border-box;" class="vertical-group">
+									<div class="table data">
 										<h4>Total Income</h4>
 										<div class="table-row">
 											<div class="cell">Total Revenue:</div>
@@ -1978,7 +1975,7 @@
 											<div id="totalProfit" class="cell" style="text-align: right;"></div>
 										</div>
 									</div>
-									<div class="table data section" style="width: 100%;">
+									<div class="table data">
 										<h4>Flights Income</h4>
 										<div class="table-row">
 											<div class="cell">Ticket Revenue:</div>
@@ -2035,8 +2032,8 @@
 									</div>
 								</div>
 			<!-- 					right column -->
-								<div style="height: 100%; float: right; padding-right: 20px; box-sizing: border-box;" class="verticalGroup">
-									<div class="table data section" style="width: 100%;">
+								<div style="height: 100%; float: left; padding-right: 20px; box-sizing: border-box;" class="vertical-group">
+									<div class="table data">
 										<h4>Transaction Income</h4>
 										<div class="table-row">
 											<div class="cell">
@@ -2067,7 +2064,7 @@
 										</div>
 									</div>
 
-									<div class="table data section" style="width: 100%;">
+									<div class="table data">
 										<h4>Other Income</h4>
 										<div class="table-row">
 											<div class="cell">Loan Interest:</div>
@@ -2142,9 +2139,9 @@
 							<div style="width : 100%; display: none;" id="cashFlowSheet" class="sheet">
 								<div id="totalCashFlowChart" style="width: 100%; height: 300px; margin: 0 auto;"></div>
 			<!-- 					left column -->
-								<div style="height: 100%; width: 100%;">
-									<div style="float: left; padding-right: 10px; box-sizing: border-box;" class="verticalGroup">
-										<div class="table data section" style="width: 100%;">
+								<div style="width: 100%;">
+									<div style="float: left; padding-right: 10px; box-sizing: border-box;" class="vertical-group">
+										<div class="table data">
                                             <h4>Total Cash Flow</h4>
 											<div class="table-row">
 												<div class="cell">Total Cash Flow:</div>
@@ -2152,8 +2149,8 @@
 											</div>
 										</div>
 									</div>
-									<div style="float: left; padding-right: 20px; box-sizing: border-box;" class="verticalGroup">
-										<div class="table data section" style="width: 100%;">
+									<div style="float: left; padding-right: 20px; box-sizing: border-box;" class="vertical-group">
+										<div class="table data">
                                             <h4>Cash Flow Details</h4>
 											<div class="table-row">
 												<div class="cell">Operation Cash Flow:</div>
@@ -2246,7 +2243,7 @@
 
 					</div>
 <!-- end left section  -->
-					<div class="verticalGroup officeCanvasRightGroup">
+					<div class="vertical-group officeCanvasRightGroup">
                         <div class="section">
                             <h4>Headquarters</h4>
 							<div style="position: relative; height: 125px; width: 150px; margin: auto;box-sizing: border-box;" class="headquartersMap"></div>
@@ -2308,7 +2305,7 @@
 							<textarea rows="3" cols="40" maxlength="200" class="slogan" style="width:95%; height: 50px;" placeholder="Your airline slogan..."></textarea>
 						</div>
 
-                        <div class="section" style="width: 95%;">
+                        <div class="section" >
 							<div style="display: flex; align-items: base-line;">
 								<span><h4>Campaigns</h4></span>
 								<span><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' onclick="showCampaignModal()" title="View/Edit Campaigns"/></span>
@@ -2320,7 +2317,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="section" style="width: 95%;">
+						<div class="section" >
 							<h4>Championed Countries</h4>
 							<div class="table data" style="width: 100%;">
 								<div class="table-header">
@@ -2338,7 +2335,7 @@
 							</div>
 						</div>
 
-						<div class="section" style="width: 95%;">
+						<div class="section" >
 							<h4>Championed Airports</h4>
 							<div class="table data" style="width: 100%;">
 								<div class="table-header">
@@ -2360,45 +2357,46 @@
 							</div>
 						</div>
 
-						<div class="section" style="width: 95%;">
+						<div style="width: 600px;" id="popover-reset" popover>
+							<div class="table data" style="width: 100%;">
+								<div class="table-row">
+									<div class="label">Sold Airplanes</div>
+									<div class="value airplanes"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Sold Bases</div>
+									<div class="value bases"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Sold Assets</div>
+									<div class="value assets"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Loans Repayment</div>
+									<div class="value loans"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Oil Contracts Termination</div>
+									<div class="value oilContracts"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">Cash</div>
+									<div class="value cash"></div>
+								</div>
+								<div class="table-row">
+									<div class="label">New Balance after reset</div>
+									<div class="value overall"></div>
+								</div>
+							</div>
+						</div>
+
+						<div class="section" >
                             <h4>Rebuild airline<img src='@routes.Assets.versioned("images/icons/construction.png")'/></h4>
                             <ul>
-                                <li class="label dot">	Balance reset to&nbsp;$<span id="resetBalance"></span>
-                                    <div class="tooltip resetTooltip">
+                                <li class="label dot">Balance reset to&nbsp;$<span id="resetBalance"></span>
+                                    <button popovertarget="popover-reset" onmouseover="document.getElementById('popover-reset').showPopover();">
                                         <img src='@routes.Assets.versioned("images/icons/information.png")'>
-                                        <span class="tooltiptext" style="width: 600px;">
-                                        <div class="table data" style="width: 100%;">
-                                            <div class="table-row">
-                                                <div class="label">Sold Airplanes</div>
-                                                <div class="value airplanes"></div>
-                                            </div>
-                                            <div class="table-row">
-                                                <div class="label">Sold Bases</div>
-                                                <div class="value bases"></div>
-                                            </div>
-											<div class="table-row">
-                                                <div class="label">Sold Assets</div>
-                                                <div class="value assets"></div>
-                                            </div>
-                                            <div class="table-row">
-                                                <div class="label">Loans Repayment</div>
-                                                <div class="value loans"></div>
-                                            </div>
-                                            <div class="table-row">
-                                                <div class="label">Oil Contracts Termination</div>
-                                                <div class="value oilContracts"></div>
-                                            </div>
-                                            <div class="table-row">
-                                                <div class="label">Cash</div>
-                                                <div class="value cash"></div>
-                                            </div>
-                                            <div class="table-row">
-                                                <div class="label">New Balance after reset</div>
-                                                <div class="value overall"></div>
-                                            </div>
-                                        </div>
-                                    </span>
-                                    </div>
+                                    </button>
                                 </li>
                                 <li class="label dot">All of the airplanes will be removed</li>
                                 <li class="label dot">Headquarters, bases and facilities will be removed</li>
@@ -2422,19 +2420,19 @@
 	<!--   			end office canvas -->
 
 				<div id="bankCanvas" class="canvas" style="height: 100%; display: none; min-width: 600px;">
-					<div class="verticalGroup bankCanvasLeftGroup">
+					<div class="vertical-group bankCanvasLeftGroup">
 						<div class="section">
 							<h4>Interest Rate History</h4>
 							<div id="loanInterestRateChart"></div>
 						</div>
 					</div>
-					<div class="verticalGroup bankCanvasRightGroup">
+					<div class="vertical-group bankCanvasRightGroup">
 					<!--  new loan -->
 						<div class="section">
 							<h4>New Loan</h4>
 							<div class="table" style="width: 100%; margin-bottom: 15px; min-width: 400px;">
 								<div class="table-row">
-									<div class="label"><h5>Available Loan:</h5></div>
+									<div class="label">Available Loan:</div>
 									<div class="value">
 										<span  id="newLoanMaxAmount"></span>
 										<span id="newLoanRejectionSpan">
@@ -2444,13 +2442,13 @@
 									</div>
 								</div>
 								<div class="table-row" id="newLoanAmountRow">
-									<div class="label"><h5>Borrow Amount:</h5></div>
+									<div class="label">Borrow Amount:</div>
 									<div class="value"><input type="text" id="newLoanAmount" oninput="loadLoanOptions($(this).val())"/></div>
 								</div>
 							</div>
 							<div id="newLoanOptions">
 								<h4>Loan Options</h4>
-								<div class="table data" id="newLoanOptionsTable" style="height: 100%; width: 100%;">
+								<div class="table data" id="newLoanOptionsTable">
 									<div class="table-header">
 										<div class="cell" style="width: 20%" align="right">Principal Amount</div>
 										<div class="cell" style="width: 10%" align="right">Interest Rate</div>
@@ -2464,7 +2462,7 @@
 						</div>
 						<div class="section">
 							<h4>Outstanding Loans</h4>
-							<div class="table data" id="outstandingLoansTable" style="height: 100%; width: 100%; min-width: 400px;">
+							<div class="table data" id="outstandingLoansTable">
 								<div class="table-header">
 									<div class="cell" style="width: 15%" align="right">Principal Amount</div>
 									<div class="cell" style="width: 12%" align="right">Interest</div>
@@ -2483,13 +2481,13 @@
 	<!--   			end bank canvas -->
 
 				<div id="oilCanvas" class="canvas" style="height: 100%; display: none;">
-					<div class="verticalGroup oilCanvasLeftGroup">
+					<div class="vertical-group oilCanvasLeftGroup">
 						<div class="section">
 							<h4>Oil Price History</h4>
 							<div id="oilPriceChart"></div>
 						</div>
 					</div>
-					<div class="verticalGroup oilCanvasRightGroup">
+					<div class="vertical-group oilCanvasRightGroup">
 					<!--  new loan -->
 						<div class="section">
 							<h4>Fuel Consumption History
@@ -2500,7 +2498,7 @@
 									</span>
 								</span>
 							</h4>
-							<div class="table data" id="oilConsumptionHistoryTable" style="height: 100%; width: 100%; margin-bottom: 15px">
+							<div class="table data" id="oilConsumptionHistoryTable">
 									<div class="table-header">
 										<div class="cell" style="width: 20%" align="right">Price per Barrel</div>
 										<div class="cell" style="width: 30%" align="right">Volume</div>
@@ -2521,14 +2519,14 @@
 							</h4>
 							<div class="table" style="width: 100%; margin-bottom: 15px">
 								<div class="table-row">
-									<div class="label"><h5>Current Policy:</h5></div>
+									<div class="label">Current Policy:</div>
 									<div class="value">
 										<div id="currentInventoryPolicyDiv">
 											<span id="currentInventoryPolicy"></span>
 											<img id="editOilInventoryPolicyButton" src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editOilInventoryPolicy()"/>
 										</div>
 										<div id="editInventoryPolicyDiv" style="display:none;">
-											<div class="table data" id="editInventoryPolicyTable" style="height: 100%; width: 100%; margin-bottom: 15px">
+											<div class="table data" id="editInventoryPolicyTable">
 												<div class="table-header">
 														<div class="cell" style="width: 70%" >Policy</div>
 														<div class="cell" style="width: 20%" align="right">Inventory Price</div>
@@ -2540,7 +2538,7 @@
 									</div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Current Inventory Price:</h5></div>
+									<div class="label">Current Inventory Price:</div>
 									<div class="value" id="currentInventoryPrice"></div>
 								</div>
 							</div>
@@ -2558,11 +2556,11 @@
 							</h4>
 							<div class="table" style="width: 100%; margin-bottom: 15px">
 								<div class="table-row">
-									<div class="label"><h5>Contract Per Barrel Price:</h5></div>
+									<div class="label">Contract Per Barrel Price:</div>
 									<div class="value" id="oilContractPrice"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Contract Volume:</h5></div>
+									<div class="label">Contract Volume:</div>
 									<div class="value">
 										<input type="text" id="oilContractVolume" oninput="loadOilContractConsideration($('#oilContractVolume').val(), $('#oilContractDuration').val())"/> barrels
 										<img class="button" src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' title="reset value" onclick="setSuggestedOilContractVolume()">
@@ -2571,7 +2569,7 @@
 
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Contract Duration:</h5></div>
+									<div class="label">Contract Duration:</div>
 									<div class="value">
 										<input type="text" id="oilContractDuration" oninput="loadOilContractConsideration($('#oilContractVolume').val(), $('#oilContractDuration').val())"/> weeks
 										<img class="button" src='@routes.Assets.versioned("images/icons/arrow-circle-135.png")' title="reset value" onclick="setSuggestedOilContractDuration()">
@@ -2579,11 +2577,11 @@
 									</div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Contract Initial Cost:</h5></div>
+									<div class="label">Contract Initial Cost:</div>
 									<div class="value" id="oilContractInitialCost"></div>
 								</div>
 								<div class="table-row">
-									<div class="label"><h5>Contract Termination Cost (current):</h5></div>
+									<div class="label">Contract Termination Cost (current):</div>
 									<div class="value" id="oilContractTerminationCost"></div>
 								</div>
 							</div>
@@ -2595,14 +2593,14 @@
 						</div>
 						<div class="section">
 							<h4>Active Oil Contracts</h4>
-							<div class="table data" id="existingContractsTable" style="height: 100%; width: 100%">
+							<div class="table data" id="existingContractsTable">
 								<div class="table-header">
 									<div class="cell" style="width: 15%" align="right">Contract Price</div>
 									<div class="cell" style="width: 20%" align="right">Volume</div>
-									<div class="cell" style="width: 20%" align="right">Initial Cost</div>
+									<div class="cell" style="width: 18%" align="right">Initial Cost</div>
 									<div class="cell" style="width: 20%" align="right">Termination Penalty</div>
 									<div class="cell" style="width: 15%" align="right">Remaining Weeks</div>
-									<div class="cell" style="width: 10%">&nbsp;</div>
+									<div class="cell" style="width: 2%">&nbsp;</div>
 								</div>
 							</div>
 						</div>
@@ -2815,23 +2813,23 @@
 
 								<div class="table" style="width: 100%;">
 									<div class="table-row">
-										<div class="label"><h5>Airline Code:</h5></div>
+										<div class="label">Airline Code:</div>
 										<div class="value airlineCode"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Airline Color:</h5></div>
+										<div class="label">Airline Color:</div>
 										<div class="value"><span class="airlineColorDot"></span></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Grade:</h5></div>
+										<div class="label">Grade:</div>
 										<div class="value"><span class="airlineGrade"></span></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Alliance:</h5></div>
+										<div class="label">Alliance:</div>
 										<div class="value alliance"></div>
 									</div>
 									<div class="table-row formerNameRow">
-										<div class="label"><h5>Former Names:</h5></div>
+										<div class="label">Former Names:</div>
 										<div class="value">
 											<div class="table data formerNames" style="width: 100%; max-height: 50px; overflow: auto;">
 											</div>
@@ -2984,9 +2982,9 @@
 					<div style="clear: both;"></div>
 				</div>
 	<!--   			end rival canvas -->
-				<div id="allianceCanvas" class="canvas" style="height: 100%; display: none;">
-					<div class="verticalGroup allianceCanvasLeftGroup" style="float: left; height: 100%; display: flex; flex-direction: column;">
-						<div id="currentAirlineMemberDetails" style="width : 95%;" class="section">
+				<div id="allianceCanvas" class="canvas" style="display: none;">
+					<div class="vertical-group allianceCanvasLeftGroup">
+						<div id="currentAirlineMemberDetails" class="section">
 							<div style="width: 50%; float: left;">
 								<div style="margin-bottom: 15px;">
 									<h4>Your Airline Alliance</h4>
@@ -3106,8 +3104,7 @@
 							<div style="clear: both;"></div>
 						</div>
 
-
-						<div style="width : 95%; flex: 1; display: flex; flex-direction: column; min-height: 200px" class="section">
+						<div style="min-height: 200px" class="section">
 							<div id = "allianceTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 								<div class="table-header">
 									<div class="cell clickable" style="width: 30%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAllianceTableSortOrder($(this))">Alliance Name</div>
@@ -3128,8 +3125,8 @@
 							</div>
 						</div>
 					</div>
-					<div id="allianceDetails" class="verticalGroup allianceCanvasRightGroup" style="float: left;">
-						<div class="section" style="width: 95%;">
+					<div id="allianceDetails" class="vertical-group allianceCanvasRightGroup">
+						<div class="section">
 							<div>
 								<h4>Alliance Details</h4>
 								<div class="table" style="width: 100%;">
@@ -3297,7 +3294,7 @@
 
 
 				<div id="eventCanvas" class="canvas" style="height: 100%; display: none;">
-					<div class="verticalGroup firstColumn" style="min-height: 200px; float:left;">
+					<div class="vertical-group firstColumn" style="min-height: 200px; float:left;">
 						<div style="width : 90%" class="section">
 							<h4>Olympics</h4>
 							<div id = "olympicsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
@@ -3320,7 +3317,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="verticalGroup secondColumn" style="float:left;">
+					<div class="vertical-group secondColumn" style="float:left;">
 						<div id="olympicsDetails" style="width : 90%; display: none;" class="section">
 							<h4><img class="year1 yearStatus">Year 1 - Host City Voting</h4>
 							<div class="table data" id="olympicsCandidatesTable" style="width: 100%; max-height: 100%">
@@ -3557,11 +3554,11 @@
 									  <div style="display:inline-block; align-self: center; margin-top:5px; font-weight: bold;" class="fromAirportText"></div>
 									  <div class="table" style="width: 100%">
 										  <div class="table-row">
-											  <div class="label"><h5>Population</h5></div>
+											  <div class="label">Population</div>
 											  <div class="value population" style="text-align:right;  padding-right: 10px;"></div>
 										  </div>
 										  <div class="table-row">
-											  <div class="label"><h5>Income Level</h5></div>
+											  <div class="label">Income Level</div>
 											  <div class="value incomeLevel" style="text-align:right; padding-right: 10px; "></div>
 										  </div>
 									  </div>
@@ -3571,11 +3568,11 @@
 									  <div style="display:inline-block; align-self: center; margin-top:5px; font-weight: bold;" class="toAirportText"></div>
 									  <div class="table" style="width: 100%">
 										  <div class="table-row">
-											  <div class="label"><h5>Population</h5></div>
+											  <div class="label">Population</div>
 											  <div class="value from population" style="text-align:right; padding-right: 10px;"></div>
 										  </div>
 										  <div class="table-row">
-											  <div class="label"><h5>Income Level</h5></div>
+											  <div class="label">Income Level</div>
 											  <div class="value from incomeLevel" style="text-align:right; padding-right: 10px;"></div>
 										  </div>
 									  </div>
@@ -3769,19 +3766,19 @@
    				<div class="value" style="width: 40%" id="linkHistoryPopupFrom"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>To:</h5></div>
+   				<div class="label">To:</div>
    				<div class="value" id="linkHistoryPopupTo"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Your Passengers:</h5></div>
+   				<div class="label">Your Passengers:</div>
    				<div class="value" id="linkHistoryThisAirlinePassengers"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Alliance Passengers:</h5></div>
+   				<div class="label">Alliance Passengers:</div>
    				<div class="value" id="linkHistoryThisAlliancePassengers"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>Other Passengers:</h5></div>
+   				<div class="label">Other Passengers:</div>
    				<div class="value" id="linkHistoryOtherAirlinePassengers"></div>
    			</div>
 		</div>
@@ -3823,19 +3820,19 @@
     	<input type="hidden" id="airportLinkPopupId">
     	<div class="table" style="width: 100%">
    			<div class="table-row">
-   				<div class="label"><h5>From :</h5></div>
+   				<div class="label">From :</div>
    				<div class="value" id="linkPopupFrom"></div>
    			</div>
    			<div class="table-row">
-   				<div class="label"><h5>To:</h5></div>
+   				<div class="label">To:</div>
    				<div class="value" id="linkPopupTo"></div>
    			</div>
             <div class="table-row">
-                <div class="label"><h5>Capacity:</h5></div>
+                <div class="label">Capacity:</div>
                 <div class="value" id="linkPopupCapacity"></div>
             </div>
    			<div class="table-row">
-   				<div class="label"><h5>Airline:</h5></div>
+   				<div class="label">Airline:</div>
    				<div class="value" id="linkPopupAirline"></div>
    			</div>
 		</div>
@@ -3844,23 +3841,23 @@
 	  <div style="display: none; width: 100%;" id="allianceBasePopup" class="mapPopup">
 		  <div class="table" style="width: 100%">
 			  <div class="table-row">
-				  <div class="label"><h5>City :</h5></div>
+				  <div class="label">City :</div>
 				  <div class="value city" ></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="label"><h5>Airport Name:</h5></div>
+				  <div class="label">Airport Name:</div>
 				  <div class="value airportName"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="label"><h5>IATA:</h5></div>
+				  <div class="label">IATA:</div>
 				  <div class="value iata" ></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="label"><h5>Airline:</h5></div>
+				  <div class="label">Airline:</div>
 				  <div class="value airlineName" ></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="label"><h5>Scale:</h5></div>
+				  <div class="label">Scale:</div>
 				  <div class="value baseScale" ></div>
 			  </div>
 		  </div>
@@ -3987,27 +3984,27 @@
 			    				<div class="value facilityLevel" style="width: 50%"></div>
 			    			</div>
 							<div class="table-row">
-		    					<div class="label"><h5>Upkeep:</h5></div>
+		    					<div class="label">Upkeep:</div>
 		    					<div class="value facilityUpkeep"></div>
 		    				</div>
 		    				<div class="table-row">
-		    					<div class="label"><h5>Supplies:</h5></div>
+		    					<div class="label">Supplies:</div>
 		    					<div class="value facilityCost"></div>
 		    				</div>
 		    				<div class="table-row">
-		    					<div class="label"><h5>Income:</h5></div>
+		    					<div class="label">Income:</div>
 		    					<div class="value facilityIncome"></div>
 		    				</div>
 		    				<div class="table-row">
-			    				<div class="label"><h5>Profit:</h5></div>
+			    				<div class="label">Profit:</div>
 			    				<div class="value facilityProfit"></div>
 			    			</div>
 			    			<div class="table-row">
-			    				<div class="label"><h5>Upgrade Cost:</h5></div>
+			    				<div class="label">Upgrade Cost:</div>
 			    				<div class="value upgradeCost"></div>
 			    			</div>
 			    			<div class="table-row">
-			    				<div class="label"><h5>Upkeep after Upgrade:</h5></div>
+			    				<div class="label">Upkeep after Upgrade:</div>
 			    				<div class="value upgradeUpkeep"></div>
 			    			</div>
 						</div>
@@ -4795,23 +4792,23 @@
 
 			<div class="table" style="width: 100%;">
 				<div class="table-row">
-					<div class="label"><h5>Price:</h5></div>
+					<div class="label">Price:</div>
 					<div class="value price"></div>
 				</div>
 				<div class="table-row">
-					<div class="label"><h5>Condition:</h5></div>
+					<div class="label">Condition:</div>
 					<div class="value condition"></div>
 				</div>
 				<div class="table-row">
-					<div class="label"><h5>Delivery Time:</h5></div>
+					<div class="label">Delivery Time:</div>
 					<div class="value delivery"></div>
 				</div>
 				<div class="table-row quantity">
-					<div class="label"><h5>Quantity:</h5></div>
+					<div class="label">Quantity:</div>
 					<div><input type="text" class="input" size="3" maxlength="3"></div>
 				</div>
 				<div class="table-row totalPrice">
-					<div class="label"><h5>Total:</h5></div>
+					<div class="label">Total:</div>
 					<div class="value"></div>
 				</div>
 				<div class="table-row">
@@ -4913,7 +4910,7 @@
 						</div>
 					</div>
 <!--					<div class="table-row configuration-edit" style="display:none">-->
-<!--						<div class="label"><h5>Seat Configuration:</h5></div>-->
+<!--						<div class="label">Seat Configuration:div>-->
 <!--						<div class="value">edit here</div>-->
 <!--					</div>-->
 				</div>
@@ -4935,11 +4932,11 @@
 
 			  <div class="table" style="width: 100%;">
 				  <div class="table-row">
-					  <div class="label"><h5>Price Discount:</h5></div>
+					  <div class="label">Price Discount:</div>
 					  <div class="value priceDiscount"></div>
 				  </div>
 				  <div class="table-row">
-					  <div class="label"><h5>Construction Time Discount:</h5></div>
+					  <div class="label">Construction Time Discount:</div>
 					  <div class="value constructionTimeDiscount"></div>
 				  </div>
 			  </div>
@@ -5022,11 +5019,11 @@
 
 			  <div class="table" style="width: 100%;">
 				  <div class="table-row">
-					  <div class="label"><h5>Airline:</h5></div>
+					  <div class="label">Airline:</div>
 					  <div class="value airlineName"></div>
 				  </div>
 				  <div class="table-row">
-					  <div class="label"><h5>Status:</h5></div>
+					  <div class="label">Status:</div>
 					  <div class="value allianceMemberStatus"></div>
 				  </div>
 			  </div>
@@ -5183,14 +5180,14 @@
 
 			<div style="width: 100%;"> <!-- empty to take up the height otherwise popup would not scale properly -->
 				<div class="campaignDetails section" style="display: none;">
-					<div style="float: left;" class="left verticalGroup">
+					<div style="float: left;" class="left vertical-group">
 						<div class="campaignMap" style="width: 350px; height: 350px;">
 
 
 						</div>
 					</div>
 
-					<div style="float: right;" class="right verticalGroup">
+					<div style="float: right;" class="right vertical-group">
 						<div style="width: 100%; height: 100%">
 							<div class="section">
 								<h4>Delegates Pool<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
@@ -5201,7 +5198,7 @@
 								<h4>Campaign Details</h4>
 								<div class="table" style="width: 100%;">
 									<div class="table-row">
-										<div class="label"><h5>Radius:</h5></div>
+										<div class="label">Radius:</div>
 										<div class="value">
 											<div class="radiusControl" style="display: flex; align-items: center;">
 												<span style="width: 70%"><span class="radius"></span>km</span>
@@ -5211,23 +5208,23 @@
 										</div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Principal Airport:</h5></div>
+										<div class="label">Principal Airport:</div>
 										<div class="value principalAirport"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Population:</h5></div>
+										<div class="label">Population:</div>
 										<div class="value population"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Airport Coverage:</h5></div>
+										<div class="label">Airport Coverage:</div>
 										<div class="value airports"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Delegate Level:</h5></div>
+										<div class="label">Delegate Level:</div>
 										<div class="value delegateLevel"></div>
 									</div>
 									<div class="table-row">
-										<div class="label"><h5>Weekly Cost:</h5></div>
+										<div class="label">Weekly Cost:</div>
 										<div class="value cost"></div>
 									</div>
 								</div>
@@ -5401,31 +5398,31 @@
 				  </div>
 			  </div>
 			  <div class="table-row assetOwnerRow">
-				  <div class="label"><h5>Expense:</h5></div>
+				  <div class="label">Expense:</div>
 				  <div class="value assetExpense"></div>
 			  </div>
 			  <div class="table-row assetOwnerRow">
-				  <div class="label"><h5>Revenue:</h5></div>
+				  <div class="label">Revenue:</div>
 				  <div class="value assetRevenue"></div>
 			  </div>
 			  <div class="table-row assetOwnerRow">
-				  <div class="label"><h5>Profit:</h5></div>
+				  <div class="label">Profit:</div>
 				  <div class="value assetProfit"></div>
 			  </div>
 			  <div class="table-row assetOwnerRow">
-				  <div class="label"><h5>Performance Grade:</h5></div>
+				  <div class="label">Performance Grade:</div>
 				  <div class="value assetPerformance"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="label"><h5>Build/Upgrade Cost:</h5></div>
+				  <div class="label">Build/Upgrade Cost:</div>
 				  <div class="value cost"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="label"><h5>Build/Upgrade Duration:</h5></div>
+				  <div class="label">Build/Upgrade Duration:</div>
 				  <div class="value constructionDuration"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="label"><h5>Sell Value:</h5></div>
+				  <div class="label">Sell Value:</div>
 				  <div class="value sellValue"></div>
 			  </div>
 		  </div>
@@ -5621,6 +5618,10 @@
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>
 
+  <link rel="preconnect" href="https://use.typekit.net" crossorigin />
+  <link rel="preconnect" href="https://p.typekit.net" crossorigin />
+  <link rel="preload" href="https://p.typekit.net" crossorigin>
+  <link rel="stylesheet" href="https://use.typekit.net/plw0ulw.css">
   <script src='@routes.Assets.versioned("javascripts/main.js")'></script>
   <script defer src='@routes.Assets.versioned("javascripts/airport.js")'></script>
   <script src='@routes.Assets.versioned("javascripts/airport-asset.js")'></script>

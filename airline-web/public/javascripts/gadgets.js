@@ -239,7 +239,7 @@ function getCountryFlagUrl(countryCode) {
 }
 
 function getAirlineLogoImg(airlineId) {
-	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo' style='vertical-align:middle;'/>"
+	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo'/>"
 }
 
 

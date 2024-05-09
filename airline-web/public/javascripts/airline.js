@@ -65,7 +65,7 @@ function refreshTopBar(airline) {
 	//desktop
 	//$(getGradeStarsImgs(airline.gradeValue)).attr('title', "Reputation: " + airline.reputation).appendTo($(".reputationStars"))
 //	var reputationText = "Reputation: " + airline.reputation + " (" + airline.gradeDescription + ") Next Grade: " + airlineGradeLookup[airline.gradeValue]
-	var $starBar = $(getGradeStarsImgs(airline.gradeValue))
+	var $starBar = $(getGradeStarsImgs(airline.gradeLevel - 2))
 	$(".reputationStars").append($starBar)
 //	addTooltip($(".reputationStars"), reputationText, {'top' : 0, 'width' : '350px', 'white-space' : 'nowrap'})
 
@@ -73,18 +73,19 @@ function refreshTopBar(airline) {
 	refreshTopBarDelegates(airline)
 }
 
-function getGradeStarsImgs(gradeValue) {
-	var fullStars = Math.floor(gradeValue / 2)
-	var halfStar = gradeValue % 2
-	var html = ""
+function getGradeStarsImgs(value, width = 16) {
+    const adjusted = Math.max(value, 0)
+	const halfStar = adjusted % 2
+	const fullStars = Math.floor(adjusted / 2)
+	let html = ""
 	for (i = 0 ; i < fullStars; i ++) {
-		html += "<img src='assets/images/icons/star.png'/>"
+		html += `<img width='${width}' src='assets/images/icons/star-full.svg'/>`
 	}
 	if (halfStar) {
-		html += "<img src='assets/images/icons/star-half.png'/>"
+		html += `<img width='${width}' src='assets/images/icons/star-half.svg'/>`
 	}
 	for (i = 0 ; i < 5 - fullStars - halfStar; i ++) {
-		html += "<img src='assets/images/icons/star-empty.png'/>"
+		html += `<img width='${width}' src='assets/images/icons/star-empty.svg'/>`
 	}
 	return html
 }

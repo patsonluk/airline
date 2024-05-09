@@ -221,7 +221,11 @@ function updateProgress(stats, stockPrice){
         }
     }
 
+    var $starBar = $(getGradeStarsImgs(activeAirline.gradeLevel - 2, 20))
+
     $('.reputationValueCurrent').text(activeAirline.reputation)
+    $("#officeCanvas .reputationStars").html($starBar)
+
     $('.stockValueCurrent').text("$" + stockPrice.toFixed(2))
     $('.touristsValueCurrent').text(shortNumber(activeAirline.tourists.tourists))
     $('.elitesValueCurrent').text(shortNumber(activeAirline.elites.elites))
@@ -305,7 +309,7 @@ function updateAirlineDetails() {
 	    	$('#destinations').text(airline.destinations)
 	    	$('#fleetSize').text(airline.fleetSize)
 	    	$('#fleetAge').text(getYearMonthText(airline.fleetAge))
-	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
+//	    	$('#assets').text('$' + commaSeparateNumber(airline.assets))
 	    	$('#officeCanvas .linkCount').text(airline.linkCount)
 			$('#minimumRenewalBalance').text('$' + commaSeparateNumber(airline.minimumRenewalBalance))
 	    },
@@ -1207,14 +1211,14 @@ function updateResetAirlineInfo() {
 	    		$("#officeCanvas #resetBalance").text('-' + commaSeparateNumber(result.overall * -1)) //to avoid the () negative number which could be confusing
 	    	}
 	    	
-	    	$('.resetTooltip .airplanes').text(commaSeparateNumber(result.airplanes))
-	    	$('.resetTooltip .bases').text(commaSeparateNumber(result.bases))
-	    	$('.resetTooltip .assets').text(commaSeparateNumber(result.assets))
-	    	$('.resetTooltip .loans').text(commaSeparateNumber(result.loans))
-	    	$('.resetTooltip .oilContracts').text(commaSeparateNumber(result.oilContracts))
-	    	$('.resetTooltip .cash').text(commaSeparateNumber(result.existingBalance))
-	    	$('.resetTooltip .overall').text(commaSeparateNumber(result.overall))
-	    	
+	    	$('#popover-reset .airplanes').text(commaSeparateNumber(result.airplanes))
+	    	$('#popover-reset .bases').text(commaSeparateNumber(result.bases))
+	    	$('#popover-reset .assets').text(commaSeparateNumber(result.assets))
+	    	$('#popover-reset .loans').text(commaSeparateNumber(result.loans))
+	    	$('#popover-reset .oilContracts').text(commaSeparateNumber(result.oilContracts))
+	    	$('#popover-reset .cash').text(commaSeparateNumber(result.existingBalance))
+	    	$('#popover-reset .overall').text(commaSeparateNumber(result.overall))
+
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

@@ -11,20 +11,59 @@ and (max-device-width : 640px) {
     }
 /*and (orientation : portrait or max-device-width : 1024px) {*/
     .mainPanel, #map {
-        height: 50%;
+        height: calc(50vh - 40px);
         width: 100%;
     }
-    .mainPanel>div.section, .sidePanel>div.section, .bankCanvasRightGroup>div.section {
-        width: auto !important;
+    .mainPanel {
+        overflow: scroll !important;
+    }
+    .section {
+        width: unset !important;
     }
 
-    .verticalGroup, .sidePanel, #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, #eventCanvas .verticalGroup, .campaignDetails .verticalGroup,
+    div.section, div.selectedSection, .modal-content {
+        padding: 8px;
+    }
+
+    .verticalGroup, .sidePanel, .officeCanvasLeftGroup, .officeCanvasRightGroup, #airportDetails>.verticalGroup, .officeCanvasLeftGroup .verticalGroup, #rankingCanvas .verticalGroup, #eventCanvas .verticalGroup, .campaignDetails .verticalGroup,
     #allianceCanvas .verticalGroup {
-        width: 100%
+        width: unset%
+    }
+
+    #canvas {
+        height: 100%;
+        margin: 0;
     }
 
     #mainContainer {
         height: calc(100vh - 40px);
+    }
+
+    .sidePanel {
+        width: calc(100% - 8px);
+        position: absolute;
+        top: calc(50vh - 39px);
+        left: 4px;
+        overflow-x: hidden;
+    }
+
+    #linkCharts {
+        width: 100%;
+    }
+
+    .canvas active {
+        flex-direction: column;
+    }
+
+    .canvas.active > div {
+    }
+
+    .canvas > .section {
+        padding: 8px;
+    }
+
+    .googleMapIcon, .gmnoprint, .gm-fullscreen-control {
+        display: none;
     }
 
     #oilPriceChart, #loanInterestRateChart {
@@ -76,7 +115,9 @@ and (max-device-width : 640px) {
     }
 
     .canvas {
+        flex-direction: column;
         padding-left: 5px;
+        padding-right: 0px;
     }
 
     .menubar {
@@ -87,6 +128,9 @@ and (max-device-width : 640px) {
         background-image: var(--background-gradient-image);
     }
 
+    .sheet .table.data {
+        padding: 4px;
+    }
 
     #loginDiv input[type="text"], #loginDiv input[type="password"] {
         width: 100px;
@@ -111,6 +155,10 @@ and (max-device-width : 640px) {
     #routeSearchResult .ticketTitle, #routeSearchResult .price, #routeSearchResult .summary {
         font-size: 2.5vw;
         line-height: 1;
+    }
+
+    .flex-container-width-half > div {
+        width: 100% !important;
     }
 }
 

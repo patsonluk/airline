@@ -271,6 +271,9 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 .tab-icon:hover:active {
     border: 1px solid #ccc;
 }
+#canvas {
+    margin: 12px 0 16px;
+}
 .canvas {
 	padding-left: 50px;
 }
@@ -294,7 +297,7 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	pointer-events: none;
 	border-radius: 8px !important;
 	right: 0;
-	top: 8px;
+	top: 12px;
 }
 #sidePanel > * {
 	pointer-events: auto;
@@ -354,6 +357,7 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	top: -100% !important;
 }
 .gm-fullscreen-control {
+    margin: 4px 10px !important;
 	position: fixed !important;
 	top: 48px !important;
 	border-radius: 8px !important;
@@ -467,7 +471,6 @@ select option {
     border-radius: 6px 6px 0 0
 }
 .chat-history {
-    font-family: Segoe UI, Helvetica, serif
 }
 .ctabs > li {
     box-shadow: var(--shadow-1) !important;

@@ -11,7 +11,7 @@ function toggleSettings() {
 
 var wallpaperTemplates = [
     {
-        "background" : "rgb(17, 18, 31)"
+        "background" : "#2B2C28"
     },
     {
         "background" : "rgb(86, 91, 151)"
