@@ -2676,7 +2676,7 @@ function linkConfirmation() {
 		var existingCapacity = $('<span>' + toLinkClassValueString(existingLink.capacity) + '</span>')
 		$("#linkConfirmationModal div.existing.capacity").append(existingCapacity)
 		if (existingLink.future) {
-		    var futureCapacity = $('<div class="future">(' + toLinkClassValueString(existingLink.future.capacity) + ')</div>')
+		    var futureCapacity = $('<div class="future">' + toLinkClassValueString(existingLink.future.capacity) + '</div>')
 		    $("#linkConfirmationModal div.existing.capacity").append(futureCapacity)
 		}
 

@@ -33,7 +33,7 @@ object AirlineGenerator extends App {
     deleteAirlines()
     generateAirlines(250)
 //    generateMegaAirlines(25)
-//    generateLocalAirlines(20)
+    generateLocalAirlines(20)
     println("DONE Creating airlines")
 
     Await.result(actorSystem.terminate(), Duration.Inf)
@@ -86,11 +86,11 @@ object AirlineGenerator extends App {
       
       println(i + " generated user " + user.userName)
 
-      val nearbyAirports = airports.filter(toAirport => {
+      val nearbyAirports = airportsWithoutDomestic.filter(toAirport => {
         toAirport.id != baseAirport.id && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 0 && Computation.calculateDistance(baseAirport, toAirport) > 300 && Computation.calculateDistance(baseAirport, toAirport) < 3000
       })
       val nearbyPoolSize = if(nearbyAirports.length < 300) nearbyAirports.length else 300
-      val farAwayAirports = airports.filter(toAirport => {
+      val farAwayAirports = airportsWithoutDomestic.filter(toAirport => {
         toAirport.id != baseAirport.id && Computation.calculateDistance(baseAirport, toAirport) >= 3000 && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 0
       })
       generateLinks("near 15", newAirline, baseAirport, nearbyAirports, poolSize = nearbyPoolSize, 15, modelsShort, false, 40)
@@ -104,6 +104,7 @@ object AirlineGenerator extends App {
   }
 
   def generateMegaAirlines(count: Int) : Unit = {
+    val countryRelationships = CountrySource.getCountryMutualRelationships()
     val groupedAirports: Map[String, List[Airport]] = AirportSource.loadAllAirports(false).groupBy(_.countryCode)
     val uniqueAirportsWithHighestPower: List[Airport] = groupedAirports.values.map { airportList =>
       airportList.maxBy(_.power)
@@ -117,13 +118,13 @@ object AirlineGenerator extends App {
     val airportsByZone = topAirports.groupBy { _.zone }
     for (i <- 0 until count) {
       val baseAirport = topAirports(i)
-      val user = User(userName = "K" + baseAirport.iata, email = "bot", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
+      val user = User(userName = "M" + baseAirport.iata, email = "bot", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
       UserSource.saveUser(user)
-      Authentication.createUserSecret("K" + baseAirport.iata, "gidding")
+      Authentication.createUserSecret("M" + baseAirport.iata, "gidding")
       
-      val newAirline = Airline("MOUP " + baseAirport.countryCode, isGenerated = true)
+      val newAirline = Airline("Auto MOUP " + baseAirport.countryCode, isGenerated = true)
       newAirline.setBalance(200000000)
-      newAirline.setTargetServiceQuality(55)
+      newAirline.setTargetServiceQuality(60)
       newAirline.setCurrentServiceQuality(70)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
@@ -136,7 +137,7 @@ object AirlineGenerator extends App {
       UserSource.setUserAirline(user, newAirline)
       AirlineSource.saveAirlineBase(airlineBase)
       
-      AirlineSource.saveAirplaneRenewal(newAirline.id, 50)
+      AirlineSource.saveAirplaneRenewal(newAirline.id, 60)
       
       println(i + " generated user " + user.userName)
                   
@@ -150,29 +151,29 @@ object AirlineGenerator extends App {
   }
 
   def generateLocalAirlines(count: Int) : Unit = {
-    val airports = AirportSource.loadAllAirports(false).sortBy { _.power }
-    val topAirports = airports.filter { airport =>
-      airport.countryCode == "US" || airport.countryCode == "MX"
-    }.takeRight(count)
+    val countryRelationships = CountrySource.getCountryMutualRelationships()
+    val airports = AirportSource.loadAllAirports(true).sortBy { _.popMiddleIncome }
+    val baseAirports = airports.filter { airport =>
+      airport.countryCode == "US" || airport.countryCode == "MX" || airport.countryCode == "CA"
+    }.filter ( _.size <= 4 ).sortBy { _.popMiddleIncome }.takeRight(count)
     val models = ModelSource.loadAllModels().filter { model => 
-      model.family == "Airbus A320"
+      model.family == "Dornier 728"
     }
     
-    val airportsByZone = topAirports.groupBy { _.zone }
     for (i <- 0 until count) {
-      val baseAirport = topAirports(i)
+      val baseAirport = baseAirports(i)
       val user = User(userName = "B" + baseAirport.iata, email = "bot", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
       UserSource.saveUser(user)
       Authentication.createUserSecret("B" + baseAirport.iata, "gidding")
       
       val newAirline = Airline("Bark and Fly " + baseAirport.countryCode, isGenerated = true)
       newAirline.setBalance(200000000)
-      newAirline.setTargetServiceQuality(55)
+      newAirline.setTargetServiceQuality(60)
       newAirline.setCurrentServiceQuality(65)
       newAirline.setCountryCode(baseAirport.countryCode)
       newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
       
-      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 9, 1, true)
+      val airlineBase = AirlineBase(newAirline, baseAirport, baseAirport.countryCode, 6, 1, true)
       
       AirlineSource.saveAirlines(List(newAirline))
       
@@ -180,14 +181,14 @@ object AirlineGenerator extends App {
       UserSource.setUserAirline(user, newAirline)
       AirlineSource.saveAirlineBase(airlineBase)
       
-      AirlineSource.saveAirplaneRenewal(newAirline.id, 50)
+      AirlineSource.saveAirplaneRenewal(newAirline.id, 55)
       
       println(i + " generated user " + user.userName)
-                  
-      //generate Local Links
-      generateLinks("domestic 37", newAirline, baseAirport, airportsByZone(baseAirport.zone).filter { _.id != baseAirport.id }, poolSize = 300, 37, models, false, 40)
-      //generate Inter-zone links
-//      generateLinks(newAirline, baseAirport, topAirports.filter { airport => airport.zone != baseAirport.zone }, 10, 2, models, false, 60)
+
+      val destinationAirports = airports.filter(toAirport => {
+        toAirport.id != baseAirport.id && Computation.calculateDistance(baseAirport, toAirport) <= 3000 && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 0
+      })
+      generateLinks("local 35", newAirline, baseAirport, destinationAirports, destinationAirports.length, 30, models, false, 40)
     }
     
     Patchers.patchFlightNumber()

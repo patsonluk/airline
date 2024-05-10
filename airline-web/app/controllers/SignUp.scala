@@ -122,9 +122,12 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
           
           val newAirline = Airline(userInput.airlineName)
           newAirline.setTargetServiceQuality(25)
+          newAirline.setMinimumRenewalBalance(300000)
           newAirline.setAirlineCode(newAirline.getDefaultAirlineCode())
           AirlineSource.saveAirlines(List(newAirline))
           UserSource.setUserAirline(user, newAirline)
+
+          AirlineSource.saveAirplaneRenewal(newAirline.id, 50)
 
           SearchUtil.addAirline(newAirline)
           

@@ -476,10 +476,8 @@
 									</div>
 									<div class="pb-3">
 										<div class="text-base font-mono" id="linkCurrentCapacity"></div>
-										<div class="future">
-											<div style="display:flex; align-items: center;">
-												&nbsp;(<img class="awaitingAirplanes" src='@routes.Assets.versioned("images/icons/information.png")' title="Capacity when all airplanes are delivered"><span class="capacity"></span>)
-											</div>
+										<div class="future" style="display:flex; align-items: center;">
+											<span class="capacity"></span><img class="awaitingAirplanes" src='@routes.Assets.versioned("images/icons/information.png")' title="Capacity when all airplanes are delivered">
 										</div>
 									</div>
 									<input type="hidden" id="actionLinkId">
@@ -1132,9 +1130,9 @@
 									</div>
 									<button type="button" class="button ml-0" id="buildHeadquarterButton" style="display: none;" onclick='selectHeadquarters(activeAirportId)'>Build Headquarters</button>
 									<button type="button" class="button ml-0" id="buildBaseButton" style="display: none;" onclick='promptConfirm("Build a base at this airport?", data => buildBase(false))'>Build Base</button>
-									<button type="button" class="button ml-0" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade</button>
-									<button type="button" class="button mr-0" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade</button>
-									<button type="button" class="button ml-0" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs. All assets of this Airport will be sold.", deleteBase)'>Remove</button>
+									<button type="button" class="button" id="upgradeBaseButton" data-scale="" style="display: none;" onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade</button>
+									<button type="button" class="button" id="downgradeBaseButton" style="display: none;" onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade</button>
+									<button type="button" class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs. All assets of this Airport will be sold.", deleteBase)'>Remove</button>
 								</div>
 							</div>
 							<div class="section loyalistDetails" style="flex-basis : 15%; flex-grow: 1; box-sizing:border-box; margin: 0px; ">
@@ -1542,7 +1540,7 @@
 					</div>
 				</div>
 	<!--   			end country canvas -->
-				<div id="airplaneCanvas"  class="canvas" style="height: 100%; display: none; min-width: 600px;">
+				<div id="airplaneCanvas"  class="canvas" style="height: 100%; display: none;">
 					<div class="mainPanel airplaneCanvasLeftGroup">
 						<div class="section tight">
 							<div class="table" style="width: 30%; margin-bottom: 10px;">
@@ -1552,9 +1550,9 @@
 								</div>
 							</div>
 
-							<div class="detailsGroup" style="height: 100%;">
-								<div class="market details" style="width: 100%; height: 100%;">
-									<div class="table data" style="height: 20px; width: 100%; min-width: 500px">
+							<div class="detailsGroup" style="height: 100%; width: 100%; overflow-x: scroll;">
+								<div class="market details" style="width: 100%; height: 100%; min-width: 980px;">
+									<div class="table data" style="height: 20px; width: 100%;">
 										<div class="table-header" id="airplaneModelSortHeader">
 											<div class="cell clickable" style="width: 20%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
 											<div class="cell clickable" style="width: 12%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
@@ -1565,7 +1563,7 @@
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="fuelBurn" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Fuel Burn</div>
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="lifespan" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Lifespan</div>
 											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="speed" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Speed</div>
-											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="runwayRequirement" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Runway Req.</div>
+											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="runwayRequirement" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Runway</div>
 <!--											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>-->
 										</div>
 									</div>
@@ -1723,10 +1721,12 @@
 									</div>
 									<input type="hidden" class="selectedModel"/>
 								</div>
-								<div class="button add" onclick="promptBuyNewAirplane($('#airplaneCanvas .selectedModel').val(), false)">Purchase</div>
-								<div class="button" onclick="showAirplaneBase($('#airplaneCanvas .selectedModel').val())">Base</div>
-								<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneCanvas .selectedModel').val())">Config</div>
-								<div class="button" onclick="showAllAirplaneInventory($('#airplaneCanvas .selectedModel').val())">Inventory</div>
+								<div class="flex-container-width-half gap-2 pt-2">
+									<div class="button add" onclick="promptBuyNewAirplane($('#airplaneCanvas .selectedModel').val(), false)">Purchase</div>
+									<div class="button" onclick="showAirplaneBase($('#airplaneCanvas .selectedModel').val())">Base</div>
+									<div class="button" onclick="showAirplaneModelConfigurations($('#airplaneCanvas .selectedModel').val())">Config</div>
+									<div class="button" onclick="showAllAirplaneInventory($('#airplaneCanvas .selectedModel').val())">Inventory</div>
+								</div>
 							</div>
 							<div class="section tight">
 								<h4>Used Airplane Market</h4>
@@ -1934,7 +1934,7 @@
 
 						<div style="width: 100%; min-height: 1000px;" class="section tight">
                             <div class="controllers" style="margin: 5px;">
-                                <div class="table" style="width: 30%; float: left;">
+                                <div class="table" style="width: 38%; float: left;">
                                     <div class="table-header sheetOptions">
                                         <div class="cell clickable selected" data-type="income" onclick="selectSheet($(this), $('#incomeSheet')); $('.controllers-period').show();">Income</div>
 										<div class="cell clickable" data-type="cashFlow" onclick="selectSheet($(this), $('#cashFlowSheet')); $('.controllers-period').show();">Cash Flow</div>
@@ -2006,7 +2006,7 @@
 											<div id="linksLoungeCost" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
-											<div class="cell">Airplane Depreciation:</div>
+											<div class="cell">Airplane Depreciation, In-flight:</div>
 											<div id="linksDepreciation" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
@@ -2067,7 +2067,7 @@
 									<div class="table data">
 										<h4>Other Income</h4>
 										<div class="table-row">
-											<div class="cell">Loan Interest:</div>
+											<div class="cell">Loan / Negative Cash Interest:</div>
 											<div id="othersLoanInterest" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
@@ -2075,11 +2075,11 @@
 											<div id="othersDividends" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
-											<div class="cell">Office Upkeep:</div>
+											<div class="cell">Airport Bases:</div>
 											<div id="othersBaseUpkeep" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
-											<div class="cell">Overtime Compensation:</div>
+											<div class="cell">Bases Overtime:</div>
 											<div id="othersOvertimeCompensation" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
@@ -2111,7 +2111,7 @@
 											<div id="othersFuelProfit" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">
-											<div class="cell">Depreciation:</div>
+											<div class="cell">Aircraft Depreciation, Grounded:</div>
 											<div id="othersDepreciation" class="cell" style="text-align: right;"></div>
 										</div>
 										<div class="table-row">

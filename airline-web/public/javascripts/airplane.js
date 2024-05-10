@@ -124,7 +124,7 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.capacity + "</div>")
 		row.append(stars)
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.range + " km</div>")
-		row.append("<div class='cell' align='right'>" + modelOwnerInfo.fuelBurn / modelOwnerInfo.capacity + "</div>")
+		row.append("<div class='cell' align='right'>" + (modelOwnerInfo.fuelBurn / modelOwnerInfo.capacity).toFixed(2) + "</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.lifespan / 52 + " yrs</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.speed + " km/h</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.runwayRequirement + " m</div>")

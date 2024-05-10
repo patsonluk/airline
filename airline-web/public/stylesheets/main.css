@@ -225,7 +225,8 @@ h1, h2, h3, h4, h5, h6, .font-display {
 
 .airplaneCanvasLeftGroup {
    width: 70%;
-   height: 99%
+   height: 99%;
+   overflow-y: scroll;
 }
 
 .bankCanvasLeftGroup, .oilCanvasLeftGroup {
@@ -1081,7 +1082,7 @@ input:disabled, .button.disabled, .clickable.disabled, .round-button.disabled {
 
 input:disabled:hover, .button.disabled:hover, .clickable.disabled:hover, .round-button.disabled:hover {
   cursor: not-allowed;
-  color: #444444;
+  opacity: .6;
 }
 
 /*.button.disabled:after, .clickable.disabled:after {
@@ -1191,7 +1192,8 @@ iframe.clip {
 }
 .mapPopup .button {
     background-color: #ebebeb;
-    box-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.6);
+    box-shadow: inset 0 0 2px white, 0 0 1px rgba(0, 0, 0, 0.6);
+    border: 1px solid #BBB;
 }
 
 .threshold-section {
@@ -1467,7 +1469,8 @@ i {
     justify-content: space-between;
 }
 .class-value-child {
-
+    width: 50px;
+    text-align: right;
 }
 .class-value-child-helper {
     opacity:0.6;
