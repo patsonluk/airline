@@ -334,9 +334,11 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       delegate.assignedTask.getTaskType == DelegateTaskType.COUNTRY && delegate.assignedTask.asInstanceOf[CountryDelegateTask].country.countryCode == targetCountryCode
     }
 
-    val upgradeDelegatesRequired = if (targetBase.scale == 1) 1 else targetBase.delegatesRequired - targetBase.copy(scale = targetBase.scale - 1).delegatesRequired
+    val upgradeDelegatesRequired = if (targetBase.scale == 1) targetBase.delegatesRequired else targetBase.delegatesRequired - targetBase.copy(scale = targetBase.scale - 1).delegatesRequired
+    println(s"upgradeDelegatesRequired ${upgradeDelegatesRequired}")
 
     val requiredDelegates = airline.getBases().filter(_.countryCode == targetBase.countryCode).map(_.delegatesRequired).sum + upgradeDelegatesRequired
+    println(s"requiredDelegates ${requiredDelegates}")
     if (delegatesAssignedToThisCountry.length < requiredDelegates) {
       return Some(s"Cannot build/upgrade this base. Require $requiredDelegates delegate(s) assigned to ${CountryCache.getCountry(targetBase.countryCode).get.name} but only ${delegatesAssignedToThisCountry.length} assigned")
     }
@@ -522,7 +524,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
              AirlineSource.loadAirlineHeadquarter(airlineId) match {
                case Some(headquarter) =>
                if (headquarter.airport.id != airportId) {
-                 BadRequest("Not allowed to change headquarter for now")
+                 BadRequest("Not allowed to change headquarter")
                } else {
                  val updateBase = headquarter.copy(scale = inputBase.scale)
                  AirlineSource.saveAirlineBase(updateBase)

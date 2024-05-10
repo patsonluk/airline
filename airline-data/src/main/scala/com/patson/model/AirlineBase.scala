@@ -28,9 +28,9 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
 
   lazy val airportTypeMultiplier =
     if (airport.isDomesticAirport()) {
-      0.5
+      0.7
     } else if (airport.isGateway()) {
-      1.2
+      1.1
     } else {
       1.0
     }
@@ -44,13 +44,13 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
 
   val getOfficeStaffCapacity = AirlineBase.getOfficeStaffCapacity(scale, headquarter)
 
-  val delegatesRequired : Int = {
+  val delegatesRequired = {
     if (headquarter) {
-      scale / 2
+      Math.max(0, Math.ceil(scale.toDouble / 2) - 1)
     } else {
-      1 + scale / 2
+      Math.ceil(scale.toDouble / 2)
     }
-  }
+  }.toInt
 
   def getOvertimeCompensation(staffRequired : Int) = {
     if (getOfficeStaffCapacity >= staffRequired) {
