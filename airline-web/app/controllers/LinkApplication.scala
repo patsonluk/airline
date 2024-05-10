@@ -1003,68 +1003,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //    }
 //  }
 
-  def setTargetServiceQuality(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    if (request.body.isInstanceOf[AnyContentAsJson]) {
-      Try(request.body.asInstanceOf[AnyContentAsJson].json.\("targetServiceQuality").as[Int]) match {
-        case Success(targetServiceQuality) =>
-          if (targetServiceQuality < 0) {
-            BadRequest("Cannot have negative targetServiceQuality")
-          } else if (targetServiceQuality > 100) {
-            BadRequest(s"Cannot have targetServiceQuality $targetServiceQuality")
-          } else {
-            val airline = request.user
-            airline.setTargetServiceQuality(targetServiceQuality)
-            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-            Ok(Json.obj("targetServiceQuality" -> JsNumber(targetServiceQuality)))
-          }
-        case Failure(_) =>
-          BadRequest("Cannot Update service funding")
-      }
-
-    } else {
-      BadRequest("Cannot Update service funding")
-    }
-  }
-
-  def setMinimumRenewalBalance(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-     if (request.body.isInstanceOf[AnyContentAsJson]) {
-      Try(request.body.asInstanceOf[AnyContentAsJson].json.\("minimumRenewalBalance").as[Long]) match {
-        case Success(minimumRenewalBalance) =>
-          if (minimumRenewalBalance < 0) {
-            BadRequest("Cannot have negative minimumRenewalBalance")
-          } else {
-            val airline = request.user
-            airline.setMinimumRenewalBalance(minimumRenewalBalance)
-            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-            Ok(Json.obj("minimumRenewalBalance" -> JsNumber(minimumRenewalBalance)))
-          }
-        case Failure(_) =>
-          BadRequest("Cannot Update minimum renewal balance - could not cast to long")
-      }
-
-    } else {
-      BadRequest("Cannot Update minimum renewal balance")
-    }
-  }
-
-  def updateWeeklyDividends(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    if (request.body.isInstanceOf[AnyContentAsJson]) {
-      val weeklyDividendsTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("weeklyDividends").as[Int])
-      weeklyDividendsTry match {
-        case Success(weeklyDividends) =>
-          val airline = request.user
-          airline.setWeeklyDividends(weeklyDividends * 1000000)
-          AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-          Ok(Json.obj("weeklyDividends" -> JsNumber(weeklyDividends)))
-        case Failure(_) =>
-          BadRequest("Cannot update dividends")
-      }
-
-    } else {
-      BadRequest("Cannot updates dividends")
-    }
-  }
-
   val TOP_COMMENT_COUNT = 5
   def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) { request =>
     val consumptionEntries : List[LinkConsumptionHistory] = ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
