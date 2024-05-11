@@ -798,6 +798,36 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         var otherLinkArray = Json.toJson(competitorLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq)
         resultObject = resultObject + ("otherLinks", otherLinkArray)
 
+        val nearbyFromAirports = loadGenericTransitAirports(fromAirport)
+        val nearbyToAirports = loadGenericTransitAirports(toAirport)
+        val competitorViaLocalTransitLinkConsumptions : List[LinkConsumptionDetails] = {
+          val viaLocalTransitFlightLinks =
+            nearbyFromAirports.flatMap { localTransitAirport =>
+            (LinkSource.loadFlightLinksByAirports(localTransitAirport.id, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(toAirportId, localTransitAirport.id, LinkSource.ID_LOAD))
+            } ++
+            nearbyToAirports.flatMap { localTransitAirport =>
+              (LinkSource.loadFlightLinksByAirports(localTransitAirport.id, fromAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(fromAirportId, localTransitAirport.id, LinkSource.ID_LOAD))
+            }
+          LinkSource.loadLinkConsumptionsByLinksId(viaLocalTransitFlightLinks.map(_.id), 1)
+        }
+        val otherViaLocalTransitLinkArray = Json.toJson(competitorViaLocalTransitLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => {
+          var linkConsumptionJson : JsObject = Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite).as[JsObject]
+          if (nearbyFromAirports.contains(linkConsumption.link.to)) {
+            linkConsumptionJson = linkConsumptionJson + ("altFrom" -> JsString(linkConsumption.link.to.iata))
+          } else if (nearbyFromAirports.contains(linkConsumption.link.from)) {
+            linkConsumptionJson = linkConsumptionJson + ("altFrom" -> JsString(linkConsumption.link.from.iata))
+          }
+
+          if (nearbyToAirports.contains(linkConsumption.link.to)) {
+            linkConsumptionJson = linkConsumptionJson + ("altTo" -> JsString(linkConsumption.link.to.iata))
+          } else if (nearbyToAirports.contains(linkConsumption.link.from)) {
+            linkConsumptionJson = linkConsumptionJson + ("altTo" -> JsString(linkConsumption.link.from.iata))
+          }
+
+          linkConsumptionJson
+        } })
+        resultObject = resultObject + ("otherViaLocalTransitLinks", otherViaLocalTransitLinkArray)
+
         if (existingLink.isDefined) {
           resultObject = resultObject + ("existingLink", Json.toJson(existingLink))
           val deleteRejection = getDeleteLinkRejection(existingLink.get, request.user)
@@ -1521,6 +1551,12 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       case None => None
     }
   }
+
+  def loadGenericTransitAirports(principalAirport : Airport) : List[Airport] = {
+    LinkSource.loadLinksByCriteria(List(("from_airport", principalAirport.id), ("transport_type", TransportType.GENERIC_TRANSIT.id))).map(_.to) ++
+    LinkSource.loadLinksByCriteria(List(("to_airport", principalAirport.id), ("transport_type", TransportType.GENERIC_TRANSIT.id))).map(_.from)
+  }
+
 
   def getLinkNegotiation(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]

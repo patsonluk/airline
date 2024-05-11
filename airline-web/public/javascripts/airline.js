@@ -985,18 +985,48 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
 	
 	
-	$("#planLinkCompetitons .data-row").remove()
+	$("#planLinkCompetitors .data-row").remove()
+
+	linkInfo.otherLinks.sort(function(a, b) {
+        return b.capacity.total - a.capacity.total;
+    });
 	$.each(linkInfo.otherLinks, function(index, linkConsumption) {
 		if (linkConsumption.airlineId != activeAirline.id) {
-			$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
+		    let loadFactorPercentage = Math.round(linkConsumption.soldSeats * 100 / linkConsumption.capacity.total)
+			$("#planLinkCompetitors").append("<div class='table-row data-row'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
 				    	    			   + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
-				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity)
+				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity) + " (" + linkConsumption.frequency + ")"
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality
-				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.frequency + "</div></div>")
+				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + loadFactorPercentage + "%</div></div>")
 		}			
 	})
-	if ($("#planLinkCompetitons .data-row").length == 0) {
-		$("#planLinkCompetitons").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
+	if ($("#planLinkCompetitors .data-row").length < 5) { //then additional info
+	    linkInfo.otherViaLocalTransitLinks.sort(function(a, b) {
+            return b.capacity.total - a.capacity.total;
+        });
+	    $.each(linkInfo.otherViaLocalTransitLinks, function(index, linkConsumption) { //reachable by 1 local transit
+                if (linkConsumption.airlineId != activeAirline.id) {
+                    let loadFactorPercentage = Math.round(linkConsumption.soldSeats * 100 / linkConsumption.capacity.total)
+                    var $row = $("<div class='table-row data-row' style='opacity: 60%'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
+                                                                          + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
+                                                                          + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity) + " (" + linkConsumption.frequency + ")"
+                                                                          + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality
+                                                                          + "</div><div style='display: table-cell; text-align:right;'>" + loadFactorPercentage + "%</div></div>")
+                    let phrases = []
+                    if (linkConsumption.altFrom) {
+                        phrases.push("Depart from " + linkConsumption.altFrom)
+                    }
+                    if (linkConsumption.altTo) {
+                        phrases.push("Arrive at " + linkConsumption.altTo)
+                    }
+                    $row.attr('title', phrases.join('; '))
+                    $("#planLinkCompetitors").append($row)
+                }
+            })
+	}
+
+	if ($("#planLinkCompetitors .data-row").length == 0) {
+		$("#planLinkCompetitors").append("<div class='table-row data-row'><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div><div style='display: table-cell;'>-</div></div>")
 	}
 	
 	if (tempPath) { //remove previous plan link if it exists
