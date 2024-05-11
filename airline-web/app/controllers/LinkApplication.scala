@@ -801,12 +801,16 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val nearbyFromAirports = loadGenericTransitAirports(fromAirport)
         val nearbyToAirports = loadGenericTransitAirports(toAirport)
         val competitorViaLocalTransitLinkConsumptions : List[LinkConsumptionDetails] = {
-          val viaLocalTransitFlightLinks =
+          val viaLocalTransitFlightLinks : List[Link] =
             nearbyFromAirports.flatMap { localTransitAirport =>
-            (LinkSource.loadFlightLinksByAirports(localTransitAirport.id, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(toAirportId, localTransitAirport.id, LinkSource.ID_LOAD))
+              (nearbyToAirports.map(_.id) :+ toAirportId).flatMap { toAirportId =>
+                LinkSource.loadFlightLinksByAirports(localTransitAirport.id, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(toAirportId, localTransitAirport.id, LinkSource.ID_LOAD)
+              }
             } ++
             nearbyToAirports.flatMap { localTransitAirport =>
-              (LinkSource.loadFlightLinksByAirports(localTransitAirport.id, fromAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(fromAirportId, localTransitAirport.id, LinkSource.ID_LOAD))
+              (nearbyFromAirports.map(_.id) :+ fromAirportId).flatMap { fromAirportId =>
+                LinkSource.loadFlightLinksByAirports(localTransitAirport.id, fromAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(fromAirportId, localTransitAirport.id, LinkSource.ID_LOAD)
+              }
             }
           LinkSource.loadLinkConsumptionsByLinksId(viaLocalTransitFlightLinks.map(_.id), 1)
         }
