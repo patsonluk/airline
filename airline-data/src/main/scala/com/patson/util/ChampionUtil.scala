@@ -93,10 +93,7 @@ object ChampionUtil {
       boost += featureBoost
     }
 
-    boost += (airport.size match {
-      case x if (x >= 2) => airport.size - 1
-      case _ => 0
-    })
+    boost += airport.size
 
     boost * reputationBoostTop10(ranking)
   }
