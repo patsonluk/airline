@@ -26,16 +26,16 @@ object AirlineBaseSpecialization extends Enumeration {
     override val getType = BaseSpecializationType.NEGOTIATION
     override val label = "Negotiation Expert II"
     override val free = true
-    override val scaleRequirement : Int = 13
+    override val scaleRequirement : Int = 12
     override def descriptions(airport : Airport) = List(s"Further increased frequency cap gain per scale")
   }
 
   case class DelegateSpecialization() extends Specialization {
     override val getType = BaseSpecializationType.DELEGATE
     override val label = "Delegates Recruiter"
-    val delegateBoost = 3
+    val delegateBoost = 1
     override val free = true
-    override val scaleRequirement : Int = 12
+    override val scaleRequirement : Int = 13
     override def descriptions(airport : Airport) = List(s"$delegateBoost extra delegates")
   }
 
