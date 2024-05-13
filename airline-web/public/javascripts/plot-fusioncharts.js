@@ -1173,24 +1173,18 @@ function plotAirlineStats(stats, container) {
     })
 
 	var chartConfig = {
+	//40 weeks
                       	    		"xAxisname": "Week",
                       	    		"yAxisName": "Passengers",
-                      	    		"numberPrefix": "",
-                      	    		"useroundedges": "1",
-                      	    		"animation": "1",
-                      	    		"showBorder":"0",
-                                      "toolTipBorderRadius": "2",
-                                      "toolTipPadding": "5",
-                                      "bgAlpha":"0",
+                      	    		"numMinorDivLines": 1,
+//                      	    		"divLineAlpha": 0,
                                       "showValues":"0",
-                                      "showZeroPlane": "1",
-                                      "zeroPlaneColor": "#222222",
-                                      "zeroPlaneThickness": "2",
+                                      "showZeroPlane": "0",
                       	    	}
     checkDarkTheme(chartConfig)
 
 	var chart = container.insertFusionCharts({
-		type: 'msline',
+		type: 'LogMSLine',
 	    width: '100%',
 	    height: '100%',
 	    dataFormat: 'json',
@@ -1200,9 +1194,9 @@ function plotAirlineStats(stats, container) {
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [
 				{ "seriesname": "Total", "data" : data["total"]},
-                { "seriesname": "Tourist", "data" : data["tourists"], "visible" : "0"},
-                { "seriesname": "Elite", "data" : data["elites"], "visible" : "0"},
-                { "seriesname": "Business", "data" : data["business"], "visible" : "0"},
+                { "seriesname": "Tourist", "data" : data["tourists"]},
+                { "seriesname": "Elite", "data" : data["elites"]},
+                { "seriesname": "Business", "data" : data["business"]},
 			]
 	    }
 	})

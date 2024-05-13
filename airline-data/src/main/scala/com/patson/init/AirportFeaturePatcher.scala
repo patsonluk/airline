@@ -2,6 +2,7 @@ package com.patson.init
 
 import com.patson.model._
 import com.patson.data.AirportSource
+import com.patson.data.DestinationSource
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -769,8 +770,7 @@ object AirportFeaturePatcher extends App {
       "LST" -> 0
 
     )
-  ) + (GATEWAY_AIRPORT -> getGatewayAirports().map(iata => (iata, 0)).toMap)
-//  + (ELITE_DESTINATION -> loadEliteDestinations().map(iata => (iata, strength)).toMap)
+  ) + (GATEWAY_AIRPORT -> getGatewayAirports().map(iata => (iata, 0)).toMap) + (ELITE_CHARM -> getEliteDestinations())
 
   patchFeatures()
 
@@ -798,14 +798,13 @@ object AirportFeaturePatcher extends App {
       IsolatedAirportPatcher.patchIsolatedAirports()
   }
 
-//    def loadEliteDestinations() : List[String,Integer] = {
-//      //load CSV
-//      //parse
-//      //save into DB
-//      //flatten & return
-//      lazy val featureList = Map[String, Int](
-//      list.toList
-//    }
+    def getEliteDestinations() : Map[String, Int] = {
+      val destinations = DestinationSource.loadAllDestinations()
+      val iataMap = destinations.groupBy(_.airport.iata).view.mapValues(_.length).toMap
+      println("inserting elite destinations to features...")
+      println(iataMap)
+      iataMap
+    }
 
 
   def getGatewayAirports() : List[String] = {

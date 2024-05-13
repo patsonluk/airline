@@ -3,7 +3,7 @@ package com.patson.model
 import com.patson.model.airplane.Model
 import com.patson.model.airplane.Model.Type
 import FlightType._
-import com.patson.model.AirportFeatureType.{AirportFeatureType, DOMESTIC_AIRPORT, FINANCIAL_HUB, ELITE_DESTINATION, GATEWAY_AIRPORT, INTERNATIONAL_HUB, ISOLATED_TOWN, OLYMPICS_IN_PROGRESS, OLYMPICS_PREPARATIONS, UNKNOWN, VACATION_HUB}
+import com.patson.model.AirportFeatureType.{AirportFeatureType, DOMESTIC_AIRPORT, FINANCIAL_HUB, ELITE_CHARM, GATEWAY_AIRPORT, INTERNATIONAL_HUB, ISOLATED_TOWN, OLYMPICS_IN_PROGRESS, OLYMPICS_PREPARATIONS, UNKNOWN, VACATION_HUB}
 import com.patson.model.IsolatedTownFeature.HUB_RANGE_BRACKETS
 
 
@@ -19,9 +19,9 @@ abstract class AirportFeature {
   lazy val getDescription = {
     featureType match {
       case INTERNATIONAL_HUB => "International Hub - More international passengers especially premium."
-      case ELITE_DESTINATION => "Elite Destination – Elites travel here. "
+      case ELITE_CHARM => "Elite Destination – Elites travel here. "
       case VACATION_HUB => "Vacation Destination - Tourists travel here."
-      case FINANCIAL_HUB => "Financial Hub - Center for business passengers."
+      case FINANCIAL_HUB => "Business Hub - Center for business passengers."
       case DOMESTIC_AIRPORT => "Domestic Discount Airport – Lower base upkeep. If flight is international, only accepts small aircraft."
       case ISOLATED_TOWN => s"Isolated - Increased demand within ${this.asInstanceOf[IsolatedTownFeature].boostRange}km."
       case GATEWAY_AIRPORT => "Gateway - Has increased demand with other gateway airports."
@@ -36,7 +36,8 @@ object AirportFeature {
   import AirportFeatureType._
   def apply(featureType : AirportFeatureType, strength : Int) : AirportFeature = {
     featureType match {
-      case INTERNATIONAL_HUB => InternationalHubFeature(strength)  
+      case INTERNATIONAL_HUB => InternationalHubFeature(strength)
+      case ELITE_CHARM => EliteFeature(strength)
       case VACATION_HUB => VacationHubFeature(strength)
       case FINANCIAL_HUB => FinancialHubFeature(strength)
       case DOMESTIC_AIRPORT => DomesticAirportFeature()
@@ -71,6 +72,16 @@ sealed case class InternationalHubFeature(baseStrength : Int, boosts : List[Airp
   }
 
   override lazy val strength = baseStrength + boosts.filter(_.boostType == AirportBoostType.INTERNATIONAL_HUB).map(_.value).sum.toInt
+}
+
+sealed case class EliteFeature(baseStrength : Int, boosts : List[AirportBoost] = List.empty) extends AirportFeature {
+  val featureType = AirportFeatureType.ELITE_CHARM
+
+  override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType, relationship : Int) : Double = {
+    0
+  }
+
+  override lazy val strength = baseStrength + boosts.filter(_.boostType == AirportBoostType.ELITE_CHARM).map(_.value).sum.toInt
 }
 
 sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBoost] = List.empty) extends AirportFeature {
@@ -222,5 +233,5 @@ sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeatu
 
 object AirportFeatureType extends Enumeration {
     type AirportFeatureType = Value
-    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, ELITE_DESTINATION, DOMESTIC_AIRPORT, ISOLATED_TOWN, GATEWAY_AIRPORT, OLYMPICS_PREPARATIONS, OLYMPICS_IN_PROGRESS, UNKNOWN = Value
+    val INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB, ELITE_CHARM, DOMESTIC_AIRPORT, ISOLATED_TOWN, GATEWAY_AIRPORT, OLYMPICS_PREPARATIONS, OLYMPICS_IN_PROGRESS, UNKNOWN = Value
 }

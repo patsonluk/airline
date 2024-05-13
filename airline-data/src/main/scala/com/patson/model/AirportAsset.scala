@@ -853,11 +853,12 @@ case class AirportBoost(boostType : AirportBoostType.Value, value : Double) //th
 
 object AirportBoostType extends Enumeration {
     type AirportBoostType = Value
-    val POPULATION, INCOME, INTERNATIONAL_HUB, VACATION_HUB, FINANCIAL_HUB = Value
+    val POPULATION, INCOME, INTERNATIONAL_HUB, ELITE_CHARM, VACATION_HUB, FINANCIAL_HUB = Value
     val getLabel = (boostType : AirportBoostType.Value) => boostType match {
         case POPULATION => "Airport Population"
         case INCOME => "Airport Income Level"
         case INTERNATIONAL_HUB => "International Hub Strength"
+        case ELITE_CHARM => "Elite Strength"
         case VACATION_HUB => "Vacation Hub Strength"
         case FINANCIAL_HUB => "Financial Hub Strength"
     }
@@ -866,6 +867,7 @@ object AirportBoostType extends Enumeration {
         case POPULATION => classOf[Long]
         case INCOME => classOf[Double]
         case INTERNATIONAL_HUB => classOf[Double]
+        case ELITE_CHARM => classOf[Double]
         case VACATION_HUB =>  classOf[Double]
         case FINANCIAL_HUB => classOf[Double]
     }

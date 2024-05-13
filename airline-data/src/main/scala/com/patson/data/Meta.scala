@@ -118,13 +118,13 @@ object Meta {
     statement.execute()
     statement.close()
 
-//    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_TABLE)
-//    statement.execute()
-//    statement.close()
-//
-//    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_ENTRY_TABLE)
-//    statement.execute()
-//    statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + VIP_ROUTE_ENTRY_TABLE)
+    statement.execute()
+    statement.close()
 
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + LINK_ASSIGNMENT_TABLE)
     statement.execute()
@@ -285,7 +285,7 @@ object Meta {
     createAlliance(connection)
     createLounge(connection)
     createLoungeConsumption(connection)
-    createShuttleService(connection)
+//    createShuttleService(connection)
     createOil(connection)
     createLoanInterestRate(connection)
     createResetUser(connection)
@@ -319,6 +319,7 @@ object Meta {
     createAirlineModifierProperty(connection)
     createUserModifier(connection)
     createAllianceLabelColor(connection)
+    createAllianceMission(connection)
     createAirportAsset(connection)
     createDestinations(connection)
 
@@ -2062,7 +2063,7 @@ object Meta {
       "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
       "airport INTEGER, " +
       "name VARCHAR(256), " +
-      "destination_type TINYINT, " +
+      "destination_type VARCHAR(256), " +
       "strength INTEGER, " +
       "description VARCHAR(256), " +
       "latitude DOUBLE, " +

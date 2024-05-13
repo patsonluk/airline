@@ -925,7 +925,7 @@ function refreshAirportExtendedDetails(airport) {
 
     $(".airportFeatures .feature").remove()
     $.each(airport.features, function(index, feature) {
-        var $popupFeatureDiv = $("<div class='feature' style='display:inline-flex'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'></div>").appendTo($("#airportPopup .airportFeatures"))
+        var $popupFeatureDiv = $("<div class='feature' style='display:inline-flex'><img width='16' height='16' src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'></div>").appendTo($("#airportPopup .airportFeatures"))
         var $popupFeatureSpan
         if (feature.boosts && feature.boosts.length > 0) {
             $popupFeatureSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
@@ -934,7 +934,7 @@ function refreshAirportExtendedDetails(airport) {
         }
         $popupFeatureDiv.append($popupFeatureSpan)
 
-        var $featureDiv = $("<div class='feature'><img src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
+        var $featureDiv = $("<div class='feature'><img width='16' alt='" + feature.title + "' src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
         $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
         var featureText = feature.title
         if (feature.strength != 0) {

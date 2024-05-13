@@ -4,7 +4,10 @@ import com.patson.model.Airport
 import scala.io.Source
 import com.patson.model.City
 import com.patson.model.Country
+import com.patson.model.Destination
 import scala.collection.mutable.ListBuffer
+import scala.util.Try
+import com.patson.data.AirportSource
 
 object AdditionalLoader {
   def loadRemovalAirportIatas() : List[String] = {
@@ -36,6 +39,40 @@ object AdditionalLoader {
     println("Additional Airports!!: ")
     additionalAirports.foreach(println)
     additionalAirports.toList
+  }
+
+  def loadDestinations(): List[Destination] = {
+    val destinationsSource = scala.io.Source.fromFile("destinations.csv").getLines()
+    val destinations = ListBuffer[Destination]()
+    var id = 0
+    destinationsSource.foreach { line =>
+      if (!line.startsWith("#") && !line.trim().isEmpty()) {
+        import com.patson.model.DestinationType
+
+        val tokens = line.trim().split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1)
+        id += 1
+        val airportCode = tokens(2).toString
+        val airport = AirportSource.loadAirportByIata(airportCode)
+        val name = tokens(0)
+        val destinationType = DestinationType.withNameSafe(tokens(6).trim).getOrElse(DestinationType.ELITE_DESTINATION)
+        val description = tokens(5)
+        val strength = Try(tokens(1).trim.toInt).getOrElse(0)
+        val latitude = Try(tokens(7).trim.toDouble).getOrElse(0.0)
+        val longitude = Try(tokens(8).trim.toDouble).getOrElse(0.0)
+        val countryCode = tokens(4)
+
+        airport match {
+          case Some(airport) =>
+            val destination = Destination(id, airport, name, destinationType, strength, description, latitude, longitude, countryCode)
+            destinations += destination
+          case None =>
+            println(s"Invalid airport type: $airportCode. Skipping this entry.")
+        }
+      }
+    }
+    println("Loaded destinations!!")
+//    destinations.toList.foreach(println)
+    destinations.toList
   }
 
   def loadAdditionalCities() : List[City] = {
