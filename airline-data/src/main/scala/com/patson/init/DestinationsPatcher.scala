@@ -14,21 +14,22 @@ object DestinationsPatcher extends App {
 
   mainFlow
   
-  def mainFlow() {
+  def mainFlow() : Unit = {
+    loadDestinations()
+    Await.result(actorSystem.terminate(), Duration.Inf)
+  }
+
+  def loadDestinations() : Unit = {
     val destinations = AdditionalLoader.loadDestinations()
- 
-    println("FROM " + destinations.length)
-    println("TO " + destinations.length)
-    
+
+    println("Loaded " + destinations.length + " destinations")
     //destinations.foreach(println)
-        
+
     try {
       DestinationSource.deleteAllDestinations()
       DestinationSource.saveAllDestinations(destinations)
     } catch {
-      case e : Throwable => e.printStackTrace()
+      case e: Throwable => e.printStackTrace()
     }
-
-    Await.result(actorSystem.terminate(), Duration.Inf)
   }
 }

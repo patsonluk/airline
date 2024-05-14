@@ -206,12 +206,12 @@ object GeoDataGenerator extends App {
     println(citites.size + " cities")
     val airports = generateAirportData(rawAirportResult, runwayResult, citites)
 
-    //Meta.resetDatabase
 
     AirportSource.deleteAllAirports()
     AirportSource.saveAirports(airports)
 
     //patch features
+    DestinationsPatcher.loadDestinations()
     AirportFeaturePatcher.patchFeatures()
     IsolatedAirportPatcher.patchIsolatedAirports()
 

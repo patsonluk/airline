@@ -10,10 +10,11 @@ case class AirportRating(economicPowerRating : Int, competitionRating : Int, cou
   val COMPETITION_WEIGHT = 0.5
   val featureRating = features.map { feature =>
     feature.featureType match {
-      case INTERNATIONAL_HUB => feature.strength.toDouble / 3
+//      case INTERNATIONAL_HUB => feature.strength.toDouble / 3
       case FINANCIAL_HUB => feature.strength.toDouble / 5
       case VACATION_HUB => feature.strength.toDouble  / 10
       case ISOLATED_TOWN => feature.strength.toDouble  / 2
+      case ELITE_CHARM => Math.max(1, feature.strength.toDouble / 3)
       case GATEWAY_AIRPORT => 3
       case _ => 0
     }

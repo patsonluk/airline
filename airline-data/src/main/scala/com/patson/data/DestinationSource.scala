@@ -13,6 +13,21 @@ object DestinationSource {
       loadDestinationsByCriteria(List.empty)
   }
 
+  def loadDestinations() = {
+    loadDestinationsByCriteria(List.empty)
+  }
+
+  def loadDestinationsByAirport(airportId : Int) : Option[List[Destination]] = {
+
+    val result = loadDestinationsByCriteria(List(("airport", airportId)))
+
+    if (result.isEmpty) {
+      None
+    } else {
+      Some(result)
+    }
+  }
+
   def loadAllEliteDestinations() = {
     //todo load only elite
     loadDestinationsByCriteria(List.empty)

@@ -12,7 +12,7 @@ object AirportFeaturePatcher extends App {
   import AirportFeatureType._
 
   lazy val featureList = Map(
-
+/*
     INTERNATIONAL_HUB -> Map[String, Int](
 /**
 *destinations with unusually more premium & intercontinental visitors relative to population
@@ -122,6 +122,7 @@ object AirportFeaturePatcher extends App {
 "LIM" -> 5, //Lima
 "PTY" -> 5 //Panama
     ),
+ */
     VACATION_HUB -> Map[String, Int](
 /**
 *destinations with unusually more tourists relative to population

@@ -39,7 +39,6 @@ object GenericTransitGenerator {
     "MEX" -> "TLC",
     "VCP" -> "GRU",
     "VCP" -> "CGH",
-//    "AMS" -> "BRU",
     "AMS" -> "EIN",
     "EIN" -> "MST",
     "EIN" -> "RTM",
