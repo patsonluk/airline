@@ -57,28 +57,30 @@ package object controllers {
 
   implicit object AirplaneModelWrites extends Writes[Model] {
     def writes(airplaneModel: Model): JsValue = {
-          JsObject(List(
-      "id" -> JsNumber(airplaneModel.id),
-      "name" -> JsString(airplaneModel.name),
-      "family" -> JsString(airplaneModel.family),
-      "capacity" -> JsNumber(airplaneModel.capacity),
-      "quality" -> JsNumber(airplaneModel.quality),
-      "fuelBurn" -> JsNumber(airplaneModel.fuelBurn),
-      "speed" -> JsNumber(airplaneModel.speed),
-      "range" -> JsNumber(airplaneModel.range),
-      "price" -> JsNumber(airplaneModel.price),
-      "lifespan" -> JsNumber(airplaneModel.lifespan),
-      "airplaneType" -> JsString(airplaneModel.airplaneTypeLabel),
-      "turnaroundTime" -> JsNumber(airplaneModel.turnaroundTime),
-      "runwayRequirement" -> JsNumber(airplaneModel.runwayRequirement),
-      "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION), //same for all models for now
-      "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now
-      "constructionTime" -> JsNumber(airplaneModel.constructionTime),
-      "imageUrl" -> JsString(airplaneModel.imageUrl),
-      "countryCode" -> JsString(airplaneModel.manufacturer.countryCode),
-      "manufacturer" -> JsString(airplaneModel.manufacturer.name)
-          ))
+      val fuelPP = if (airplaneModel.capacity > 0) BigDecimal(airplaneModel.fuelBurn / airplaneModel.capacity.toDouble).setScale(2, RoundingMode.HALF_EVEN).toDouble else 0
 
+      JsObject(List(
+        "id" -> JsNumber(airplaneModel.id),
+        "name" -> JsString(airplaneModel.name),
+        "family" -> JsString(airplaneModel.family),
+        "capacity" -> JsNumber(airplaneModel.capacity),
+        "quality" -> JsNumber(airplaneModel.quality),
+        "fuelBurn" -> JsNumber(airplaneModel.fuelBurn),
+        "fuelPerPax" -> JsNumber(fuelPP),
+        "speed" -> JsNumber(airplaneModel.speed),
+        "range" -> JsNumber(airplaneModel.range),
+        "price" -> JsNumber(airplaneModel.price),
+        "lifespan" -> JsNumber(airplaneModel.lifespan),
+        "airplaneType" -> JsString(airplaneModel.airplaneTypeLabel),
+        "turnaroundTime" -> JsNumber(airplaneModel.turnaroundTime),
+        "runwayRequirement" -> JsNumber(airplaneModel.runwayRequirement),
+        "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION), //same for all models for now
+        "criticalConditionThreshold" -> JsNumber(Airplane.CRITICAL_CONDITION), //same for all models for now
+        "constructionTime" -> JsNumber(airplaneModel.constructionTime),
+        "imageUrl" -> JsString(airplaneModel.imageUrl),
+        "countryCode" -> JsString(airplaneModel.manufacturer.countryCode),
+        "manufacturer" -> JsString(airplaneModel.manufacturer.name)
+      ))
     }
   }
 
@@ -107,7 +109,6 @@ package object controllers {
         "dealerRatio" -> JsNumber(airplane.dealerRatio),
         "configurationId" -> JsNumber(airplane.configuration.id),
         "configuration" -> Json.obj("economy" -> airplane.configuration.economyVal, "business" -> airplane.configuration.businessVal, "first" -> airplane.configuration.firstVal),
-        //"availableFlightMinutes" -> JsNumber(airplane.availableFlightMinutes),
         "maxFlightMinutes" -> JsNumber(Airplane.MAX_FLIGHT_MINUTES),
         "homeAirportId" -> JsNumber(airplane.home.id),
         "badConditionThreshold" -> JsNumber(Airplane.BAD_CONDITION),
@@ -514,9 +515,25 @@ package object controllers {
     }
   }
 
+  implicit object DestinationWrites extends Writes[Destination] {
+    def writes(destination: Destination): JsValue = {
+      JsObject(List(
+        "id" -> JsNumber(destination.id),
+        "airportId" -> JsNumber(destination.airport.id),
+        "airportIata" -> JsString(destination.airport.iata),
+        "name" -> JsString(destination.name),
+        "type" -> JsString(DestinationType.label(destination.destinationType)),
+        "strength" -> JsNumber(destination.strength),
+        "description" -> JsString(destination.description),
+        "latitude" -> JsNumber(destination.latitude),
+        "longitude" -> JsNumber(destination.longitude),
+        "countryCode" -> JsString(destination.countryCode)
+      ))
+    }
+  }
+
   implicit object CityWrites extends Writes[City] {
     def writes(city: City): JsValue = {
-//      val incomeLevel = Computation.getIncomeLevel(city.income).toInt
       JsObject(List(
         "id" -> JsNumber(city.id),
         "name" -> JsString(city.name),
@@ -535,6 +552,23 @@ package object controllers {
         "label" -> AirportBoostType.getLabel(entry.boostType),
         "value" -> entry.value,
       )
+    }
+  }
+
+  object SimpleAirportWrites extends Writes[Airport] {
+    override def writes(airport: Airport): JsValue = {
+      Json.obj(
+        "id" -> airport.id,
+        "name" -> airport.name,
+        "iata" -> airport.iata,
+        "icao" -> airport.icao,
+        "city" -> airport.city,
+        "size" -> airport.size,
+        "latitude" -> airport.latitude,
+        "longitude" -> airport.longitude,
+        "countryCode" -> airport.countryCode,
+        "population" -> airport.population,
+        "incomeLevel" -> airport.incomeLevel.toInt)
     }
   }
 
@@ -595,13 +629,13 @@ package object controllers {
         }
         airportObject = airportObject + ("bonusList" -> bonusJson)
       }
+
       if (airport.isFeaturesLoaded) {
         implicit val boostWriter = new Writes[(String, Double)] {
           override def writes(o : (String, Double)) : JsValue = {
             Json.obj("description" -> o._1, "boost" -> o._2)
           }
         }
-
         airportObject = airportObject + ("features" -> JsArray(airport.getFeatures().sortBy(_.featureType.id).map { airportFeature =>
           var featureJson = Json.obj("type" -> airportFeature.featureType.toString(), "strength" -> airportFeature.strength, "title" -> airportFeature.getDescription)
           airportFeature match {
@@ -621,9 +655,11 @@ package object controllers {
           airportObject = airportObject + ("incomeLevelBoost" -> Json.toJson(airport.boostFactorsByType.get(AirportBoostType.INCOME)))
         }
       }
+
       if (airport.isGateway()) {
         airportObject = airportObject + ("isGateway" -> JsBoolean(true))
       }
+
       if (airport.isDomesticAirport()) {
         airportObject = airportObject + ("isDomesticAirport" -> JsBoolean(true))
       }
@@ -631,12 +667,15 @@ package object controllers {
       if (airport.getRunways().length > 0) {
         airportObject = airportObject + ("runways" -> JsArray(airport.getRunways().sortBy(_.length).reverse.map { runway =>
           Json.obj("type" -> runway.runwayType.toString(), "length" -> runway.length, "code" -> runway.code)
-        }
-        ))
+        }))
       }
 
       val citiesServed = airport.citiesServed.sortBy(_._1.population)
-      airportObject = airportObject + ("citiesServed" -> Json.toJson(citiesServed.map(_._1).toList))
+      airportObject = airportObject + ("citiesServed" -> Json.toJson(citiesServed.map { case (city, cityShare) =>
+        Json.toJson(city).as[JsObject] ++ Json.obj("cityShare" -> cityShare)
+      }.toList))
+
+      airportObject = airportObject + ("destinations" -> Json.toJson(airport.destinations))
 
       airportObject
     }
