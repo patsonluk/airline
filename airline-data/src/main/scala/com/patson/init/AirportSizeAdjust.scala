@@ -23,7 +23,7 @@ object AirportSizeAdjust {
         "IST" -> 9,
         "LAX" -> 9,
         "ORD" -> 9,
-        "DEL" -> 8,//should be a 9 but it gets to big
+        "DEL" -> 8,//should be a 9 but it gets too big
         "CGK" -> 9,
         "CDG" -> 9,
         "CAN" -> 9,
@@ -281,6 +281,7 @@ object AirportSizeAdjust {
         "GNB" -> 3,
         "XCR" -> 3,
         "TLN" -> 3,
+        "CMF" -> 3,
         "LTT" -> 2,
         //ethiopia
         "MQX" -> 3,
@@ -533,7 +534,11 @@ object AirportSizeAdjust {
         "HUN" -> 2,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Tajikistan
         //https://en.wikipedia.org/wiki/List_of_airports_in_Tanzania
+        "BKZ" -> 2,
+        "TKQ" -> 2,
+        "ARK" -> 2,
         "MWZ" -> 3,
+        "JRO" -> 4,
         "DAR" -> 5,
         //Taiwan
         "PIF" -> 1,
@@ -559,6 +564,8 @@ object AirportSizeAdjust {
         //https://en.wikipedia.org/wiki/List_of_airports_in_Turkmenistan
         "CRZ" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Uganda
+        //https://en.wikipedia.org/wiki/List_of_airports_in_Uruguay
+        "PDP" -> 4,
         //https://en.wikipedia.org/wiki/List_of_busiest_airports_in_the_United_Kingdom
         "BRS" -> 6,
         "GLA" -> 6,
@@ -722,6 +729,7 @@ object AirportSizeAdjust {
         "GTR" -> 2,
         "DHN" -> 2,
         "BQK" -> 2,
+        "HNS" -> 1,
         //puerto-rico
         "SIG" -> 2,
         "PSE" -> 3,
