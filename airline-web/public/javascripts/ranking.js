@@ -75,7 +75,9 @@ function updateRankingTable(rankingType, rankings) {
         rankingTable = $('#linksLowIncome')
     } else if (rankingType == "LOUNGE") {
 		rankingTable = $('#loungeRank')
-	} else if (rankingType == "AIRPORT") {
+	} else if (rankingType == "STOCK_PRICE") {
+        rankingTable = $('#stockRank')
+    } else if (rankingType == "AIRPORT") {
 		rankingTable = $('#airportRank')
     } else if (rankingType == "INTERNATIONAL_PAX") {
         rankingTable = $('#internationPaxRank')
@@ -120,8 +122,11 @@ function getRankingRow(ranking) {
 	} else if (ranking.airportId) {
 		var entry = getCountryFlagImg(ranking.countryCode) + ranking.iata + " : " + ranking.airportName 
 		row.append("<div class='cell'>" + entry + "</div>")
-	}
-	row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(ranking.rankedValue) + "</div>")
+	} else if (ranking.airport1 && ranking.airport2) {
+        var entry = getAirportSpan(ranking.airport1) + " ↔ " + getAirportSpan(ranking.airport2)
+        row.append("<div class='cell'>" + entry + "</div>")
+    }
+    row.append("<div class='cell' style='text-align: right;'>" + commaSeparateNumber(ranking.rankedValue) + "</div>")
 	if (ranking.reputationPrize || ranking.reputationPrize === 0){
     	row.append("<div class='cell' style='text-align: right;'>" + getRankingImg(ranking.rank, true) + " " + commaSeparateNumber(ranking.reputationPrize) + "</div>")
 	}

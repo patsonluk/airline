@@ -123,6 +123,10 @@ object AirlineStatisticsSource {
     loadAirlineStatsByCriteria(List(("airline", airlineId)))
   }
 
+  def loadAirlineStatsByCycle(cycle: Int): List[AirlineStat] = {
+    loadAirlineStatsByCriteria(List(("cycle", cycle)))
+  }
+
   def loadAirlineStatsByCriteria(criteria: List[(String, Any)]) = {
     val connection = Meta.getConnection()
     val airlineStats = ListBuffer[AirlineStat]()
@@ -148,7 +152,7 @@ object AirlineStatisticsSource {
   }
 
   def getAirlineStatistics(connection: Connection, criteria: List[(String, Any)]) = {
-    val queryString = new StringBuilder(s"SELECT * FROM $AIRLINE_STATISTICS_TABLE i")
+    val queryString = new StringBuilder(s"SELECT * FROM $AIRLINE_STATISTICS_TABLE")
 
     if (!criteria.isEmpty) {
       queryString.append(" WHERE ")
@@ -157,6 +161,8 @@ object AirlineStatisticsSource {
       }
       queryString.append(criteria.last._1 + " = ?")
     }
+
+    println(queryString.toString())
 
     val preparedStatement = connection.prepareStatement(queryString.toString())
 

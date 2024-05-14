@@ -46,6 +46,9 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       } else if (ranking.entry.isInstanceOf[Airport]) { 
         val airport = ranking.entry.asInstanceOf[Airport]
         result = result + ("airportName" -> JsString(airport.name)) + ("airportId" -> JsNumber(airport.id)) + ("iata" -> JsString(airport.iata)) + ("countryCode" -> JsString(airport.countryCode))
+      } else if (ranking.entry.isInstanceOf[(Airport, Airport)]) {
+        val (airport1, airport2) = ranking.entry.asInstanceOf[(Airport, Airport)]
+        result = result ++ Json.obj("airport1" -> Json.toJson(airport1)(SimpleAirportWrites), "airport2" -> Json.toJson(airport2)(SimpleAirportWrites))
       }
 
       ranking.reputationPrize match {
@@ -66,7 +69,7 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
   
   def getLinkDescription(link : Link) = {
-    link.from.city + "(" + link.from.iata + ") <=> " + link.to.city + "(" + link.to.iata + ")" 
+    link.from.city + "(" + link.from.iata + ") ↔ " + link.to.city + "(" + link.to.iata + ")"
   }
   
   def getLoungeDescription(lounge : Lounge) = {

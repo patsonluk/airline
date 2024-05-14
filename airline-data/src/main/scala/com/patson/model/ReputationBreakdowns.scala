@@ -15,16 +15,12 @@ object ReputationType extends Enumeration {
     val label: String
   }
 
-  val MILESTONE_PASSENGERS = new AbstractReputationType {
-    override val label = "10k pax/km"
-  }
-
-  val MILESTONE_COUNTRIES = new AbstractReputationType {
-    override val label = "Unique Countries Milestone"
+  val MILESTONES = new AbstractReputationType {
+    override val label = "Milestones"
   }
 
   val AIRPORT_LOYALIST_RANKING = new AbstractReputationType {
-    override val label = "Airport Loyalist Ranking"
+    override val label = "Airports"
   }
 
   val TOURISTS = new AbstractReputationType {
