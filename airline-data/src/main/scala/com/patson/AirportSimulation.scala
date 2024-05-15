@@ -65,7 +65,9 @@ object AirportSimulation {
     val previousInfoByAirlineId : Predef.Map[Int, List[AirportChampionInfo]] = previousInfo.groupBy(_.loyalist.airline.id)
     val newInfoByAirlineId : Predef.Map[Int, List[AirportChampionInfo]] = newInfo.groupBy(_.loyalist.airline.id)
 
-    val airlineIds = previousInfoByAirlineId.keySet ++ newInfoByAirlineId.keySet
+    val maxGeneratedAirlineId = 300 //todo hookup to generated constant
+    val airlineIds = (previousInfoByAirlineId.keySet ++ newInfoByAirlineId.keySet).filter(_ > maxGeneratedAirlineId)
+
     val logs = ListBuffer[Log]()
     airlineIds.foreach { airlineId =>
       val changes = ListBuffer[ChampionInfoChange]()

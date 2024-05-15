@@ -101,7 +101,7 @@ object LinkCommentUtil {
       val commentsOfThisSample = ListBuffer[LinkComment]()
       for (j <- 0 until commentGenerationCount) {
         val commentWeight = poolByPreference(preference).drawCommentWeight(random)
-        println(s"${consumption.preferenceType} : $commentWeight")
+//        println(s"${consumption.preferenceType} : $commentWeight")
         commentWeight.foreach { weight =>
           val comments = weight.commentGroup match {
             case PRICE => generateCommentsForPrice(weight.adjustRatio)

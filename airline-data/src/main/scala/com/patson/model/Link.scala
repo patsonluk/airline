@@ -71,9 +71,9 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
         val airplaneConditionQuality = inServiceAirplanes.toList.map {
           case ((airplane, assignmentPerAirplane)) => math.max( 2 * airplane.condition / Airplane.MAX_CONDITION, 1 ) * assignmentPerAirplane.frequency
         }.sum / frequency * 20
-//        val airplaneTypeQuality = 1 + ((getAssignedModel().get.quality - 3) / 16.666667)
-//        computedQualityStore = Math.min(99, airplaneTypeQuality * (rawQuality.toDouble / Link.MAX_QUALITY * 35 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 45 + airplaneConditionQuality)).toInt
-        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
+        val airplaneTypeQuality = (getAssignedModel().get.quality - 4) * 3.5
+        computedQualityStore = Math.min(99, airplaneTypeQuality + (rawQuality.toDouble - 20) / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 30 + airplaneConditionQuality).toInt
+//        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
         hasComputedQuality = true
         computedQualityStore
       }
@@ -203,8 +203,8 @@ object Link {
   val staffScheme : Map[model.FlightType.Value, StaffSchemeBreakdown] = {
       val basicLookup = Map(
         SHORT_HAUL_DOMESTIC -> 2,
-        MEDIUM_HAUL_DOMESTIC -> 2,
-        LONG_HAUL_DOMESTIC -> 5,
+        MEDIUM_HAUL_DOMESTIC -> 4,
+        LONG_HAUL_DOMESTIC -> 6,
         ULTRA_LONG_HAUL_DOMESTIC -> 10,
         SHORT_HAUL_INTERNATIONAL -> 5,
         MEDIUM_HAUL_INTERNATIONAL -> 10,

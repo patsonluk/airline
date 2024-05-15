@@ -294,8 +294,7 @@ object PassengerSimulation {
 
   val ROUTE_COST_TOLERANCE_FACTOR = 1.5
   val LINK_COST_TOLERANCE_FACTOR = 0.9
-  val LINK_COST_TOLERANCE_NOISE_RANGE = 0.4 //ie -0.2 to 0.2
-  val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2.5
+  val ROUTE_DISTANCE_TOLERANCE_FACTOR = 3.0
   val random = new Random()
 
 
@@ -315,7 +314,7 @@ object PassengerSimulation {
 
     val incomeAdjustedFactor : Double =
       if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
-        1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
+        1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.3 //can reduce down to 0.7
       } else {
         1
       }

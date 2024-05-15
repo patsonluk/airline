@@ -1,7 +1,7 @@
 package com.patson.model
 
 import com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
-import com.patson.data.{AirportSource, CountrySource}
+import com.patson.data.{AirportSource, CountrySource, DestinationSource}
 import com.patson.model.AirlineBaseSpecialization.{POWERHOUSE, PowerhouseSpecialization}
 import com.patson.model.AirportAssetType.{PassengerCostModifier, TransitModifier}
 import com.patson.model.airplane.Model
@@ -98,6 +98,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   val basePower = baseIncome * basePopulation.toLong
   lazy val features : List[AirportFeature] = computeFeatures()
   lazy val rating =  AirportRating.rateAirport(this)
+
+  lazy val destinations : List[Destination] = DestinationSource.loadDestinationsByAirport(this.id).getOrElse(List.empty)
 
   def addCityServed(city : City, share : Double) {
     shouldLoadCities = true //do not lazy load city anymore, this is only used by Airport creation which later on should remove this method and that logic should just keep its own set of cities
@@ -425,7 +427,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
 
   val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
-    Math.max(0, Math.min((incomeLevel/1.5).toInt, 35) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //35% on income level, 50% on flight adjust, 5% for elite add-on, 10-20% for GOOD_QUALITY_DELTA
+    Math.max(0, Math.min((incomeLevel/1.5).toInt, 35) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //35% on income level, 45% on flight type, 5% for elite add-on, 20% for GOOD_QUALITY_DELTA
   }
 
   private[this] def getCountry() : Country = {
@@ -522,12 +524,12 @@ object Airport {
   Map(
     SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-10, 5, 15),
     MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 10, 25),
-    LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 40),
-    ULTRA_LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 20, 45),
-    SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 10, 25),
-    MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 20, 40),
-    LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(10, 35, 50),
-    ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 35, 50)
+    LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 35),
+    ULTRA_LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 20, 40),
+    SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 10, 20),
+    MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 20, 35),
+    LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(10, 30, 45),
+    ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 30, 45)
   )
 }
 

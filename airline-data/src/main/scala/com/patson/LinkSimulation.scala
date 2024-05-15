@@ -114,6 +114,7 @@ object LinkSimulation {
     println(s"Finished calculation on profits by links. Took ${endTime - startTime} millisecs")
 
     purgeAlerts()
+    //todo: skip if is generated
     checkLoadFactor(flightLinks, cycle)
 
     LinkSource.deleteLinkConsumptionsByCycle(300)

@@ -209,7 +209,7 @@ object TransactionType extends Enumeration {
 
 object OtherIncomeItemType extends Enumeration {
   type OtherBalanceItemType = Value
-  val LOAN_INTEREST, BASE_UPKEEP, OVERTIME_COMPENSATION, DIVIDENDS, LOUNGE_UPKEEP, LOUNGE_COST, LOUNGE_INCOME, ASSET_EXPENSE, ASSET_REVENUE, ADVERTISEMENT, DEPRECIATION, FUEL_PROFIT = Value
+  val NEGATIVE_CASH, LOAN_INTEREST, BASE_UPKEEP, OVERTIME_COMPENSATION, DIVIDENDS, LOUNGE_UPKEEP, LOUNGE_COST, LOUNGE_INCOME, ASSET_EXPENSE, ASSET_REVENUE, ADVERTISEMENT, DEPRECIATION, FUEL_PROFIT = Value
 }
 
 object CashFlowType extends Enumeration {
@@ -373,13 +373,9 @@ object Airline {
 
         airline.setBalance(newBalance)
 
-        //unset country code
         airline.removeCountryCode()
-        //unset service investment
-        airline.setTargetServiceQuality(0)
+        airline.setTargetServiceQuality(25)
         airline.setCurrentServiceQuality(0)
-        //unset minimum renewal balance
-        airline.setMinimumRenewalBalance(0)
 
         if (resetExtendedInfo) {
           airline.setReputation(0)
@@ -457,9 +453,6 @@ object AirlineGrades {
 }
 
 object AirlineGradeStockPrice {
-  /**
-   * values in map not being used serverside – grade level is a pure formula from stock price
-   */
   val grades = List(
     0.0 -> "n/a",
     0.01 -> "Worthless",
@@ -489,7 +482,7 @@ object AirlineGradeStockPrice {
 
   def findGrade(stockPrice: Double) = {
     val level = if (stockPrice > 0.0) {
-      (Math.log(stockPrice / 0.004) / Math.log(1.7)).toInt
+      Math.max(0, Math.log(stockPrice / 0.004) / Math.log(1.7)).toInt
     } else {
       0
     }

@@ -304,30 +304,6 @@ def constructAffinityText(fromZone : String, toZone : String, relationship : Int
       0
     }
   }
-
-//  val MAX_FREQUENCY_ABSOLUTE_BASE = 30
-//  def getMaxFrequencyThreshold(airline : Airline) : Int = {
-//    MAX_FREQUENCY_ABSOLUTE_BASE
-//  }
-
-//  def getMaxFrequencyThreshold(airline : Airline) : Int = {
-//     AllianceSource.loadAllianceMemberByAirline(airline) match {
-//       case Some(allianceMember) => {
-//         if (allianceMember.role != AllianceRole.APPLICANT) {
-//           AllianceRankingUtil.getRanking(allianceMember.allianceId) match {
-//             case Some((ranking, _)) => {
-//               val maxFrequencyBonus = Alliance.getMaxFrequencyBonus(ranking)
-//               MAX_FREQUENCY_ABSOLUTE_BASE + maxFrequencyBonus
-//             }
-//             case None => MAX_FREQUENCY_ABSOLUTE_BASE
-//           }
-//         } else {
-//           MAX_FREQUENCY_ABSOLUTE_BASE
-//         }
-//       }
-//       case None => MAX_FREQUENCY_ABSOLUTE_BASE
-//     }
-//  }
   
   def getResetAmount(airlineId : Int) : ResetAmountInfo = {
     val currentCycle = CycleSource.loadCycle()
@@ -344,10 +320,6 @@ def constructAffinityText(fromZone : String, toZone : String, relationship : Int
   case class ResetAmountInfo(airplanes : Long, bases : Long, assets : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
     val overall = airplanes + bases + assets + loans + oilContracts + existingBalance
   }
-
-//  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
-//    model.constructionTime + (existingConstruction / 5) * model.constructionTime / 4 
-//  }
 
   val MAX_SATISFACTION_PRICE_RATIO_THRESHOLD = 0.7 //at 100% satisfaction is <= this threshold
   val MIN_SATISFACTION_PRICE_RATIO_THRESHOLD = LINK_COST_TOLERANCE_FACTOR + 0.05 //0% satisfaction >= this threshold ... +0.05 so, there will be at least some satisfaction even at the LINK_COST_TOLERANCE_FACTOR
