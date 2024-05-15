@@ -216,17 +216,21 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        
        val currentCycle = CycleSource.loadCycle()
        val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId).filter(_.isReady)
+       val airplaneTypes = airplanes.flatMap {
+         plane => List(plane.model)
+       }.toSet.size
        
        val fleetSize = airplanes.length
-       val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
+       val fleetCondition = if (fleetSize > 0) airplanes.map(_.condition).sum / fleetSize else 0
        val minimumRenewalBalance = airline.getMinimumRenewalBalance()
 
        airlineJson =
          airlineJson +
-         ("linkCount" -> JsNumber(links.length)) +
+           ("linkCount" -> JsNumber(links.length)) +
            ("destinations"-> JsNumber(destinations)) +
            ("fleetSize"-> JsNumber(fleetSize)) +
-           ("fleetAge"-> JsNumber(fleetAge)) +
+           ("fleetCondition"-> JsNumber(fleetCondition)) +
+           ("fleetTypes"-> JsNumber(airplaneTypes)) +
            ("minimumRenewalBalance" -> JsNumber(minimumRenewalBalance))
 
        val cooldown = getRenameCooldown(airline)

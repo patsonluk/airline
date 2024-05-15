@@ -254,6 +254,51 @@ function updateProgress(stats, stockPrice){
     setProgressWidth("#stockBar", stockPrice, activeAirline.stock.stockFloor, activeAirline.stock.stockCeiling)
     setProgressWidth("#touristsBar", activeAirline.tourists.tourists, activeAirline.tourists.touristsFloor, activeAirline.tourists.touristsCeiling)
     setProgressWidth("#elitesBar", activeAirline.elites.elites, activeAirline.elites.elitesFloor, activeAirline.elites.elitesCeiling)
+
+//    updateMilestones(activeAirline.reputationBreakdowns.breakdowns)
+}
+
+function updateMilestones(breakdowns) {
+  let total = 0;
+
+  for (const breakdown of breakdowns) {
+    if (breakdown.description.toLowerCase().includes("milestone")) {
+      total += breakdown.value;
+      if(breakdown.description === "Milestone Aircraft Types" && breakdown.value >= 0){
+        if(breakdown.value >= 10){
+            document.getElementById("m-aircraft3").src = "/assets/images/icons/tick.png"
+        }
+        if(breakdown.value >= 15){
+            document.getElementById("m-aircraft3").src = "/assets/images/icons/tick.png"
+        }
+        if(breakdown.value >= 20){
+            document.getElementById("m-aircraft3").src = "/assets/images/icons/tick.png"
+        }
+      } else if(breakdown.description === "Milestone Countries Served" && breakdown.value >= 0){
+        if(breakdown.value >= 15){
+            document.getElementById("m-country2").src = "/assets/images/icons/tick.png"
+        }
+        if(breakdown.value >= 30){
+            document.getElementById("m-country2").src = "/assets/images/icons/tick.png"
+        }
+        if(breakdown.value >= 60){
+            document.getElementById("m-country3").src = "/assets/images/icons/tick.png"
+        }
+      } else if(breakdown.description === "Milestone Passenger Miles" && breakdown.value >= 0){
+        if(breakdown.value >= 20){
+            document.getElementById("m-pax1").src = "/assets/images/icons/tick.png"
+        }
+        if(breakdown.value >= 40){
+            document.getElementById("m-pax2").src = "/assets/images/icons/tick.png"
+        }
+        if(breakdown.value >= 60){
+            document.getElementById("m-pax3").src = "/assets/images/icons/tick.png"
+        }
+      }
+    }
+  }
+
+  return total;
 }
 
 function updateAirlineColorPicker() {
@@ -285,8 +330,12 @@ function updateAirlineDetails() {
 //            }
             var breakdownList = $("<ul></ul>")
             $.each(airline.reputationBreakdowns.breakdowns, function(index, breakdown) {
-                breakdownList.append("<li>" + breakdown.description + ": <span class='rep-value'>" + breakdown.value.toFixed(2) + "</span></li>")
+                if (!breakdown.description.toLowerCase().includes("milestone")) {
+                    breakdownList.append("<li>" + breakdown.description + ": <span class='rep-value'>" + breakdown.value.toFixed(2) + "</span></li>")
+                }
             })
+            const milestoneValue = updateMilestones(airline.reputationBreakdowns.breakdowns)
+            breakdownList.append("<li>Milestones: <span class='rep-value'>" + milestoneValue.toFixed(2) + "</span></li>")
             $('#officeCanvas .reputationDetails').html(breakdownList)
 //            reputationHtml.append(breakdownList)
 //            reputationHtml.append("<div class='remarks'>Current reputation adjusts slowly towards the target reputation</div>")
