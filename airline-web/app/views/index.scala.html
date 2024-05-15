@@ -874,24 +874,23 @@
 											<i class="pl-1 planLinkFlightType"></i>
 										</div>
 									</div>
-									<div class="linkRejection warning">
-										<div><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason"></span></div>
-									</div>
-									<div class="warningList">
-									</div>
-
-									<div class="overtimeCompensation warning" style="display: flex; align-items: center;">
-										<img src='@routes.Assets.versioned("images/icons/exclamation-red-frame.png")'>&nbsp;
-										Exceeding operation capacity of current base. Extra overtime compensation of&nbsp;
-										$<span class="amount"></span>&nbsp;
-										will be charged per week for this change.
-									</div>
-									<div class="flex-container-width-half py-2 gap-2">
-										<button type="button" class="button modifyLink ml-0" id="addLinkButton" onclick="linkConfirmation()">Create</button>
-										<button type="button" class="button modifyLink ml-0" id="updateLinkButton" onclick="linkConfirmation()">Update</button>
-										<button type="button" class="button mr-0" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</button>
-										<button type="button" class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</button>
-									</div>
+								</div>
+								<div class="linkRejection warning">
+									<div><img src='@routes.Assets.versioned("images/icons/prohibition.png")'><span id="linkRejectionReason"></span></div>
+								</div>
+								<div class="warningList">
+								</div>
+								<div class="overtimeCompensation warning" style="display: flex; align-items: center;">
+									<img src='@routes.Assets.versioned("images/icons/exclamation-red-frame.png")'>&nbsp;
+									Exceeding operation capacity of current base. Extra overtime compensation of&nbsp;
+									$<span class="amount"></span>&nbsp;
+									will be charged per week for this change.
+								</div>
+								<div class="flex-container-width-half py-2 gap-2">
+									<button type="button" class="button modifyLink ml-0" id="addLinkButton" onclick="linkConfirmation()">Create</button>
+									<button type="button" class="button modifyLink ml-0" id="updateLinkButton" onclick="linkConfirmation()">Update</button>
+									<button type="button" class="button mr-0" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</button>
+									<button type="button" class="button" id="cancelLinkButton" onclick="cancelPlanLink()">Cancel</button>
 								</div>
 							</div>
 						</div>
