@@ -408,7 +408,7 @@ object NegotiationUtil {
     val finalRequirementValue = fromAirportRequirementValue + toAirportRequirementValue
 
     //check for freebie bonus
-    if (airlineLinks.length < FREE_LINK_THRESHOLD &&
+    if (airlineLinks.filter(link => FlightType.getCategory(link.flightType) != FlightCategory.INTERCONTINENTAL).length < FREE_LINK_THRESHOLD &&
       newFrequency <= FREE_LINK_FREQUENCY_THRESHOLD &&  //to prevent many small increase
       finalRequirementValue < FREE_LINK_DIFFICULTY_THRESHOLD &&
       FlightType.getCategory(newLink.flightType) != FlightCategory.INTERCONTINENTAL
