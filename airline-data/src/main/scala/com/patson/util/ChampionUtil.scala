@@ -85,18 +85,15 @@ object ChampionUtil {
       val featureBoost = feature.featureType match {
         case GATEWAY_AIRPORT => 3
         case INTERNATIONAL_HUB => feature.strengthFactor * 25
-        case FINANCIAL_HUB => feature.strengthFactor * 15
-        case VACATION_HUB => feature.strengthFactor * 15
+        case FINANCIAL_HUB => feature.strengthFactor * 18
+        case ISOLATED_TOWN => feature.strength.toDouble / 2.0
         case _ => 0
       }
 
       boost += featureBoost
     }
 
-    boost += (airport.size match {
-      case x if (x >= 3) => airport.size - 2
-      case _ => 0
-    })
+    boost += airport.size
 
     boost * reputationBoostTop10(ranking)
   }

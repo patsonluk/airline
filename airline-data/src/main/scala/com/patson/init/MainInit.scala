@@ -11,5 +11,4 @@ object MainInit extends App {
   AirplaneModelInitializer.mainFlow()
   GenericTransitGenerator.generateGenericTransit()
   AirlineGenerator.mainFlow()
- // AirportProfilePicturePatcher.patchProfilePictures()
 }

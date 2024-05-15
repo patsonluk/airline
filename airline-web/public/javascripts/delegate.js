@@ -54,10 +54,12 @@ function refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo) {
     $delegateStatusDiv.empty()
     var availableDelegates = delegateInfo.availableCount
 
+    var delegateIcons = []
     //delegate info
     for (i = 0 ; i < availableDelegates; i ++) {
-        var delegateIcon = $('<img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/>')
-        $delegateStatusDiv.append(delegateIcon)
+        var $delegateIconDiv = $('<div style="position: relative; display: inline-block;"><img src="assets/images/icons/user-silhouette-available.png" title="Available Delegate"/></div>')
+        $delegateIconDiv.expirable = true;
+        delegateIcons.push($delegateIconDiv)
     }
 
     $.each(delegateInfo.busyDelegates, function(index, busyDelegate) {
@@ -65,6 +67,7 @@ function refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo) {
         var $delegateIcon
         if (busyDelegate.completed) {
             $delegateIcon = $('<img src="assets/images/icons/user-silhouette-unavailable.png" title="' + busyDelegate.coolDown + ' week(s) cool down remaining. Previous task : ' + busyDelegate.taskDescription + '"/>')
+            $delegateIconDiv.expirable = true;
         } else {
             $delegateIcon = $('<img src="assets/images/icons/user-silhouette-busy.png" title="Busy with task - ' + busyDelegate.taskDescription + '"/>')
         }
@@ -76,7 +79,23 @@ function refreshAirlineDelegateStatus($delegateStatusDiv, delegateInfo) {
             $coolDownDiv.text(busyDelegate.coolDown)
             $delegateIconDiv.append($coolDownDiv)
         }
-        $delegateStatusDiv.append($delegateIconDiv)
+        delegateIcons.push($delegateIconDiv)
+    })
+
+
+    var iconIndex = delegateIcons.length //mark the available ones first
+    $.each(delegateInfo.boosts, function(index, boost) {
+        for (i = 0 ; i < boost.amount; i ++) {
+            while (--iconIndex > 0 && !delegateIcons[iconIndex].expirable) {
+                //find the first icon (traverse from the back) that can be marked as expirable
+            }
+            var $boostRemainingDiv = $("<div style='position: absolute; left: 1px; top: 0; background-color: #a4f5b0; color: #454544; font-size: 8px; font-weight: bold;' title='Boost expiring in " + boost.remainingCycles + " week(s)'>" + boost.remainingCycles + "</div>")
+            delegateIcons[iconIndex].append($boostRemainingDiv)
+        }
+    })
+
+    $.each(delegateIcons, function(index, $icon) {
+        $delegateStatusDiv.append($icon)
     })
 }
 
@@ -127,7 +146,7 @@ function refreshTopBarDelegates(airline) {
 	var $delegateIconDiv = $('<div style="position: relative; display: inline-block;"></div>').appendTo($('#topBar .delegatesShortcut'))
     var $delegateIcon = $('<img>').appendTo($delegateIconDiv)
 
-    if (availableDelegates == 0) {
+    if (availableDelegates <= 0) {
         $delegateIcon.attr('src', 'assets/images/icons/user-silhouette-unavailable.png')
         var minCoolDown = -1
         $.each(airline.delegatesInfo.busyDelegates, function(index, busyDelegate) {
@@ -155,7 +174,11 @@ function refreshTopBarDelegates(airline) {
 
 }
 
-function showDelegateStatusModal() {
-    updateAirlineDelegateStatus($('#delegateStatusModal .delegateStatus'))
-    $('#delegateStatusModal').fadeIn(500)
+function toggleDelegateStatusModal() {
+    if (!$("#delegateStatusModal").is(":visible")) {
+        updateAirlineDelegateStatus($('#delegateStatusModal .delegateStatus'))
+        $('#delegateStatusModal').fadeIn(500)
+    } else {
+        closeModal($('#delegateStatusModal'))
+    }
 }

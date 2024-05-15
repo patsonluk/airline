@@ -7,12 +7,11 @@ import com.patson.data.AirlineSource
 import com.patson.data.AirplaneSource
 
 object Bank {
-  //val LOAN_TERMS = Map(52 -> 0.25 , 2 * 52 -> 0.28, 3 *52 -> 0.32, 5 * 52 -> 0.35)
   val WEEKS_PER_YEAR = 52
-  val LOAN_TERMS = List[Int](WEEKS_PER_YEAR, 2 * WEEKS_PER_YEAR, 3 * WEEKS_PER_YEAR, 4 * WEEKS_PER_YEAR, 5 * WEEKS_PER_YEAR)
+  val LOAN_TERMS = List[Int](26, WEEKS_PER_YEAR, 2 * WEEKS_PER_YEAR, 4 * WEEKS_PER_YEAR, 8 * WEEKS_PER_YEAR)
   val MAX_LOANS = 10
   val MIN_LOAN_AMOUNT = 10000
-  val MAX_LOAN_AMOUNT = 500000000 //500 million as max
+  val MAX_LOAN_AMOUNT = 1500000000 //1.5b max
   val LOAN_REAPPLY_MIN_INTERVAL = 13 //only every quarter
   def getMaxLoan(airlineId : Int) : LoanReply = {
     val existingLoans = BankSource.loadLoansByAirline(airlineId)
@@ -35,11 +34,8 @@ object Bank {
     
     val creditFromProfit : Option[Long] = IncomeSource.loadIncomeByAirline(airlineId, previousMonthCycle, Period.MONTHLY).map(_.links.profit * 13 * 2)  //2 * yearly link profit
     
-    val totalAssets = getAssets(airlineId)
-    
-    //offer 20% of the assets as credit
-    val creditFromAssets = (totalAssets * 0.2).toLong
-    
+    val totalAssets = Computation.getResetAmount(airlineId).overall
+    val creditFromAssets = (totalAssets * 0.2).toLong //offer 20% of the assets as credit
     val totalCredit = creditFromAssets + creditFromProfit.getOrElse(0L)
     
     val liability = existingLoans.map(_.remainingPayment(currentCycle)).sum
@@ -53,7 +49,7 @@ object Bank {
     if (availableLoanAmount >= MIN_LOAN_AMOUNT) {
       return LoanReply(availableLoanAmount, None)
     } else {
-      return LoanReply(0, Some("The bank does not want to provide you any loan at this moment. Try to improve your profit."))
+      return LoanReply(0, Some("Lending you money is considered too high risk."))
     }
   }
  
@@ -77,23 +73,6 @@ object Bank {
         Loan(airlineId = 0, principal = principal, annualRate = annualRateByTerm, creationCycle = currentCycle, lastPaymentCycle = currentCycle, term = term)
       }
   }
-  
-  def getAssets(airlineId : Int) : Long = {
-    var totalAssets = 0L
-    AirlineSource.loadAirlineBasesByAirline(airlineId).foreach { base =>
-      totalAssets = totalAssets + base.getValue 
-    }
-    
-    AirlineSource.loadLoungesByAirline(airlineId).foreach { lounge =>
-      totalAssets = totalAssets + lounge.getValue 
-    }
-    
-    AirplaneSource.loadAirplanesByOwner(airlineId).foreach { airplane =>
-      totalAssets = totalAssets + airplane.value
-    }
-    
-    totalAssets
-  }
-  
+
   case class LoanReply(maxLoan : Long, rejectionOption : Option[String])
 }

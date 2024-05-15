@@ -46,6 +46,14 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       } else if (ranking.entry.isInstanceOf[Airport]) { 
         val airport = ranking.entry.asInstanceOf[Airport]
         result = result + ("airportName" -> JsString(airport.name)) + ("airportId" -> JsNumber(airport.id)) + ("iata" -> JsString(airport.iata)) + ("countryCode" -> JsString(airport.countryCode))
+      } else if (ranking.entry.isInstanceOf[(Airport, Airport)]) {
+        val (airport1, airport2) = ranking.entry.asInstanceOf[(Airport, Airport)]
+        result = result ++ Json.obj("airport1" -> Json.toJson(airport1)(SimpleAirportWrites), "airport2" -> Json.toJson(airport2)(SimpleAirportWrites))
+      }
+
+      ranking.reputationPrize match {
+        case Some(value) => result = result + ("reputationPrize" -> JsNumber(value))
+        case None =>
       }
       
       result
@@ -61,7 +69,7 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
   
   def getLinkDescription(link : Link) = {
-    link.from.city + "(" + link.from.iata + ") <=> " + link.to.city + "(" + link.to.iata + ")" 
+    link.from.city + "(" + link.from.iata + ") ↔ " + link.to.city + "(" + link.to.iata + ")"
   }
   
   def getLoungeDescription(lounge : Lounge) = {
@@ -72,7 +80,7 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
   def getRankings() = Action {
      var json = Json.obj()
-     RankingUtil.getRankings().foreach {
+    RankingLeaderboards.getRankings().foreach {
        case(rankingType, rankings) =>
          json = json + (rankingType.toString, Json.toJson(rankings.take(MAX_ENTRY)))
      }
@@ -83,7 +91,7 @@ class RankingApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   
   def getRankingsWithAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     var json = Json.obj()
-    RankingUtil.getRankings().foreach {
+    RankingLeaderboards.getRankings().foreach {
       case(rankingType, rankings) =>
         val (topRankings, nonTopRankings) = rankings.splitAt(MAX_ENTRY)
          

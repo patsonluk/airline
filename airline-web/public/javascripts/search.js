@@ -1,7 +1,7 @@
 var loadedOlympicsEvents = []
 var loadedAlerts = []
 
-function showSearchCanvas() {
+function showSearchCanvas(historyAirline) {
     var titlesContainer = $("#searchCanvas div.titlesContainer")
     positionTitles(titlesContainer)
     setActiveDiv($("#searchCanvas"))
@@ -26,6 +26,14 @@ function showSearchCanvas() {
     updateNavigationArrows(titlesContainer)
 
     initializeHistorySearch()
+
+    if (historyAirline) {
+        var historyDiv = titlesContainer.find('.titleSelection[data-search-type="history"]')
+        $(historyDiv).trigger('click')
+        $('#searchCanvas div.historySearch input.airline').data('selectedId',historyAirline.id)
+        $('#searchCanvas div.historySearch input.airline').val(getAirlineTextEntry(historyAirline, false))
+        searchLinkHistory()
+    }
 }
 
 function showBanner() {
@@ -76,8 +84,6 @@ function initializeHistorySearch() {
         updateLinkHistoryTable(sortProperty, sortOrder)
        })
      });
-
-
 }
 
 function refreshSearchDiv(selectedDiv) {
@@ -814,11 +820,13 @@ function researchFlight(fromAirportId, toAirportId) {
                 var $breakdown = $("#researchSearchResult .directDemandBreakdown")
                 $breakdown.find(".fromAirport .airportLabel").empty()
                 $breakdown.find(".fromAirport .airportLabel").append(getAirportSpan(fromAirport))
+                $breakdown.find(".fromAirport .travelerDemand").text(toLinkClassValueString(linkInfo.fromAirportTravelerDemand))
                 $breakdown.find(".fromAirport .businessDemand").text(toLinkClassValueString(result.fromAirportBusinessDemand))
                 $breakdown.find(".fromAirport .touristDemand").text(toLinkClassValueString(result.fromAirportTouristDemand))
 
                 $breakdown.find(".toAirport .airportLabel").empty()
                 $breakdown.find(".toAirport .airportLabel").append(getAirportSpan(toAirport))
+                $breakdown.find(".toAirport .travelerDemand").text(toLinkClassValueString(linkInfo.toAirportTravelerDemand))
                 $breakdown.find(".toAirport .businessDemand").text(toLinkClassValueString(result.toAirportBusinessDemand))
                 $breakdown.find(".toAirport .touristDemand").text(toLinkClassValueString(result.toAirportTouristDemand))
 
@@ -883,7 +891,8 @@ function getZoneTextEntry(zone) {
 }
 
 function getAirlineTextEntry(airline, showPreviousNames) {
-    var result = airline.airlineName + "(" + airline.airlineCode + ")"
+    var name = airline.airlineName ? airline.airlineName : airline.name //some inconsistencies...
+    var result = name + "(" + airline.airlineCode + ")"
     if (showPreviousNames && airline.previousNames && airline.previousNames.length > 0) {
         result += (" formerly: " + airline.previousNames.join(", "))
     }

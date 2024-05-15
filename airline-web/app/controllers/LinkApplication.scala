@@ -347,7 +347,9 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       return BadRequest("Link is rejected: " + rejectionReason.get);
     }
 
-    if (delegateCount > airline.getDelegateInfo().availableCount) {
+    //if assign more delegates then available.
+    //However assigning no delegates should be allowed even if negative delegates
+    if (delegateCount > 0 && delegateCount > airline.getDelegateInfo().availableCount) {
       return BadRequest(s"Assigning $delegateCount delegates but not enough available");
     }
 
@@ -449,7 +451,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           val logMessage =  s"Negotiation Discount of ${(discount.discount * 100).toInt}% for ${fromAirport.displayText} -> ${toAirport.displayText} (expires after ${LinkNegotiationDiscount.DURATION} weeks)"
           LogSource.insertLogs(List(Log(airline, logMessage, LogCategory.NEGOTIATION, LogSeverity.INFO, cycle)))
           NegotiationSource.saveLinkDiscount(discount)
-          result = result + ("nextNegotiationDiscount" -> JsString(s"Some progress made. ${(discount.discount * 100).toInt}% Negotiation Discount for the next ${LinkNegotiationDiscount.DURATION} weeks"))
+          result = result + ("nextNegotiationDiscount" -> JsString(s"Some progress: ${(discount.discount * 100).toInt}% Negotiation Discount for the next ${LinkNegotiationDiscount.DURATION} weeks"))
         }
       }
 
@@ -652,6 +654,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       case Right((fromAirport, toAirport)) => {
         var existingLink: Option[Link] = LinkSource.loadFlightLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
 
+        val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+        val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
         val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
 
         val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink)
@@ -661,14 +665,20 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val modelsWithinRange: List[Model] = ModelSource.loadModelsWithinRange(distance)
 
         val allManufacturingCountries = modelsWithinRange.map(_.countryCode).toSet
-
         val countryRelations : immutable.Map[String, AirlineCountryRelationship] = allManufacturingCountries.map { countryCode =>
           (countryCode, AirlineCountryRelationship.getAirlineCountryRelationship(countryCode, airline))
         }.toMap
+        val modelsWithinRangeAndRelationship = modelsWithinRange.filter(model => model.purchasableWithRelationship(countryRelations(model.countryCode).relationship))
 
         val ownedAirplanesByModel = AirplaneSource.loadAirplanesByOwner(airlineId).groupBy(_.model)
-        val modelsWithinRangeAndRelationship = modelsWithinRange.filter(model => model.purchasableWithRelationship(countryRelations(model.countryCode).relationship))
         val availableModels = modelsWithinRangeAndRelationship ++ ownedAirplanesByModel.keys.filter(_.range >= distance)
+
+        val availableModelsAndCustoms = if (relationship != 5 && fromAirport.isDomesticAirport() || relationship != 5 && toAirport.isDomesticAirport()) {
+          import Model.Category._
+          availableModels.filter(_.category == LIGHT)
+        } else {
+          availableModels
+        }
 
         val airplanesAssignedToThisLink = new mutable.HashMap[Int, Int]()
 
@@ -683,7 +693,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         //available airplanes are either the ones that are already assigned to this link or have available flight minutes that is >= required minutes
         //group airplanes by model, also add Int to indicated how many frequency is this airplane currently assigned to this link
-        val availableAirplanesByModel : immutable.Map[Model, List[(Airplane, Int)]] = availableModels.map { model =>
+        val availableAirplanesByModel : immutable.Map[Model, List[(Airplane, Int)]] = availableModelsAndCustoms.map { model =>
           val ownedAirplanesOfThisModel = ownedAirplanesByModel.getOrElse(model, List.empty)
           val flightMinutesRequired = Computation.calculateFlightMinutesRequired(model, distance)
           val availableAirplanesOfThisModel = ownedAirplanesOfThisModel.filter(airplane => (airplane.home.id == fromAirportId && airplane.availableFlightMinutes >= flightMinutesRequired) || airplanesAssignedToThisLink.isDefinedAt(airplane.id))
@@ -731,22 +741,36 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             (suggestedPrice(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
             (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
         }
-        val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
-        val directFromAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS)
-        val directToAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
-        val directBusinessDemand =  directFromAirportBusinessDemand + directToAirportBusinessDemand
+//        val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+//        val directFromAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS)
+//        val directToAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
+//        val directBusinessDemand =  directFromAirportBusinessDemand + directToAirportBusinessDemand
+//
+//        val directFromAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST)
+//        val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+//        val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
-        val directFromAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST)
-        val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+        val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
+        val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, distance)
+
+        val directFromAirportTravelerDemand = fromDemand.travelerDemand
+        val directToAirportTravelerDemand = toDemand.travelerDemand
+        val directTravelerDemand = directFromAirportTravelerDemand + directToAirportTravelerDemand
+
+        val directFromAirportBusinessDemand = fromDemand.businessDemand
+        val directToAirportBusinessDemand = toDemand.businessDemand
+        val directBusinessDemand = directFromAirportBusinessDemand + directToAirportBusinessDemand
+
+        val directFromAirportTouristDemand = fromDemand.touristDemand
+        val directToAirportTouristDemand = toDemand.touristDemand
         val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
-        val directDemand = directBusinessDemand + directTouristDemand
-        //val airportLinkCapacity = LinkSource.loadLinksByToAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum + LinkSource.loadLinksByFromAirport(fromAirport.id, LinkSource.ID_LOAD).map { _.capacity.total }.sum
+        val directDemand = directTravelerDemand + directBusinessDemand + directTouristDemand
 
         val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
         val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
         val flightCode = LinkUtil.getFlightCode(request.user, flightNumber)
-        val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
+        val flightType = Computation.getFlightType(fromAirport, toAirport, distance, relationship)
 
         val estimatedDifficulty : Option[Double] =
           if (existingLink.isEmpty) {
@@ -775,7 +799,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "toAirportLongitude" -> toAirport.longitude,
           "toCountryCode" -> toAirport.countryCode,
           "flightCode" -> flightCode,
-          "mutualRelationship" -> countryRelationship,
+          "mutualRelationship" -> relationship,
+          "affinity" -> Computation.constructAffinityText(fromAirport.zone,toAirport.zone,relationship),
           "distance" -> distance,
           "flightType" -> FlightType.label(flightType),
           "suggestedPrice" -> suggestedPrice,
@@ -783,6 +808,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
           "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
           "directDemand" -> directDemand,
+          "fromAirportTravelerDemand" -> directFromAirportTravelerDemand,
+          "toAirportTravelerDemand" -> directToAirportTravelerDemand,
           "fromAirportBusinessDemand" -> directFromAirportBusinessDemand,
           "toAirportBusinessDemand" -> directToAirportBusinessDemand,
           "fromAirportTouristDemand" -> directFromAirportTouristDemand,
@@ -840,7 +867,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   object RejectionType extends Enumeration {
     type RejectionType = Value
-    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH, NEGOTIATION_COOL_DOWN, DUPLICATED_LINK = Value
+    val NO_BASE, TITLE_REQUIREMENT, AIRLINE_GRADE, DISTANCE, NO_CASH, NEGOTIATION_COOL_DOWN, DUPLICATED_LINK, REQUIRES_CUSTOMS = Value
   }
 
   def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, existingLink : Option[Link]) : Option[(String, RejectionType.Value)]= {
@@ -848,14 +875,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     if (airline.getCountryCode.isEmpty) {
       return Some(("Airline has no HQ!", NO_BASE))
     }
-    val toCountryCode = toAirport.countryCode
 
     existingLink match {
       case None => //new link
         //validate there's no existing link with opposite direction
-        LinkSource.loadFlightLinkByAirportsAndAirline(toAirport.id, fromAirport.id, airline.id).foreach { _ =>
-          return Some(("Cannot create this route as your airline already has one flying between these 2 airports"), DUPLICATED_LINK)
-        }
+
+//        LinkSource.loadFlightLinkByAirportsAndAirline(toAirport.id, fromAirport.id, airline.id).foreach { _ =>
+//          return Some(("Cannot create this route as your airline already has one flying between these 2 airports"), DUPLICATED_LINK)
+//        }
 
         //validate from airport is a base
         val base = fromAirport.getAirlineBase(airline.id) match {
@@ -863,8 +890,18 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           case Some(base) => base
         }
 
+        val countryRelationships = CountrySource.getCountryMutualRelationships()
+        val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
 
-        val flightCategory = FlightType.getCategory(Computation.getFlightType(fromAirport, toAirport))
+        if (!toAirport.isGateway() && toAirport.size <= 2 && relationship != 5) {
+          return Some("Destination airport is too small to serve international destinations.", REQUIRES_CUSTOMS)
+        }
+        if (!toAirport.isGateway() && fromAirport.size <= 2 && relationship != 5) {
+          return Some("Home airport is too small to serve international destinations.", REQUIRES_CUSTOMS)
+        }
+
+//          val toCountryCode = toAirport.countryCode
+//        val flightCategory = FlightType.getCategory(Computation.getFlightType(fromAirport, toAirport))
         //check title status
 //        if (flightCategory == FlightCategory.INTERCONTINENTAL) {
 //          val requiredTitle = if (toAirport.isGateway()) Title.APPROVED_AIRLINE else Title.PRIVILEGED_AIRLINE
@@ -966,84 +1003,31 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //    }
 //  }
 
-  def setTargetServiceQuality(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    if (request.body.isInstanceOf[AnyContentAsJson]) {
-      Try(request.body.asInstanceOf[AnyContentAsJson].json.\("targetServiceQuality").as[Int]) match {
-        case Success(targetServiceQuality) =>
-          if (targetServiceQuality < 0) {
-            BadRequest("Cannot have negative targetServiceQuality")
-          } else if (targetServiceQuality > 100) {
-            BadRequest(s"Cannot have targetServiceQuality $targetServiceQuality")
-          } else {
-            val airline = request.user
-            airline.setTargetServiceQuality(targetServiceQuality)
-            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-            Ok(Json.obj("targetServiceQuality" -> JsNumber(targetServiceQuality)))
-          }
-        case Failure(_) =>
-          BadRequest("Cannot Update service funding")
-      }
-
-    } else {
-      BadRequest("Cannot Update service funding")
-    }
-  }
-
-  def setMinimumRenewalBalance(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-     if (request.body.isInstanceOf[AnyContentAsJson]) {
-      Try(request.body.asInstanceOf[AnyContentAsJson].json.\("minimumRenewalBalance").as[Long]) match {
-        case Success(minimumRenewalBalance) =>
-          if (minimumRenewalBalance < 0) {
-            BadRequest("Cannot have negative minimumRenewalBalance")
-          } else {
-            val airline = request.user
-            airline.setMinimumRenewalBalance(minimumRenewalBalance)
-            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-            Ok(Json.obj("minimumRenewalBalance" -> JsNumber(minimumRenewalBalance)))
-          }
-        case Failure(_) =>
-          BadRequest("Cannot Update minimum renewal balance - could not cast to long")
-      }
-
-    } else {
-      BadRequest("Cannot Update minimum renewal balance")
-    }
-  }
-
-  def updateMaintenanceQuality(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    if (request.body.isInstanceOf[AnyContentAsJson]) {
-      val maintenanceQualityTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("maintenanceQuality").as[Int])
-      maintenanceQualityTry match {
-        case Success(maintenanceQuality) =>
-          val airline = request.user
-          airline.setMaintenanceQuality(maintenanceQuality)
-          AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-          Ok(Json.obj("serviceFunding" -> JsNumber(maintenanceQuality)))
-        case Failure(_) =>
-          BadRequest("Cannot Update maintenance quality")
-      }
-
-    } else {
-      BadRequest("Cannot Update maintenance quality")
-    }
-  }
-
   val TOP_COMMENT_COUNT = 5
   def getLinkComposition(airlineId : Int, linkId : Int) =  AuthenticatedAirline(airlineId) { request =>
     val consumptionEntries : List[LinkConsumptionHistory] = ConsumptionHistorySource.loadConsumptionByLinkId(linkId)
     val consumptionByCountry = consumptionEntries.groupBy(_.homeAirport.countryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByDestinationCountry = consumptionEntries.groupBy(_.destinationAirport.countryCode).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByHomeAirport = consumptionEntries.groupBy(_.homeAirport).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByDestinationAirport = consumptionEntries.groupBy(_.destinationAirport).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPassengerType = consumptionEntries.groupBy(_.passengerType).view.mapValues(entries => entries.map(_.passengerCount).sum)
+    val consumptionByPreferredLinkClass = consumptionEntries.groupBy(_.preferredLinkClass).view.mapValues(entries => entries.map(_.passengerCount).sum)
     val consumptionByPreferenceType = consumptionEntries.groupBy(_.preferenceType).view.mapValues(entries => entries.map(_.passengerCount).sum)
 
-    var countryJson = Json.arr()
+    var homeCountryJson = Json.arr()
     consumptionByCountry.foreach {
       case (countryCode, passengerCount) =>
-        countryByCode.get(countryCode).foreach { country => //just in case the first turn after patch this will be ""
-          countryJson = countryJson.append(Json.obj("countryName" -> country.name, "countryCode" -> countryCode, "passengerCount" -> passengerCount))
+        countryByCode.get(countryCode).foreach { country =>
+          homeCountryJson = homeCountryJson.append(Json.obj("countryName" -> country.name, "countryCode" -> countryCode, "passengerCount" -> passengerCount))
         }
+    }
 
+    var destinationCountryJson = Json.arr()
+    consumptionByDestinationCountry.foreach {
+      case (countryCode, passengerCount) =>
+        countryByCode.get(countryCode).foreach { country =>
+          destinationCountryJson = destinationCountryJson.append(Json.obj("countryName" -> country.name, "countryCode" -> countryCode, "passengerCount" -> passengerCount))
+        }
     }
 
     var homeAirportsJson = Json.arr()
@@ -1058,17 +1042,23 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         destinationAirportsJson = destinationAirportsJson.append(Json.obj("airport" -> airport.displayText, "countryCode" -> airport.countryCode, "passengerCount" -> passengerCount))
     }
 
-    var passengerTypeJson = Json.arr()
-    consumptionByPassengerType.foreach {
-      case (passengerType, passengerCount) => passengerTypeJson = passengerTypeJson.append(Json.obj("title" -> getPassengerTypeTitle(passengerType), "passengerCount" -> passengerCount))
-    }
-
-    var preferenceTypeJson = Json.arr()
-    consumptionByPreferenceType.foreach {
-      case (preferenceType, passengerCount) => preferenceTypeJson = preferenceTypeJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "passengerCount" -> passengerCount))
-    }
+//    var passengerTypeJson = Json.arr()
+//    consumptionByPassengerType.foreach {
+//      case (passengerType, passengerCount) => passengerTypeJson = passengerTypeJson.append(Json.obj("title" -> getPassengerTypeTitle(passengerType), "passengerCount" -> passengerCount))
+//    }
+//
+//    var preferredLinkClassJson = Json.arr()
+//    consumptionByPreferredLinkClass.foreach {
+//      case (preferredLinkClass, passengerCount) => preferredLinkClassJson = preferredLinkClassJson.append(Json.obj("title" -> preferredLinkClass.label, "passengerCount" -> passengerCount))
+//    }
+//
+//    var preferenceTypeJson = Json.arr()
+//    consumptionByPreferenceType.foreach {
+//      case (preferenceType, passengerCount) => preferenceTypeJson = preferenceTypeJson.append(Json.obj("title" -> preferenceType.title, "description" -> preferenceType.description, "passengerCount" -> passengerCount))
+//    }
 
     var satisfactionByClassJson = Json.arr()
+    var satisfactionByTypeJson = Json.arr()
     var satisfactionByPreferenceJson = Json.arr()
     var topPositiveCommentsJson = Json.arr()
     var topNegativeCommentsJson = Json.arr()
@@ -1079,11 +1069,16 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
     LinkSource.loadFlightLinkById(linkId).foreach { link =>
-      val consumptionByLinkClass = consumptionEntries.groupBy(_.linkClass)
-      val satisfactionByLinkClass = consumptionByLinkClass.view.mapValues(entries => (entries.map( entry => entry.satisfaction * entry.passengerCount)).sum / entries.map(_.passengerCount).sum)
-
+      val consumptionByLinkClass = consumptionEntries.groupBy(_.preferredLinkClass)
+      val satisfactionByLinkClass = consumptionByLinkClass.view.mapValues(entries => ((entries.map( entry => entry.satisfaction * entry.passengerCount)).sum / entries.map(_.passengerCount).sum, entries.map(_.passengerCount).sum))
       satisfactionByLinkClass.foreach {
-        case (linkClass, satisfaction) => satisfactionByClassJson = satisfactionByClassJson.append(Json.obj("title" -> linkClass.label, "level" -> linkClass.level, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP)))
+        case (linkClass, (satisfaction, count)) => satisfactionByClassJson = satisfactionByClassJson.append(Json.obj("title" -> linkClass.label, "level" -> linkClass.level, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP), "passengerCount" -> count))
+      }
+
+      val consumptionByType = consumptionEntries.groupBy(_.passengerType)
+      val satisfactionByType = consumptionByType.view.mapValues(entries => ((entries.map(entry => entry.satisfaction * entry.passengerCount)).sum / entries.map(_.passengerCount).sum, entries.map(_.passengerCount).sum))
+      satisfactionByType.foreach {
+        case (passengerType, (satisfaction, count)) => satisfactionByTypeJson = satisfactionByTypeJson.append(Json.obj("title" -> PassengerType.label(passengerType), "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP), "passengerCount" -> count))
       }
 
       //value is List[(PassengerCount, Satisfaction)], group by actual link class taken, but computation satisfaction based on the preferred link class
@@ -1093,12 +1088,13 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       consumptionSatisfactionByPreferenceAndLinkClass.foreach {
         case((preference, linkClass), passengerCountWithSatisfaction) => consumptionSatisfactionByPreference.getOrElseUpdate(preference, ListBuffer()).appendAll(passengerCountWithSatisfaction)
       }
-      val averageSatisfactionByPreference : MapView[FlightPreferenceType.Value, Double] = consumptionSatisfactionByPreference.view.mapValues { entries =>
-        entries.map(entry => entry._1 * entry._2).sum / entries.map(_._1).sum
+      val averageSatisfactionByPreference : MapView[FlightPreferenceType.Value, (Double, Int)] = consumptionSatisfactionByPreference.view.mapValues { entries =>
+        val totalSatisfaction = entries.map(entry => entry._1 * entry._2).sum
+        val totalPassengerCount = entries.map(_._1).sum
+        (totalSatisfaction / totalPassengerCount, totalPassengerCount)
       }
-
       averageSatisfactionByPreference.foreach {
-        case (preferenceType, satisfaction) => satisfactionByPreferenceJson = satisfactionByPreferenceJson.append(Json.obj("title" -> preferenceType.title, "id" -> preferenceType.id, "description" -> preferenceType.description, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP)))
+        case (preferenceType, (satisfaction, count)) => satisfactionByPreferenceJson = satisfactionByPreferenceJson.append(Json.obj("title" -> preferenceType.title, "id" -> preferenceType.id, "description" -> preferenceType.description, "satisfaction" -> BigDecimal(satisfaction).setScale(2, RoundingMode.HALF_UP), "passengerCount" -> count))
       }
 
 
@@ -1143,20 +1139,19 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       topNegativeStatsByPreference.foreach {
         case (preference, stats) =>  topNegativeCommentsByPreferenceJson = topNegativeCommentsByPreferenceJson + (preference.id.toString -> Json.toJson(stats))
       }
-
-//      println(topPositiveStatsByClass.toMap)
-//      println(topNegativeStatsByClass.toMap)
-//      println(topPositiveStatsByPreference.toMap)
-//      println(topNegativeStatsByPreference.toMap)
     }
 
 
 
-    Ok(Json.obj("country" -> countryJson,
+    Ok(Json.obj(
+      "homeCountry" -> homeCountryJson,
+      "destinationCountry" -> destinationCountryJson,
       "homeAirports" -> homeAirportsJson,
       "destinationAirports" -> destinationAirportsJson,
-      "passengerType" -> passengerTypeJson,
-      "preferenceType" -> preferenceTypeJson,
+//      "preferredLinkClass" -> preferredLinkClassJson,
+//      "passengerType" -> passengerTypeJson,
+//      "preferenceType" -> preferenceTypeJson,
+      "paxTypeSatisfaction" -> satisfactionByTypeJson,
       "linkClassSatisfaction" -> satisfactionByClassJson,
       "preferenceSatisfaction" -> satisfactionByPreferenceJson,
       "topPositiveComments" -> topPositiveCommentsJson,
@@ -1568,6 +1563,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     case PassengerType.BUSINESS => "Business"
     case PassengerType.TOURIST => "Tourist"
     case PassengerType.OLYMPICS => "Olympics"
+    case PassengerType.ELITE => "Elite"
+    case PassengerType.TRAVELER => "Traveler"
   }
 
 

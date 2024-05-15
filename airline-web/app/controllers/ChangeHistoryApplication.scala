@@ -84,8 +84,8 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
     val toAirportId = json.\("toAirportId").asOpt[Int]
     val fromCountryCode = json.\("fromCountryCode").asOpt[String]
     val toCountryCode = json.\("toCountryCode").asOpt[String]
-    val fromZone = json.\("fromZone").asOpt[String]
-    val toZone = json.\("toZone").asOpt[String]
+//    val fromZone = json.\("fromZone").asOpt[String]
+//    val toZone = json.\("toZone").asOpt[String]
     val airlineId = json.\("airlineId").asOpt[Int]
     val allianceId = json.\("allianceId").asOpt[Int]
 
@@ -122,14 +122,14 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
       criteria += "to_country = ?"
       parameters += value
     })
-    fromZone.map( value =>  {
-      criteria += "from_zone = ?"
-      parameters += value
-    })
-    toZone.map( value =>  {
-      criteria += "to_zone = ?"
-      parameters += value
-    })
+//    fromZone.map( value =>  {
+//      criteria += "from_zone = ?"
+//      parameters += value
+//    })
+//    toZone.map( value =>  {
+//      criteria += "to_zone = ?"
+//      parameters += value
+//    })
     airlineId.map( value =>  {
       criteria += "airline = ?"
       parameters += value

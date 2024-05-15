@@ -1,7 +1,7 @@
 package com.patson.model
 
 import com.google.common.cache.{CacheBuilder, CacheLoader, LoadingCache}
-import com.patson.data.{AirportSource, CountrySource}
+import com.patson.data.{AirportSource, CountrySource, DestinationSource}
 import com.patson.model.AirlineBaseSpecialization.{POWERHOUSE, PowerhouseSpecialization}
 import com.patson.model.AirportAssetType.{PassengerCostModifier, TransitModifier}
 import com.patson.model.airplane.Model
@@ -11,7 +11,9 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
 
-case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, baseIncome : Int, basePopulation : Long, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
+import AirportFeatureType._
+
+case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, baseIncome : Int, basePopulation : Long, popMiddleIncome : Int, popElite : Int, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
   var shouldLoadCities = false
   lazy val citiesServed = loadCitiesServed()
   private[this] val airlineBaseAppeals = new java.util.HashMap[Int, AirlineAppeal]() //base appeals
@@ -64,17 +66,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
 
   lazy val populationBoost = boostFactorsByType.get(AirportBoostType.POPULATION).map(_._2).sum.toInt
-//  lazy val populationBoostFactors : Map[String, Int] = {
-//    (assetBoostFactors.getOrElse(AirportBoostType.POPULATION, List.empty).map {
-//      case (asset, boost) => (asset.name, boost.value.toInt)
-//    }
-//     ++ airlineBases.values.flatMap { airlineBase =>
-//      airlineBase.specializations.filter(_ == POWERHOUSE).map { spec =>
-//        val description = s"${airlineBase.airline.name} Powerhouse"
-//        (description, spec.asInstanceOf[PowerhouseSpecialization].populationBoost)
-//      }
-//    }).toMap
-//  }
   val boostFactorsByType :  LoadingCache[AirportBoostType.Value, List[(String, Double)]]  = CacheBuilder.newBuilder.build(new BoostFactorsLoader())
 
   class BoostFactorsLoader extends CacheLoader[AirportBoostType.Value, List[(String, Double)]] {
@@ -103,21 +94,12 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
 
   lazy val population = basePopulation + populationBoost
-  lazy val power = income * population
-  val basePower = baseIncome * basePopulation
-
-
+  lazy val power = income * population.toLong
+  val basePower = baseIncome * basePopulation.toLong
   lazy val features : List[AirportFeature] = computeFeatures()
-
-//  def availableSlots : Int = {
-//    if (slotAssignmentsLoaded) {
-//      slots - slotAssignments.foldLeft(0)(_ + _._2)
-//    } else {
-//      throw new IllegalStateException("airline slot assignment is not properly initialized! If loaded from DB, please use fullload")
-//    }
-//  }
-
   lazy val rating =  AirportRating.rateAirport(this)
+
+  lazy val destinations : List[Destination] = DestinationSource.loadDestinationsByAirport(this.id).getOrElse(List.empty)
 
   def addCityServed(city : City, share : Double) {
     shouldLoadCities = true //do not lazy load city anymore, this is only used by Airport creation which later on should remove this method and that logic should just keep its own set of cities
@@ -191,20 +173,6 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     allAirlineBonuses.asScala.toMap
   }
   
-//  def setAirlineBaseLoyalty(airlineId : Int, value : Double) = {
-//    if (!airlineAppealsLoaded) {
-//      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
-//    }
-//    val oldAppeal = airlineBaseAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
-//    airlineBaseAppeals.put(airlineId, AirlineAppeal(value, oldAppeal.awareness))
-//  }
-//  def setAirlineBaseAwareness(airlineId : Int, value : Double) = {
-//    if (!airlineAppealsLoaded) {
-//      throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
-//    }
-//    val oldAppeal = airlineAppeals.getOrDefault(airlineId, AirlineAppeal(0, 0))
-//    airlineBaseAppeals.put(airlineId, AirlineAppeal(oldAppeal.loyalty, value))
-//  }
   def getAirlineLoyalty(airlineId : Int) : Double = {
     if (!airlineAppealsLoaded) {
       throw new IllegalStateException("airline appeal is not properly initialized! If loaded from DB, please use fullload")
@@ -260,8 +228,16 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     features.toList
   }
 
+  def hasFeature(targetFeature: AirportFeatureType): Boolean = {
+    baseFeatures.find(_.featureType == targetFeature).isDefined
+  }
+
   def isGateway() = {
     baseFeatures.find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT).isDefined
+  }
+
+  def isDomesticAirport() = {
+    baseFeatures.find(_.featureType == AirportFeatureType.DOMESTIC_AIRPORT).isDefined
   }
 
   def initAirlineAppealsComputeLoyalty(airlineBonuses : Map[Int, List[AirlineBonus]] = Map.empty, loyalistEntries : List[Loyalist]) = {
@@ -310,11 +286,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
     airlineAppealsLoaded = true
   }
-//  def initSlotAssignments(slotAssignments : Map[Int, Int]) = {
-//    this.slotAssignments.clear()
-//    this.slotAssignments ++= slotAssignments
-//    slotAssignmentsLoaded = true
-//  }
+
   def initAirlineBases(airlineBases : List[AirlineBase]) = {
     this.airlineBases.clear()
     airlineBases.foreach { airlineBase =>
@@ -406,25 +378,25 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   def slotFee(airplaneModel : Model, airline : Airline) : Int = {
     val baseSlotFee = size match {
-      case 1 => 10 //small
-      case 2 => 20 
-      case 3 => 40
-      case 4 => 80 
-      case 5 => 160
-      case 6 => 320
-      case 7 => 640
-      case _ => 800 //mega
+      case 1 => 1 //small airport
+      case 2 => 2
+      case 3 => 8
+      case 4 => 32
+      case 5 => 64
+      case 6 => 128
+      case 7 => 256
+      case _ => 512 //mega
     }
 
     import Model.Type._
     val multiplier = airplaneModel.airplaneType match {
-      case LIGHT => 1
-      case SMALL => 1
-      case REGIONAL => 2
-      case MEDIUM => 4
-      case LARGE => 8
-      case X_LARGE => 16
-      case JUMBO => 32
+      case LIGHT => 2
+      case SMALL => 2
+      case REGIONAL => 3
+      case MEDIUM => 6
+      case LARGE => 12
+      case X_LARGE => 24
+      case JUMBO => 36
       case SUPERSONIC => 16
     }
 
@@ -455,7 +427,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
 
   val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
-    Math.max(0, Math.min(incomeLevel.toInt, 50) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //50% on income level, 50% on flight adjust
+    Math.max(0, Math.min((incomeLevel/1.5).toInt, 35) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //35% on income level, 45% on flight type, 5% for elite add-on, 20% for GOOD_QUALITY_DELTA
   }
 
   private[this] def getCountry() : Country = {
@@ -465,12 +437,15 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     country.get
   }
 
+  //airport range
   lazy val airportRadius : Int = {
     size match {
-      case 1 => 100
-      case 2 => 150
-      case n if (n >= 3) => 250
-      case _ => 0
+      case 1 => 200
+      case 2 => 200
+      case 6 => 275
+      case 7 => 300
+      case n if (n >= 8) => 350
+      case _ => 225
     }
   }
 
@@ -542,23 +517,20 @@ object Airport {
   }
 
   val MAJOR_AIRPORT_LOWER_THRESHOLD = 5
-  val HQ_GUARANTEED_SLOTS = 20 //at least 20 slots for HQ
-  val BASE_GUARANTEED_SLOTS = 10 //at least 10 slots for base
-  val NON_BASE_MAX_SLOT = 70
   val MIN_RUNWAY_LENGTH = 750
 
   import FlightType._
   val qualityExpectationFlightTypeAdjust =
-  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
-        SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
-        SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 5, 15),
-        MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 5, 15),
-        MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 5, 15),
-        MEDIUM_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(0, 5, 15),
-        LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 5, 15),
-        LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(5, 10, 20),
-        LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20),
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 15, 20))
+  Map(
+    SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-10, 5, 15),
+    MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 10, 25),
+    LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 35),
+    ULTRA_LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 20, 40),
+    SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 10, 20),
+    MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 20, 35),
+    LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(10, 30, 45),
+    ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 30, 45)
+  )
 }
 
 case class Runway(length : Int, code : String, runwayType : RunwayType.Value, lighted : Boolean)
@@ -567,5 +539,3 @@ object RunwayType extends Enumeration {
     type RunwayType = Value
     val Asphalt, Concrete, Grass, Bitumen, Clay, Chipseal, Composite, Coral, Rock, Dirt, Hardcore, Laterite, Paved, Pavement, Sand, Sealed, Soil, Tarmac, Turf, Unpaved, Water, Cement, MarstonMat, Grout, Steel, Gravel, Unknown, abandoned, military, old, closed = Value
 }
-
-//case class AssetDiscount(waitTimeDiscount : Double, stopOverDiscount : Double)

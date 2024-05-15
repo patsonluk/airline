@@ -31,7 +31,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  val BASE_CAPITAL = 40000000
+  val BASE_CAPITAL = 60000000
   val BONUS_PER_DIFFICULTY_POINT = 1000000
 
   def generateAirplanes(value : Int, capacityRange : scala.collection.immutable.Range, homeAirport : Airport, condition : Double, airline : Airline, random : Random) : List[Airplane] =  {

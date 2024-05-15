@@ -233,10 +233,10 @@ class AssetTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system) 
 
 
       val links = List(
-        Link(airport1, airport2a, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERCONTINENTAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
-        Link(airport1, airport2b, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERCONTINENTAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
-        Link(airport2a, airport3, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERCONTINENTAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
-        Link(airport2b, airport3, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERCONTINENTAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
+        Link(airport1, airport2a, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERNATIONAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
+        Link(airport1, airport2b, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERNATIONAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
+        Link(airport2a, airport3, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERNATIONAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
+        Link(airport2b, airport3, airline1, price = Pricing.computeStandardPriceForAllClass(8000, LONG_HAUL_INTERNATIONAL), 8000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 7, LONG_HAUL_INTERCONTINENTAL),
       )
 
       assignLinkIds(links)

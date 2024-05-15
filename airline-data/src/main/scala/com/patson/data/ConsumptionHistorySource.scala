@@ -154,47 +154,47 @@ object ConsumptionHistorySource {
 //    }
 //  }
 
-  def loadConsumptionsByAirport(airportId : Int) : Map[Link, Int] = {
-    val connection = Meta.getConnection()
-    try {
-      val links = LinkSource.loadFlightLinksByFromAirport(airportId) ++ LinkSource.loadFlightLinksByToAirport(airportId)
-      if (links.isEmpty) {
-        Map.empty
-      } else {
-        val linksById = links.map(link => (link.id, link)).toMap
-        val queryString = new StringBuilder("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " where link IN (");
-        for (i <- 0 until links.size - 1) {
-          queryString.append("?,")
-        }
-        queryString.append("?)")
-
-        val preparedStatement = connection.prepareStatement(queryString.toString())
-
-        for (i <- 0 until links.size) {
-          preparedStatement.setInt(i + 1, links(i).id)
-        }
-
-        val resultSet = preparedStatement.executeQuery()
-        val result = scala.collection.mutable.HashMap[Link, Int]()
-        while (resultSet.next()) {
-          //        val passengerType = PassengerType.apply(resultSet.getInt("passenger_type"))
-          val passengerCount = resultSet.getInt("passenger_count")
-          val linkId = resultSet.getInt("link")
-          val link = linksById.getOrElse(linkId, Link.fromId(linkId))
-          if (result.contains(link)) {
-            result.put(link, result(link) + passengerCount)
-          } else {
-            result.put(link, passengerCount)
-          }
-        }
-
-        result.toMap
-      }
-    } finally {
-      connection.close()
-    }
-
-  }
+//  def loadConsumptionsByAirport(airportId : Int) : Map[Link, Int] = {
+//    val connection = Meta.getConnection()
+//    try {
+//      val links = LinkSource.loadFlightLinksByFromAirport(airportId) ++ LinkSource.loadFlightLinksByToAirport(airportId)
+//      if (links.isEmpty) {
+//        Map.empty
+//      } else {
+//        val linksById = links.map(link => (link.id, link)).toMap
+//        val queryString = new StringBuilder("SELECT * FROM " + PASSENGER_HISTORY_TABLE + " where link IN (");
+//        for (i <- 0 until links.size - 1) {
+//          queryString.append("?,")
+//        }
+//        queryString.append("?)")
+//
+//        val preparedStatement = connection.prepareStatement(queryString.toString())
+//
+//        for (i <- 0 until links.size) {
+//          preparedStatement.setInt(i + 1, links(i).id)
+//        }
+//
+//        val resultSet = preparedStatement.executeQuery()
+//        val result = scala.collection.mutable.HashMap[Link, Int]()
+//        while (resultSet.next()) {
+//          //        val passengerType = PassengerType.apply(resultSet.getInt("passenger_type"))
+//          val passengerCount = resultSet.getInt("passenger_count")
+//          val linkId = resultSet.getInt("link")
+//          val link = linksById.getOrElse(linkId, Link.fromId(linkId))
+//          if (result.contains(link)) {
+//            result.put(link, result(link) + passengerCount)
+//          } else {
+//            result.put(link, passengerCount)
+//          }
+//        }
+//
+//        result.toMap
+//      }
+//    } finally {
+//      connection.close()
+//    }
+//
+//  }
 
   def loadConsumptionsByAirportPair(fromAirportId : Int, toAirportId : Int) : Map[Route, (PassengerType.Value, Int)] = {
     val connection = Meta.getConnection()
@@ -354,7 +354,7 @@ object ConsumptionHistorySource {
                 homeAirport = AirportCache.getAirport(resultSet.getInt("home_airport")).get,
                 destinationAirport = AirportCache.getAirport(resultSet.getInt("destination_airport")).get,
                 passengerType = PassengerType(resultSet.getInt("passenger_type")),
-                preferredLinkClass = preferredLinkClass,
+                preferredLinkClass = LinkClass.fromCode(resultSet.getString("preferred_link_class")),
                 preferenceType = FlightPreferenceType(resultSet.getInt("preference_type")),
                 linkClass = LinkClass.fromCode(resultSet.getString("link_class")),
                 satisfaction = Computation.computePassengerSatisfaction(resultSet.getInt("cost"), standardPrice(preferredLinkClass))

@@ -7,7 +7,7 @@ case class AirplaneConfiguration(economyVal : Int, businessVal : Int, firstVal :
 
 object AirplaneConfiguration {
   val empty = AirplaneConfiguration(0, 0, 0, Airline.fromId(0), Model.fromId(0), true)
-  val default : ((Airline, Model) => AirplaneConfiguration) = (airline, model) => AirplaneConfiguration(economyVal = model.capacity, 0 ,0, airline, model, true)
-  val legacy :  ((Airline, Model) => AirplaneConfiguration) = (airline, model) => AirplaneConfiguration(economyVal = model.capacity - (30 * 2.5 + 8 * 6).toInt, 30, 6, airline, model, true)
+  val default : ((Airline, Model) => AirplaneConfiguration) = (airline, model) => AirplaneConfiguration(economyVal = model.capacity, 0, 0, airline, model, true)
+  val legacy :  ((Airline, Model) => AirplaneConfiguration) = (airline, model) => AirplaneConfiguration(economyVal = (model.capacity * 0.65).toInt, businessVal = (model.capacity * 0.35 / 2.5).toInt, 0, airline, model, true)
   val MAX_CONFIGURATION_TEMPLATE_COUNT = 5 //per model and airline
 }

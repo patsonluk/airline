@@ -14,7 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 object MainSimulation extends App {
-  val CYCLE_DURATION : Int = 30 * 60
+  val CYCLE_DURATION : Int = 30 * 10
   var currentWeek: Int = 0
 
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
@@ -53,7 +53,7 @@ object MainSimulation extends App {
       println("Event simulation")
       EventSimulation.simulate(cycle)
 
-      val (flightLinkResult, loungeResult, linkRidershipDetails) = LinkSimulation.linkSimulation(cycle)
+      val (flightLinkResult, loungeResult, linkRidershipDetails, airlineStats) = LinkSimulation.linkSimulation(cycle)
       println("Airport simulation")
       val airportChampionInfo = AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
 
@@ -63,7 +63,7 @@ object MainSimulation extends App {
       println("Airplane simulation")
       val airplanes = AirplaneSimulation.airplaneSimulation(cycle)
       println("Airline simulation")
-      AirlineSimulation.airlineSimulation(cycle, flightLinkResult, loungeResult, airplanes)
+      AirlineSimulation.airlineSimulation(cycle, flightLinkResult, loungeResult, airplanes, airlineStats)
       println("Country simulation")
       val countryChampionInfo = CountrySimulation.simulate(cycle)
 
@@ -79,6 +79,9 @@ object MainSimulation extends App {
       //purge history
       println("Purging link history")
       ChangeHistorySource.deleteLinkChangeByCriteria(List(("cycle", "<", cycle - 500)))
+
+      println("Purging Alliance Stats – remove if running AllianceSimulation")
+      AllianceSource.deleteAllianceStatsBeforeCutoff(cycle - 108)
 
       //purge airline modifier
       println("Purging airline modifier")

@@ -427,22 +427,29 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
   def researchLink(fromAirportId : Int, toAirportId : Int) = Action {
     val fromAirport = AirportCache.getAirport(fromAirportId, true).get
     val toAirport = AirportCache.getAirport(toAirportId, true).get
-    val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+    val distance = Computation.calculateDistance(fromAirport, toAirport)
+    val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+    val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
 
+    val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
+    val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, distance)
 
-    val directFromAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS)
-    val directToAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
-    val directBusinessDemand =  directFromAirportBusinessDemand + directToAirportBusinessDemand
+    val directFromAirportTravelerDemand = fromDemand.travelerDemand
+    val directToAirportTravelerDemand = toDemand.travelerDemand
+    val directTravelerDemand = directFromAirportTravelerDemand + directToAirportTravelerDemand
 
-    val directFromAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST)
-    val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
+    val directFromAirportBusinessDemand = fromDemand.businessDemand
+    val directToAirportBusinessDemand = toDemand.businessDemand
+    val directBusinessDemand = directFromAirportBusinessDemand + directToAirportBusinessDemand
+
+    val directFromAirportTouristDemand = fromDemand.touristDemand
+    val directToAirportTouristDemand = toDemand.touristDemand
     val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
 
-    val directDemand = directBusinessDemand + directTouristDemand
+    val directDemand = directTravelerDemand + directBusinessDemand + directTouristDemand
 
 
     //basic details
-    val distance = Computation.calculateDistance(fromAirport, toAirport)
     var result = Json.obj(
       "fromAirport" -> fromAirport,
       "fromAirportText" -> fromAirport.displayText,
@@ -451,7 +458,9 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       "distance" -> distance,
       "flightType" -> FlightType.label(Computation.getFlightType(fromAirport, toAirport, distance)),
       "directDemand" -> directDemand,
-      "mutualRelationship" -> countryRelationship,
+      "mutualRelationship" -> relationship,
+      "fromAirportTravelerDemand" -> directFromAirportTravelerDemand,
+      "toAirportTravelerDemand" -> directToAirportTravelerDemand,
       "fromAirportBusinessDemand" -> directFromAirportBusinessDemand,
       "toAirportBusinessDemand" -> directToAirportBusinessDemand,
       "fromAirportTouristDemand" -> directFromAirportTouristDemand,

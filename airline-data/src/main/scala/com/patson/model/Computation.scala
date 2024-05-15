@@ -53,7 +53,7 @@ object Computation {
   def calculateDuration(airplaneSpeed : Int, distance : Int) = {
     var remainDistance = distance
     var duration = 0;
-    for ((distanceBucket, maxSpeed) <- speedLimits if(remainDistance > 0)) {
+    for ((distanceBucket, maxSpeed) <- speedLimits if (remainDistance > 0)) {
       val speed = Math.min(maxSpeed, airplaneSpeed)
       if (distanceBucket >= remainDistance) {
         duration += remainDistance * 60 / speed
@@ -98,49 +98,99 @@ object Computation {
     Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   }
 
+  def getRelationship(fromAirport : Airport, toAirport : Airport) : Int = {
+    CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+  }
+
   def getFlightType(fromAirport : Airport, toAirport : Airport) : FlightType.Value = {
-    getFlightType(fromAirport, toAirport, calculateDistance(fromAirport, toAirport))
+    getFlightType(fromAirport, toAirport, calculateDistance(fromAirport, toAirport), getRelationship(fromAirport, toAirport))
   }
   
-  def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int) = { 
-//    val distance = distanceOption.getOrElse(Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt)
-    
+  def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int, relationship: Int = 0) = {
     import FlightType._
-    if (fromAirport.countryCode == toAirport.countryCode) { //domestic
+    //hard-coding some home markets into the computation functon to allow for independent relation values
+    //https://en.wikipedia.org/wiki/European_Common_Aviation_Area
+    val ECAA = List("AL", "AM", "AT", "BA", "BE", "BG", "CH", "CZ", "DK", "EE", "FI", "FR", "DE", "GE", "GR", "HR", "HU", "IE", "IS", "IT", "LT", "LU", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS", "SI", "SK", "ES", "SE", "XK")
+    val ANZAC = List("AU", "NZ", "CX", "CK", "NU", "CC")
+    val USA = List("US", "PR", "VI", "GU", "AS", "MP", "MH", "PW", "FM") //US & COFA Pacific
+    if (relationship == 5 || ECAA.contains(fromAirport.countryCode) && ECAA.contains(toAirport.countryCode) || ANZAC.contains(fromAirport.countryCode) && ANZAC.contains(toAirport.countryCode) || USA.contains(fromAirport.countryCode) && USA.contains(toAirport.countryCode)){
       if (distance <= 1000) {
         SHORT_HAUL_DOMESTIC
       } else if (distance <= 3000) {
         MEDIUM_HAUL_DOMESTIC
-      } else {
+      } else if (distance <= 9000) {
         LONG_HAUL_DOMESTIC
-      }
-    } else if (fromAirport.zone == toAirport.zone) { //international but same continent
-      if (distance <= 2000) {
-        SHORT_HAUL_INTERNATIONAL
-      } else if (distance <= 4000) {
-        MEDIUM_HAUL_INTERNATIONAL
       } else {
-        LONG_HAUL_INTERNATIONAL
+        ULTRA_LONG_HAUL_DOMESTIC
       }
     } else {
-      if (distance <= 2000) {
-        SHORT_HAUL_INTERCONTINENTAL
-      } else if (distance <= 5000) {
-        MEDIUM_HAUL_INTERCONTINENTAL
-      } else if (distance <= 12000) {
-        LONG_HAUL_INTERCONTINENTAL
+      if (distance <= 1000) {
+        SHORT_HAUL_INTERNATIONAL
+      } else if (distance <= 3000) {
+        MEDIUM_HAUL_INTERNATIONAL
+      } else if (distance <= 9000) {
+        LONG_HAUL_INTERNATIONAL
       } else {
         ULTRA_LONG_HAUL_INTERCONTINENTAL
       }
     }
   }
+
+def calculateAffinityValue(fromZone : String, toZone : String, relationship : Int) : Int = {
+  if (relationship >= 5) { //domestic
+    5
+  } else {
+    val relationshipModifier = if(relationship < 0){
+      -1
+    } else if(relationship > 0){
+      (relationship / 2).toInt
+    } else {
+      0
+    }
+    val set1 = fromZone.split("-").filter(_!="None")
+    val set2 = toZone.split("-").filter(_!="None")
+    val affinity = set1.intersect(set2).size
+    affinity + relationshipModifier
+  }
+}
+
+def constructAffinityText(fromZone : String, toZone : String, relationship : Int) : String = {
+  if (relationship == 5) {
+    "Domestic"
+  } else {
+    val set1 = fromZone.split("-").filter(_!="None")
+    val set2 = toZone.split("-").filter(_!="None")
+    val affinity = calculateAffinityValue(fromZone, toZone, relationship)
+    var matchingItems = set1.intersect(set2).toArray.toArray
+    if (relationship < 0) {
+      matchingItems = Array("Political Acrimony") ++ matchingItems
+    } else if (relationship >= 4) {
+      matchingItems = Array("Excellent Relations") ++ matchingItems
+    } else if (relationship >= 2) {
+      matchingItems = Array("Good Relations") ++ matchingItems
+    } else {
+      set1.intersect(set2).toArray
+    }
+    val introText = if (affinity == 0 && matchingItems.size == 0){
+      "Neutral"
+    } else if (affinity == 0){
+      "Neutral:"
+    } else if (affinity > 0){
+      s"+${affinity}:"
+    } else {
+      s"${affinity}:"
+    }
+
+  s"${introText} ${matchingItems.mkString(", ")}"
+  }
+}
   
 
   /**
-   * Returns a normalized income level, should be greater than 0
+   * Returns income level, should be greater than 0
    */
   def getIncomeLevel(income : Int) : Double = {
-    val incomeLevel = (Math.log(income.toDouble / 500) / Math.log(1.1))
+    val incomeLevel = income.toDouble / 1000
     if (incomeLevel < 1) {
       1
     } else {
@@ -148,7 +198,7 @@ object Computation {
     }
   }
   def fromIncomeLevel(incomeLevel : Double) : Int = {
-    (Math.pow(Math.E, incomeLevel * Math.log(1.1)) * 500).toInt
+    (incomeLevel * 1000).toInt
   }
 
   def computeIncomeLevelBoostFromPercentage(baseIncome : Int, minIncomeBoost : Int, boostPercentage : Int) = {
@@ -184,7 +234,40 @@ object Computation {
     BigDecimal(finalBoostLevel).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
   }
 
-  
+  import org.apache.commons.math3.distribution.{LogNormalDistribution, NormalDistribution}
+
+  def populationAboveThreshold(meanIncome: Double, population: Int, gini: Double, threshold: Int = 34000): Int = {
+//    val normalDistribution = new NormalDistribution(meanIncome, meanIncome * gini / 100)
+
+    //larger urban areas have much more inequality
+    val urbanInequalityModifier = if (population > 8000000){
+      1.9
+    } else if (population > 2000000){
+      1.7
+    } else if (population > 1000000){
+      1.5
+    } else if (population > 100000){
+      1.2
+    } else {
+      0.7
+    }
+
+    val meanLog = Math.log(meanIncome)
+    val sdLog = gini / 100 * urbanInequalityModifier
+    val logDistribution = new LogNormalDistribution(meanLog, sdLog)
+
+    val probLognormal = 1.0 - logDistribution.cumulativeProbability(threshold)
+
+
+    // Could do a normal dist + log
+//    val normalPop = math.min(population, 1000000) // First 1 million
+//    val lognormalPop = math.max(population - 1000000, 0)
+//    val probNormal = 1.0 - normalDistribution.cumulativeProbability(threshold)
+
+    // (normalPop * probNormal + lognormalPop * probLognormal).round.toInt
+    (population * probLognormal).round.toInt
+  }
+
   def getLinkCreationCost(from : Airport, to : Airport) : Int = {
     
     val baseCost = 100000 + (from.income + to.income)
@@ -198,32 +281,6 @@ object Computation {
     
     (baseCost * airportSizeMultiplier * distanceMultiplier * internationalMultiplier).toInt 
   }
-  
-//  def computeReputationBoost(country : Country, ranking : Int) : Double = {
-//    //US gives boost of (rank : boost)
-//    // 1st : 30
-//    // 2nd : 24
-//    // 3rd : 19
-//    // 4th : 16
-//    // 5th : 13
-//    // 6th : 10
-//    // 7th : 8
-//    // 8th : 6
-//    // 9th : 4
-//    // 10th : 2
-//
-//    val ratioToModelPower = country.airportPopulation * country.income.toDouble / MODEL_COUNTRY_POWER
-//
-//    val boost = math.log10(ratioToModelPower * 100) / 2 * reputationBoostTop10(ranking)
-//
-//    if (boost < 1 && ranking <= 3) {
-//      1
-//    } else if (boost < 0.5) {
-//      0.5
-//    } else {
-//      BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
-//    }
-//  }
 
   val REDUCED_COMPENSATION_SERVICE_LEVEL_THRESHOLD = 40 //airline with service level below this will pay less compensation
   
@@ -247,30 +304,6 @@ object Computation {
       0
     }
   }
-
-//  val MAX_FREQUENCY_ABSOLUTE_BASE = 30
-//  def getMaxFrequencyThreshold(airline : Airline) : Int = {
-//    MAX_FREQUENCY_ABSOLUTE_BASE
-//  }
-
-//  def getMaxFrequencyThreshold(airline : Airline) : Int = {
-//     AllianceSource.loadAllianceMemberByAirline(airline) match {
-//       case Some(allianceMember) => {
-//         if (allianceMember.role != AllianceRole.APPLICANT) {
-//           AllianceRankingUtil.getRanking(allianceMember.allianceId) match {
-//             case Some((ranking, _)) => {
-//               val maxFrequencyBonus = Alliance.getMaxFrequencyBonus(ranking)
-//               MAX_FREQUENCY_ABSOLUTE_BASE + maxFrequencyBonus
-//             }
-//             case None => MAX_FREQUENCY_ABSOLUTE_BASE
-//           }
-//         } else {
-//           MAX_FREQUENCY_ABSOLUTE_BASE
-//         }
-//       }
-//       case None => MAX_FREQUENCY_ABSOLUTE_BASE
-//     }
-//  }
   
   def getResetAmount(airlineId : Int) : ResetAmountInfo = {
     val currentCycle = CycleSource.loadCycle()
@@ -287,10 +320,6 @@ object Computation {
   case class ResetAmountInfo(airplanes : Long, bases : Long, assets : Long, loans : Long, oilContracts : Long, existingBalance : Long) {
     val overall = airplanes + bases + assets + loans + oilContracts + existingBalance
   }
-
-//  def getAirplaneConstructionTime(model : Model, existingConstruction : Int) : Int = {
-//    model.constructionTime + (existingConstruction / 5) * model.constructionTime / 4 
-//  }
 
   val MAX_SATISFACTION_PRICE_RATIO_THRESHOLD = 0.7 //at 100% satisfaction is <= this threshold
   val MIN_SATISFACTION_PRICE_RATIO_THRESHOLD = LINK_COST_TOLERANCE_FACTOR + 0.05 //0% satisfaction >= this threshold ... +0.05 so, there will be at least some satisfaction even at the LINK_COST_TOLERANCE_FACTOR

@@ -16,7 +16,6 @@ function loadAirplaneModels() {
 	    	$.each(models, function( key, model ) {
 	    		loadedModelsById[model.id] = model
 	  		});
-	    	//updateModelInfo($('#modelInfo'))
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
@@ -99,7 +98,6 @@ function loadAirplaneModelOwnerInfo() {
 	});
 }
 
-
 function updateAirplaneModelTable(sortProperty, sortOrder) {
     if (!sortProperty && !sortOrder) {
         var selectedSortHeader = $('#airplaneModelSortHeader .cell.selected')
@@ -115,6 +113,7 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 	
 	$.each(loadedModelsOwnerInfo, function(index, modelOwnerInfo) {
 		var row = $("<div class='table-row clickable' data-model-id='" + modelOwnerInfo.id + "' onclick='selectAirplaneModel(loadedModelsById[" + modelOwnerInfo.id + "])'></div>")
+		var stars = $("<div class='cell' align='right'>").append(getGradeStarsImgs(modelOwnerInfo.quality * 2)).append("</div>")
 		if (modelOwnerInfo.isFavorite) {
 		    row.append("<div class='cell'>" + modelOwnerInfo.name + "<img src='assets/images/icons/heart.png' height='10px'></div>")
         } else {
@@ -123,12 +122,13 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + modelOwnerInfo.family + "</div>")
 		row.append("<div class='cell' align='right'>" + commaSeparateNumber(modelOwnerInfo.price) + "</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.capacity + "</div>")
+		row.append(stars)
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.range + " km</div>")
-		row.append("<div class='cell' align='right'>" + modelOwnerInfo.fuelBurn + "</div>")
+		row.append("<div class='cell' align='right'>" + modelOwnerInfo.fuelPerPax + "</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.lifespan / 52 + " yrs</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.speed + " km/h</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.runwayRequirement + " m</div>")
-		row.append("<div class='cell' align='right'>" + modelOwnerInfo.assignedAirplanes.length + "/" + modelOwnerInfo.availableAirplanes.length + "/" + modelOwnerInfo.constructingAirplanes.length + "</div>")
+//		row.append("<div class='cell' align='right'>" + modelOwnerInfo.assignedAirplanes.length + "/" + modelOwnerInfo.availableAirplanes.length + "/" + modelOwnerInfo.constructingAirplanes.length + "</div>")
 
 		
 		if (selectedModelId == modelOwnerInfo.id) {
@@ -513,10 +513,13 @@ function buyUsedAirplane(airplaneId, homeAirportId, configurationId) {
 function updateModelInfo(modelId) {
 	loadAirplaneModels()
 	model = loadedModelsById[modelId]
+	var $stars = $(getGradeStarsImgs(model.quality * 2))
 	$('#airplaneModelDetails .selectedModel').val(modelId)
 	$('#airplaneModelDetails #modelName').text(model.name)
 	$('#airplaneModelDetails .modelFamily').text(model.family)
 	$('#airplaneModelDetails #capacity').text(model.capacity)
+	$('#airplaneModelDetails #airplaneTypeQuality').empty()
+	$('#airplaneModelDetails #airplaneTypeQuality').append($stars)
 	$('#airplaneModelDetails #airplaneType').text(model.airplaneType)
 	$('#airplaneModelDetails .turnaroundTime').text(model.turnaroundTime)
 	$('#airplaneModelDetails .runwayRequirement').text(model.runwayRequirement)
@@ -568,11 +571,14 @@ function selectAirplaneModel(model) {
 	} else {
 		$('#airplaneCanvas .modelIllustration').hide()
 	}
+	var $stars = $(getGradeStarsImgs(model.quality * 2))
 	
 	$('#airplaneCanvas .selectedModel').val(model.id)
 	$('#airplaneCanvas .modelName').text(model.name)
 	$('#airplaneCanvas .modelFamily').text(model.family)
 	$('#airplaneCanvas #capacity').text(model.capacity)
+	$('#airplaneCanvas #airplaneTypeQuality').empty()
+    $('#airplaneCanvas #airplaneTypeQuality').append($stars)
 	$('#airplaneCanvas #airplaneType').text(model.airplaneType)
 	$('#airplaneCanvas .turnaroundTime').text(model.turnaroundTime)
 	$('#airplaneCanvas .runwayRequirement').text(model.runwayRequirement)

@@ -8,6 +8,7 @@ import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CountrySou
 import com.patson.model.AirlineBaseSpecialization.BrandSpecialization
 import com.patson.model.FlightType.Value
 import com.patson.model._
+import FlightPreferenceType._
 
 import scala.collection.mutable
 import scala.collection.mutable.{ListBuffer, Set}
@@ -92,9 +93,10 @@ object PassengerSimulation {
         missedDemandChunks.add(demandChunk)
       }
       isConnected
-    }).sortWith((entry1, entry2) =>
-      if (entry1._1.passengerType == PassengerType.OLYMPICS && entry2._1.passengerType == PassengerType.OLYMPICS) false else entry1._1.passengerType == PassengerType.OLYMPICS
-    ) //olympics always come first
+    }).sortWith {
+      case ((pg1, _, demand1), (pg2, _, demand2)) =>
+        pg1.preference.getPreferenceType.priority < pg2.preference.getPreferenceType.priority //sort by pax preference purchase order
+    }
 
     println("After pruning : " + demandChunks.size);
 
@@ -146,11 +148,10 @@ object PassengerSimulation {
 
        println("Available links: " + availableLinks.length)
 
-//       val routesFuture = findAllRoutes(requiredRoutes.toMap, availableLinks, activeAirportIds)
-//       val allRoutesMap = Await.result(routesFuture, Duration.Inf)
+      //og AC at 4, 5, 6
        val iterationCount =
-        if (consumptionCycleCount < 3) 4
-        else if (consumptionCycleCount < 6) 5
+        if (consumptionCycleCount < 4) 3
+        else if (consumptionCycleCount < 7) 4
         else 6
       val allRoutesMap = mutable.HashMap[PassengerGroup, Map[Airport, Route]]()
 
@@ -293,8 +294,7 @@ object PassengerSimulation {
 
   val ROUTE_COST_TOLERANCE_FACTOR = 1.5
   val LINK_COST_TOLERANCE_FACTOR = 0.9
-  val LINK_COST_TOLERANCE_NOISE_RANGE = 0.4 //ie -0.2 to 0.2
-  val ROUTE_DISTANCE_TOLERANCE_FACTOR = 2.5
+  val ROUTE_DISTANCE_TOLERANCE_FACTOR = 3.0
   val random = new Random()
 
 
@@ -314,7 +314,7 @@ object PassengerSimulation {
 
     val incomeAdjustedFactor : Double =
       if (fromAirport.income < Country.LOW_INCOME_THRESHOLD) {
-        1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.2 //can reduce down to 0.8
+        1 - (Country.LOW_INCOME_THRESHOLD - fromAirport.income).toDouble / Country.LOW_INCOME_THRESHOLD * 0.3 //can reduce down to 0.7
       } else {
         1
       }
@@ -492,10 +492,10 @@ object PassengerSimulation {
           val costProvider = CostStoreProvider() //use same instance of costProvider so this is only computed once
           val linkConsideration1 = LinkConsideration(link, matchingLinkClass, false, passengerGroup, externalCostModifier, costProvider)
           val linkConsideration2 = LinkConsideration(link, matchingLinkClass, true, passengerGroup, externalCostModifier, costProvider)
-          if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
+          if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness, link.from.size)) {
             linkConsiderations.add(linkConsideration1)
           }
-          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
+          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness, link.from.size)) {
             linkConsiderations.add(linkConsideration2)
           }
       }
@@ -507,12 +507,14 @@ object PassengerSimulation {
   
   
   
-  def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int]) : Boolean = {
+  def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int], airportSize : Int) : Boolean = {
     if (linkConsideration.from.countryCode == linkConsideration.to.countryCode) { //domestic flight is always ok
       true
     } else if (linkConsideration.from.countryCode == originatingAirport.countryCode) { //always ok if link flying out from same country as the originate airport
       true
-    } else { //a foreign airline flying out carrying passengers originating from a foreign airport, decide base on openness
+    } else if (airportSize >= 7) { //large airports can handle transfers
+      true
+    } else { //international to international, decide base on openness
       countryOpenness(linkConsideration.from.countryCode) >= Country.SIXTH_FREEDOM_MIN_OPENNESS
     }
   }
@@ -663,7 +665,7 @@ object PassengerSimulation {
             if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
               isValid = false
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
-              connectionCost = 25
+              connectionCost = 5
             } else {
               connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency

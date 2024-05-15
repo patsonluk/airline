@@ -30,7 +30,7 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
       "latitude" -> JsNumber(airport.latitude),
       "longitude" -> JsNumber(airport.longitude),
       "countryCode" -> JsString(airport.countryCode),
-      "zone" -> JsString(airport.zone)))
+      "zone" -> JsString(airport.zone.split("-")(0))))
       
     }
   }
@@ -484,10 +484,28 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
     Ok(Json.toJson(competitorLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq))
   }
   
-  def getLinkConsumptionsByAirport(airportId : Int) = Action {
-    val passengersByRemoteAirport : Map[Airport, Int] = HistoryUtil.loadConsumptionByAirport(airportId)
-    Ok(Json.toJson(passengersByRemoteAirport.toList.map {
-      case (remoteAirport, passengers) => Json.obj("remoteAirport" -> Json.toJson(remoteAirport)(AirportSimpleWrites), ("passengers" -> JsNumber(passengers)))
+  def getLinksByAirport(airportId : Int) = Action {
+    val linksByToAirport = LinkSource.loadFlightLinksByFromAirport(airportId).groupBy(_.to)
+    val linksByFromAirport = LinkSource.loadFlightLinksByToAirport(airportId).groupBy(_.from)
+
+    val linksByOtherAirport : Map[Airport, List[Link]]= linksByToAirport ++ linksByFromAirport.map {
+      case (airport, links) => (airport, links ++ linksByToAirport.getOrElse(airport, List.empty[Link]))
+    }
+
+
+    Ok(Json.toJson(linksByOtherAirport.toList.sortBy(_._2.map(_.futureCapacity().total).sum).reverse.map {
+      case (otherAirport, links) =>
+        Json.obj(
+          "remoteAirport" -> Json.toJson(otherAirport)(AirportSimpleWrites),
+          "capacity" -> links.map(_.futureCapacity()).foldLeft(LinkClassValues.getInstance())((x, y) => x + y),
+          "frequency" -> links.map(_.futureFrequency()).sum,
+          "operators" -> Json.toJson( links.sortBy(_.futureCapacity().total).reverse.map { link =>
+            Json.obj(
+              "airlineId" -> link.airline.id,
+            "airlineName" -> link.airline.name,
+            "capacity" -> link.futureCapacity(),
+            "frequency" -> link.frequency)
+          }))
     }))
   }
 
@@ -563,11 +581,16 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
     Ok(result)
   }
 
-  def getLookups() = Action {
-    val airlineGradeLookup = AirlineGrade.allGrades.map(grade => (grade.value.toString, grade.reputationCeiling)).toMap
-
-    Ok(Json.obj("airlineGradeLookup" -> airlineGradeLookup))
-  }
+//  def getLookups() = Action {
+//    val airlineGradeLookup = AirlineGrades.grades
+////    val airlineGradeTourists = AirlineGradeTourists.grades.keys.toList.sorted
+////    val airlineGradeElites = AirlineGradeElites.grades.keys.toList.sorted
+////    val airlineGradeStockPrice = AirlineGradeStockPrice.grades.keys.toList.sorted
+////val output = Json.obj("airlineGradeTourists" -> airlineGradeTourists, "airlineGradeElites" -> airlineGradeElites, "airlineGradeLookup" -> airlineGradeLookup)
+//    val output = Json.obj("airlineGradeLookup" -> airlineGradeLookup)
+////
+//    Ok(output)
+//  }
 
   def getAirportChampions(airportId : Int, airlineId : Option[Int]) = Action {
     var result = Json.obj()

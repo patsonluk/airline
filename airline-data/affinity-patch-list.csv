@@ -1,0 +1,686 @@
+#airportCode,airportZone
+HAM,|Afghan|DE|
+KBL,|Afghan|DE|
+MZR,|Afghan|DE|
+KBL,|Afghan|PK|
+KHI,|Afghan|PK|
+PEW,|Afghan|PK|
+MZR,|Afghan|PK|
+IST,|Afghan|TR|
+KBL,|Afghan|TR|
+MZR,|Afghan|TR|
+ALG,|Algerian|CA|
+ORN,|Algerian|CA|
+YUL,|Algerian|CA|
+ALG,|Algerian|FR|
+CDG,|Algerian|FR|
+MRS,|Algerian|FR|
+ORN,|Algerian|FR|
+ORY,|Algerian|FR|
+TLS,|Algerian|FR|
+CDG,|Armenian|FR|
+EVN,|Armenian|FR|
+LYS,|Armenian|FR|
+DME,|Armenian|RU|
+EVN,|Armenian|RU|
+KRR,|Armenian|RU|
+LED,|Armenian|RU|
+SIP,|Armenian|RU|
+SVO,|Armenian|RU|
+EVN,|Armenian|US|
+DAC,|Bangladeshi|SA|
+DMM,|Bangladeshi|SA|
+JED,|Bangladeshi|SA|
+RUH,|Bangladeshi|SA|
+CCU,|Bengali|
+LHR,|Bengali|
+MAN,|Bengali|
+CCU,|Bengali|CA|
+YVR,|Bengali|CA|
+YYZ,|Bengali|CA|
+CCU,|Bengali|US|
+SFO,|Bengali|US|
+SJC,|Bengali|US|
+CBB,|Bolivian|AR|
+EZE,|Bolivian|AR|
+LPB,|Bolivian|AR|
+CBB,|Bolivian|BR|
+GRU,|Bolivian|BR|
+LPB,|Bolivian|BR|
+VVI,|Bolivian|BR|
+VVI,|Bolivian|MX|
+GRU,|Brazilian|NG|
+LOS,|Brazilian|NG|
+BOS,|Brazilian|US|
+EWR,|Brazilian|US|
+GRU,|Brazilian|US|
+MCO,|Brazilian|US|
+PBI,|Brazilian|US|
+PVD,|Brazilian|US|
+HKG,|Cantonese|
+CAN,|Cantonese|
+SIN,|Cantonese|
+SZX,|Cantonese|
+MFM,|Cantonese|
+SFO,|Cantonese|
+KUL,|Cantonese|
+JFK,|Cantonese|
+YVR,|Cantonese|
+FOC,|Chinese|AU|
+PEK,|Chinese|AU|
+PVG,|Chinese|AU|
+CTU,|Chinese|AU|
+XMN,|Chinese|AU|
+HGH,|Chinese|AU|
+TAO,|Chinese|AU|
+KMG,|Chinese|AU|
+WUH,|Chinese|AU|
+NKG,|Chinese|AU|
+PER,|Chinese|AU|
+SYD,|Chinese|AU|
+BNE,|Chinese|AU|
+MEL,|Chinese|AU|
+FOC,|Chinese|CA|
+PEK,|Chinese|CA|
+PVG,|Chinese|CA|
+CTU,|Chinese|CA|
+XMN,|Chinese|CA|
+HGH,|Chinese|CA|
+TAO,|Chinese|CA|
+KMG,|Chinese|CA|
+WUH,|Chinese|CA|
+NKG,|Chinese|CA|
+YHM,|Chinese|CA|
+YVR,|Chinese|CA|
+YYZ,|Chinese|CA|
+YYC,|Chinese|CA|
+FOC,|Chinese|SEAsia|
+PEK,|Chinese|SEAsia|
+PVG,|Chinese|SEAsia|
+CTU,|Chinese|SEAsia|
+XMN,|Chinese|SEAsia|
+HGH,|Chinese|SEAsia|
+TAO,|Chinese|SEAsia|
+KMG,|Chinese|SEAsia|
+WUH,|Chinese|SEAsia|
+NKG,|Chinese|SEAsia|
+SIN,|Chinese|SEAsia|
+KUL,|Chinese|SEAsia|
+BKK,|Chinese|SEAsia|
+FOC,|Chinese|US|
+PEK,|Chinese|US|
+PVG,|Chinese|US|
+CTU,|Chinese|US|
+XMN,|Chinese|US|
+HGH,|Chinese|US|
+TAO,|Chinese|US|
+KMG,|Chinese|US|
+WUH,|Chinese|US|
+NKG,|Chinese|US|
+SEA,|Chinese|US|
+SFO,|Chinese|US|
+JFK,|Chinese|US|
+ORD,|Chinese|US|
+SJC,|Chinese|US|
+LAX,|Chinese|US|
+DFW,|Chinese|US|
+IAH,|Chinese|US|
+BAQ,|Colombian|CL|
+BOG,|Colombian|CL|
+CLO,|Colombian|CL|
+MDE,|Colombian|CL|
+SLC,|Colombian|CL|
+BAQ,|Colombian|MX|
+BOG,|Colombian|MX|
+CLO,|Colombian|MX|
+MDE,|Colombian|MX|
+MEX,|Colombian|MX|
+ATL,|Colombian|US|
+BAQ,|Colombian|US|
+BOG,|Colombian|US|
+CLO,|Colombian|US|
+MDE,|Colombian|US|
+MIA,|Colombian|US|
+BRU,|Congolese|
+FIH,|Congolese|
+FBM,|Congolese|
+FLL,|Cuban|
+HAV,|Cuban|
+HOG,|Cuban|
+MIA,|Cuban|
+PBI,|Cuban|
+VRA,|Cuban|
+AGU,|Durango & Zacatecas|
+AUS,|Durango & Zacatecas|
+DFW,|Durango & Zacatecas|
+DGO,|Durango & Zacatecas|
+IAH,|Durango & Zacatecas|
+MAF,|Durango & Zacatecas|
+OKC,|Durango & Zacatecas|
+ZCL,|Durango & Zacatecas|
+GYE,|Ecuadorian|ES|
+MAD,|Ecuadorian|ES|
+UIO,|Ecuadorian|ES|
+GYE,|Ecuadorian|US|
+HPN,|Ecuadorian|US|
+UIO,|Ecuadorian|US|
+ADD,|Ethiopian|IE|
+TLV,|Ethiopian|IE|
+ADD,|Ethiopian|US|
+DEN,|Ethiopian|US|
+IAD,|Ethiopian|US|
+CRK,|Filipino|IE|
+DVO,|Filipino|IE|
+MNL,|Filipino|IE|
+TLV,|Filipino|IE|
+CRK,|Filipino|IT|
+DVO,|Filipino|IT|
+FCO,|Filipino|IT|
+MNL,|Filipino|IT|
+MXP,|Filipino|IT|
+CRK,|Filipino|US|
+DVO,|Filipino|US|
+HNL,|Filipino|US|
+MNL,|Filipino|US|
+OAK,|Filipino|US|
+ONT,|Filipino|US|
+ACC,|Ghanaian|NL|
+AMS,|Ghanaian|NL|
+ATH,|Greek|AU|
+MEL,|Greek|AU|
+SYD,|Greek|AU|
+BWI,|Guatemalan|US|
+GUA,|Guatemalan|US|
+HPN,|Guatemalan|US|
+IAD,|Guatemalan|US|
+ACA,|Guerrero & Oaxaca|
+ACV,|Guerrero & Oaxaca|
+FAT,|Guerrero & Oaxaca|
+FAT,|Guerrero & Oaxaca|
+OAX,|Guerrero & Oaxaca|
+PHX,|Guerrero & Oaxaca|
+SAN,|Guerrero & Oaxaca|
+SBD,|Guerrero & Oaxaca|
+SMF,|Guerrero & Oaxaca|
+STS,|Guerrero & Oaxaca|
+ZIH,|Guerrero & Oaxaca|
+AMD,|Gujarati|
+BHJ,|Gujarati|
+STV,|Gujarati|
+PAP,|Haitian|CA|
+YUL,|Haitian|CA|
+HAN,|Hmong|TH|
+MSP,|Hmong|TH|
+HAN,|Hmong|US|
+MSP,|Hmong|US|
+AKL,|Indian|AU|
+SYD,|Indian|AU|
+CNS,|Indian|AU|
+AVV,|Indian|AU|
+BNE,|Indian|AU|
+ADL,|Indian|AU|
+PER,|Indian|AU|
+MAN,|Indian|GB|
+LPL,|Indian|GB|
+LHR,|Indian|GB|
+BHX,|Indian|GB|
+STN,|Indian|GB|
+LTN,|Indian|GB|
+LGW,|Indian|GB|
+EWR,|Indian|US|
+DFW,|Indian|US|
+EWR,|Indian|US|
+IAH,|Indian|US|
+ORD,|Indian|US|
+SFO,|Indian|US|
+SJC,|Indian|US|
+LGA,|Indian|US|
+SEA,|Indian|US|
+IAD,|Indian|US|
+BER,|Iranian|DE|
+HAM,|Iranian|DE|
+IFN,|Iranian|DE|
+IKA,|Iranian|DE|
+TBZ,|Iranian|DE|
+THR,|Iranian|DE|
+IST,|Iranian|TR|
+IFN,|Iranian|US|
+IKA,|Iranian|US|
+LAX,|Iranian|US|
+SAN,|Iranian|US|
+SNA,|Iranian|US|
+TBZ,|Iranian|US|
+THR,|Iranian|US|
+BGW,|Iraqi|SE|
+BSR,|Iraqi|SE|
+ISU,|Iraqi|SE|
+EBL,|Iraqi|SE|
+ORB,|Iraqi|SE|
+ARN,|Iraqi|SE|
+BGW,|Iraqi|TR|
+BSR,|Iraqi|TR|
+ISU,|Iraqi|TR|
+IST,|Iraqi|TR|
+SAW,|Iraqi|TR|
+ESB,|Iraqi|TR|
+MEL,|Italian|AU|
+FCO,|Italian|AU|
+MXP,|Italian|AU|
+CTA,|Italian|AU|
+PMO,|Italian|AU|
+AAV,|Italian|AU|
+GRU,|Italian|BR|
+PHL,|Italian|US|
+MDW,|Italian|US|
+NAP,|Italian|US|
+FCO,|Italian|US|
+MXP,|Italian|US|
+CTA,|Italian|US|
+PMO,|Italian|US|
+CLQ,|Jalisco & Michoacán|
+CMH,|Jalisco & Michoacán|
+DFW,|Jalisco & Michoacán|
+DSM,|Jalisco & Michoacán|
+GDL,|Jalisco & Michoacán|
+ICT,|Jalisco & Michoacán|
+IND,|Jalisco & Michoacán|
+MCI,|Jalisco & Michoacán|
+MLM,|Jalisco & Michoacán|
+ORD,|Jalisco & Michoacán|
+PHX,|Jalisco & Michoacán|
+UPN,|Jalisco & Michoacán|
+YKM,|Jalisco & Michoacán|
+ZLO,|Jalisco & Michoacán|
+CDG,|Jewish|FR|
+TLV,|Jewish|FR|
+LCY,|Jewish|UK|
+LTN,|Jewish|UK|
+TLV,|Jewish|UK|
+BLR,|Kannada|AE|
+DXB,|Kannada|AE|
+IXE,|Kannada|AE|
+HND,|Korean|JP|
+ITM,|Korean|JP|
+LIM,|Korean|UK|
+ATL,|Korean|US|
+GMP,|Korean|US|
+IAD,|Korean|US|
+ICN,|Korean|US|
+LAX,|Korean|US|
+LGA,|Korean|US|
+PHL,|Korean|US|
+PUS,|Korean|US|
+COK,|Malayali|AE|
+TRV,|Malayali|AE|
+CCJ,|Malayali|AE|
+CNN,|Malayali|AE|
+DXB,|Malayali|AE|
+SHJ,|Malayali|AE|
+AUH,|Malayali|AE|
+AAN,|Malayali|AE|
+RKT,|Malayali|AE|
+FJR,|Malayali|AE|
+COK,|Malayali|MY|
+TRV,|Malayali|MY|
+CCJ,|Malayali|MY|
+CNN,|Malayali|MY|
+KUL,|Malayali|MY|
+JHB,|Malayali|MY|
+SZB,|Malayali|MY|
+PEN,|Malayali|MY|
+COK,|Malayali|MY|
+TRV,|Malayali|MY|
+CCJ,|Malayali|MY|
+CNN,|Malayali|MY|
+MCT,|Malayali|OM|
+SLL,|Malayali|OM|
+COK,|Malayali|OM|
+TRV,|Malayali|OM|
+CCJ,|Malayali|OM|
+CNN,|Malayali|OM|
+COK,|Malayali|SA|
+TRV,|Malayali|SA|
+CCJ,|Malayali|SA|
+CNN,|Malayali|SA|
+DMM,|Malayali|SA|
+RUH,|Malayali|SA|
+JED,|Malayali|SA|
+SIN,|Marathi|
+BOM,|Marathi|
+IXU,|Marathi|
+NAG,|Marathi|
+PNQ,|Marathi|
+CMN,|Moroccan|CA|
+YUL,|Moroccan|CA|
+RAK,|Moroccan|FR|
+CMN,|Moroccan|FR|
+RBA,|Moroccan|FR|
+FEZ,|Moroccan|FR|
+CDG,|Moroccan|FR|
+ORY,|Moroccan|FR|
+MRS,|Moroccan|FR|
+TLS,|Moroccan|FR|
+RAK,|Moroccan|NL|
+CMN,|Moroccan|NL|
+RBA,|Moroccan|NL|
+FEZ,|Moroccan|NL|
+AMS,|Moroccan|NL|
+LGW,|Nigerian|UK|
+LHR,|Nigerian|UK|
+LOS,|Nigerian|UK|
+ATL,|Nigerian|US|
+IAH,|Nigerian|US|
+LOS,|Nigerian|US|
+NRT,|Nikkei|AR|
+CGR,|Nikkei|BR|
+CMG,|Nikkei|BR|
+CWB,|Nikkei|BR|
+GRU,|Nikkei|BR|
+HND,|Nikkei|BR|
+IGU,|Nikkei|BR|
+ITM,|Nikkei|BR|
+KIK,|Nikkei|BR|
+NRT,|Nikkei|BR|
+HND,|Nikkei|MP|
+SPN,|Nikkei|MP|
+HND,|Nikkei|MX|
+ITM,|Nikkei|MX|
+KIK,|Nikkei|MX|
+MXL,|Nikkei|MX|
+NRT,|Nikkei|MX|
+HND,|Nikkei|PE|
+ITM,|Nikkei|PE|
+KIK,|Nikkei|PE|
+LIM,|Nikkei|PE|
+NRT,|Nikkei|PE|
+HND,|Nikkei|US|
+HNL,|Nikkei|US|
+ITM,|Nikkei|US|
+KIK,|Nikkei|US|
+LAX,|Nikkei|US|
+NRT,|Nikkei|US|
+CPH,|Pakistani|DK|
+AHB,|Pakistani|SA|
+DMM,|Pakistani|SA|
+JED,|Pakistani|SA|
+RUH,|Pakistani|SA|
+TIF,|Pakistani|SA|
+LHR,|Pakistani|UK|
+MAN,|Pakistani|UK|
+AUS,|Pakistani|US|
+EWR,|Pakistani|US|
+IAH,|Pakistani|US|
+ISB,|Pakistani|US|
+KHI,|Pakistani|US|
+LHE,|Pakistani|US|
+MAD,|Peruvian|ES|
+MEX,|Peruvian|MX|
+CDG,|Polish|FR|
+BVA,|Polish|FR|
+ORY,|Polish|FR|
+SXB,|Polish|FR|
+DUB,|Polish|IE|
+GDN,|Polish|IE|
+KRK,|Polish|IE|
+WAW,|Polish|IE|
+EDI,|Polish|UK|
+LGW,|Polish|UK|
+MAN,|Polish|UK|
+GDN,|Polish|US|
+KRK,|Polish|US|
+ORD,|Polish|US|
+MDW,|Polish|US|
+BDL,|Polish|US|
+LGA,|Polish|US|
+WAW,|Polish|US|
+AIP,|Punjabi|CA|
+ATQ,|Punjabi|CA|
+IXC,|Punjabi|CA|
+YVR,|Punjabi|CA|
+YYC,|Punjabi|CA|
+YYZ,|Punjabi|CA|
+CIA,|Romanian|IT|
+OTP,|Romanian|IT|
+LIN,|Romanian|IT|
+TRN,|Romanian|IT|
+BGY,|Romanian|IT|
+TSF,|Romanian|IT|
+PSA,|Romanian|IT|
+LGB,|Salvadoran|US|
+SNA,|Salvadoran|US|
+BWI,|Salvadoran|US|
+ISP,|Salvadoran|US|
+SAL,|Salvadoran|US|
+APW,|Samoan|CL|
+SLC,|Samoan|CL|
+AKL,|Samoan|NZ|
+APW,|Samoan|NZ|
+HGA,|Somali|NO|
+MGQ,|Somali|NO|
+OSL,|Somali|NO|
+HGA,|Somali|US|
+MGQ,|Somali|US|
+SEA,|Somali|US|
+AMS,|Surinamese|
+PBM,|Surinamese|
+ALP,|Syrian|BR|
+DAM,|Syrian|BR|
+ALP,|Syrian|NL|
+ARN,|Syrian|NL|
+DAM,|Syrian|NL|
+CJB,|Tamil|AE|
+DXB,|Tamil|AE|
+IXM,|Tamil|AE|
+MAA,|Tamil|AE|
+TCR,|Tamil|AE|
+TRZ,|Tamil|AE|
+CJB,|Tamil|MY|
+IXM,|Tamil|MY|
+KUL,|Tamil|MY|
+LGK,|Tamil|MY|
+MAA,|Tamil|MY|
+PEN,|Tamil|MY|
+TCR,|Tamil|MY|
+TRZ,|Tamil|MY|
+YYZ,|Telugu|CA|
+HYD,|Telugu|CA|
+TIR,|Telugu|CA|
+VGA,|Telugu|CA|
+VTZ,|Telugu|CA|
+MRS,|Tunisian|FR|
+NBE,|Tunisian|FR|
+ORY,|Tunisian|FR|
+TUN,|Tunisian|FR|
+BER,|Turkish|DE|
+FRA,|Turkish|DE|
+HAM,|Turkish|DE|
+MUC,|Turkish|DE|
+ADA,|Turkish|DK|
+ADB,|Turkish|DK|
+CPH,|Turkish|DK|
+ESB,|Turkish|DK|
+IST,|Turkish|DK|
+ADA,|Turkish|NL|
+ADB,|Turkish|NL|
+AMS,|Turkish|NL|
+ESB,|Turkish|NL|
+IST,|Turkish|NL|
+HRK,|Ukrainian|US|
+JFK,|Ukrainian|US|
+KPB,|Ukrainian|US|
+CCS,|Venezuelan|CL|
+MAR,|Venezuelan|CL|
+SLC,|Venezuelan|CL|
+CCS,|Venezuelan|PE|
+LIM,|Venezuelan|PE|
+MAR,|Venezuelan|PE|
+CCS,|Venezuelan|US|
+FLL,|Venezuelan|US|
+MAR,|Venezuelan|US|
+MIA,|Venezuelan|US|
+BNE,|Vietnamese|AU|
+DAD,|Vietnamese|AU|
+HAN,|Vietnamese|AU|
+MEL,|Vietnamese|AU|
+SGN,|Vietnamese|AU|
+SYD,|Vietnamese|AU|
+DAD,|Vietnamese|JP|
+HAN,|Vietnamese|JP|
+HND,|Vietnamese|JP|
+HPH,|Vietnamese|JP|
+KIK,|Vietnamese|JP|
+SGN,|Vietnamese|JP|
+DAD,|Vietnamese|US|
+HAN,|Vietnamese|US|
+IAH,|Vietnamese|US|
+LAX,|Vietnamese|US|
+SEA,|Vietnamese|US|
+SGN,|Vietnamese|US|
+SJC,|Vietnamese|US|
+SNA,|Vietnamese|US|
+SEA,Amazon
+DUB,Amazon
+HYD,Amazon
+CUN,Anglophone
+SJC,Apple
+SZX,Apple
+ORK,Apple
+BSL,Art Industry
+MLH,Art Industry
+VCE,Art Industry
+HKG,Art Industry
+MIA,Art Industry
+DTW,Automotive Industry
+STR,Automotive Industry
+NGO,Automotive Industry
+HMO,Automotive Industry
+TLC,Automotive Industry
+YQG,Automotive Industry
+MTY,Automotive Industry
+FLL,CC
+JFK,CC
+MIA,CC
+PQI,Francophonie
+YBC,Francophonie
+YBG,Francophonie
+YCL,Francophonie
+YGP,Francophonie
+YHU,Francophonie
+YMT,Francophonie
+YQB,Francophonie
+YRJ,Francophonie
+YTF,Francophonie
+YTM,Francophonie
+YUL,Francophonie
+YUY,Francophonie
+YVO,Francophonie
+YXK,Francophonie
+YYY,Francophonie
+YZV,Francophonie
+ZBF,Francophonie
+AGT,German
+WDH,German
+ABQ,Hispanic
+BFL,Hispanic
+BFL,Hispanic
+BRO,Hispanic
+BUR,Hispanic
+CRP,Hispanic
+ELP,Hispanic
+FLL,Hispanic
+HPN,Hispanic
+HRL,Hispanic
+JFK,Hispanic
+LAS,Hispanic
+LAX,Hispanic
+LRD,Hispanic
+MFE,Hispanic
+MFR,Hispanic
+MIA,Hispanic
+NLD,Hispanic
+OAK,Hispanic
+ONT,Hispanic
+PUB,Hispanic
+RSW,Hispanic
+SAF,Hispanic
+SAT,Hispanic
+SJC,Hispanic
+SNA,Hispanic
+TUS,Hispanic
+YUM,Hispanic
+MGM,Hyundai
+ATL,Hyundai
+MAA,Hyundai
+ICN,Hyundai
+BDL,Irish American
+BOS,Irish American
+DUB,Irish American
+HPN,Irish American
+MHT,Irish American
+ORH,Irish American
+PHL,Irish American
+SNN,Irish American
+EWR,Jewish
+FLL,Jewish
+IAD,Jewish
+JFK,Jewish
+LAX,Jewish
+LGA,Jewish
+MIA,Jewish
+ORD,Jewish
+PBI,Jewish
+PHL,Jewish
+SFO,Jewish
+SNA,Jewish
+TLV,Jewish
+EWR,Johnson & Johnson
+BRU,Johnson & Johnson
+CRH,Johnson & Johnson
+PVG,Johnson & Johnson
+MIA,Lusophone
+GVA,Nestlé
+CLE,Nestlé
+PEK,Nestlé
+DXB,Nestlé
+PVG,Renewable Energy Industry
+SZX,Renewable Energy Industry
+CPH,Renewable Energy Industry
+BER,Renewable Energy Industry
+ICN,Samsung
+AUS,Samsung
+DEL,Samsung
+SGN,Samsung
+BDL,Stateside Puerto Ricans
+CLE,Stateside Puerto Ricans
+HVN,Stateside Puerto Ricans
+LGA,Stateside Puerto Ricans
+MCO,Stateside Puerto Ricans
+MDW,Stateside Puerto Ricans
+PHL,Stateside Puerto Ricans
+YXU,Toyota
+SDF,Toyota
+SAT,Toyota
+CAN,Toyota
+NGO,Toyota
+BOD,Vitticulture
+STS,Vitticulture
+MDZ,Vitticulture
+CPT,Vitticulture
+ADL,Vitticulture
+CHC,Vitticulture
+FLR,Vitticulture
+OAK,Vitticulture
+HAJ,Volkswagen
+IGS,Volkswagen
+STR,Volkswagen
+PRG,Volkswagen
+CHA,Volkswagen
+PBC,Volkswagen
+DUB,Whiskey Industry
+LEX,Whiskey Industry
+ABZ,Whiskey Industry
+INV,Whiskey Industry
+GLA,Whiskey Industry
+EDI,Whiskey Industry
+HND,Whiskey Industry
+SDF,Whiskey Industry

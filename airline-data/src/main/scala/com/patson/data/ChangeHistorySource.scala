@@ -82,8 +82,8 @@ object ChangeHistorySource {
             toAirport = toAirport,
             fromCountry = fromCountry,
             toCountry = toCountry,
-            fromZone = resultSet.getString("from_zone"),
-            toZone = resultSet.getString("to_zone"),
+//            fromZone = resultSet.getString("from_zone"),
+//            toZone = resultSet.getString("to_zone"),
             airline = airline,
             alliance = alliance,
             frequency = resultSet.getInt("frequency"),
@@ -113,7 +113,8 @@ object ChangeHistorySource {
   def saveLinkChanges(changes : List[LinkChange]) : Unit = {
     val connection = Meta.getConnection()
     connection.setAutoCommit(false)
-    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_CHANGE_HISTORY_TABLE + "(link, price_economy, price_business, price_first, price_economy_delta, price_business_delta, price_first_delta, capacity_economy, capacity_business, capacity_first, capacity, capacity_economy_delta, capacity_business_delta, capacity_first_delta, capacity_delta, from_airport, to_airport, from_country, to_country, from_zone, to_zone, airline, alliance, frequency, flight_number, airplane_model, raw_quality, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+//    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_CHANGE_HISTORY_TABLE + "(link, price_economy, price_business, price_first, price_economy_delta, price_business_delta, price_first_delta, capacity_economy, capacity_business, capacity_first, capacity, capacity_economy_delta, capacity_business_delta, capacity_first_delta, capacity_delta, from_airport, to_airport, from_country, to_country, from_zone, to_zone, airline, alliance, frequency, flight_number, airplane_model, raw_quality, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+    val preparedStatement = connection.prepareStatement("INSERT INTO " + LINK_CHANGE_HISTORY_TABLE + "(link, price_economy, price_business, price_first, price_economy_delta, price_business_delta, price_first_delta, capacity_economy, capacity_business, capacity_first, capacity, capacity_economy_delta, capacity_business_delta, capacity_first_delta, capacity_delta, from_airport, to_airport, from_country, to_country, airline, alliance, frequency, flight_number, airplane_model, raw_quality, cycle) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     try {
       changes.foreach { change =>
         preparedStatement.setInt(1, change.linkId)
@@ -135,21 +136,21 @@ object ChangeHistorySource {
         preparedStatement.setInt(17, change.toAirport.id)
         preparedStatement.setString(18, change.fromCountry.countryCode)
         preparedStatement.setString(19, change.toCountry.countryCode)
-        preparedStatement.setString(20, change.fromZone)
-        preparedStatement.setString(21, change.toZone)
-        preparedStatement.setInt(22, change.airline.id)
+//        preparedStatement.setString(20, change.fromZone)
+//        preparedStatement.setString(21, change.toZone)
+        preparedStatement.setInt(20, change.airline.id)
         change.alliance match {
           case Some(alliance) =>
-            preparedStatement.setInt(23, alliance.id)
+            preparedStatement.setInt(21, alliance.id)
           case None =>
-            preparedStatement.setNull(23, Types.INTEGER)
+            preparedStatement.setNull(21, Types.INTEGER)
         }
 
-        preparedStatement.setInt(24, change.frequency)
-        preparedStatement.setInt(25, change.flightNumber)
-        preparedStatement.setInt(26, change.airplaneModel.id)
-        preparedStatement.setInt(27, change.rawQuality)
-        preparedStatement.setInt(28, change.cycle)
+        preparedStatement.setInt(22, change.frequency)
+        preparedStatement.setInt(23, change.flightNumber)
+        preparedStatement.setInt(24, change.airplaneModel.id)
+        preparedStatement.setInt(25, change.rawQuality)
+        preparedStatement.setInt(26, change.cycle)
 
         preparedStatement.executeUpdate()
       }

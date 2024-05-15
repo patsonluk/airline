@@ -143,11 +143,24 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
 
 
-	if (economyValue >= 1_000_000 || businessValue >= 1_000_000 || firstValue >= 1_000_000) {
+	if (economyValue >= 10000 || businessValue >= 10000 || firstValue >= 10000) {
  	    return prefix + commaSeparateNumber(economyValue) + suffix + " / " + prefix + commaSeparateNumber(businessValue) + suffix + " / " + prefix + commaSeparateNumber(firstValue) + suffix
     } else {
         return prefix + economyValue + suffix + " / " + prefix + businessValue + suffix + " / " + prefix + firstValue + suffix
     }
+}
+
+function toLinkClassDiv(linkValues, prefix, suffix) {
+	if (!prefix) {
+		prefix = ""
+	}
+	if (!suffix) {
+		suffix = ""
+	}
+	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy : '-'
+	var businessValue = linkValues.hasOwnProperty('business') ? linkValues.business : '-'
+	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
+	return `<div class="class-values"><p class="class-value-child text-base font-mono">${prefix + economyValue + suffix}</p><p class="class-value-child text-base font-mono">${prefix + businessValue + suffix}</p><p class="class-value-child text-base font-mono">${prefix + firstValue + suffix}</p></div>`
 }
 
 function changeColoredElementValue(element, newValue) {
@@ -226,7 +239,7 @@ function getCountryFlagUrl(countryCode) {
 }
 
 function getAirlineLogoImg(airlineId) {
-	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo' style='vertical-align:middle;'/>"
+	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo'/>"
 }
 
 
@@ -244,6 +257,13 @@ function getAirlineSpan(airlineId, airlineName) {
 	$airlineSpan.append(getAirlineLabelSpan(airlineId, airlineName))
 
 	return $airlineSpan[0].outerHTML
+}
+
+function getAirlineLogoSpan(airlineId, airlineName) {
+    var $airlineLogoSpan = $('<span></span>')
+	$airlineLogoSpan.append(getAirlineLogoImg(airlineId))
+	$airlineLogoSpan.attr("title", airlineName)
+    return $airlineLogoSpan
 }
 
 function getUserLevelImg(level) {
@@ -323,7 +343,7 @@ function getAirlineModifiersSpan(modifiers) {
     return result
 }
 
-function getRankingImg(ranking) {
+function getRankingImg(ranking, limitToTop3 = false) {
 	var rankingIcon
 	var rankingTitle
 	if (ranking == 1) {
@@ -335,7 +355,7 @@ function getRankingImg(ranking) {
 	} else if (ranking == 3) {
 		rankingIcon = "assets/images/icons/crown-bronze.png"
     	rankingTitle = "3rd place"
-	} else if (ranking <= 10) {
+	} else if (ranking <= 10 && limitToTop3 !== true) {
 		rankingIcon = "assets/images/icons/trophy-" + ranking + ".png"
 		rankingTitle = ranking + "th place"
 	}
@@ -367,15 +387,33 @@ function getYearMonthText(weekDuration) {
 	}
 }
 
-
-function getOpennessSpan(openness) {
+function getOpennessIcon(openness, size=null, isDomesticAirport=false, isGateway=false) {
 	var description
 	var icon
-	if (openness >= 7) {
-		description = "Opened Market"
+	if (size && size <= 2 && ! isGateway || isDomesticAirport){
+	    description = "Limited International Flights"
+        icon = "prohibition.png"
+	} else if (openness >= 7 || size >= 7) {
+		description = "All International Connections"
 		icon = "globe--plus.png"
 	} else {
-		description = "No International Connection"
+		description = "No International to International Connections"
+		icon = "globe--exclamation.png"
+	}
+	return "<img src='assets/images/icons/" + icon + "' title='" + description + "'/>"
+}
+
+function getOpennessSpan(openness, size=null, isDomesticAirport=false) {
+	var description
+	var icon
+	if (size && size <= 2 || isDomesticAirport){
+	    description = "Limited International Flights"
+        icon = "prohibition.png"
+	} else if (openness >= 7 || size >= 7) {
+		description = "All International Connections"
+		icon = "globe--plus.png"
+	} else {
+		description = "No International to International Connections"
 		icon = "globe--exclamation.png"
 	}/* else if (openness >= 2) {
 		description = "No Foreign Airline Base"
@@ -384,8 +422,7 @@ function getOpennessSpan(openness) {
 		description = "No Foreign Airline"
 		icon = "prohibition.png"
 	}*/
-	return "<span>" + description + "(" + openness + ")&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
-	
+	return "<span>" + description + "&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
 }
 
 function scrollToRow($matchingRow, $container) {
@@ -399,8 +436,8 @@ function scrollToRow($matchingRow, $container) {
 /*
 Get a span with value and a tool tip of breakdown
 */
-function getBoostSpan(finalValue, boosts, $tooltip) {
-    var $valueSpan = $('<span>' + commaSeparateNumber(finalValue) + '</span>')
+function getBoostSpan(finalValue, boosts, $tooltip, prepend = "") {
+    var $valueSpan = $('<span>' + prepend + commaSeparateNumber(finalValue) + '</span>')
     if (boosts) {
         $valueSpan.css('color', '#41A14D')
         $tooltip.find('.table .table-row').remove()
@@ -600,9 +637,9 @@ function closeAllModals() {
 
 function disableButton(button, reason) {
     $(button).addClass("disabled")
-    if ($(button).is(':input')) { //then have to manually add overlay
-       $(button).after('<div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 50, 50, 0.2)"></div>')
-    }
+//    if ($(button).is(':input')) { //then have to manually add overlay
+//       $(button).after('<div class="overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 50, 50, 0.2)"></div>')
+//    }
 
     $(button).each(function() {
       $(this).data("originalClickFunction", $(this).attr("onclick"))
@@ -791,4 +828,48 @@ function toReadableDuration(duration) {
     result += " " + (hours == 1 ? "1 hour" : hours + " hours")
   }
   return result.trim()
+}
+
+function buildAffinityText(text) {
+  const firstPipeIndex = text.indexOf("|");
+  text = (firstPipeIndex !== -1) ? text.slice(0, firstPipeIndex) + "Diaspora communities: " + text.slice(firstPipeIndex) : text;
+  text = text.replace("CC","Caribbean Community")
+  const parts = text.split(",");
+  const editedParts = parts.map((part) => {
+    if (part.trim().endsWith("|")) {
+      const updatedPart = part.replace(/\|(.*?)\|(.*?)\|/g,"$1");
+      return updatedPart;
+    } else {
+      return part;
+    }
+  });
+  return editedParts.join(",");
+}
+
+/**
+ * from BAC
+ * https://gist.github.com/aphix/fdeeefbc4bef1ec580d72639bbc05f2d
+ * Aphix/Torus (original cost per PAX by Alrianne), mdons
+ **/
+function getLoadFactorsFor(consumption) {
+    var factor = {};
+    for (let key in consumption.capacity) {
+        factor[key] = getFactorPercent(consumption, key) || "-";
+    }
+    return factor;
+}
+function getFactorPercent(consumption, subType) {
+    return (consumption.capacity[subType] > 0)
+        ? parseInt(consumption.soldSeats[subType] / consumption.capacity[subType] * 100)
+        : null;
+}
+function _seekSubVal(val, ...subKeys) {
+    if (subKeys.length === 0) {
+        return val;
+    }
+    return _seekSubVal(val[subKeys[0]], ...subKeys.slice(1));
+}
+
+function averageFromSubKey(array, ...subKeys) {
+    return array.map((obj) => _seekSubVal(obj, ...subKeys)).reduce((sum, val) => (sum += val || 0), 0) / array.length;
 }

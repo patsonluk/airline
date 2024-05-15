@@ -21,7 +21,7 @@ $( document ).ready(function() {
 
 	window.addEventListener('orientationchange', refreshMobileLayout)
 
-    populateLookups()
+//    populateLookups()
 	if ($.cookie('sessionActive')) {
 		loadUser(false)
 	} else {
@@ -289,6 +289,7 @@ function initMap() {
    	minZoom : 2,
    	gestureHandling: 'greedy',
    	styles: getMapStyles(),
+	mapTypeId: getMapTypes(),
    	restriction: {
                 latLngBounds: { north: 85, south: -85, west: -180, east: 180 },
               }
@@ -300,6 +301,11 @@ function initMap() {
 	    $.each(markers, function( key, marker ) {
 	        marker.setVisible(isShowMarker(marker, zoom));
 	    })
+  });
+  
+  google.maps.event.addListener(map, 'maptypeid_changed', function() { 
+		var mapType = map.getMapTypeId();
+		$.cookie('currentMapTypes', mapType);
   });
 
   addCustomMapControls(map)
@@ -437,6 +443,7 @@ var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 
 function updateTime(cycle, fraction, cycleDurationEstimation) {
+	$(".currentTime").attr("title", "Current Cycle: " + cycle)
 	currrentCycle = cycle
 	currentTime = (cycle + fraction) * totalmillisecPerWeek 
 	if (refreshIntervalTimer) {
@@ -467,6 +474,8 @@ function updateTime(cycle, fraction, cycleDurationEstimation) {
 			    } else {
 			        $(".nextTickEstimation").text(minutesLeft + " minutes")
 			    }
+            } else {
+                $(".nextTickEstimation").text("Estimating...")
             }
 		}, refreshInterval);
 
@@ -583,24 +592,27 @@ function populateDataPropertyTooltips() {
 
 }
 
-var airlineGradeLookup
-function populateLookups() {
-    loadAllCountries()
-    $.ajax({
-		type: 'GET',
-		url: "lookups",
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    async: false,
-	    success: function(result) {
-	    	airlineGradeLookup = result.airlineGradeLookup
-	    },
-	    error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
-}
+//var airlineGradeLookup
+//function populateLookups() {
+//    loadAllCountries()
+//    $.ajax({
+//		type: 'GET',
+//		url: "lookups",
+//	    contentType: 'application/json; charset=utf-8',
+//	    dataType: 'json',
+//	    async: false,
+//	    success: function(result) {
+//	    	airlineGradeLookup = result.airlineGradeLookup
+//	    	airlineGradeTourists = result.airlineGradeTourists
+//	    	airlineGradeElites = result.airlineGradeElites
+//	    	airlineGradeStockPrice = result.airlineGradeStockPrice
+//	    },
+//	    error: function(jqXHR, textStatus, errorThrown) {
+//	            console.log(JSON.stringify(jqXHR));
+//	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+//	    }
+//	});
+//}
 
 function showTutorial() {
 	// Get the modal

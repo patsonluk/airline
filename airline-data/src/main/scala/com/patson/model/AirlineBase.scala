@@ -13,58 +13,44 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
       0
     } else {
       var baseCost = (1000000 + airport.rating.overallRating * 120000).toLong
-      (baseCost * airportSizeRatio * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) )).toLong
+      (baseCost * airportTypeMultiplier * airportSizeRatio * Math.pow (COST_EXPONENTIAL_BASE, (scale - 1) )).toLong
     }
   }
 
   val COST_EXPONENTIAL_BASE = 1.7
-  
+
   lazy val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
     var baseUpkeep = (5000 + airport.rating.overallRating * 150).toLong
 
-    (baseUpkeep * airportSizeRatio * Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
+    (baseUpkeep * airportTypeMultiplier * airportSizeRatio * Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
   }
 
-  lazy val airportSizeRatio =
-    if (airport.size > 6) {
+  lazy val airportTypeMultiplier =
+    if (airport.isDomesticAirport()) {
+      0.7
+    } else if (airport.isGateway()) {
+      1.1
+    } else {
       1.0
-    } else { //discount for size < 6
+    }
+
+  lazy val airportSizeRatio =
+    if (airport.size > 7) {
+      1.0
+    } else { //discount for size < 7
       0.3 + airport.size * 0.1
     }
 
-//  def getLinkLimit(titleOption : Option[Title.Value]) : Int = {
-//    val base = 5
-//    val titleBonus = titleOption match {
-//      case Some(title) => CountryAirlineTitle.getLinkLimitBonus(title)
-//      case None => 0
-//    }
-//
-//    val scaleBonus =
-//      if (headquarter) {
-//        4 * scale
-//      } else {
-//        2 * scale
-//      }
-//
-//    base + titleBonus + scaleBonus
-//  }
-
   val getOfficeStaffCapacity = AirlineBase.getOfficeStaffCapacity(scale, headquarter)
 
-//  val HQ_BASIC_DELEGATE = 7
-//  val NON_HQ_BASIC_DELEGATE = 3
-//  val delegateCapacity : Int =
-//    (if (headquarter) HQ_BASIC_DELEGATE else NON_HQ_BASIC_DELEGATE) + scale / (if (headquarter) 1 else 2)
-
-  val delegatesRequired : Int = {
+  val delegatesRequired = {
     if (headquarter) {
-      scale / 2
+      Math.max(0, Math.ceil(scale.toDouble / 2) - 1)
     } else {
-      1 + scale / 2
+      Math.ceil(scale.toDouble / 2)
     }
-  }
-
+  }.toInt
 
   def getOvertimeCompensation(staffRequired : Int) = {
     if (getOfficeStaffCapacity >= staffRequired) {

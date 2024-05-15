@@ -75,9 +75,10 @@ function updateCountryTable(sortProperty, sortOrder, selectedCountry) {
 		} else {
 		    row.append("<div class='cell'>" + country.name + "</div>")
         }
-		row.append("<div class='cell' align='right'>" + country.airportPopulation + "</div>")
-		row.append("<div class='cell' align='right'>" + country.incomeLevel + "</div>")
+		row.append("<div class='cell' align='right'>" + country.airportPopulation.toLocaleString() + "</div>")
+		row.append("<div class='cell' align='right'>$" + country.income.toLocaleString() + "</div>")
 		row.append("<div class='cell' align='right'>" + country.openness + "</div>")
+		row.append("<div class='cell' align='right'>" + country.gini + "</div>")
 //		var baseCount = country.baseCount ? country.baseCount : "-"
 //		row.append("<div class='cell' align='right'>" + baseCount + "</div>")
         var delegatesCount = country.delegatesCount ? country.delegatesCount : "-"
@@ -184,7 +185,7 @@ function loadCountryDetails(countryCode) {
 	    dataType: 'json',
 	    success: function(country) {
 	    	$("#countryDetailsName").text(country.name)
-	    	$("#countryDetailsIncomeLevel").text(country.incomeLevel)
+	    	$("#countryDetailsIncomeLevel").text(country.income)
 	    	$("#countryDetailsOpenness").html(getOpennessSpan(country.openness))
 
 	    	var loadedCountry = loadedCountries.filter(function(obj) {
@@ -263,7 +264,7 @@ function loadCountryDetails(countryCode) {
 function getCountryRelationshipDescription(value) {
 	var description;
 	if (value >= 5) {
-		description = "Home Country"
+		description = "Domestic / Home Market"
     } else if (value == 4) {
 		description = "Alliance"
 	} else if (value == 3) {
@@ -459,7 +460,7 @@ function getCountryDelegatesSummary(countryCode) {
     $delegateSection.data("countryCode", countryCode)
 
     updateAirlineDelegateStatus($('#airlineCountryRelationshipModal div.delegateStatus'), function(delegateInfo) {
-        $delegateSection.data("availableDelegates", delegateInfo.availableCount)
+        $delegateSection.data("availableDelegates", delegateInfo.permanentAvailableCount)
     })
 
 	$.ajax({

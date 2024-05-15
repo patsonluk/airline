@@ -1,13 +1,15 @@
 package com.patson
 
 import java.util.Calendar
-
 import com.patson.data._
 import com.patson.model._
+import com.typesafe.config.ConfigFactory
 
 object UserSimulation {
   val LARGE_AIRLINE_PURGE_USER_THRESHOLD = 30 //in days
   val SMALL_AIRLINE_PURGE_USER_THRESHOLD = 30 //in days
+  val configFactory = ConfigFactory.load()
+  val devMode = if (configFactory.hasPath("dev")) configFactory.getBoolean("dev") else false
 
 
   def simulate(cycle: Int) = {
@@ -17,8 +19,11 @@ object UserSimulation {
     val generousThreshold = Calendar.getInstance()
     generousThreshold.add(Calendar.DAY_OF_YEAR, -1 * LARGE_AIRLINE_PURGE_USER_THRESHOLD)
 
-    println(s"starting resetting strict threshold - active before ${strictThreshold.getTime}; and generous threshold - active before ${generousThreshold.getTime}")
-
+    if (devMode) {
+      println("Not resetting players as it's in dev mode")
+    } else {
+      println(s"starting resetting strict threshold - active before ${strictThreshold.getTime}; and generous threshold - active before ${generousThreshold.getTime}")
+    }
 
     UserSource.loadUsersByCriteria(List.empty).foreach { user =>
       if (shouldResetPlayer(user, strictThreshold, generousThreshold)) {
@@ -41,10 +46,14 @@ object UserSimulation {
   }
 
   def shouldResetPlayer(user : User, strictThreshold : Calendar, generousThreshold : Calendar): Boolean = {
+    if (devMode) {
+      return false
+    }
+
     if (user.status != UserStatus.INACTIVE) {
       var hasLargeAirline = false
       user.getAccessibleAirlines().foreach { airline =>
-        if (airline.airlineGrade.value >= AirlineGrade.LESSER_INTERNATIONAL.value) {
+        if (airline.airlineGrade.level >= 150) {
           hasLargeAirline = true
         }
       }

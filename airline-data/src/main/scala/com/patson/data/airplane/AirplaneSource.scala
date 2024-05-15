@@ -348,9 +348,11 @@ object AirplaneSource {
   /**
    * Update an airplane's details except owner, construction_cycle and isSold information
    */
-   def updateAirplanesDetails(airplanes : List[Airplane], versionCheck : Boolean = false) = {
+   def updateAirplanesDetails(airplanes : List[Airplane], versionCheck : Boolean = false) : List[Airplane] = {
     val connection = Meta.getConnection()
     var updateCount = 0
+     val updatedAirplanes = ListBuffer[Airplane]()
+
       
     try {
       connection.setAutoCommit(false)
@@ -372,7 +374,12 @@ object AirplaneSource {
           if (versionCheck) {
             preparedStatement.setInt(8, airplane.version)
           }
-          updateCount += preparedStatement.executeUpdate()
+
+          val updateResult = preparedStatement.executeUpdate()
+          if (updateResult > 0) {
+            updatedAirplanes += airplane.copy(version = airplane.version + 1)
+          }
+
       }
       
       connection.commit()
@@ -385,7 +392,7 @@ object AirplaneSource {
       connection.close()
     }
     
-    updateCount
+    updatedAirplanes.toList
   }
 
 

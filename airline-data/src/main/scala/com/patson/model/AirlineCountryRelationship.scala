@@ -18,7 +18,7 @@ object AirlineCountryRelationship {
   val HOME_COUNTRY = (homeCountry : Country, targetCountry : Country, relationship : Int) => new RelationshipFactor {
     override val getDescription: String = {
       val relationshipString = relationship match {
-        case x if x >= 5 => "Home Country"
+        case x if x >= 5 => "Home / Open Skies"
         case 4 => "Alliance"
         case 3 => "Close"
         case 2 => "Friendly"
@@ -62,7 +62,7 @@ object AirlineCountryRelationship {
     }
   }
 
-  val HOME_COUNTRY_POSITIVE_RELATIONSHIP_MULTIPLIER = 5
+  val HOME_COUNTRY_POSITIVE_RELATIONSHIP_MULTIPLIER = 4
   val HOME_COUNTRY_NEGATIVE_RELATIONSHIP_MULTIPLIER = 15
 
   def getAirlineCountryRelationship(countryCode : String, airline : Airline) : AirlineCountryRelationship = {
@@ -70,11 +70,12 @@ object AirlineCountryRelationship {
     val targetCountry = countryMap(countryCode)
 
     airline.getCountryCode() match {
-      case Some(homeCountryCode) =>
+      case Some(homeCountryCode: String) =>
         //home country vs target country
         val relationship = countryRelationships.getOrElse((homeCountryCode, countryCode), 0)
         val multiplier = if (relationship >= 0) HOME_COUNTRY_POSITIVE_RELATIONSHIP_MULTIPLIER else HOME_COUNTRY_NEGATIVE_RELATIONSHIP_MULTIPLIER
-        factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * multiplier)
+        val home_country_bonus = if (relationship >= 5) 10 else 0
+          factors.put(HOME_COUNTRY(countryMap(homeCountryCode), targetCountry, relationship), relationship * multiplier + home_country_bonus)
 
 
         val allTitles = CountryAirlineTitle.getTopTitlesByCountry(countryCode)

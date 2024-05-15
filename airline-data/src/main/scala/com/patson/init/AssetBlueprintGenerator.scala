@@ -140,14 +140,14 @@ object AssetBlueprintGenerator {
         if (airport.features.map(_.featureType).contains(AirportFeatureType.VACATION_HUB)) {
           1
         } else {
-          if (airport.size <= 4) 0.3 else if (airport.size == 5) 0.5 else if (airport.size == 6) 0.7 else 1
+          if (airport.size <= 5 && airport.size >= 3) 0.75 else 0.25
         }
       case SKI_RESORT =>
-        if (airport.size <= 4) 0.3 else if (airport.size == 5) 0.5 else if (airport.size == 6) 0.7 else 1
+        if (airport.size <= 5 && airport.size >= 3) 0.75 else 0.25
       case TRAVEL_AGENCY =>
-        0.5
+        0.3
       case SPORT_ARENA =>
-        0.5
+        0.3
       case GAME_ARCADE =>
         0.2
       case CINEMA =>
@@ -177,13 +177,13 @@ object AssetBlueprintGenerator {
       case AIRPORT_HOTEL =>
         1
       case RESIDENTIAL_COMPLEX =>
-        0.5
+        1
     }
   }
 
   val getAirportBlueprintsLimit = (airport : Airport) => airport.size
 
-  val scienceParkIatas = List("SFO", "SEA", "SZX", "SIN", "LHR", "ICN", "TPE", "AMS", "BER", "BOS")
+  val scienceParkIatas = List("SFO", "SJC", "SEA", "JFK", "SZX", "PVG", "SIN", "ICN", "TPE", "HND", "BLR", "CDG", "LHR", "AMS", "BER", "BOS", "NBO", "TLV")
 
   import AirportAssetType._
   val isApplicable = (assetType : AirportAssetType.Value, airport : Airport) => assetType match {
@@ -216,7 +216,7 @@ object AssetBlueprintGenerator {
       }
     case BEACH_RESORT =>
       AirportWeatherData.getAirportWeatherData(airport) match {
-        case Some(data) => data.minTemperature >= 20 && data.maxTemperature <= 30
+        case Some(data) => data.minTemperature >= 20 && data.maxTemperature <= 32
         case None => false
       }
     case SKI_RESORT =>
@@ -235,7 +235,7 @@ object AssetBlueprintGenerator {
     case INN =>
       airport.basePopulation >= 10000
     case GOLF_COURSE =>
-      airport.basePopulation >= 100000 && airport.baseIncomeLevel >= 40 && airport.size <= 5
+      airport.baseIncomeLevel >= 40 && airport.size <= 5
     case OFFICE_BUILDING_1 =>
       airport.basePopulation >= 500000
     case HOTEL =>

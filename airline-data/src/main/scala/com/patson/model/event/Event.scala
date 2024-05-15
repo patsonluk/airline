@@ -200,6 +200,7 @@ case class OlympicsVoteCashReward() extends EventReward(EventType.OLYMPICS, Rewa
   val CASH_BONUS = 10000000 //10 millions
   override def applyReward(event: Event, airline : Airline) = {
     AirlineSource.adjustAirlineBalance(airline.id, CASH_BONUS)
+    AirlineSource.saveTransaction(AirlineTransaction(airline.id, TransactionType.CAPITAL_GAIN, CASH_BONUS))
   }
 
   override val description: String = "$10,000,000 subsidy in cash"
@@ -219,39 +220,38 @@ case class OlympicsVoteLoyaltyReward() extends EventReward(EventType.OLYMPICS, R
 
 case class OlympicsPassengerCashReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.CASH) {
   val MIN_CASH_REWARD = 20000000 //20 millions
-  val SCORE_MULTIPLIER = 500
-
 
   def computeReward(eventId: Int, airlineId : Int) = {
     val stats: Map[Int, BigDecimal] = EventSource.loadOlympicsAirlineStats (eventId, airlineId).toMap
     val totalScore = stats.view.values.sum
-    Math.max((totalScore * 500).toLong, MIN_CASH_REWARD)
+    Math.max((totalScore * 750).toLong, MIN_CASH_REWARD)
   }
 
   override def applyReward(event: Event, airline : Airline) = {
     val reward = computeReward(event.id, airline.id)
+    AirlineSource.saveTransaction(AirlineTransaction(airline.id, TransactionType.CAPITAL_GAIN, reward))
     AirlineSource.adjustAirlineBalance(airline.id, reward)
   }
 
-  override val description: String = "$20,000,000 or $500 * score (whichever is higher) cash reward"
+  override val description: String = "$20,000,000 or $750 * score (whichever is higher) cash reward"
   override def redeemDescription(eventId: Int, airlineId : Int) = s"$$${java.text.NumberFormat.getIntegerInstance.format(computeReward(eventId, airlineId))} cash reward"
 
 }
 
 case class OlympicsPassengerLoyaltyReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.LOYALTY) {
-  val LOYALTY_BONUS = 25
+  val LOYALTY_BONUS = 18
   override def applyReward(event: Event, airline : Airline) = {
-    val bonus = AirlineBonus(BonusType.OLYMPICS_PASSENGER, AirlineAppeal(loyalty = LOYALTY_BONUS), Some(event.startCycle + event.duration * 2))
+    val bonus = AirlineBonus(BonusType.OLYMPICS_PASSENGER, AirlineAppeal(loyalty = LOYALTY_BONUS), Some(event.startCycle + event.duration * 4))
     Olympics.getAffectedAirport(event.id, Olympics.getSelectedAirport(event.id).get).foreach { affectedAirport =>
       AirportSource.saveAirlineAppealBonus(affectedAirport.id, airline.id, bonus)
     }
   }
 
-  override val description: String = s"+$LOYALTY_BONUS loyalty bonus on airports around the host city for 4 years after the Olympics Games ended"
+  override val description: String = s"+$LOYALTY_BONUS loyalty bonus on airports around the host city for 12 years after the Olympics Games ended"
 }
 
 case class OlympicsPassengerReputationReward() extends EventReward(EventType.OLYMPICS, RewardCategory.OLYMPICS_PASSENGER, RewardOption.REPUTATION) {
-  val REPUTATION_BONUS = 10
+  val REPUTATION_BONUS = 55
   override def applyReward(event: Event, airline : Airline) = {
     AirlineSource.adjustAirlineReputation(airline.id, REPUTATION_BONUS)
   }

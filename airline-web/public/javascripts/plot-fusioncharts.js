@@ -1047,6 +1047,7 @@ function plotIncomeChart(airlineIncomes, period, container) {
 	data["links"] = []
 	data["transactions"] = []
 	data["others"] = []
+	data["stockPrice"] = []
 	var category = []
 	 
 	var profitByMonth = {}
@@ -1057,6 +1058,7 @@ function plotIncomeChart(airlineIncomes, period, container) {
 		data["links"].push({ value : airlineIncome.linksProfit })
 		data["transactions"].push({ value : airlineIncome.transactionsProfit })
 		data["others"].push({ value : airlineIncome.othersProfit })
+		data["stockPrice"].push({ value : airlineIncome.stockPrice.toFixed(2) })
 		category.push({ "label" : airlineIncome.cycle.toString() })
 	})
 
@@ -1092,8 +1094,9 @@ function plotIncomeChart(airlineIncomes, period, container) {
 				{ "seriesname": "Total Income", "data" : data["total"]},
 				{ "seriesname": "Flight Income", "data" : data["links"], "visible" : "0"},
 				{ "seriesname": "Transaction Income", "data" : data["transactions"], "visible" : "0"},
-				{ "seriesname": "Other Income", "data" : data["others"], "visible" : "0"}]
-	    	            
+				{ "seriesname": "Other Income", "data" : data["others"], "visible" : "0"},
+				{ "seriesname": "Stock Price", "data" : data["stockPrice"], "visible" : "0"},
+            ]
 	    }
 	})
 }
@@ -1143,6 +1146,57 @@ function plotCashFlowChart(airlineCashFlows, period, container) {
 	    	"categories" : [{ "category" : category}],
 			"dataset" : [ 
 				{ "seriesname": "Total CashFlow", "data" : data["cashFlow"] }
+			]
+	    }
+	})
+}
+
+function plotAirlineStats(stats, container) {
+	container.children(':FusionCharts').each((function(i) {
+		  $(this)[0].dispose();
+	}))
+
+	var data = {}
+    	data["total"] = []
+    	data["tourists"] = []
+    	data["elites"] = []
+    	data["business"] = []
+    	var category = []
+
+
+	$.each(stats, function(key, stat) {
+        data["total"].push({ value : stat.total })
+        data["tourists"].push({ value : stat.tourists })
+        data["elites"].push({ value : stat.elites })
+        data["business"].push({ value : stat.business })
+        category.push({ "label" : stat.cycle.toString() })
+    })
+
+	var chartConfig = {
+	//40 weeks
+                      	    		"xAxisname": "Week",
+                      	    		"yAxisName": "Passengers",
+                      	    		"numMinorDivLines": 1,
+//                      	    		"divLineAlpha": 0,
+                                      "showValues":"0",
+                                      "showZeroPlane": "0",
+                      	    	}
+    checkDarkTheme(chartConfig)
+
+	var chart = container.insertFusionCharts({
+		type: 'LogMSLine',
+	    width: '100%',
+	    height: '100%',
+	    dataFormat: 'json',
+	    containerBackgroundOpacity :'0',
+		dataSource: {
+	    	"chart": chartConfig,
+	    	"categories" : [{ "category" : category}],
+			"dataset" : [
+				{ "seriesname": "Total", "data" : data["total"]},
+                { "seriesname": "Tourist", "data" : data["tourists"]},
+                { "seriesname": "Elite", "data" : data["elites"]},
+                { "seriesname": "Business", "data" : data["business"]},
 			]
 	    }
 	})

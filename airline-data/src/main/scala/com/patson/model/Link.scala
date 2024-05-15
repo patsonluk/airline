@@ -69,10 +69,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
         0
       } else {
         val airplaneConditionQuality = inServiceAirplanes.toList.map {
-          case ((airplane, assignmentPerAirplane)) => airplane.condition / Airplane.MAX_CONDITION * assignmentPerAirplane.frequency
+          case ((airplane, assignmentPerAirplane)) => math.max( 2 * airplane.condition / Airplane.MAX_CONDITION, 1 ) * assignmentPerAirplane.frequency
         }.sum / frequency * 20
-        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
-//        println("computed quality " + computedQualityStore)
+        val airplaneTypeQuality = (getAssignedModel().get.quality - 4) * 3.5
+        computedQualityStore = Math.min(99, airplaneTypeQuality + (rawQuality.toDouble - 20) / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 30 + airplaneConditionQuality).toInt
+//        computedQualityStore = (rawQuality.toDouble / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 50 + airplaneConditionQuality).toInt
         hasComputedQuality = true
         computedQualityStore
       }
@@ -163,8 +164,8 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     if (frequency == 0) { //future flights
       StaffBreakdown(0, 0, 0, airlineBaseModifier)
     } else {
-      val StaffSchemeBreakdown(basicStaff, perFrequencyStaff, per900PaxStaff) = Link.staffScheme(flightType)
-      StaffBreakdown(basicStaff, perFrequencyStaff * frequency, per900PaxStaff * capacity.totalwithSeatSize / 900, airlineBaseModifier)
+      val StaffSchemeBreakdown(basicStaff, perFrequencyStaff, per500PaxStaff) = Link.staffScheme(flightType)
+      StaffBreakdown(basicStaff, perFrequencyStaff * frequency, per500PaxStaff * capacity.totalwithSeatSize / 500, airlineBaseModifier)
     }
   }
   override val frequencyByClass = (linkClass : LinkClass) => {
@@ -201,37 +202,33 @@ object Link {
 //  }
   val staffScheme : Map[model.FlightType.Value, StaffSchemeBreakdown] = {
       val basicLookup = Map(
-        SHORT_HAUL_DOMESTIC -> 0,
-        MEDIUM_HAUL_DOMESTIC -> 5,
-        LONG_HAUL_DOMESTIC -> 15,
-        SHORT_HAUL_INTERNATIONAL -> 2,
+        SHORT_HAUL_DOMESTIC -> 2,
+        MEDIUM_HAUL_DOMESTIC -> 4,
+        LONG_HAUL_DOMESTIC -> 6,
+        ULTRA_LONG_HAUL_DOMESTIC -> 10,
+        SHORT_HAUL_INTERNATIONAL -> 5,
         MEDIUM_HAUL_INTERNATIONAL -> 10,
-        LONG_HAUL_INTERNATIONAL -> 30,
-        SHORT_HAUL_INTERCONTINENTAL -> 6,
-        MEDIUM_HAUL_INTERCONTINENTAL -> 16,
-        LONG_HAUL_INTERCONTINENTAL -> 30,
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 50)
+        LONG_HAUL_INTERNATIONAL -> 10,
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 15)
 
 
       val multiplyFactorLookup = Map(
-        SHORT_HAUL_DOMESTIC -> 2,
-        MEDIUM_HAUL_DOMESTIC -> 2,
-        LONG_HAUL_DOMESTIC -> 2,
-        SHORT_HAUL_INTERNATIONAL -> 2,
-        MEDIUM_HAUL_INTERNATIONAL -> 2,
-        LONG_HAUL_INTERNATIONAL -> 2,
-        SHORT_HAUL_INTERCONTINENTAL -> 3,
-        MEDIUM_HAUL_INTERCONTINENTAL -> 3,
-        LONG_HAUL_INTERCONTINENTAL -> 4,
-        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 4)
+        SHORT_HAUL_DOMESTIC -> 1.0,
+        MEDIUM_HAUL_DOMESTIC -> 1.5,
+        LONG_HAUL_DOMESTIC -> 2.0,
+        ULTRA_LONG_HAUL_DOMESTIC -> 2.5,
+        SHORT_HAUL_INTERNATIONAL -> 2.0,
+        MEDIUM_HAUL_INTERNATIONAL -> 2.5,
+        LONG_HAUL_INTERNATIONAL -> 3.0,
+        ULTRA_LONG_HAUL_INTERCONTINENTAL -> 4.0)
 
 
       val lookup = FlightType.values.toList.map { flightType =>
         val basic = basicLookup(flightType)
-        val multiplyFactor = multiplyFactorLookup(flightType)
-        val staffPerFrequency = 2.0 / 5 * multiplyFactor
-        val staffPer900Pax = 1 * multiplyFactor
-        (flightType, StaffSchemeBreakdown(basic, staffPerFrequency, staffPer900Pax))
+        val multiplyFactor : Double = multiplyFactorLookup(flightType)
+        val staffPerFrequency = multiplyFactor * 0.5
+        val staffPer500Pax = multiplyFactor //increasing 1.0 per 500 pax
+        (flightType, StaffSchemeBreakdown(basic, staffPerFrequency, staffPer500Pax))
       }.toMap
 
       lookup.toMap
@@ -239,9 +236,9 @@ object Link {
 }
 
 case class StaffBreakdown(basicStaff : Int, frequencyStaff : Double, capacityStaff : Double, modifier : Double) {
-  val total = ((basicStaff + frequencyStaff + capacityStaff) * modifier).toInt
+  val total = (math.round(basicStaff + frequencyStaff + capacityStaff) * modifier).toInt
 }
-case class StaffSchemeBreakdown(basic : Int, perFrequency : Double, per1000Pax : Double)
+case class StaffSchemeBreakdown(basic : Int, perFrequency : Double, per500Pax : Double)
 
 trait CostModifier {
   def value(link : Transport, linkClass : LinkClass) : Double
@@ -252,7 +249,7 @@ object ExplicitLinkConsideration {
 }
 
 object LinkConsideration {
-  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new SimplePreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.BUSINESS)
+  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new DealPreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.TRAVELER)
   def getExplicit(link : Transport, cost : Double, linkClass : LinkClass, inverted : Boolean, id : Int = 0) : LinkConsideration = {
     LinkConsideration(link, linkClass, inverted, DUMMY_PASSENGER_GROUP, None, SimpleCostProvider(cost), id)
   }
@@ -301,6 +298,7 @@ case class CostStoreProvider() extends CostProvider {
         computedValue = linkConsideration.passengerGroup.preference.computeCost(
           linkConsideration.link,
           linkConsideration.linkClass,
+          linkConsideration.passengerGroup.passengerType,
           linkConsideration.modifier.map(_.value(linkConsideration.link, linkConsideration.linkClass)).getOrElse(1.0))
         computed = true
       }
@@ -315,13 +313,13 @@ case class CostStoreProvider() extends CostProvider {
 sealed abstract class LinkClass(val code : String, val spaceMultiplier : Double, val resourceMultiplier : Double, val priceMultiplier : Double, val priceSensitivity : Double, val level : Int) {
   def label : String //level for sorting/comparison purpose
 }
-case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 3, priceMultiplier = 9, priceSensitivity = 0.6, level = 3) {
+case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier = 4, priceMultiplier = 8, priceSensitivity = 0.7, level = 3) {
   override def label = "first"
 }
-case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 2, priceMultiplier = 3, priceSensitivity = 0.8, level = 2) {
+case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 1.5, priceMultiplier = 3, priceSensitivity = 0.85, level = 2) {
   override def label = "business"
 }
-case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1, priceSensitivity = 1, level =1) {
+case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1.0, priceSensitivity = 1, level = 1) {
   override def label = "economy"
 }
 object LinkClass {

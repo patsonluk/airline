@@ -1,13 +1,13 @@
-function animateProgressBar(container, targetPercentage, animationDuration, callback) {
+function animateProgressBar(container, targetPercentage, animationDuration, callback, isSuccess) {
     if (targetPercentage > 100) {
-        targetPercentage = 100
+//        targetPercentage = 100
     }
     var gradientTopStartColor = { r: 232, g : 25, b : 87, a : 1 }
     var gradientBottomStartColor = { r: 170, g : 0, b : 51, a : 1 }
-    var gradientTopEndColor = { r: 126, g : 234, b : 25, a : 1 }
-    var gradientBottomEndColor = { r: 83, g : 173, b : 0, a : 1 }
+    var gradientTopEndColor = isSuccess ? { r: 90, g : 234, b : 25, a : 1 } : { r: 160, g : 160, b : 40, a : 1 }
+    var gradientBottomEndColor = isSuccess ? { r: 22, g : 180, b : 12, a : 1 } : { r: 150, g : 130, b : 5, a : 1 }
     var shadowStartColor = { r: 232, g : 25, b : 87, a : 1 }
-    var shadowEndColor = { r: 126, g : 234, b : 25, a : 1 }
+    var shadowEndColor = isSuccess ? { r: 126, g : 234, b : 25, a : 1 } : { r: 190, g : 135, b : 40, a : 1 }
 
     var barMaxLength = container.width() - 4
 

@@ -31,9 +31,35 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "reputation" -> JsNumber(BigDecimal(airline.airlineInfo.reputation).setScale(2, BigDecimal.RoundingMode.HALF_EVEN)),
       "serviceQuality" -> JsNumber(airline.airlineInfo.currentServiceQuality),
       "targetServiceQuality" -> JsNumber(airline.airlineInfo.targetServiceQuality),
-      "maintenanceQuality" -> JsNumber(airline.airlineInfo.maintenanceQuality),
+      "weeklyDividends" -> JsNumber(airline.airlineInfo.weeklyDividends),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
-      "gradeValue" -> JsNumber(airline.airlineGrade.value),
+      "gradeLevel" -> JsNumber(airline.airlineGrade.level),
+      "gradeFloor" -> JsNumber(airline.airlineGrade.reputationFloor),
+      "gradeCeiling" -> JsNumber(airline.airlineGrade.reputationCeiling),
+      "stock" -> JsObject(List(
+        "stockPrice" -> JsNumber(airline.airlineInfo.stockPrice),
+        "stockDescription" -> JsString(airline.airlineGradeStockPrice.description),
+        "stockLevel" -> JsNumber(airline.airlineGradeStockPrice.level),
+        "stockCeiling" -> JsNumber(airline.airlineGradeStockPrice.reputationCeiling),
+        "stockFloor" -> JsNumber(airline.airlineGradeStockPrice.reputationFloor),
+      )),
+      "tourists" -> JsObject(List(
+        "tourists" -> JsNumber(airline.stats.tourists),
+        "touristsDescription" -> JsString(airline.airlineGradeTourists.description),
+        "touristsLevel" -> JsNumber(airline.airlineGradeTourists.level),
+        "touristsCeiling" -> JsNumber(airline.airlineGradeTourists.reputationCeiling),
+        "touristsFloor" -> JsNumber(airline.airlineGradeTourists.reputationFloor),
+      )),
+      "elites" -> JsObject(List(
+        "elites" -> JsNumber(airline.stats.elites),
+        "elitesDescription" -> JsString(airline.airlineGradeElites.description),
+        "elitesLevel" -> JsNumber(airline.airlineGradeElites.level),
+        "elitesCeiling" -> JsNumber(airline.airlineGradeElites.reputationCeiling),
+        "elitesFloor" -> JsNumber(airline.airlineGradeElites.reputationFloor),
+      )),
+
+
+
       "airlineCode" -> JsString(airline.getAirlineCode()),
       "skipTutorial" -> JsBoolean(airline.isSkipTutorial),
       "initialized" -> JsBoolean(airline.isInitialized))
@@ -162,7 +188,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "Access-Control-Allow-Credentials" -> "true"
     )
   }
-
   
   def getAirline(airlineId : Int, extendedInfo : Boolean) = AuthenticatedAirline(airlineId) { request =>
      val airline = request.user
@@ -191,19 +216,21 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        
        val currentCycle = CycleSource.loadCycle()
        val airplanes = AirplaneSource.loadAirplanesByOwner(airlineId).filter(_.isReady)
+       val airplaneTypes = airplanes.flatMap {
+         plane => List(plane.model)
+       }.toSet.size
        
        val fleetSize = airplanes.length
-       val fleetAge = if (fleetSize > 0) airplanes.map(currentCycle - _.constructedCycle).sum / fleetSize else 0
-       val assets = Bank.getAssets(airlineId)
+       val fleetCondition = if (fleetSize > 0) airplanes.map(_.condition).sum / fleetSize else 0
        val minimumRenewalBalance = airline.getMinimumRenewalBalance()
 
        airlineJson =
          airlineJson +
-         ("linkCount" -> JsNumber(links.length)) +
+           ("linkCount" -> JsNumber(links.length)) +
            ("destinations"-> JsNumber(destinations)) +
            ("fleetSize"-> JsNumber(fleetSize)) +
-           ("fleetAge"-> JsNumber(fleetAge)) +
-           ("assets"-> JsNumber(assets)) +
+           ("fleetCondition"-> JsNumber(fleetCondition)) +
+           ("fleetTypes"-> JsNumber(airplaneTypes)) +
            ("minimumRenewalBalance" -> JsNumber(minimumRenewalBalance))
 
        val cooldown = getRenameCooldown(airline)
@@ -288,9 +315,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           }
         }
         //it should first has link to it
-        if (LinkSource.loadFlightLinksByAirlineId(airline.id).find(link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
-          return Some("No active flight route operated by your airline flying to this city yet")
-        }
+//        if (LinkSource.loadFlightLinksByAirlineId(airline.id).find(link => link.from.id == airport.id || link.to.id == airport.id).isEmpty) {
+//          return Some("No active flight route operated by your airline flying to this city yet")
+//        }
 
         //check title
         targetBase.allowAirline(airline) match {
@@ -305,12 +332,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
     }
 
-//
-//        val existingBaseCount = airline.getBases().length
-//        val allowedBaseCount = airline.airlineGrade.getBaseLimit
-//        if (existingBaseCount >= allowedBaseCount) {
-//          return Some("Only allow up to " + allowedBaseCount + " bases for your current airline grade " + airline.airlineGrade.description)
-//        }
     //check delegates requirement
     val delegatesAssignedToThisCountry = airline.getDelegateInfo().busyDelegates.filter { delegate =>
       val targetCountryCode = targetBase.countryCode
@@ -318,8 +339,10 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
 
     val upgradeDelegatesRequired = if (targetBase.scale == 1) targetBase.delegatesRequired else targetBase.delegatesRequired - targetBase.copy(scale = targetBase.scale - 1).delegatesRequired
+    println(s"upgradeDelegatesRequired ${upgradeDelegatesRequired}")
 
     val requiredDelegates = airline.getBases().filter(_.countryCode == targetBase.countryCode).map(_.delegatesRequired).sum + upgradeDelegatesRequired
+    println(s"requiredDelegates ${requiredDelegates}")
     if (delegatesAssignedToThisCountry.length < requiredDelegates) {
       return Some(s"Cannot build/upgrade this base. Require $requiredDelegates delegate(s) assigned to ${CountryCache.getCountry(targetBase.countryCode).get.name} but only ${delegatesAssignedToThisCountry.length} assigned")
     }
@@ -408,14 +431,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      if (base.scale == 1) { //cannot downgrade any further
        return Some("Cannot downgrade this base any further")
      }
-//     val airport = AirportCache.getAirport(base.airport.id, true).get
-//     val assignedSlots = airport.getAirlineSlotAssignment(base.airline.id)
-//     val preferredSlots = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = 0)
-//     val preferredSlotsAfterDowngrade = airport.getPreferredSlotAssignment(base.airline, scaleAdjustment = -1)
-//     if (assignedSlots > preferredSlotsAfterDowngrade) {
-//       return Some("This base can only be downgraded if there are " + (preferredSlots - preferredSlotsAfterDowngrade)  + " free slots")
-//     }
-//
+
      val totalOfficeStaffRequired = LinkSource.loadFlightLinksByFromAirportAndAirlineId(base.airport.id, base.airline.id).map(_.getFutureOfficeStaffRequired).sum
      val capacityAfterDowngrade = base.copy(scale = base.scale - 1).getOfficeStaffCapacity
      if (capacityAfterDowngrade < totalOfficeStaffRequired) {
@@ -441,17 +457,17 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (base.headquarter) {
       return Some("Cannot remove Headquarters")
     }
-    //check connectivity
-    val airlineBases = airline.getBases().filterNot(_.headquarter).map { _.airport.id} //non hq bases
-    val links = LinkSource.loadFlightLinksByAirlineId(airline.id)
-    links.filter(_.from.id == base.airport.id).foreach { link =>
-      if (airlineBases.contains(link.to.id)) {
-        //then make sure there's still some link other then this pointing to the target
-        if (links.filter(_.to.id == link.to.id).size <= 1) {
-          return Some(s"Cannot remove this base as this flies to ${link.to.displayText}. Removing this will create a disconnected network" )
-        }
-      }
-    }
+    //enforce connected network
+//    val airlineBases = airline.getBases().filterNot(_.headquarter).map { _.airport.id} //non hq bases
+//    val links = LinkSource.loadFlightLinksByAirlineId(airline.id)
+//    links.filter(_.from.id == base.airport.id).foreach { link =>
+//      if (airlineBases.contains(link.to.id)) {
+//        //then make sure there's still some link other then this pointing to the target
+//        if (links.filter(_.to.id == link.to.id).size <= 1) {
+//          return Some(s"Cannot remove this base as this flies to ${link.to.displayText}. Removing this will create a disconnected network" )
+//        }
+//      }
+//    }
     return None
   }
 
@@ -512,7 +528,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
              AirlineSource.loadAirlineHeadquarter(airlineId) match {
                case Some(headquarter) =>
                if (headquarter.airport.id != airportId) {
-                 BadRequest("Not allowed to change headquarter for now")
+                 BadRequest("Not allowed to change headquarter")
                } else {
                  val updateBase = headquarter.copy(scale = inputBase.scale)
                  AirlineSource.saveAirlineBase(updateBase)
@@ -742,7 +758,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      val airline = request.user
      val incomes = IncomeSource.loadIncomesByAirline(airlineId)
      val cashFlows = CashFlowSource.loadCashFlowsByAirline(airlineId)
-     Ok(Json.obj("incomes" -> Json.toJson(incomes), "cashFlows" -> Json.toJson(cashFlows)))
+     val stats = AirlineStatisticsSource.loadAirlineStats(airlineId)
+
+     Ok(Json.obj("incomes" -> Json.toJson(incomes), "cashFlows" -> Json.toJson(cashFlows), "airlineStats" -> Json.toJson(stats)))
   }
 
   def getFleet(airlineId : Int) = Action { request =>
@@ -827,10 +845,73 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (allianceMemberOption.isDefined && allianceMemberOption.get.role == AllianceRole.LEADER) {
         return Some("Cannot reset airline as your airline is the leader of an alliance. Either promote another member as leader or disband the alliance before proceeding")
     }
-    if (rebuild && airline.getReputation() < AirlineGrade.CONTINENTAL.reputationCeiling) {
-        return Some(s"Cannot rebuild airline when reputation is lower than ${AirlineGrade.CONTINENTAL.reputationCeiling}")
+    if (rebuild && airline.getReputation() < 100) {
+        return Some(s"Cannot rebuild airline when reputation is lower than 100")
     }
     return None
+  }
+
+
+  def setTargetServiceQuality(airlineId: Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.body.isInstanceOf[AnyContentAsJson]) {
+      Try(request.body.asInstanceOf[AnyContentAsJson].json.\("targetServiceQuality").as[Int]) match {
+        case Success(targetServiceQuality) =>
+          if (targetServiceQuality < 0) {
+            BadRequest("Cannot have negative targetServiceQuality")
+          } else if (targetServiceQuality > 100) {
+            BadRequest(s"Cannot have targetServiceQuality $targetServiceQuality")
+          } else {
+            val airline = request.user
+            airline.setTargetServiceQuality(targetServiceQuality)
+            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
+            Ok(Json.obj("targetServiceQuality" -> JsNumber(targetServiceQuality)))
+          }
+        case Failure(_) =>
+          BadRequest("Cannot Update service funding")
+      }
+
+    } else {
+      BadRequest("Cannot Update service funding")
+    }
+  }
+
+  def setMinimumRenewalBalance(airlineId: Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.body.isInstanceOf[AnyContentAsJson]) {
+      Try(request.body.asInstanceOf[AnyContentAsJson].json.\("minimumRenewalBalance").as[Long]) match {
+        case Success(minimumRenewalBalance) =>
+          if (minimumRenewalBalance < 0) {
+            BadRequest("Cannot have negative minimumRenewalBalance")
+          } else {
+            val airline = request.user
+            airline.setMinimumRenewalBalance(minimumRenewalBalance)
+            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
+            Ok(Json.obj("minimumRenewalBalance" -> JsNumber(minimumRenewalBalance)))
+          }
+        case Failure(_) =>
+          BadRequest("Cannot Update minimum renewal balance - could not cast to long")
+      }
+
+    } else {
+      BadRequest("Cannot Update minimum renewal balance")
+    }
+  }
+
+  def updateWeeklyDividends(airlineId: Int) = AuthenticatedAirline(airlineId) { request =>
+    if (request.body.isInstanceOf[AnyContentAsJson]) {
+      val weeklyDividendsTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("weeklyDividends").as[Int])
+      weeklyDividendsTry match {
+        case Success(weeklyDividends) =>
+          val airline = request.user
+          airline.setWeeklyDividends(weeklyDividends * 1000000)
+          AirlineSource.saveAirlineInfo(airline, updateBalance = false)
+          Ok(Json.obj("weeklyDividends" -> JsNumber(weeklyDividends)))
+        case Failure(_) =>
+          BadRequest("Cannot update dividends")
+      }
+
+    } else {
+      BadRequest("Cannot updates dividends")
+    }
   }
 
  def setAirlineCode(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>

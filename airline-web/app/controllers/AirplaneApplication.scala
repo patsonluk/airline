@@ -229,6 +229,10 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
   
   def getRejection(model: Model, quantity : Int, relationship : AirlineCountryRelationship, ownedModels : Set[Model], airline : Airline) : Option[String]= {
+    if (quantity > 10) {
+      return Some("Cannot order more than 20 planes in one order")
+    }
+
     if (airline.getHeadQuarter().isEmpty) { //no HQ
       return Some("Must build HQs before purchasing any airplanes")
     }
