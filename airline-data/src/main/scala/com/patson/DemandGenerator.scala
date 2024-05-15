@@ -96,7 +96,6 @@ object DemandGenerator {
 
 	  }
 
-
     allDemandChunks.toList
   }
 
@@ -117,8 +116,8 @@ object DemandGenerator {
         1.11 - distance.toDouble / 20000 //i.e 0.1, and then adding a .01 boost
       } else 1
 
-    //domestic/foreign relation multiplier
-    val countryRelationMutliplier : Double =
+    //domestic/foreign/affinity relation multiplier
+    val airportAffinityMutliplier : Double =
       if (affinity == 5) 1.0 //domestic
       else if (affinity >= 4) 0.4
       else if (affinity == 3) 0.35
@@ -138,8 +137,6 @@ object DemandGenerator {
         4.0 //top 10 domestic routes
       } else if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN" && distance < 1100) {
         0.6 //China has a very extensive highspeed rail network (1100km is Beijing to Shanghai)
-      } else if (toAirport.countryCode == "IN") {
-        0.8 //toAiport pops are huge even tho > 80% aren't middle income, so cut pops by 20%
       } else if (fromAirport.countryCode == "JP" && toAirport.countryCode == "JP" && distance < 500) {
         0.4 //also interconnected by HSR / intercity rail
       } else if (fromAirport.countryCode == "FR" && distance < 550 && toAirport.countryCode != "GB") {
@@ -150,27 +147,29 @@ object DemandGenerator {
         0.6
       } else 1.0
 
-    val baseDemand : Double = specialCountryModifier * countryRelationMutliplier * fromPopIncomeAdjusted * toAirport.population.toDouble / 250_000 / 250_000
+    val baseDemand : Double = specialCountryModifier * airportAffinityMutliplier * fromPopIncomeAdjusted * toAirport.population.toDouble / 225_000 / 225_000
     var demand = (Math.pow(baseDemand, distanceReducerExponent)).toInt
 
     //modeling provincial travel dynamics, but not for tourists
+    val maxBonus = 2.0
     val populationRatio = if (distance < 2500 && toAirport.population > fromPopIncomeAdjusted) {
-      math.min(2.0, math.pow(toAirport.population / fromPopIncomeAdjusted.toDouble, .125))
+      math.min(maxBonus, math.pow(toAirport.population / fromPopIncomeAdjusted.toDouble, .125))
     } else {
       1.0
     }
     //lower demand to poor places, but not for tourists
-    val toIncomeAdjust = Math.min(1.0, toAirport.income / 20_000)
+    val toIncomeAdjust = Math.min(1.0, toAirport.income.toDouble / 20_000)
     //people migrate from poor to rich, affects travelers only
-    val travelerIncomeRatio = math.min(1.5, (toAirport.income.toDouble / fromAirport.income.toDouble + 1) / 2.0)
+    //(commented out as isn't quite intuitive)
+//    val travelerIncomeRatio = math.min(1.5, (toAirport.income.toDouble / fromAirport.income.toDouble + 1) / 2.0)
 
-    val demands = Map((PassengerType.TRAVELER -> demand * 0.7 * populationRatio * travelerIncomeRatio * toIncomeAdjust), (PassengerType.BUSINESS -> demand * 0.2 * populationRatio * toIncomeAdjust), (PassengerType.TOURIST -> demand * 0.1))
+    val demands = Map((PassengerType.TRAVELER -> demand * 0.7 * populationRatio * toIncomeAdjust), (PassengerType.BUSINESS -> demand * 0.2 * populationRatio * toIncomeAdjust), (PassengerType.TOURIST -> demand * 0.1))
 
     val featureAdjustedDemands = demands.map { case (passengerType, demand) =>
-      val fromAdjustments = fromAirport.getFeatures().map(feature => feature.demandAdjustment(demand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, affinity))
-//      val toAdjustments = toAirport.getFeatures().map(feature => feature.demandAdjustment(demand, passengerType, toAirport.id, fromAirport, toAirport, flightType, affinity))
-//      (passengerType, (fromAdjustments.sum + toAdjustments.sum + demand).toDouble)
-      (passengerType, (fromAdjustments.sum + demand).toDouble)
+      val fromAdjustments = fromAirport.getFeatures().map(feature => feature.demandAdjustment(demand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, affinity, distance))
+      val toAdjustments = toAirport.getFeatures().map(feature => feature.demandAdjustment(demand, passengerType, toAirport.id, fromAirport, toAirport, flightType, affinity, distance))
+      (passengerType, (fromAdjustments.sum + toAdjustments.sum + demand).toDouble)
+//      (passengerType, (fromAdjustments.sum + demand).toDouble)
     }.toMap
 
     Demand(

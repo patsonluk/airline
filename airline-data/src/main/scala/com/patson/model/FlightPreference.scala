@@ -123,11 +123,6 @@ abstract class FlightPreference(homeAirport : Airport) {
   }
 
   def qualityAdjustRatio(homeAirport : Airport, link : Transport, linkClass : LinkClass, paxType: PassengerType.Value) : Double = {
-    val paxTypeQualityModifier = paxType match {
-      case PassengerType.TOURIST => -5
-      case PassengerType.ELITE => 10
-      case _ => 0
-    }
     val qualitySensitivity = paxType match {
       case PassengerType.TRAVELER => 0.5
       case PassengerType.BUSINESS => 1.0
@@ -135,10 +130,13 @@ abstract class FlightPreference(homeAirport : Airport) {
       case PassengerType.ELITE => 1.0
       case PassengerType.OLYMPICS => 0.75
     }
-    val qualityExpectation = Math.max(0, paxTypeQualityModifier + homeAirport.expectedQuality(link.flightType, linkClass))
+    val qualityDelta = link.computedQuality - homeAirport.expectedQuality(link.flightType, linkClass)
 
-    val qualityDelta = link.computedQuality - qualityExpectation
-    val GOOD_QUALITY_DELTA = 20
+    val GOOD_QUALITY_DELTA = paxType match {
+      case PassengerType.TOURIST => 10
+      case PassengerType.ELITE => 30
+      case _ => 20
+    }
     val priceAdjust =
       if (qualityDelta < 0) {
         1 - qualityDelta.toDouble / Link.MAX_QUALITY * 1
@@ -205,7 +203,10 @@ abstract class FlightPreference(homeAirport : Airport) {
       }
     }
 
-    val delta = Math.max(-4, (frequencyThreshold - link.frequency).toDouble / frequencyThreshold)
+    val isFrequency = frequencyThreshold * 2
+    val frequencyThresholdperPax = ThreadLocalRandom.current().nextInt(isFrequency)
+
+    val delta = Math.max(-4, (frequencyThresholdperPax - link.frequency).toDouble / frequencyThresholdperPax)
     if (delta < 0) {
       1 + Math.max(-1 * frequencySensitivity * distanceModifier, delta * distanceModifier)
     } else {
