@@ -266,17 +266,17 @@ function updateMilestones(breakdowns) {
       total += breakdown.value;
       if(breakdown.description === "Milestone Aircraft Types" && breakdown.value >= 0){
         if(breakdown.value >= 10){
-            document.getElementById("m-aircraft3").src = "/assets/images/icons/tick.png"
+            document.getElementById("m-aircraft1").src = "/assets/images/icons/tick.png"
         }
         if(breakdown.value >= 15){
-            document.getElementById("m-aircraft3").src = "/assets/images/icons/tick.png"
+            document.getElementById("m-aircraft2").src = "/assets/images/icons/tick.png"
         }
         if(breakdown.value >= 20){
             document.getElementById("m-aircraft3").src = "/assets/images/icons/tick.png"
         }
       } else if(breakdown.description === "Milestone Countries Served" && breakdown.value >= 0){
         if(breakdown.value >= 15){
-            document.getElementById("m-country2").src = "/assets/images/icons/tick.png"
+            document.getElementById("m-country1").src = "/assets/images/icons/tick.png"
         }
         if(breakdown.value >= 30){
             document.getElementById("m-country2").src = "/assets/images/icons/tick.png"
