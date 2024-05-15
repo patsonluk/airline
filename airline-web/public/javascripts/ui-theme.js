@@ -23,7 +23,7 @@ function loadTheme() {
         return;
     }
 	if (!localStorage.getItem("UITheme")) {
-		localStorage.setItem("UITheme", "classic")
+		localStorage.setItem("UITheme", "modern-lite")
 	}
 	changeUITheme(localStorage.getItem("UITheme"))
 }

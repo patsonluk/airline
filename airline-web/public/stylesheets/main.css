@@ -404,18 +404,18 @@ body.christmas {
     text-shadow: var(--table-header-selected-text-shadow);
 }
 
-.table .table-header .cell:first-child{
+.table:not(.rounded-none) .table-header .cell:first-child{
   border-radius:6px 0 0 0;
 }
 
-.table .table-header .cell:last-child{
+.table:not(.rounded-none) .table-header .cell:last-child{
   border-radius:0 6px 0 0;
 }
 
-.table .table-row:last-child .cell:last-child {
+.table:not(.rounded-none) .table-row:last-child .cell:last-child {
     border-bottom-right-radius: 6px;
 }
-.table .table-row:last-child .cell:first-child {
+.table:not(.rounded-none) .table-row:last-child .cell:first-child {
     border-bottom-left-radius: 6px;
 }
 
@@ -1250,7 +1250,7 @@ button {
 small, .small {
     font-size: 85%;
 }
-i {
+i, .italic {
     font-style: italic
 }
 .iata {
@@ -1271,6 +1271,9 @@ i {
 }
 .text-base {
     font-size: 1rem;
+}
+.text-xs {
+    font-size: 0.7rem
 }
 .text-underline {
     text-decoration: underline;
@@ -1384,10 +1387,20 @@ i {
 .text-left { text-align: left; }
 .text-right { text-align: right; }
 .text-center { text-align: center; }
+.rounded-none { border-radius: 0px !important; }
+//.float-left { float: left; }
+//.float-right { float: right; }
 .flex-row {
     display: flex;
     width: 100%;
     gap: 0.5rem;
+}
+.flex-wrap {
+    flex-wrap: wrap;
+}
+.flex-center {
+    align-items: center;
+    display: flex;
 }
 .flex-row > div {
     flex-shrink: 0;

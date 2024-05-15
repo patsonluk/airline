@@ -51,7 +51,7 @@ div.section {
 	padding: 16px 8px 20px 12px;
 }
 div.section.tight {
-	padding: 8px 4px;
+	padding: 6px 4px;
 }
 /* sections broken with backdrop-filter */
 /* broken tooltips */
@@ -78,7 +78,7 @@ html[data-theme="dark"] .airportCanvasLeftGroup > :first-child .section {
 div.section, #topBar > div {
 	box-shadow: var(--shadow-1);
 }
-div.button, .mapPopup div.button, button.button {
+div.button, .mapPopup .button, button.button {
     text-align: center;
     box-shadow: var(--shadow-1);
     background-color: var(--background-1);
