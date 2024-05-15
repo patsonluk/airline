@@ -20,7 +20,8 @@ object AirlineSimulation {
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
   val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUTATION_DELTA = 1
-  val BANKRUPTCY_THRESHOLD = -10000000 //-10M, based on company value (maybe should be a percent?)
+  val BANKRUPTCY_ASSETS_THRESHOLD = -50000000 //-50M
+  val BANKRUPTCY_PROFIT_THRESHOLD = -10000000 //-10M
 
   def airlineSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane], airlineStats : List[AirlineStat]) = {
     val allAirlines = AirlineSource.loadAllAirlines(true)
@@ -426,10 +427,30 @@ object AirlineSimulation {
         val oilContract = transactionalCashFlowItems.getOrElse(CashFlowType.OIL_CONTRACT, 0L)
         val assetTransactions = transactionalCashFlowItems.getOrElse(CashFlowType.ASSET_TRANSACTION, 0L)
 
+        val isBankrupt = if (airlineValue.overall < BANKRUPTCY_ASSETS_THRESHOLD && airlineProfit < BANKRUPTCY_PROFIT_THRESHOLD) {
+          true
+        } else {
+          false
+        }
+        if(isBankrupt){
+          val resetBalance = 0
+          //todd: add public notice of bankruptcy with stats
+          println(s"Resetting $airline due to negative value")
+          Airline.resetAirline(airline.id, newBalance = resetBalance)
+        }
+
+
+
         val accountingCashFlow = totalCashFlow + baseConstruction + buyAirplane + sellAirplane + createLink + facilityConstruction + oilContract + assetTransactions
 
         val loanPrincipal = loanPayment - interestPayment
-        val airlineWeeklyCashFlow = AirlineCashFlow(airline.id, cashFlow = accountingCashFlow, operation = operationCashFlow, loanInterest = interestPayment * -1, loanPrincipal = loanPrincipal * -1, baseConstruction = baseConstruction, buyAirplane = buyAirplane, sellAirplane = sellAirplane, createLink = createLink, facilityConstruction = facilityConstruction, oilContract = oilContract, assetTransactions = assetTransactions, cycle = currentCycle)
+        val airlineWeeklyCashFlow = {
+          if (isBankrupt) {
+            AirlineCashFlow(airline.id, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, cycle = currentCycle)
+          } else {
+            AirlineCashFlow(airline.id, cashFlow = accountingCashFlow, operation = operationCashFlow, loanInterest = interestPayment * -1, loanPrincipal = loanPrincipal * -1, baseConstruction = baseConstruction, buyAirplane = buyAirplane, sellAirplane = sellAirplane, createLink = createLink, facilityConstruction = facilityConstruction, oilContract = oilContract, assetTransactions = assetTransactions, cycle = currentCycle)
+          }
+        }
         allCashFlows += airlineWeeklyCashFlow
         allCashFlows ++= computeAccumulateCashFlow(airlineWeeklyCashFlow)
 
@@ -437,16 +458,6 @@ object AirlineSimulation {
         val targetServiceQuality = airline.getTargetServiceQuality()
         val currentServiceQuality = airline.getCurrentServiceQuality()
         airline.setCurrentServiceQuality(getNewQuality(currentServiceQuality, targetServiceQuality))
-
-        //check bankruptcy: if total value & total profit is less than -10m, only then reset
-        if (airlineValue.overall < BANKRUPTCY_THRESHOLD) {
-          if (airlineProfit < BANKRUPTCY_THRESHOLD) {
-            val resetBalance = 0
-            //todd: add public notice of bankruptcy with stats
-            println(s"Resetting $airline due to negative value")
-            Airline.resetAirline(airline.id, newBalance = resetBalance)
-          }
-        }
 //        println(airline + " profit is: " + airlineProfit + " existing balance (not updated yet) " + airline.getBalance() + " reputation " +  airline.getReputation() + " cash flow " + totalCashFlow)
     }
     
