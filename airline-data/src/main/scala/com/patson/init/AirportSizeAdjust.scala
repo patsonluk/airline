@@ -159,6 +159,8 @@ object AirportSizeAdjust {
         "SZG" -> 5,
         "INN" -> 4,
         "GRZ" -> 4,
+        //AQ
+//        ""
         //https://en.wikipedia.org/wiki/List_of_airports_in_Bangladesh
         //belgium
         "LGG" -> 3,
