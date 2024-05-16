@@ -641,6 +641,7 @@
 									</div>
 									<div>
 										<p class="text-lg pb-1"><span class="clickable" id="planLinkFromAirportName" data-link="airport"></span><img id="planLinkFromAirportEditIcon" src='@routes.Assets.versioned("images/icons/gear.png")' class='clickable' onclick="$('#planLinkFromAirportSelect').show()"  title="Change From Airport" data-link="airport"></p>
+										<div class="value"><select class="select-css" id="planLinkFromAirportSelect" onchange="planLink($(this).val(), $('#planLinkToAirportId').val())"></select></div>
 										<p class="leading-snug"><span id="planLinkDistance"></span> <i class="planLinkFlightType"></i></p>
 										<p class="text-lg"><span class="clickable" id="planLinkToAirportName" data-link="airport"></span></p>
 									</div>
@@ -918,7 +919,7 @@
 									</div>
 									<div class="table-row">
 										<div class="label">Fuel Burn:</div>
-										<div class="value" id="fuelPerPax"></div>
+										<div class="value" id="fuelBurn"></div>
 									</div>
 									<div class="table-row">
 										<div class="label">Quality:</div>
@@ -1692,7 +1693,7 @@
 									</div>
 									<div class="table-row">
 										<div class="label">Fuel Burn:</div>
-										<div class="value" id="fuelPerPaxPerHour"></div>
+										<div class="value" id="fuelBurn"></div>
 									</div>
 									<div class="table-row">
 										<div class="label">Speed:</div>
