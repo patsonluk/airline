@@ -160,7 +160,7 @@ object AirportSizeAdjust {
         "INN" -> 4,
         "GRZ" -> 4,
         //AQ
-//        ""
+        "TNM" -> 3,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Bangladesh
         //belgium
         "LGG" -> 3,
@@ -570,15 +570,18 @@ object AirportSizeAdjust {
         "PDP" -> 4,
         //https://en.wikipedia.org/wiki/List_of_busiest_airports_in_the_United_Kingdom
         "BRS" -> 6,
-        "GLA" -> 6,
-        "BFS" -> 6,
+        "GLA" -> 5,
+        "BFS" -> 5,
         "BHX" -> 5,
-        "LPL" -> 5,
+        "LPL" -> 4,
         "DSA" -> 3,
         "LCY" -> 3,
         "BHD" -> 4,
         "SOU" -> 3,
         "LDY" -> 3,
+        "JER" -> 3,
+        "BHD" -> 3,
+        "ABZ" -> 3,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States
         //up to 10m pax
         "EWR" -> 7, //should be 8
