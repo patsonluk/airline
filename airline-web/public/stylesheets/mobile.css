@@ -11,14 +11,14 @@ and (max-device-width : 640px) {
     }
 /*and (orientation : portrait or max-device-width : 1024px) {*/
     .mainPanel, #map {
-        height: calc(50vh - 40px);
+        height: calc(75vh - 40px);
         width: 100%;
     }
     .mainPanel {
         overflow: scroll !important;
     }
     .section {
-        width: unset !important;
+
     }
 
     div.section, div.selectedSection, .modal-content {
@@ -42,7 +42,7 @@ and (max-device-width : 640px) {
     .sidePanel {
         width: calc(100% - 8px);
         position: absolute;
-        top: calc(50vh - 39px);
+        top: calc(75vh - 36px);
         left: 4px;
         overflow-x: hidden;
     }
@@ -55,11 +55,15 @@ and (max-device-width : 640px) {
         flex-direction: column;
     }
 
-    .canvas.active > div {
+    .canvas.active > .vertical-group, .canvas.active > .section, .officeCanvasLeftGroup {
+        width: inherit !important;
+        max-width: calc(100vw - 12px);
+        margin: 0 auto;
     }
 
-    .canvas > .section {
+    .canvas > .section, .vertical-group > .section {
         padding: 8px;
+        width: 100% !important;
     }
 
     .googleMapIcon, .gmnoprint, .gm-fullscreen-control {
@@ -67,7 +71,6 @@ and (max-device-width : 640px) {
     }
 
     #oilPriceChart, #loanInterestRateChart {
-        height: 30vh
     }
 
     .moreRow {
@@ -116,8 +119,11 @@ and (max-device-width : 640px) {
 
     .canvas {
         flex-direction: column;
-        padding-left: 5px;
+        padding-left: 0px;
         padding-right: 0px;
+        width: 100vw;
+        overflow-x: hidden;
+        min-width: unset !important;
     }
 
     .menubar {
