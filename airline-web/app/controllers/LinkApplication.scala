@@ -657,6 +657,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
         val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
         val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
+        val flightType = Computation.getFlightType(fromAirport, toAirport, distance, relationship)
 
         val rejectionReason = getRejectionReason(request.user, fromAirport, toAirport, existingLink)
 
@@ -673,7 +674,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val ownedAirplanesByModel = AirplaneSource.loadAirplanesByOwner(airlineId).groupBy(_.model)
         val availableModels = modelsWithinRangeAndRelationship ++ ownedAirplanesByModel.keys.filter(_.range >= distance)
 
-        val availableModelsAndCustoms = if (relationship != 5 && fromAirport.isDomesticAirport() || relationship != 5 && toAirport.isDomesticAirport()) {
+        val availableModelsAndCustoms = if (FlightType.getCategory(flightType) == FlightCategory.INTERNATIONAL && fromAirport.isDomesticAirport() || FlightType.getCategory(flightType) == FlightCategory.INTERNATIONAL && toAirport.isDomesticAirport()) {
           import Model.Category._
           availableModels.filter(_.category == LIGHT)
         } else {
@@ -724,9 +725,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         }
 
 
-        var suggestedPrice: LinkClassValues = LinkClassValues.getInstance(Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), ECONOMY),
-          Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), BUSINESS),
-          Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), FIRST))
+        var suggestedPrice: LinkClassValues = LinkClassValues.getInstance(
+          Pricing.computeStandardPrice(distance, flightType, ECONOMY),
+          Pricing.computeStandardPrice(distance, flightType, BUSINESS),
+          Pricing.computeStandardPrice(distance, flightType, FIRST)
+        )
 
         //adjust suggestedPrice with Lounge
         toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
@@ -770,7 +773,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val cost = if (existingLink.isEmpty) Computation.getLinkCreationCost(fromAirport, toAirport) else 0
         val flightNumber = if (existingLink.isEmpty) LinkApplication.getNextAvailableFlightNumber(request.user) else existingLink.get.flightNumber
         val flightCode = LinkUtil.getFlightCode(request.user, flightNumber)
-        val flightType = Computation.getFlightType(fromAirport, toAirport, distance, relationship)
 
         val estimatedDifficulty : Option[Double] =
           if (existingLink.isEmpty) {
