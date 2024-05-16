@@ -42,12 +42,15 @@ object RankingLeaderboards {
   }
 
   private[this] def updateRankings(currentCycle : Int) = {
-    val flightConsumptions = LinkSource.loadLinkConsumptions().filter(_.link.transportType == TransportType.FLIGHT)
+    val airlinesSource = AirlineSource.loadAllAirlines(fullLoad = true)
+    val generatedAirlinesIds = airlinesSource.filter(_.isGenerated).map(airline => (airline.id)).toList
+    val airlinesById = airlinesSource.filter(!_.isGenerated).map(airline => (airline.id, airline)).toMap
+    val flightConsumptions = LinkSource.loadLinkConsumptions().filter(_.link.transportType == TransportType.FLIGHT).filterNot(consumption => generatedAirlinesIds.contains(consumption.link.airline.id))
     val flightConsumptionsByAirline = flightConsumptions.groupBy(_.link.airline.id)
-    val airlineStats = AirlineStatisticsSource.loadAirlineStatsByCycle(currentCycle)
+    val airlineStats = AirlineStatisticsSource.loadAirlineStatsByCycle(currentCycle).filterNot(stat => generatedAirlinesIds.contains(stat.airlineId))
     println(s"airline stats for cycle ${currentCycle}:")
-    val links = LinkSource.loadAllFlightLinks().groupBy(_.airline.id)
-    val airlinesById = AirlineSource.loadAllAirlines(fullLoad = true).map( airline => (airline.id, airline)).toMap
+    val links = LinkSource.loadAllFlightLinks().filterNot(link => generatedAirlinesIds.contains(link.airline.id)).groupBy(_.airline.id)
+
 
     val updatedRankings = scala.collection.mutable.Map[RankingType.Value, List[Ranking]]()
     updatedRankings.put(RankingType.TOURIST_COUNT, getPaxRanking(airlineStats.map(stat => (stat.airlineId, stat.tourists)).toMap, airlinesById, RankingType.TOURIST_COUNT))

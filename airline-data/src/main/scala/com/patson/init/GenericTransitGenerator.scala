@@ -21,6 +21,7 @@ object GenericTransitGenerator {
     "HND" -> "NRT",
     "PKK" -> "PEK",
     "PKK" -> "TSN",
+    "CTU" -> "TFU",
     "IST" -> "SAW",
     "EWR" -> "PHL",
     "EWR" -> "HVN",

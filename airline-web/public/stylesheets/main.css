@@ -533,6 +533,24 @@ button.gm-svpc {
     display: none;
 }
 
+.airportPopupName {
+    font-size: 14px;
+    line-height: 1.02;
+    padding: 0 4px 6px 0;
+}
+
+#airportPopupName {
+    padding: 0 2px;
+}
+
+#airportPopupCity {
+    font-size: 15px;
+}
+
+.gm-style .gm-style-iw-c {
+    padding: 12px !important;
+}
+
 .gm-style-iw {
 	overflow: hidden !important;
 	line-height: 1.35;
@@ -1256,7 +1274,7 @@ i, .italic {
 .iata {
     color: currentColor;
     position: relative;
-    opacity: .65;
+    opacity: .7;
     font-weight: 600;
     padding-right: 4px;
 }

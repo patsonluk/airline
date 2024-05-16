@@ -162,8 +162,6 @@ object AirlineStatisticsSource {
       queryString.append(criteria.last._1 + " = ?")
     }
 
-    println(queryString.toString())
-
     val preparedStatement = connection.prepareStatement(queryString.toString())
 
     for (i <- 0 until criteria.size) {

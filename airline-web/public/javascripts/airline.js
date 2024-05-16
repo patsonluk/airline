@@ -1068,7 +1068,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 
     $('#planLinkDetails .titleCue').removeClass('glow')
 	if (linkInfo.rejection) {
-		$('.linkRejection #linkRejectionReason').text(linkInfo.rejection.description)
+	    document.getElementById('linkRejectionReason').textContent = linkInfo.rejection.description
 		if (linkInfo.rejection.type === "TITLE_REQUIREMENT") {
 		    $('#planLinkDetails .titleCue').addClass('glow')
 		}

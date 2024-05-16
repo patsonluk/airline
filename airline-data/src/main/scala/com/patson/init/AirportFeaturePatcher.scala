@@ -133,7 +133,7 @@ object AirportFeaturePatcher extends App {
 "MCO" -> 108, //Orlando
 "MLE" -> 55, //Malé
 "JTR" -> 46, //Santorini Island
-"PEK" -> 150, //Beijing
+"PEK" -> 4, //Beijing
 "DPS" -> 144, //Denpasar-Bali Island
 "NAN" -> 41, //Nadi
 "VCE" -> 42, //Venice
@@ -157,7 +157,7 @@ object AirportFeaturePatcher extends App {
 "LAS" -> 113, //Las Vegas
 "MIA" -> 30, //Miami
 "SIN" -> 73, //Singapore
-"HKG" -> 110, //Hong Kong
+"HKG" -> 67, //Hong Kong
 "NRT" -> 28, //Tokyo / Narita
 "VIE" -> 30, //Vienna
 "BCN" -> 86, //Barcelona
@@ -326,7 +326,7 @@ object AirportFeaturePatcher extends App {
 "SAI" -> 69, //Siem Reap
 "PNH" -> 67, //Phnom Penh
 "KOS" -> 56, //Sihanukville
-"HAK" -> 90, //Haikou
+"HAK" -> 50, //Haikou
 "TRV" -> 36, //Thiruvananthapuram
 "COK" -> 47, //Kochi
 "CCJ" -> 43, //Calicut
@@ -458,6 +458,8 @@ object AirportFeaturePatcher extends App {
 "SKD" -> 34, //Samarkand
 "MAH" -> 27, //Menorca Island
 "AEP" -> 69, //Buenos Aires
+"CTU" -> 20, //Chengdu
+"TFU" -> 20, //Chengdu
 "LGA" -> 19, //New York
 "SRQ" -> 10, //Sarasota/Bradenton
 "THR" -> 34, //Tehran
@@ -471,6 +473,9 @@ object AirportFeaturePatcher extends App {
 "ZQN" -> 15, //Queenstown
 "TNM" -> 12, //AQ
 "INN" -> 10, //Innsbruck
+"JER" -> 6, //Guernsey
+"GCI" -> 6, //Jersey
+"SCR" -> 5, //Salzburg
 "SVG" -> 5, //Salzburg
 "SGU" -> 5, //Zion National Park
 "FCA" -> 5, //Glacier National Park
@@ -513,7 +518,8 @@ object AirportFeaturePatcher extends App {
       "KUL" -> 44, //Kuala Lumpur
       "HAM" -> 42, //Hamburg
       "ARN" -> 37, //Stockholm
-      "CTU" -> 40, //Chengdu
+      "CTU" -> 20, //Chengdu
+      "TFU" -> 20, //Chengdu
       "BOM" -> 40, //Mumbai
       "DCA" -> 39, //Washington DC
       "ITM" -> 38, //Osaka
@@ -542,7 +548,7 @@ object AirportFeaturePatcher extends App {
       "LGA" -> 31, //New York
       "SVO" -> 31, //Moscow
       "PKX" -> 30, //Beijing
-      "HGH" -> 30, //Hangzhou
+      "HGH" -> 27, //Hangzhou
       "OSL" -> 30, //Oslo
       "LUX" -> 30, //Luxembourg
       "YYC" -> 30, //Calgary
@@ -719,8 +725,10 @@ object AirportFeaturePatcher extends App {
       "BMA" -> 0,
       "TRF" -> 0,
       "WMI" -> 0,
+      //GB
+      "BHD" -> 0,
       //china
-      "TFU" -> 0,
+      "CTU" -> 0,
       "PKX" -> 0,
       "SHA" -> 0,
       "ZUH" -> 0,
