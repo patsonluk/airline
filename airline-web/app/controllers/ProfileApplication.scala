@@ -21,6 +21,7 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         "name" -> profile.name,
         "description" -> profile.description,
         "cash" -> profile.cash,
+        "quality" -> profile.quality,
         "airplanes" -> profile.airplanes,
         "reputation" -> profile.reputation,
         "airportText" -> profile.airport.displayText)
@@ -31,14 +32,15 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  val BASE_CAPITAL = 60000000
-  val BONUS_PER_DIFFICULTY_POINT = 1000000
+  val BASE_CAPITAL = 80000000
+  val BONUS_PER_DIFFICULTY_POINT = 1500000
 
-  def generateAirplanes(value : Int, capacityRange : scala.collection.immutable.Range, homeAirport : Airport, condition : Double, airline : Airline, random : Random) : List[Airplane] =  {
+  def generateAirplanes(value : Int, capacityRange : scala.collection.immutable.Range, quality : Double, homeAirport : Airport, condition : Double, airline : Airline, random : Random) : List[Airplane] =  {
     val eligibleModels = allAirplaneModels.filter(model => capacityRange.contains(model.capacity))
       .filter(model => model.purchasableWithRelationship(allCountryRelationships.getOrElse((homeAirport.countryCode, model.countryCode), 0)))
       .filter(model => model.price * condition / Airplane.MAX_CONDITION <= value / 3)
       .filter(model => model.runwayRequirement <= homeAirport.runwayLength)
+      .filter(model => model.quality <= quality + 0.5 && model.quality >= quality - 0.5)
     val countryModels = eligibleModels.filter(_.countryCode == homeAirport.countryCode)
     val currentCycle = CycleSource.loadCycle()
 
@@ -70,37 +72,75 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val capital = BASE_CAPITAL + difficulty * BONUS_PER_DIFFICULTY_POINT
 
     val profiles = ListBuffer[Profile]()
-    val cashProfile = Profile(name = "Entrepreneurial spirit", description = "You have sold all your assets to create this new airline of your dream! Plan carefully but make bold moves to thrive in this brave new world. Recommended for new players.", cash = capital, airport = airport)
+
+    val cashProfile = Profile(name = "Simple start", description = "You have sold all your assets to start the airline of your dreams! Recommended for new players.", cash = capital, airport = airport)
     profiles.append(cashProfile)
+
     val random = new Random(airport.id)
-    val smallAirplanes = generateAirplanes(capital, (15 to 50), airport, 90, airline, random)
+    val smallAirplanes = generateAirplanes(capital, (30 to 90), 2.5, airport, 90, airline, random)
     if (!smallAirplanes.isEmpty) {
       val smallAirplaneProfile = Profile(
         name = "A humble beginning",
-        description = "A newly acquired airline with a modest aircraft fleet of young age. Grow this humble airline into the most powerful and respected brand in the aviation world!",
-        cash = (capital * 1.5).toInt - smallAirplanes.map(_.value).sum +  difficulty * BONUS_PER_DIFFICULTY_POINT / 2,
+        description = "A newly acquired airline with a modest fleet of almost-new aircraft. Grow this humble airline into the most powerful and respected brand in the aviation world!",
+        cash = (capital * 1.7).toInt - smallAirplanes.map(_.value).sum +  difficulty * BONUS_PER_DIFFICULTY_POINT / 2,
         airport = airport,
         reputation = 10,
+        quality = 15,
         airplanes = smallAirplanes,
         loan = Some(Bank.getLoanOptions((capital * 1).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
-
-
       profiles.append(smallAirplaneProfile)
     }
 
-    val largeAirplanes = generateAirplanes(capital * 3, (70 to 200), airport, 70, airline, random)
+    val loanProfile = Profile(
+      name = "Entrepreneurial spirit",
+      description = "You and the bank are betting big that there's money in commercial aviation! Plan carefully but make bold moves to thrive in this brave new world!",
+      cash = capital * 3,
+      airport = airport,
+      loan = Some(Bank.getLoanOptions((capital * 2.5).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id))
+    )
+    profiles.append(loanProfile)
+
+    val largeAirplanes = generateAirplanes((capital * 4).toInt, (60 to 150), 2.0, airport, 70, airline, random)
     if (!largeAirplanes.isEmpty) {
       val largeAirplaneProfile = Profile(
         name = "Revival of past glory",
-        description = "An airline that has previously over-expanded by mismanagement of now retired CEO. It is left with some aging airplanes and heavy debt. Can you turn this airline around?",
-        cash = (capital * 4).toInt - largeAirplanes.map(_.value).sum + difficulty * BONUS_PER_DIFFICULTY_POINT,
+        description = "A once great airline now saddled with debt and aging airplanes. Can you turn this airline around?",
+        cash = (capital * 4.6).toInt - largeAirplanes.map(_.value).sum + difficulty * BONUS_PER_DIFFICULTY_POINT,
         airport = airport,
-        reputation = 25,
+        reputation = 20,
+        quality = 0,
         airplanes = largeAirplanes,
-        loan = Some(Bank.getLoanOptions((capital * 3.5).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
+        loan = Some(Bank.getLoanOptions((capital * 4).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
       profiles.append(largeAirplaneProfile)
     }
 
+    val cheapAirplanes = generateAirplanes((capital * 3).toInt, (32 to 150), 0.5, airport, 80, airline, random)
+    if (!cheapAirplanes.isEmpty) {
+      val cheapAirplaneProfile = Profile(
+        name = "Economy Gamble",
+        description = "You found a great deal on very low quality planes. Perfect to pack in the masses!",
+        cash = (capital * 3.25).toInt - cheapAirplanes.map(_.value).sum + difficulty * BONUS_PER_DIFFICULTY_POINT,
+        airport = airport,
+        reputation = 10,
+        quality = 0,
+        airplanes = cheapAirplanes,
+        loan = Some(Bank.getLoanOptions((capital * 2.5).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
+      profiles.append(cheapAirplaneProfile)
+    }
+
+    val fancyAirplanes = generateAirplanes((capital * 2.25).toInt, (0 to 80), 4.5, airport, 85, airline, random)
+    if (!fancyAirplanes.isEmpty) {
+      val fancyAirplaneProfile = Profile(
+        name = "Luxury Startup",
+        description = "A highly motivated team with high quality aircraft. Perfect for premium service!",
+        cash = (capital * 2.75).toInt - fancyAirplanes.map(_.value).sum + difficulty * BONUS_PER_DIFFICULTY_POINT,
+        airport = airport,
+        reputation = 15,
+        quality = 99,
+        airplanes = fancyAirplanes,
+        loan = Some(Bank.getLoanOptions((capital * 2).toInt, BASE_INTEREST_RATE, CycleSource.loadCycle()).last.copy(airlineId = airline.id)))
+      profiles.append(fancyAirplaneProfile)
+    }
     profiles.toList
   }
 
@@ -126,6 +166,8 @@ class ProfileApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         AirlineSource.saveAirlineBase(base)
         airline.setCountryCode(airport.countryCode)
         airline.setReputation(profile.reputation)
+        airline.setCurrentServiceQuality(profile.quality)
+        airline.setTargetServiceQuality(35)
         airline.setBalance(profile.cash)
         AirportSource.updateAirlineAppeal(airportId, airlineId, AirlineAppeal(loyalty = 0))
 

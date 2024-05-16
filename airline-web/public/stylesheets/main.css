@@ -1420,6 +1420,9 @@ i, .italic {
     align-items: center;
     display: flex;
 }
+.justify-center {
+    justify-content: center;
+}
 .flex-row > div {
     flex-shrink: 0;
 }
