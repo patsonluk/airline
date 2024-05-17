@@ -951,9 +951,11 @@ function colorFromString(s) {
 }
 
 var defaultPieColors = {
-    "Business" : "#2e287d",
-    "Tourist" : "#fc7a57",
-    "Olympics" : "#c8d143",
+    "Traveler" : "#F2CA88",
+    "Elite" : "#6e1996",
+    "Business" : "#4267B2",
+    "Tourist" : "#FF9800",
+    "Olympics" : "#008080",
     "Budget": "#c8d143",
     "Carefree": "#b287a3",
     "Swift": "#ff5a5f",
