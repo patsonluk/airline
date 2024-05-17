@@ -76,23 +76,11 @@ object AirlineSimulation {
         var totalCashRevenue = 0L
         var totalCashExpense = 0L
         var linksDepreciation = 0L
+        val othersSummary = Map[OtherIncomeItemType.Value, Long]()
         val airlineValue = Computation.getResetAmount(airline.id)
 
-        //stock price
-        var dividendsFunding = airline.getWeeklyDividends()
-        if (airlineValue.existingBalance > MINIMUM_CASH_BALANCE_STOCKS + dividendsFunding) {
-          airline.setWeeklyDividends(0)
-          dividendsFunding = 0
-        }
-        othersSummary.put(OtherIncomeItemType.DIVIDENDS, dividendsFunding.toLong * -1)
-        totalCashExpense += dividendsFunding
-
-        val oldStockPrice = airline.getStockPrice()
-        val companySentiment = targetReputation - currentReputation + ThreadLocalRandom.current().nextDouble(0.1)
-        val stockPrice = getNewStockPrice(dividendsFunding, airlineValue.overall, oldStockPrice, companySentiment)
-        airline.setStockPrice(stockPrice)
-
-        //update reputation
+        //update reputation && stock price
+        val currentReputation = airline.getReputation()
         val reputationBreakdowns = ListBuffer[ReputationBreakdown]()
 
         val reputationByAircraftTypes = airplanesByAirline.get(airline.id) match {
@@ -155,9 +143,6 @@ object AirlineSimulation {
         }
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.AIRPORT_LOYALIST_RANKING, reputationByAirportChampions))
 
-        val reputationByStockPrice = 10 * airline.airlineGradeStockPrice.level
-        reputationBreakdowns.append(ReputationBreakdown(ReputationType.STOCK_PRICE, reputationByStockPrice))
-
         val reputationByTourists = 10 * AirlineGradeTourists.findGrade(airlineStat.tourists).level
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.TOURISTS, reputationByTourists))
 
@@ -179,7 +164,23 @@ object AirlineSimulation {
         val finalBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
         AirlineSource.updateReputationBreakdowns(airline.id, finalBreakdowns)
 
-        val currentReputation = airline.getReputation()
+        //stock price
+        var dividendsFunding = airline.getWeeklyDividends()
+        if (airlineValue.existingBalance > MINIMUM_CASH_BALANCE_STOCKS + dividendsFunding) {
+          airline.setWeeklyDividends(0)
+          dividendsFunding = 0
+        }
+        othersSummary.put(OtherIncomeItemType.DIVIDENDS, dividendsFunding.toLong * -1)
+        totalCashExpense += dividendsFunding
+
+        val oldStockPrice = airline.getStockPrice()
+        val companySentiment = finalBreakdowns.total - currentReputation + ThreadLocalRandom.current().nextDouble(0.1)
+        val stockPrice = getNewStockPrice(dividendsFunding, airlineValue.overall, oldStockPrice, companySentiment)
+        airline.setStockPrice(stockPrice)
+
+        val reputationByStockPrice = 10 * airline.airlineGradeStockPrice.level
+        reputationBreakdowns.append(ReputationBreakdown(ReputationType.STOCK_PRICE, reputationByStockPrice))
+
         var targetReputation = finalBreakdowns.total
         //make sure it increases/decreases gradually based on passenger volume
         if (targetReputation > currentReputation && targetReputation - currentReputation > MAX_REPUTATION_DELTA) {
@@ -243,8 +244,6 @@ object AirlineSimulation {
           }
           case None => TransactionsIncome(airline.id, 0, 0, 0, capitalGain = 0, createLink = 0, cycle = currentCycle)
         }
-
-        val othersSummary = Map[OtherIncomeItemType.Value, Long]()
 
         val baseUpkeep = airline.bases.foldLeft(0L)((upkeep, base) => {
           upkeep + base.getUpkeep
