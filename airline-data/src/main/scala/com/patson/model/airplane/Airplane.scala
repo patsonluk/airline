@@ -60,19 +60,12 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
     testUtilizationRate = Some(rate)
   }
 
-//  lazy val remainingFlightHour = usableFlightHour - linkAssignments.map {
-//    case ((link, hours)) => hours
-//  }.sum
-
-//  private[this] var linkAssignments : Map[Link, Int] = Map.empty
-//  def setLinkAssignments(linkAssignments : Map[Link, Int]) = this.linkAssignments = linkAssignments
-//  def getLinkAssignments() = linkAssignments
 }
 
 object Airplane {
   val MAX_CONDITION = 100
-  val BAD_CONDITION = 40
-  val CRITICAL_CONDITION = 20
+  val BAD_CONDITION = 35
+  val CRITICAL_CONDITION = 10
   val DEFAULT_DEALER_RATIO = 1.0
   val MAX_FLIGHT_MINUTES : Int = (24 * 60 * 4).toInt
 }

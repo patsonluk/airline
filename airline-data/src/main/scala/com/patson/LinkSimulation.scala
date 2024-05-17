@@ -144,12 +144,12 @@ object LinkSimulation {
 
   case class PassengerCost(group : PassengerGroup, passengerCount : Int, cost : Double)
 
-  val minorDelayNormalThreshold = 0.3  // so it's around 18% at 40% condition (multiplier at 0.6) or 24% at 20% condition to run into minor delay OR worse
-  val majorDelayNormalThreshold = 0.1 // so it's around 6% at 40% condition (multiplier at 0.6) or 8% at 20% condition to run into major delay OR worse
-  val cancellationNormalThreshold = 0.03 // so it's around 1.8% at 40% condition (multiplier at 0.6) or 2.4% at 20 condition to run into cancellation
-  val minorDelayCriticalThreshold = 0.5  // so it's around 50% at 0% condition (multiplier at 1) to run into minor delay OR worse
-  val majorDelayCriticalThreshold = 0.2 // so it's around 20% at 0% condition (multiplier at 1) to run into major delay OR worse
-  val cancellationCriticalThreshold = 0.05 // so it's around 5% at 0% condition (multiplier at 1) to run into cancellation
+  val minorDelayNormalThreshold = 0.3
+  val majorDelayNormalThreshold = 0.1
+  val cancellationNormalThreshold = 0.03
+  val minorDelayCriticalThreshold = 0.5
+  val majorDelayCriticalThreshold = 0.2
+  val cancellationCriticalThreshold = 0.05
 
   def simulateLinkError(links : List[Link]) = {
     links.foreach {
@@ -161,7 +161,7 @@ object LinkSimulation {
           if (airplaneCount > 0) {
             val airplane = assignedInServiceAirplanes.toList.map(_._1)(i % airplaneCount)           //round robin
             val errorValue = ThreadLocalRandom.current().nextDouble()
-            val conditionMultiplier = (Airplane.MAX_CONDITION - airplane.condition).toDouble / Airplane.MAX_CONDITION
+            val conditionMultiplier = (Airplane.MAX_CONDITION - airplane.condition * 0.75).toDouble / Airplane.MAX_CONDITION
 
             if (airplane.condition > Airplane.CRITICAL_CONDITION) { //small chance of delay and cancellation
               if (errorValue < cancellationNormalThreshold * conditionMultiplier) {

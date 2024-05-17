@@ -1108,6 +1108,7 @@ function editDividends() {
 }
 
 function setDividendsLevel(dividends) {
+    $('#weeklyDividendsDisplaySpan .warning').hide()
     if(companyValue < 100000000){
         return;
     }
@@ -1125,8 +1126,10 @@ function setDividendsLevel(dividends) {
 	    	updateDividends()
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            console.log(JSON.stringify(jqXHR));
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+            $('#weeklyDividendsInputSpan .warning').text(jqXHR.responseText)
+            $('#weeklyDividendsInputSpan .warning').show()
 	    }
 	});
 }
@@ -1240,7 +1243,8 @@ function updateResetAirlineInfo() {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
-	        companyValue = result.overall
+	        companyValue = result.overall;
+	        updateDividends();
 
 	    	if (result.rebuildRejection) {
 	    		disableButton($("#officeCanvas .button.resetAirline.rebuild"), result.rebuildRejection)

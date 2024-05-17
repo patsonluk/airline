@@ -9,9 +9,9 @@
   border-radius: 8px;
   background: rgba(255,255,255,0.2);
   margin: 10px 20px 10px 0px;
-  padding: 10px 10px 20px 10px;
+  padding: 16px;
   box-sizing:border-box;
-  width: 400px;
+  width: 360px;
   height: 300px;
 }
 

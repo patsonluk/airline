@@ -375,7 +375,8 @@ object RankingLeaderboards {
           key = airlineId,
           entry = airlinesById.getOrElse(airlineId, Airline.fromId(airlineId)),
           ranking = index + 1,
-          rankedValue = BigDecimal(stockPrice).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+          rankedValue = BigDecimal(stockPrice).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble,
+          reputationPrize = reputationBonus(20, index)
         )
       }
     }.toList.take(200)

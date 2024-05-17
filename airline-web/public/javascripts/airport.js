@@ -47,7 +47,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	}
 
 	
-	$('#airportDetailsName').text(airport.name)
+	$('.airportName').text(airport.name)
 	if (airport.iata) { 
 		$('#airportDetailsIata').text(airport.iata)
 	} else {
@@ -109,7 +109,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
 	if (countryFlagUrl) {
 	    //only apply to heading
-		$("h4 .airportCountryName").append("<img src='" + countryFlagUrl + "' />")
+		$("h2 .airportCountryName").append("<img src='" + countryFlagUrl + "' />")
 	}
 	$("#airportDetailsAffinityZone").text(buildAffinityText(airport.zone.replaceAll("-", ", ")))
 	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness, airport.size, airport.isDomesticAirport))
@@ -130,19 +130,26 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 		    success: function(baseDetails) {
 		    	var airportBase = baseDetails.base
 		    	if (!airportBase) { //new base
-	    			$('#airportDetailsBaseType').text('-')
-	    			$('#airportDetailsBaseScale').text('-')
-	    			$('#airportDetailsBaseUpkeep').text('-')
-	    			$('#airportDetailsBaseDelegatesRequired').text('-')
+		    	    document.getElementById('airportBaseDetailsHeading').innerHTML = `Build base`
+	    			$('#airportDetailsBaseUpkeep').text('0')
+	    			$('#airportDetailsBaseDelegatesRequired').text('1 to Build Base')
 	    			$('#airportDetailsStaff').text('-')
-	    			$('#airportBaseDetails .baseSpecializations').text('-')
+	    			$('#airportBaseDetails .baseSpecializations').text('')
 	    			$('#airportDetailsFacilities').empty()
 	    			disableButton($('#airportBaseDetails .specialization.button'), "This is not your airline base")
 
 	    			$('#baseDetailsModal').removeData('scale')
 	    		} else {
-	    			$('#airportDetailsBaseType').text(airportBase.headquarter ? "Headquarters" : "Base")
-	    			$('#airportDetailsBaseScale').text(airportBase.scale)
+	    		    const baseType = airportBase.headquarter ? "Headquarters" : "Base"
+                    var specializationList = ""
+	    		    if (airportBase.specializations) {
+                        specializationList = $('<div></div>')
+                        $.each(airportBase.specializations, function(index, specialization) {
+                            specializationList.append($('<img src="assets/images/icons/specialization/' + specialization.id + '.png" title="' + specialization.label + '" style="vertical-align: middle;">'))
+                        })
+                    }
+                    document.getElementById('airportBaseDetailsHeading').innerHTML = `${activeAirline.name} ${baseType} <small class='text-underline'>Scale ${airportBase.scale}</small>${specializationList}`
+
 	    			if (airportBase.delegatesRequired == 0) {
 	    			    $('#airportDetailsBaseDelegatesRequired').text('None')
                     } else {
@@ -157,7 +164,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 
                     var capacityInfo = baseDetails.officeCapacity
-                    var capacityText = capacityInfo.currentStaffRequired + "/" + capacityInfo.staffCapacity
+                    var capacityText = capacityInfo.currentStaffRequired + " / " + capacityInfo.staffCapacity
                     var $capacitySpan = $('#airportDetailsStaff')
 
                     if (capacityInfo.staffCapacity < capacityInfo.currentStaffRequired) {
@@ -168,20 +175,6 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
                         capacityText += "(future : " + capacityInfo.futureStaffRequired + ")"
                     }
                     $capacitySpan.text(capacityText)
-
-
-                    if (airportBase.specializations) {
-                        var specializationList = $('<span></span>')
-                        $.each(airportBase.specializations, function(index, specialization) {
-                            //specializationList.append($('<li class="dot">' + specialization.label + '</li>'))
-                            specializationList.append($('<img src="assets/images/icons/specialization/' + specialization.id + '.png" title="' + specialization.label + '" style="vertical-align: middle;">'))
-                        })
-                        $('#airportBaseDetails .baseSpecializations').empty()
-                        $('#airportBaseDetails .baseSpecializations').append(specializationList)
-                    } else {
-                        $('#airportBaseDetails .baseSpecializations').text('-')
-                    }
-
 
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
 
@@ -351,6 +344,7 @@ function populateAirportDetails(airport) {
 		updateAirportLoyalistDetails(airport)
 		showAirportAssets(airport)
         updateAirportCities(airport)
+        updateAirportDestinations(airport)
 
         if (christmasFlag) {
             initSantaClaus()
@@ -416,15 +410,19 @@ function updateAirportCities(airport) {
     $('#airportDetailsCityList').children('.table-row').remove()
     var cities = airport.citiesServed
     cities.sort(sortByProperty("population", false))
+    document.getElementById('airportDetailsCityListCount').innerText = airport.citiesServed.length
 	var count = 0
+	var $rows
 	$.each(cities, function( key, city ) {
 		if (++ count > 50) { //do it for top 50 cities only
 			return false
 		}
 		var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell' style='text-align: right;'>" + city.name + "</div>")
+		row.append("<div class='cell'>" + city.name + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + Number(city.cityShare * city.population).toFixed().toLocaleString() + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + Number(city.population).toLocaleString() + "</div>")
-		row.append("<div class='cell' style='text-align: right;'>$" + Number(city.income).toLocaleString() + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>$" + Number(city.incomeLevel).toLocaleString() + "</div>")
+		$('#airportDetailsCityList').append(row)
     })
 }
 function updateAirportDestinations(airport) {
@@ -432,27 +430,29 @@ function updateAirportDestinations(airport) {
     var destinations = airport.destinations
 	var count = 0
 	$.each(destinations, function( key, destination ) {
+	    const strength = destination.strength ?? 1
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell' style='text-align: right;'>" + destination.name + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + destination.type + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + destination.strength + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + destination.description + "</div>")
+		$('#airportDetailsDestinationList').append(row)
     })
 }
 
 function updateAirportRating(rating) {
-    var fullStarSource = "assets/images/icons/star.png"
-    var halfStarSource = "assets/images/icons/star-half.png"
+    var fullStarSource = "assets/images/icons/star-full.svg"
+    var halfStarSource = "assets/images/icons/star-half.svg"
     var fullFireSource = "assets/images/icons/fire.png"
     var halfFireSource = "assets/images/icons/fire-small.png"
-    $("#airportCanvas .economicRating").append(getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, rating.economicRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
-    $("#airportCanvas .economicRating").append(getRatingSpan(rating.economicRating, true).css('margin-left', '5px'))
-    $("#airportCanvas .countryRating").append(getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, rating.countryRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
-    $("#airportCanvas .countryRating").append(getRatingSpan(rating.countryRating, true).css('margin-left', '5px'))
-    $("#airportCanvas .competitionRating").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.competitionRating).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
+    $("#airportCanvas .economicRating").append(getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, rating.economicRating).css({ 'display' : 'inline-block', 'vertical-align' : 'middle'}))
+//    $("#airportCanvas .economicRating").append(getRatingSpan(rating.economicRating, true).css('margin-left', '5px'))
+//    $("#airportCanvas .countryRating").append(getHalfStepImageBarByValue(fullStarSource, halfStarSource, 10, rating.countryRating).css({ 'display' : 'inline-block', 'vertical-align' : 'middle'}))
+//    $("#airportCanvas .countryRating").append(getRatingSpan(rating.countryRating, true).css('margin-left', '5px'))
+    $("#airportCanvas .competitionRating").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.competitionRating).css({ 'display' : 'inline-block', 'vertical-align' : 'middle'}))
     $("#airportCanvas .competitionRating").append(getRatingSpan(rating.competitionRating, false).css('margin-left', '5px'))
-    $("#airportCanvas .difficulty").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.difficulty).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
-    $("#airportCanvas .difficulty").append(getRatingSpan(rating.difficulty, false).css('margin-left', '5px'))
+//    $("#airportCanvas .difficulty").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.difficulty).css({ 'display' : 'inline-block', 'vertical-align' : 'middle'}))
+//    $("#airportCanvas .difficulty").append(getRatingSpan(rating.difficulty, false).css('margin-left', '5px'))
 }
 
 //if inverse is true then higher the rating, easier it is
@@ -934,31 +934,37 @@ function refreshAirportExtendedDetails(airport) {
         }
         $popupFeatureDiv.append($popupFeatureSpan)
 
-        var $featureDiv = $("<div class='feature'><img width='16' alt='" + feature.title + "' src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
-        $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
-        var featureText = feature.title
-        if (feature.strength != 0) {
-            if (feature.boosts && feature.boosts.length > 0) {
-                featureText += " (strength: <span style='color: #41A14D'>" + feature.strength + "</span>)"
-            } else {
-                featureText += " (strength: " + feature.strength + ")"
-            }
-        }
-        var $featureDescription = $('<span><span>').text(feature.title)
+        const image = `<img width='16' height='16' src='assets/images/icons/airport-features/${feature.type}.png' title='${feature.title}';>`
+        const strength = `<p>${feature.strength > 0 ? feature.strength : " "}</p>`
+        const description = `<p>${feature.title}</p>`
+        const $featureDiv = $(`<div class='feature' style='width: 30px; display: flex;'>${image}${strength}</div>`).appendTo($("#airportPopup .airportFeatures"))
+//        const $featureDiv = $(`<div class='item feature flex-row' style='width:160px'><div style='width: 30px; display: flex;'>${image}${strength}</div></div>`).appendTo($("#airportPopup .airportFeatures"))
 
-         if (feature.strength != 0) {
-            var $featureStrengthSpan = $('<span>(strength:&nbsp;</span>')
-            if (feature.boosts && feature.boosts.length > 0) {
-                var $boostSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
-                $featureStrengthSpan.append($boostSpan)
-                $featureStrengthSpan.append('<span>)</span>')
-            } else {
-                $featureStrengthSpan.append('<span>' + feature.strength + ')</span>')
-            }
-            $featureDescription.append($featureStrengthSpan)
-        }
+//        var $featureDiv = $("<div class='feature'><img width='16' alt='" + feature.title + "' src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
+//        $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
+//        var featureText = feature.title
+//        if (feature.strength != 0) {
+//            if (feature.boosts && feature.boosts.length > 0) {
+//                featureText += " (strength: <span style='color: #41A14D'>" + feature.strength + "</span>)"
+//            } else {
+//                featureText += " (strength: " + feature.strength + ")"
+//            }
+//        }
+//        var $featureDescription = $('<span><span>').text(feature.title)
+//
+//         if (feature.strength != 0) {
+//            var $featureStrengthSpan = $('<span>(strength:&nbsp;</span>')
+//            if (feature.boosts && feature.boosts.length > 0) {
+//                var $boostSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
+//                $featureStrengthSpan.append($boostSpan)
+//                $featureStrengthSpan.append('<span>)</span>')
+//            } else {
+//                $featureStrengthSpan.append('<span>' + feature.strength + ')</span>')
+//            }
+//            $featureDescription.append($featureStrengthSpan)
+//        }
+//        $featureDiv.append($featureDescription)
 
-        $featureDiv.append($featureDescription)
         $("#airportCanvas .airportFeatures").append($featureDiv)
     })
 }

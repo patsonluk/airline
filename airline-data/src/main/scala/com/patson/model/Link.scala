@@ -69,7 +69,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
         0
       } else {
         val airplaneConditionQuality = inServiceAirplanes.toList.map {
-          case ((airplane, assignmentPerAirplane)) => math.max( 2 * airplane.condition / Airplane.MAX_CONDITION, 1 ) * assignmentPerAirplane.frequency
+          case ((airplane, assignmentPerAirplane)) => math.max( airplane.condition / Airplane.MAX_CONDITION, 1 ) * assignmentPerAirplane.frequency
         }.sum / frequency * 20
         val airplaneTypeQuality = (getAssignedModel().get.quality - 4) * 3.5
         computedQualityStore = Math.min(99, airplaneTypeQuality + (rawQuality.toDouble - 20) / Link.MAX_QUALITY * 30 + airline.airlineInfo.currentServiceQuality / Airline.MAX_SERVICE_QUALITY * 30 + airplaneConditionQuality).toInt

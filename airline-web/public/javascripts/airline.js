@@ -2315,15 +2315,15 @@ function getPaddedHalfStepImageBarByValue(fullStepImageSrc, halfStepImageSrc, em
     var fullSteps = Math.floor(halfSteps / 2)
     var hasRemainder = halfSteps % 2;
     for (i = 0 ; i < fullSteps ; i ++) {
-		var image = $("<img src='" + fullStepImageSrc + "'>")
+		var image = $("<img width='16' height='16' src='" + fullStepImageSrc + "'>")
 		containerDiv.append(image)
     }
     if (hasRemainder && halfStepImageSrc) {
-        var image = $("<img src='" + halfStepImageSrc + "'>")
+        var image = $("<img width='16' height='16' src='" + halfStepImageSrc + "'>")
     	containerDiv.append(image)
     }
     if (emptyStepImageSrc && halfSteps == 0 && fullSteps == 0) {
-        var image = $("<img src='" + emptyStepImageSrc + "'>")
+        var image = $("<img width='16' height='16' src='" + emptyStepImageSrc + "'>")
         containerDiv.append(image)
     }
 

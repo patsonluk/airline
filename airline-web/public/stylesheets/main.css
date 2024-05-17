@@ -260,7 +260,6 @@ h1, h2, h3, h4, h5, h6, .font-display {
 }
 
 #airportCanvas {
-        padding-top: 8px;
 }
 .airportCanvasLeftGroup {
     padding: 0 10px 0 10px;
@@ -373,6 +372,7 @@ body.christmas {
 .table .table-row {
 	display: table-row;
 	width: 100%;
+	height: 16px;
 }
 
 
@@ -443,6 +443,36 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
 	background: var(--table-odd-row-background-color);
 }
 
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 20px;
+  width: 100%;
+}
+
+.item {
+    width: 170px;
+    height: 40px;
+    padding-bottom: 8px;
+}
+
+.i-label {
+    font-size: 13px;
+    letter-spacing: -0.1px;
+    padding: 4px 0;
+    font-weight: 700;
+    display: flex;
+    gap: 4px;
+    height: 16px;
+}
+
+.i-value {
+    font-size: 13px;
+    letter-spacing: -0.1px;
+    display: flex;
+    gap: 4px;
+}
+
 .progressionItem {
     background: #7fb8ff;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#7fb8ff, #a2cfff);  /* Chrome 10-25, Safari 5.1-6 */
@@ -462,7 +492,7 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
 
  
 .label, div.header, span.header {
-	line-height: 1.6em;
+	line-height: 1.1;
 	color: var(--text-color);
 	text-decoration: none;
 	font-size: 12px;
@@ -545,6 +575,12 @@ button.gm-svpc {
 
 #airportPopupCity {
     font-size: 15px;
+}
+
+.airportFeatures {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .gm-style .gm-style-iw-c {
@@ -758,7 +794,6 @@ a:hover, .clickable:hover, .clickable-no-highlight:hover {
 }
 
 li.row, div.table-row {
-	padding: 3px;
 	font-size: 11px;
 	color: var(--text-color);
 }
@@ -1406,8 +1441,7 @@ i, .italic {
 .text-right { text-align: right; }
 .text-center { text-align: center; }
 .rounded-none { border-radius: 0px !important; }
-//.float-left { float: left; }
-//.float-right { float: right; }
+.overflow-x-auto { overflow-x: auto !important; }
 .flex-row {
     display: flex;
     width: 100%;
@@ -1419,6 +1453,9 @@ i, .italic {
 .flex-center {
     align-items: center;
     display: flex;
+}
+.justify-center {
+    justify-content: center;
 }
 .flex-row > div {
     flex-shrink: 0;

@@ -183,8 +183,6 @@ object AirplaneSimulation {
     
     airplanesWithAssignedLink.foreach { 
       case(airplane, linkAssignments) =>
-        //val minDecay = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
-        //val maxDecay = minDecay * 2
         val baseDecayRate = Airplane.MAX_CONDITION.toDouble / airplane.model.lifespan //live the whole lifespan
 
         val decayRate = baseDecayRate / 3 + baseDecayRate * (2.0 / 3) * airplane.utilizationRate

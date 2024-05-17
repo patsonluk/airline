@@ -20,8 +20,9 @@ object AirlineSimulation {
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
   val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUTATION_DELTA = 1
+  val MINIMUM_CASH_BALANCE_STOCKS = 100000000 //100M
   val BANKRUPTCY_ASSETS_THRESHOLD = -50000000 //-50M
-  val BANKRUPTCY_PROFIT_THRESHOLD = -10000000 //-10M
+  val BANKRUPTCY_CASH_THRESHOLD = -10000000 //-10M
 
   def airlineSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], loungeResult : scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], airplanes : List[Airplane], airlineStats : List[AirlineStat]) = {
     val allAirlines = AirlineSource.loadAllAirlines(true)
@@ -72,9 +73,14 @@ object AirlineSimulation {
 
     allAirlines.foreach { airline =>
         val airlineStat = airlineStats.find(_.airlineId == airline.id).getOrElse(AirlineStat(airline.id,0,0,0,0,0))
+        var totalCashRevenue = 0L
+        var totalCashExpense = 0L
+        var linksDepreciation = 0L
+        val othersSummary = Map[OtherIncomeItemType.Value, Long]()
         val airlineValue = Computation.getResetAmount(airline.id)
 
-        //update reputation
+        //update reputation && stock price
+        val currentReputation = airline.getReputation()
         val reputationBreakdowns = ListBuffer[ReputationBreakdown]()
 
         val reputationByAircraftTypes = airplanesByAirline.get(airline.id) match {
@@ -137,9 +143,6 @@ object AirlineSimulation {
         }
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.AIRPORT_LOYALIST_RANKING, reputationByAirportChampions))
 
-        val reputationByStockPrice = 10 * airline.airlineGradeStockPrice.level
-        reputationBreakdowns.append(ReputationBreakdown(ReputationType.STOCK_PRICE, reputationByStockPrice))
-
         val reputationByTourists = 10 * AirlineGradeTourists.findGrade(airlineStat.tourists).level
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.TOURISTS, reputationByTourists))
 
@@ -161,7 +164,23 @@ object AirlineSimulation {
         val finalBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
         AirlineSource.updateReputationBreakdowns(airline.id, finalBreakdowns)
 
-        val currentReputation = airline.getReputation()
+        //stock price
+        var dividendsFunding = airline.getWeeklyDividends()
+        if (airlineValue.existingBalance > MINIMUM_CASH_BALANCE_STOCKS + dividendsFunding) {
+          airline.setWeeklyDividends(0)
+          dividendsFunding = 0
+        }
+        othersSummary.put(OtherIncomeItemType.DIVIDENDS, dividendsFunding.toLong * -1)
+        totalCashExpense += dividendsFunding
+
+        val oldStockPrice = airline.getStockPrice()
+        val companySentiment = finalBreakdowns.total - currentReputation + ThreadLocalRandom.current().nextDouble(0.1)
+        val stockPrice = getNewStockPrice(dividendsFunding, airlineValue.overall, oldStockPrice, companySentiment)
+        airline.setStockPrice(stockPrice)
+
+        val reputationByStockPrice = 10 * airline.airlineGradeStockPrice.level
+        reputationBreakdowns.append(ReputationBreakdown(ReputationType.STOCK_PRICE, reputationByStockPrice))
+
         var targetReputation = finalBreakdowns.total
         //make sure it increases/decreases gradually based on passenger volume
         if (targetReputation > currentReputation && targetReputation - currentReputation > MAX_REPUTATION_DELTA) {
@@ -171,9 +190,19 @@ object AirlineSimulation {
         }
         airline.setReputation(targetReputation)
 
-        var totalCashRevenue = 0L
-        var totalCashExpense = 0L
-        var linksDepreciation = 0L
+        //income statement
+        val isBankrupt = if (airlineValue.overall < BANKRUPTCY_ASSETS_THRESHOLD && airlineValue.existingBalance < BANKRUPTCY_CASH_THRESHOLD) {
+          true
+        } else {
+          false
+        }
+        if (isBankrupt) {
+          val resetBalance = 0
+          //todd: add public notice of bankruptcy with stats
+          println(s"Resetting $airline due to negative value")
+          Airline.resetAirline(airline.id, newBalance = resetBalance)
+        }
+
         val linksIncome = flightLinkResultByAirline.get(airline.id) match {
           case Some(linkConsumptions) => {
             val linksProfit = linkConsumptions.foldLeft(0L)(_ + _.profit)
@@ -215,21 +244,6 @@ object AirlineSimulation {
           }
           case None => TransactionsIncome(airline.id, 0, 0, 0, capitalGain = 0, createLink = 0, cycle = currentCycle)
         }
-
-        val othersSummary = Map[OtherIncomeItemType.Value, Long]()
-
-        //stock price
-        if (airlineValue.existingBalance < 0) {
-          airline.setWeeklyDividends(0)
-        }
-        val dividendsFunding = airline.getWeeklyDividends()
-        othersSummary.put(OtherIncomeItemType.DIVIDENDS, dividendsFunding.toLong * -1)
-        totalCashExpense += dividendsFunding
-
-        val oldStockPrice = airline.getStockPrice()
-        val companySentiment = targetReputation - currentReputation + ThreadLocalRandom.current().nextDouble(0.1)
-        val stockPrice = getNewStockPrice(dividendsFunding, airlineValue.overall, oldStockPrice, companySentiment)
-        airline.setStockPrice(stockPrice)
 
         val baseUpkeep = airline.bases.foldLeft(0L)((upkeep, base) => {
           upkeep + base.getUpkeep
@@ -409,7 +423,9 @@ object AirlineSimulation {
         val totalCashFlow = totalCashRevenue - totalCashExpense
 
         val operationCashFlow = totalCashFlow + loanPayment //exclude both interest and principle here, which WAS included in the total cash flow
-        cashFlows.put(airline, totalCashFlow) //this is week end flow, used for actual adjustment
+        if (!isBankrupt) {
+          cashFlows.put(airline, totalCashFlow) //this is week end flow, used for actual adjustment
+        }
 
         //below is for accounting purpose
         //cash flow item that is already applied during this week, still need to load them for accounting purpose
@@ -426,20 +442,6 @@ object AirlineSimulation {
         val facilityConstruction = transactionalCashFlowItems.getOrElse(CashFlowType.FACILITY_CONSTRUCTION, 0L)
         val oilContract = transactionalCashFlowItems.getOrElse(CashFlowType.OIL_CONTRACT, 0L)
         val assetTransactions = transactionalCashFlowItems.getOrElse(CashFlowType.ASSET_TRANSACTION, 0L)
-
-        val isBankrupt = if (airlineValue.overall < BANKRUPTCY_ASSETS_THRESHOLD && airlineProfit < BANKRUPTCY_PROFIT_THRESHOLD) {
-          true
-        } else {
-          false
-        }
-        if(isBankrupt){
-          val resetBalance = 0
-          //todd: add public notice of bankruptcy with stats
-          println(s"Resetting $airline due to negative value")
-          Airline.resetAirline(airline.id, newBalance = resetBalance)
-        }
-
-
 
         val accountingCashFlow = totalCashFlow + baseConstruction + buyAirplane + sellAirplane + createLink + facilityConstruction + oilContract + assetTransactions
 

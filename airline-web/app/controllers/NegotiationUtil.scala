@@ -150,6 +150,7 @@ object NegotiationUtil {
   def getToAirportRequirements(airline : Airline, newLink : Link, existingLinkOption : Option[Link], airlineLinks : List[Link]) = {
     val newCapacity : LinkClassValues = newLink.futureCapacity()
     val newFrequency = newLink.futureFrequency()
+    val flightType = Computation.getFlightType(newLink.from, newLink.to)
 
     val existingCapacity = existingLinkOption.map(_.futureCapacity()).getOrElse(LinkClassValues.getInstance())
     val existingFrequency = existingLinkOption.map(_.futureFrequency()).getOrElse(0)
@@ -159,7 +160,7 @@ object NegotiationUtil {
     val frequencyDelta = newFrequency - existingFrequency
     val requirements = ListBuffer[NegotiationRequirement]()
 
-    val flightTypeMultiplier = Computation.getFlightType(newLink.from, newLink.to) match {
+    val flightTypeMultiplier = flightType match {
       case SHORT_HAUL_DOMESTIC => 1
       case MEDIUM_HAUL_DOMESTIC => 1
       case LONG_HAUL_DOMESTIC => 2
@@ -203,22 +204,20 @@ object NegotiationUtil {
 
     //val odds = new NegotiationOdds()
 
-    val airport = newLink.to
-    val country = CountryCache.getCountry(airport.countryCode).get
-    airline.getCountryCode().foreach { homeCountryCode =>
-      if (homeCountryCode != airport.countryCode) {
-        var baseForeignAirline = (12 - country.openness) * 0.5
-        if (existingLinkOption.isDefined) { //cheaper if it's already established
-          baseForeignAirline = baseForeignAirline * 0.5
-        }
-        requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, baseForeignAirline, "Foreign Airline"))
+    if (FlightType.getCategory(flightType) == FlightCategory.INTERNATIONAL) {
+      val country = CountryCache.getCountry(newLink.to.countryCode).get
+      var baseForeignAirline = (12 - country.openness) * 0.5
+      if (existingLinkOption.isDefined) { //cheaper if it's already established
+        baseForeignAirline = baseForeignAirline * 0.5
       }
-      airport.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
-        case Some(_) =>
-          val gatewayCost = 1.0
-          requirements.append(NegotiationRequirement(GATEWAY, gatewayCost, "Tough Gateway Airport Negotiation"))
-        case None =>
-      }
+      requirements.append(NegotiationRequirement(FOREIGN_AIRLINE, baseForeignAirline, "Foreign Airline"))
+    }
+
+    newLink.to.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
+      case Some(_) =>
+        val gatewayCost = 1.0
+        requirements.append(NegotiationRequirement(GATEWAY, gatewayCost, "Tough Gateway Airport Negotiation"))
+      case None =>
     }
 
     existingLinkOption match {

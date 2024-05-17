@@ -22,7 +22,7 @@ object ModelDiscount {
   val MAKE_FAVORITE_RESET_THRESHOLD = 52 //1 year at least
 
   val getFavoriteDiscounts: Model => List[ModelDiscount] = (model : Model) => {
-    val constructionTimeDiscount = ModelDiscount(model.id, 0.10, DiscountType.CONSTRUCTION_TIME, DiscountReason.FAVORITE, None)
+    val constructionTimeDiscount = ModelDiscount(model.id, 0.20, DiscountType.CONSTRUCTION_TIME, DiscountReason.FAVORITE, None)
     val priceDiscount = model.airplaneType match {
       case LIGHT => 0.05
       case SMALL => 0.05

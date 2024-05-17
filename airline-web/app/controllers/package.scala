@@ -584,6 +584,11 @@ package object controllers {
       } else {
         airport.popElite.toString.take(2) + "0" * (airport.popElite.toString.length - 2)
       }
+      val popMiddleIncome = if(airport.population.toDouble > 0 && airport.popMiddleIncome > 0) {
+        BigDecimal(airport.popMiddleIncome / airport.population.toDouble * 100).setScale(1, RoundingMode.HALF_EVEN).toDouble
+      } else {
+        0
+      }
 
       var airportObject = JsObject(List(
         "id" -> JsNumber(airport.id),
@@ -598,7 +603,7 @@ package object controllers {
         "countryCode" -> JsString(airport.countryCode),
         "population" -> JsNumber(airport.population),
         "popElite" -> JsString(popElite),
-        "popMiddleIncome" -> JsNumber(BigDecimal(airport.popMiddleIncome / airport.population.toDouble * 100).setScale(1, RoundingMode.HALF_EVEN).toDouble),
+        "popMiddleIncome" -> JsNumber(popMiddleIncome),
         "radius" -> JsNumber(airport.airportRadius),
         "zone" -> JsString(airport.zone),
         "incomeLevel" -> JsNumber(airport.income.toInt)))
