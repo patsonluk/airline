@@ -31,7 +31,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       "reputation" -> JsNumber(BigDecimal(airline.airlineInfo.reputation).setScale(2, BigDecimal.RoundingMode.HALF_EVEN)),
       "serviceQuality" -> JsNumber(airline.airlineInfo.currentServiceQuality),
       "targetServiceQuality" -> JsNumber(airline.airlineInfo.targetServiceQuality),
-      "weeklyDividends" -> JsNumber(airline.airlineInfo.weeklyDividends),
+      "weeklyDividends" -> JsNumber(airline.airlineInfo.weeklyDividends/1000000),
       "gradeDescription" -> JsString(airline.airlineGrade.description),
       "gradeLevel" -> JsNumber(airline.airlineGrade.level),
       "gradeFloor" -> JsNumber(airline.airlineGrade.reputationFloor),
@@ -901,10 +901,14 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       val weeklyDividendsTry = Try(request.body.asInstanceOf[AnyContentAsJson].json.\("weeklyDividends").as[Int])
       weeklyDividendsTry match {
         case Success(weeklyDividends) =>
-          val airline = request.user
-          airline.setWeeklyDividends(weeklyDividends * 1000000)
-          AirlineSource.saveAirlineInfo(airline, updateBalance = false)
-          Ok(Json.obj("weeklyDividends" -> JsNumber(weeklyDividends)))
+          if (weeklyDividends < 0) {
+            BadRequest("Cannot set negative dividends")
+          } else {
+            val airline = request.user
+            airline.setWeeklyDividends(weeklyDividends * 1000000)
+            AirlineSource.saveAirlineInfo(airline, updateBalance = false)
+            Ok(Json.obj("weeklyDividends" -> JsNumber(weeklyDividends / 1000000)))
+          }
         case Failure(_) =>
           BadRequest("Cannot update dividends")
       }

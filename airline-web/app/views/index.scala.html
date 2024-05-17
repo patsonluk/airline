@@ -1034,39 +1034,89 @@
 					<!-- left panel -->
 					<div style="max-width: 100%" class="vertical-group">
 						<div style="width: 100%; display: flex; flex-flow: row; flex-wrap: wrap; gap: 8px;">
-							<div class="vertical-group" style="flex-basis : 28%; flex-grow: 1; box-sizing:border-box;">
-								<div class="section">
-									<h4>Airport Rating</h4>
-									<div class="table" style="width: 100%">
-										<div class="table-row">
-											<div class="label" style="width: 25%">Rating:</div>
-											<div class="value economicRating rating" style="width: 75%"></div>
+							<div class="vertical-group" style="flex-basis : 66%; flex-grow: 1; box-sizing:border-box;">
+								<div class="section" style="display: flex; flex-wrap: wrap; gap: 16px;">
+									<h2 style="width:100%;"><span id="airportDetailsName">Airport Details</span> | <i class="airportCityName"></i>, <i class="airportCountryName"></i></h2>
+									<div>
+										<p>Airport Rating: <span class="economicRating rating"></span> | <span class="competitionRating rating"></span> Competition</p>
+										<div class="table" style="flex-basis : 50%; flex-grow: 1;">
+											<div class="table-row">
+												<div class="label">Population Coverage:</h5></div>
+												<div class="value" id="airportDetailsPopulation"></div>
+											</div>
+											<div class="table-row">
+												<div class="label" style="width:50%;">Airport scale:</div>
+												<div class="value" style="width:50%;">
+													<span id="airportDetailsSize"></span>
+													<div class="tooltip">
+														<img src='@routes.Assets.versioned("images/icons/information.png")'>
+														<span class="tooltiptext alignLeft" style="width: 400px;">
+													<p>Larger airports with more gates, runways, and other facilities are a higher "<b>airport scale</b>." Higher scale airports are worth more reputation, however have higher aircraft landing fees and base upkeep costs.</p>
+												</span>
+													</div>
+												</div>
+											</div>
 										</div>
-<!--										<div class="table-row">-->
-<!--											<div class="label" style="width: 25%">Country:</div>-->
-<!--											<div class="value countryRating rating" style="width: 75%"></div>-->
-<!--										</div>-->
 										<div class="table-row">
-											<div class="label" style="width: 25%">Competition:</div>
-											<div class="value competitionRating rating" style="width: 75%"></div>
+											<div class="label">Percent middle income:</div>
+											<div class="value">
+												<span id="airportDetailsPopMiddleIncome"></span>
+												<div class="tooltip">
+													<img src='@routes.Assets.versioned("images/icons/information.png")'>
+													<span class="tooltiptext alignLeft" style="width: 400px;">
+												<p>In-game, the very poor do not take flights. Highly populous airports with large middle classes will have the most outgoing passengers.</p>
+												<p>Additionally, airports with higher incomes will have more outgoing demand for premium seats.</p>
+											</span>
+												</div>
+											</div>
 										</div>
+										<div class="table-row">
+											<div class="label"><span class="airportCityName">Airport</span> elite population:</div>
+											<div class="value" id="airportDetailsPopElite"></div>
+										</div>
+										<div class="table-row">
+											<div class="label">GDP per capita, normalized:</div>
+											<div class="value" id="airportDetailsIncomeLevel"></div>
+										</div>
+										<div class="table-row">
+											<div class="label"><span class="airportCountryName">Country</span> Gini coefficient:</div>
+											<div class="value">
+												<span id="airportDetailsGini"></span>
+												<div class="tooltip">
+													<img src='@routes.Assets.versioned("images/icons/information.png")'>
+													<span class="tooltiptext alignLeft" style="width: 400px;">
+												<p><b>Gini coefficient</b> is a common measure of inequlaity. In-game, population, income, and inequality is applied to determine how much of each airport is low, middle, and extremely-high income.</p>
+											</span>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="table" style="flex-basis : 50%; flex-grow: 1;">
 										<div class="table-row">
 											<div class="label" style="width: 25%">Charms:</div>
 											<div class="value airportFeatures" style="width: 75%"></div>
 										</div>
 										<div class="table-row">
-											<div class="label" style="width: 25%">Difficulty:</div>
-											<div class="value difficulty rating" style="width: 75%"></div>
+											<div class="label">Affinity affiliations:</div>
+											<div class="value">
+												<span id="airportDetailsAffinityZone"></span>
+												<div class="tooltip">
+													<img src='@routes.Assets.versioned("images/icons/information.png")'>
+													<span class="tooltiptext alignLeft" style="width: 400px;">
+												<p>If an airport shares trade agreements and widely spoken langauges with a foreign airport, they're listed as "<b>affinities</b>" and modify the demand up, especially over long distances.</p>
+											</span>
+												</div>
+											</div>
+										</div>
+										<div class="table-row">
+											<div class="label">International transfers:</div>
+											<div class="value" id="airportDetailsOpenness"></div>
 										</div>
 									</div>
 								</div>
 								<div id="airportBaseDetails" class="section" style="box-sizing:border-box; margin-left: 0; margin-right: 0; margin-bottom:0px;">
-									<h4>Your Airline Headquarters/Base</h4>
+									<h4>Your Airline <span id="airportDetailsBaseType">Headquarters<span></h4>
 									<div class="table" style="width: 100%">
-										<div class="table-row">
-											<div class="label" style="width: 60% !important"><h5>Base Type:</h5></div>
-											<div class="value" id="airportDetailsBaseType" style="width: 40% !important"></div>
-										</div>
 										<div class="table-row">
 											<div class="label">Base Scale:</div>
 											<div class="value" id="airportDetailsBaseScale"></div>
@@ -1135,7 +1185,7 @@
 									<button type="button" class="button" id="deleteBaseButton" style="display: none;" onclick='promptConfirm("Remove this base? All routes from this airport will also be removed. All airplanes assigned to this base will be re-assigned to HQs. All assets of this Airport will be sold.", deleteBase)'>Remove</button>
 								</div>
 							</div>
-							<div class="section loyalistDetails" style="flex-basis : 15%; flex-grow: 1; box-sizing:border-box; margin: 0px; ">
+							<div class="section loyalistDetails" style="flex-basis : 33%; flex-grow: 1; box-sizing:border-box; margin: 0px; ">
 								<h4>
 									Loyalist Trend
 									<span class="tooltip">
@@ -1160,82 +1210,11 @@
 									</div>
 								</div>
 							</div>
-							<div class="section" style="box-sizing:border-box; flex-grow: 1; flex-basis: 50%; min-width: 300px; margin:0px;">
-								<h4>
-									Assets
-								</h4>
-								<div class="sectionContainer assetsDetails" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
-								</div>
-							</div>
 						</div>
-						<div id="airportDetails" class="section mb-0" style="width: 100%; display: flex; flex: 1 1 50%; flex-wrap: wrap;">
-							<h4 style="width:100%;"><span id="airportDetailsName">Airport Details</span> | <i class="airportCityName"></i>, <i class="airportCountryName"></i></h4>
+						<div class="section mb-0" style="width: 100%; display: flex; flex: 1 1 50%; flex-wrap: wrap;">
 							<div class="table">
-								<div class="table-row">
-									<div class="label" style="width:50%;">Airport scale:</div>
-									<div class="value" style="width:50%;">
-										<span id="airportDetailsSize"></span>
-										<div class="tooltip">
-											<img src='@routes.Assets.versioned("images/icons/information.png")'>
-											<span class="tooltiptext alignLeft" style="width: 400px;">
-												<p>Larger airports with more gates, runways, and other facilities are a higher "<b>airport scale</b>." Higher scale airports are worth more reputation, however have higher aircraft landing fees and base maintenace costs.</p>
-											</span>
-										</div>
-									</div>
-								</div>
-								<div class="table-row">
-									<div class="label">Population Coverage:</h5></div>
-									<div class="value" id="airportDetailsPopulation"></div>
-								</div>
-								<div class="table-row">
-									<div class="label">Percent middle income:</div>
-									<div class="value">
-										<span id="airportDetailsPopMiddleIncome"></span>
-										<div class="tooltip">
-											<img src='@routes.Assets.versioned("images/icons/information.png")'>
-											<span class="tooltiptext alignLeft" style="width: 400px;">
-												<p>In-game, the very poor do not take flights. Highly populous airports with large middle classes will have the most outgoing passengers.</p>
-												<p>Additionally, airports with higher incomes will have more outgoing demand for premium seats.</p>
-											</span>
-										</div>
-									</div>
-								</div>
-								<div class="table-row">
-									<div class="label"><span class="airportCityName">Airport</span> elite population:</div>
-									<div class="value" id="airportDetailsPopElite"></div>
-								</div>
-								<div class="table-row">
-									<div class="label">GDP per capita, normalized:</div>
-									<div class="value" id="airportDetailsIncomeLevel"></div>
-								</div>
-								<div class="table-row">
-									<div class="label"><span class="airportCountryName">Country</span> Gini coefficient:</div>
-									<div class="value">
-										<span id="airportDetailsGini"></span>
-										<div class="tooltip">
-											<img src='@routes.Assets.versioned("images/icons/information.png")'>
-											<span class="tooltiptext alignLeft" style="width: 400px;">
-												<p><b>Gini coefficient</b> is a common measure of inequlaity. In-game, population, income, and inequality is applied to determine how much of each airport is low, middle, and extremely-high income.</p>
-											</span>
-										</div>
-									</div>
-								</div>
-								<div class="table-row">
-									<div class="label">Affinity affiliations:</div>
-									<div class="value">
-										<span id="airportDetailsAffinityZone"></span>
-										<div class="tooltip">
-											<img src='@routes.Assets.versioned("images/icons/information.png")'>
-											<span class="tooltiptext alignLeft" style="width: 400px;">
-												<p>If an airport shares trade agreements and widely spoken langauges with a foreign airport, they're listed as "<b>affinities</b>" and modify the demand up, especially over long distances.</p>
-											</span>
-										</div>
-									</div>
-								</div>
-								<div class="table-row">
-									<div class="label">International transfers:</div>
-									<div class="value" id="airportDetailsOpenness"></div>
-								</div>
+
+
 								<div class="table-row">
 									<div class="label">Runways:</div>
 									<div class="value"></div>
@@ -1382,7 +1361,12 @@
 						</div>
 					</div>
 					
-					<div class="section flex-container-width-quarter" style="width: 100%; min-height: 200px;">
+					<div class="section" style="width: 100%; min-height: 200px;">
+						<h4>
+							Assets
+						</h4>
+						<div class="sectionContainer assetsDetails" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+						</div>
 <!--						<div id="airportMap" style="width: 100%; padding-top: 100%; postition: relative;" data-city-marker='@routes.Assets.versioned("images/markers/city.png")' data-town-marker='@routes.Assets.versioned("images/markers/town.png")'  data-village-marker='@routes.Assets.versioned("images/markers/village.png")' data-airport-marker='@routes.Assets.versioned("images/markers/airport.png")'></div>-->
 						<!--   				<div id="airportSchedule" style="width: 900px; height: 400px; float: left;"></div> -->
 						<div>
@@ -1397,7 +1381,6 @@
 							<div><a onclick="invalidateImage('city');">Invalidate City Image</a></div>
 						</div>
 					</div>
-					<div style="clear: both;"></div>
 				</div>
 	<!--   			end airport canvas -->
 				<div id="departuresCanvas" class="canvas" style="display: none; height: 100%">
@@ -1808,19 +1791,20 @@
 										<div id="stockBar" class="threshold-bar-bg"></div>
 									</div>
 									<p class="small max-w-32 mx-auto flex-container-width-half"><span class="font-mono stockValuePrev text-left">0</span><span class="font-mono stockValueNext text-right">10</span></p>
-									<p class="py-4 text-center">Weekly Dividends:<br>
-										<span id="weeklyDividendsMin">Company value must be > $100m</span>
-										<span id="weeklyDividendsDisplaySpan" style="display:none;">
+									<div class="py-4 text-center">
+										<p>Weekly Dividends:</p>
+										<p id="weeklyDividendsMin">Company value must be > $100m</p>
+										<div id="weeklyDividendsDisplaySpan" style="display:none;">
 											<span id="dividends"></span>
 											<img src='@routes.Assets.versioned("images/icons/gear.png")' class='button' style="vertical-align: middle;" onclick="editDividends()"/>
-											<br><small>(in millions)</small>
-										</span>
-										<span id="weeklyDividendsInputSpan" style="display:none;">
-											<input id="weeklyDividendsInput" size="1" type="number" title="Weekly Dividends Input"/>
-											<span class="warning" style="display: none;">Value must be a number</span>
+											<p><small>(in millions)</small></p>
+										</div>
+										<div id="weeklyDividendsInputSpan" style="display:none;">
+											<input id="weeklyDividendsInput" size="4" type="number" min="0" max="100" title="Weekly Dividends Input" class="text-lg"/>
 											<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="setDividendsLevel($('#weeklyDividendsInput').val())"/>
-										</span>
-									</p>
+											<p class="warning" style="display: none;">error</p>
+										</div>
+									</div>
 								</div>
 
 								<div class="threshold-section">
