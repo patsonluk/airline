@@ -178,8 +178,8 @@ object AirportSizeAdjust {
         "TJA" -> 3,
         //bosnia
         "SJJ" -> 4,
-        "BNX" -> 2,
-        "OMO" -> 2,
+        "BNX" -> 3,
+        "OMO" -> 3,
         //botswana
         "MUB" -> 3,
         //https://en.wikipedia.org/wiki/List_of_airports_in_the_Democratic_Republic_of_the_Congo

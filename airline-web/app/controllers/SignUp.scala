@@ -126,7 +126,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
           AirlineSource.saveAirlines(List(newAirline))
           UserSource.setUserAirline(user, newAirline)
 
-          AirlineSource.saveAirplaneRenewal(newAirline.id, 50)
+          AirlineSource.saveAirplaneRenewal(newAirline.id, 40)
 
           SearchUtil.addAirline(newAirline)
           

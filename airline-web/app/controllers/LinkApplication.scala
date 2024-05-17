@@ -927,7 +927,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         //check balance
         val cost = Computation.getLinkCreationCost(fromAirport, toAirport)
         if (airline.getBalance() < cost) {
-          return Some("Not enough cash to establish this route", NO_CASH)
+          val integerInstance = java.text.NumberFormat.getIntegerInstance
+          return Some(s"Not enough cash – need $$${integerInstance.format(cost)} to establish this route", NO_CASH)
         }
       case Some(existingLink) => //nothing
 
