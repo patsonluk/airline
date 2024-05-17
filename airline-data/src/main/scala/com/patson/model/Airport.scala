@@ -37,8 +37,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var runways = List.empty[Runway]
   //private[this] var loungesLoaded = false
 
-//  private[this] var airportImageUrl : Option[String] = None
-//  private[this] var cityImageUrl : Option[String] = None
+  private[this] var airportImageUrl : Option[String] = None
+  private[this] var cityImageUrl : Option[String] = None
 
   private[model] var country : Option[Country] = None
 

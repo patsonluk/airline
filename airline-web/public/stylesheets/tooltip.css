@@ -2,7 +2,10 @@
     position: relative;
     display: inline-block;
     vertical-align: middle;
-    /*font-size: 14px;*/
+}
+
+.tooltip > img {
+    height: 16px;
 }
 
 
