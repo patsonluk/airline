@@ -1032,7 +1032,7 @@
 
 	  <div id="airportCanvas" class="canvas" style="display: none;">
 		  <!-- left panel -->
-		  <div class="vertical-group">
+		  <div class="vertical-group" style="max-width: 1200px;">
 			  <div style="display: flex; flex-flow: row; flex-wrap: wrap; gap: 8px;">
 				  <div class="vertical-group" style="flex-basis : 66%; flex-grow: 1; box-sizing:border-box;">
 					  <div class="section" style="display: flex; flex-wrap: wrap;">
@@ -1329,35 +1329,37 @@
 
 			  <div class="section mb-0" style="width: 100%;" id="airportDetails">
 				  <h4 style="width:100%;" class="pb-4"><span class="airportName">Airport</span> Statistics</h4>
-				  <div class="item-grid pb-4">
-					  <div class="item">
-						  <div class="i-label">Weekly Passengers</div>
-						  <div class="i-value" id="airportDetailsPassengerCount"></div>
+				  <div class="section-grid">
+					  <div class="pb-4">
+						  <div class="i-label">Runways:</div>
+						  <div class="table-row runwayTable table data" style="width: 95%;"></div>
 					  </div>
-					  <div class="item">
-						  <div class="i-label">Total Flight Routes</div>
-						  <div class="i-value" id="airportDetailsLinkCount"></div>
+					  <div class="item-grid">
+						  <div class="item">
+							  <div class="i-label">Weekly Passengers</div>
+							  <div class="i-value" id="airportDetailsPassengerCount"></div>
+						  </div>
+						  <div class="item">
+							  <div class="i-label">Total Flight Routes</div>
+							  <div class="i-value" id="airportDetailsLinkCount"></div>
+						  </div>
+						  <div class="item">
+							  <div class="i-label">Weekly Flight Movements</div>
+							  <div class="i-value" id="airportDetailsFlightFrequency"></div>
+						  </div>
+						  <div class="item">
+							  <div class="i-label">Connected Airports</div>
+							  <div class="i-value" id="airportDetailsConnectedAirportCount"></div>
+						  </div>
+						  <div class="item">
+							  <div class="i-label">Connected Countries</div>
+							  <div class="i-value" id="airportDetailsConnectedCountryCount"></div>
+						  </div>
+						  <div class="item">
+							  <div class="i-label">Served By Airlines</div>
+							  <div class="i-value" id="airportDetailsAirlineCount"></div>
+						  </div>
 					  </div>
-					  <div class="item">
-						  <div class="i-label">Weekly Flight Movements</div>
-						  <div class="i-value" id="airportDetailsFlightFrequency"></div>
-					  </div>
-					  <div class="item">
-						  <div class="i-label">Connected Airports</div>
-						  <div class="i-value" id="airportDetailsConnectedAirportCount"></div>
-					  </div>
-					  <div class="item">
-						  <div class="i-label">Connected Countries</div>
-						  <div class="i-value" id="airportDetailsConnectedCountryCount"></div>
-					  </div>
-					  <div class="item">
-						  <div class="i-label">Served By Airlines</div>
-						  <div class="i-value" id="airportDetailsAirlineCount"></div>
-					  </div>
-				  </div>
-				  <div>
-					  <div class="i-label">Runways:</div>
-					  <div class="table-row runwayTable table data" style="width: 95%;"></div>
 				  </div>
 				  <div id="airportStatistics" class="py-2 flex-row overflow-x-auto" style="width: 100%;">
 					  <div>
@@ -1403,10 +1405,10 @@
 
 		  </div>
 		  <!-- right panel -->
-		  <div class="section" style="min-width: 200px; overflow: hidden">
+		  <div class="section" style="min-width: 200px; width: 100%; overflow: clip;">
 			  <h4>Assets</h4>
 			  <div class="sectionContainer assetsDetails"
-				   style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));">
+				   style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));gap: 8px;">
 			  </div>
 <!--			  <div id="airportDetailsCityImage" style="width: 50%; float:left;"></div>-->
 <!--			  <div id="airportDetailsAirportImage" style="width: 50%;  float:left;"></div>-->
@@ -2681,7 +2683,7 @@
 
 				<div id="rankingCanvas" class="canvas" style="display: none; width: 100%; flex-direction: column">
 					<div class="section" style="width: 100%;height: min-content;flex-shrink: 0;"><p><i>All rankings are best per airline. Prizes are rewarded in reputation. </i></p></div>
-					<div style="display: grid;grid-gap: 16px;grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));width: 100%;margin-top: 10px;">
+					<div class="two-up-grid">
 						<div class="table data section tight rankingTable" id="touristCountRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
@@ -2801,7 +2803,7 @@
 						</div>
 					</div>
 					<div class="section" style="width: 100%;height: min-content;flex-shrink: 0;"><p>Informational Rankings! <i>No prizes</i></p></div>
-					<div style="display: grid;grid-gap: 16px;grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));width: 100%;margin-top: 10px;">
+					<div class="two-up-grid">
 						<div class="table data section tight rankingTable" id="airportRank">
 							<div class="table-header">
 								<div class="cell" style="width: 7%">Rank</div>
@@ -2835,7 +2837,6 @@
 							</div>
 						</div>
 					</div>
-					<div style="clear: both;"></div>
 				</div>
 	<!--   			end ranking canvas -->
 				<div id="rivalsCanvas" class="canvas" style="height: 100%; display: none;">

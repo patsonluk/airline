@@ -48,7 +48,7 @@ html[data-ui-light-mode="true"] {
 
 div.section {
 	border-radius: 8px;
-	padding: 16px 8px 20px 12px;
+	padding: 16px 12px 20px 12px;
 }
 div.section.tight {
 	padding: 6px 4px;
