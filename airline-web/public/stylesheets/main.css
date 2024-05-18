@@ -208,6 +208,32 @@ h1, h2, h3, h4, h5, h6, .font-display {
     gap: 8px;
 }
 
+.two-up-grid {
+    display: grid;
+    grid-gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    width: 100%;
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .two-up-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.618fr; /* Golden ratio proportions */
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .section-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 #linkDetails {
     display: flex;
 }
@@ -286,7 +312,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
 
 .assetsDetails div.blueprint {
     filter : grayscale(100%);
-    margin: 4px;
+    margin: 0 !important;
 }
 
 .assetsDetails div.blueprint:hover {
@@ -445,13 +471,13 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
 
 .item-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
   width: 100%;
 }
 
 .item {
-    width: 170px;
+    width: 180px;
     height: 40px;
     padding-bottom: 8px;
 }
@@ -459,11 +485,14 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
 .i-label {
     font-size: 13px;
     letter-spacing: -0.1px;
-    padding: 4px 0;
+    margin-bottom: 4px;
     font-weight: 700;
     display: flex;
     gap: 4px;
-    height: 16px;
+}
+
+.i-label .tooltip {
+    height: 0;
 }
 
 .i-value {

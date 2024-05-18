@@ -419,7 +419,7 @@ function updateAirportCities(airport) {
 		}
 		var row = $("<div class='table-row'></div>")
 		row.append("<div class='cell'>" + city.name + "</div>")
-		row.append("<div class='cell' style='text-align: right;'>" + Number(city.cityShare * city.population).toFixed().toLocaleString() + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + parseFloat((city.cityShare * city.population).toFixed()).toLocaleString() + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + Number(city.population).toLocaleString() + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>$" + Number(city.incomeLevel).toLocaleString() + "</div>")
 		$('#airportDetailsCityList').append(row)
@@ -429,12 +429,13 @@ function updateAirportDestinations(airport) {
     $('#airportDetailsDestinationList').children('.table-row').remove()
     var destinations = airport.destinations
 	var count = 0
+
 	$.each(destinations, function( key, destination ) {
-	    const strength = destination.strength ?? 1
+	    const strength = destination.strength || 1
 		var row = $("<div class='table-row'></div>")
-		row.append("<div class='cell' style='text-align: right;'>" + destination.name + "</div>")
+		row.append("<div class='cell'>" + destination.name + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + destination.type + "</div>")
-		row.append("<div class='cell' style='text-align: right;'>" + destination.strength + "</div>")
+		row.append("<div class='cell' style='text-align: right;'>" + strength + "</div>")
 		row.append("<div class='cell' style='text-align: right;'>" + destination.description + "</div>")
 		$('#airportDetailsDestinationList').append(row)
     })
@@ -937,8 +938,7 @@ function refreshAirportExtendedDetails(airport) {
         const image = `<img width='16' height='16' src='assets/images/icons/airport-features/${feature.type}.png' title='${feature.title}';>`
         const strength = `<p>${feature.strength > 0 ? feature.strength : " "}</p>`
         const description = `<p>${feature.title}</p>`
-        const $featureDiv = $(`<div class='feature' style='width: 30px; display: flex;'>${image}${strength}</div>`).appendTo($("#airportPopup .airportFeatures"))
-//        const $featureDiv = $(`<div class='item feature flex-row' style='width:160px'><div style='width: 30px; display: flex;'>${image}${strength}</div></div>`).appendTo($("#airportPopup .airportFeatures"))
+        const $featureDiv = $(`<div class='feature' style='width: 30px; display: flex;'>${image}${strength}</div>`)
 
 //        var $featureDiv = $("<div class='feature'><img width='16' alt='" + feature.title + "' src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
 //        $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
