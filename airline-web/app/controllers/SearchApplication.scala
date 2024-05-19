@@ -222,7 +222,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
           routeEntryJson = routeEntryJson + ("remarks" -> Json.toJson(remarks.map(_.toString)))
         }
 
-        routeEntryJson = routeEntryJson + ("route" -> routeJson) + ("passenger" -> JsNumber(passengerCount))
+        routeEntryJson = routeEntryJson + ("route" -> routeJson)
         resultJson = resultJson.append(routeEntryJson)
     }
 
