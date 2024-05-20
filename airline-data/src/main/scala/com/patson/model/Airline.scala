@@ -480,16 +480,18 @@ object AirlineGradeStockPrice {
     2300.0 -> "Flying Cash Cow"
   )
 
-  def findGrade(stockPrice: Double) = {
-    val level = if (stockPrice > 0.0) {
-      Math.max(0, Math.log(stockPrice / 0.004) / Math.log(1.7)).toInt
-    } else {
-      0
+  def findGrade(stockPrice: Double): AirlineGrade = {
+    val indexedGrades = grades.zipWithIndex
+    val (gradeInfo, index) = indexedGrades.find(_._1._1 > stockPrice).getOrElse(indexedGrades.last)
+    val ceiling = gradeInfo._1.toDouble
+    val description = gradeInfo._2
+
+    val floor = index match {
+      case 0 => 0.0
+      case _ => grades(index - 1)._1.toDouble // Key from the previous entry
     }
-    val grade = grades(Math.min(level, grades.length - 1))
-    val levelLower = Math.max(level - 1, 0)
-    val gradeLower = grades(Math.min(levelLower, grades.length - 1))
-    AirlineGrade(level, grade._1, gradeLower._1, grade._2)
+
+    AirlineGrade(index, ceiling, floor, description)
   }
 }
 

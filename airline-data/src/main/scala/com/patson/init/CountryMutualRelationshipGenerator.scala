@@ -46,6 +46,9 @@ object CountryMutualRelationshipGenerator extends App {
     Affiliation("COFTA", 3, List(
       "US", "GT", "HN", "SV", "NI", "PR", "DO"
     )),
+    Affiliation("ANZAC common market", 5, List(
+      "AU", "NZ", "CX", "CK", "NU", "CC"
+    )),
     Affiliation("Arab Free Trade Area", 3, List(
       "SA", "EG", "BH", "QA", "AE", "KW", "JO", "LB", "OM", "SD", "IQ", "LY", "MA", "TN"
     )),

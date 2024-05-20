@@ -4,6 +4,7 @@ var activeAirportId
 var activeAirportPopupInfoWindow
 var airportMapMarkers = []
 var airportMapCircle
+var airportBase
 
 
 function showAirportDetails(airportId) {
@@ -48,17 +49,20 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 
 	
 	$('.airportName').text(airport.name)
-	if (airport.iata) { 
-		$('#airportDetailsIata').text(airport.iata)
-	} else {
-		$('#airportDetailsIata').text('-')
-	}
-	
-	if (airport.icao) { 
-		$('#airportDetailsIcao').text(airport.icao)
-	} else {
-		$('#airportDetailsIcao').text('-')
-	}
+	$('.airportIataIaco').text(
+	     airport.icao ? airport.iata + " / " + airport.icao : airport.iata
+	)
+//	if (airport.iata) {
+//		$('#airportDetailsIata').text(airport.iata)
+//	} else {
+//		$('#airportDetailsIata').text('-')
+//	}
+//
+//	if (airport.icao) {
+//		$('#airportDetailsIcao').text(airport.icao)
+//	} else {
+//		$('#airportDetailsIcao').text('-')
+//	}
 
 	//loyalist-trend
 //	$.each(result.airlineDeltas, function(index, deltaEntry) {
@@ -105,12 +109,12 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
     $("#airportDetailsPopMiddleIncome").html(airport.popMiddleIncome + "%")
     $("#airportDetailsPopElite").html("~" + Number(airport.popElite).toLocaleString())
 
-	$(".airportCountryName").text(loadedCountriesByCode[airport.countryCode].name + " ")
-	var countryFlagUrl = getCountryFlagUrl(airport.countryCode)
-	if (countryFlagUrl) {
-	    //only apply to heading
-		$("h2 .airportCountryName").append("<img src='" + countryFlagUrl + "' />")
-	}
+	$(".airportCountryName").text(loadedCountriesByCode[airport.countryCode].name)
+	$(".airportCountryFlag").empty()
+	$(".airportCountryFlag").append(() => {
+        const countryFlagUrl = getCountryFlagUrl(airport.countryCode)
+        return countryFlagUrl ? "<img src='" + countryFlagUrl + "' />" : ""
+	})
 	$("#airportDetailsAffinityZone").text(buildAffinityText(airport.zone.replaceAll("-", ", ")))
 	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness, airport.size, airport.isDomesticAirport))
 	
@@ -128,7 +132,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 		    contentType: 'application/json; charset=utf-8',
 		    dataType: 'json',
 		    success: function(baseDetails) {
-		    	var airportBase = baseDetails.base
+		    	airportBase = baseDetails.base
 		    	if (!airportBase) { //new base
 		    	    document.getElementById('airportBaseDetailsHeading').innerHTML = `Build base`
 	    			$('#airportDetailsBaseUpkeep').text('0')
@@ -136,6 +140,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	    			$('#airportDetailsStaff').text('-')
 	    			$('#airportBaseDetails .baseSpecializations').text('')
 	    			$('#airportDetailsFacilities').empty()
+	    			$('.upgradeCostLabel').text('New base cost')
 	    			disableButton($('#airportBaseDetails .specialization.button'), "This is not your airline base")
 
 	    			$('#baseDetailsModal').removeData('scale')
@@ -177,8 +182,10 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
                     $capacitySpan.text(capacityText)
 
 	    			$('#airportDetailsBaseUpkeep').text('$' + commaSeparateNumber(airportBase.upkeep))
+                    $('.upgradeCostLabel').text('Upgrade base cost')
 
 	    			$('#baseDetailsModal').data('scale', airportBase.scale)
+	    			$('#upgradeBaseButton').data('scale', airportBase.scale)
 	    			updateFacilityIcons(airport)
 	    			enableButton($('#airportBaseDetails .specialization.button'))
 	    		}
@@ -900,7 +907,7 @@ function refreshAirportExtendedDetails(airport) {
                 var emptyHeartSource = "assets/images/icons/heart-empty.png"
 
                 $(".airportLoyalty").empty()
-                getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, appeal.loyalty).css({'display' : 'inline-block', width: '85px'}).appendTo($("#airportCanvas .airportLoyalty"))
+                getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, appeal.loyalty).appendTo($("#airportCanvas .airportLoyalty"))
 
                 $(".airportLoyalty").append(appeal.loyalty)
 
@@ -1003,7 +1010,7 @@ function updateAirportExtendedDetails(airportId, countryCode) {
                 var relationship = info.relationship
                 var relationshipSpan = getAirlineRelationshipDescriptionSpan(relationship.total)
                 $("#airportCanvas .countryRelationship .total").html(relationshipSpan)
-                var $relationshipDetailsIcon = $("#airportCanvas .countryRelationship .detailsIcon")
+                var $relationshipDetailsIcon = $(".openCountryRelationship")
                 $relationshipDetailsIcon.data("relationship", relationship)
                 $relationshipDetailsIcon.data("title", info.title)
                 $relationshipDetailsIcon.data("countryCode", countryCode)
@@ -1018,7 +1025,7 @@ function updateAirportExtendedDetails(airportId, countryCode) {
             }
         });
     } else {
-        $("#airportCanvas .countryRelationship .detailsIcon").hide()
+        $(".openCountryRelationship").hide()
     }
 }
 

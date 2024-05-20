@@ -186,15 +186,4 @@ and (max-device-width : 640px) {
         height: unset;
     }
 
-    .tooltip {
-        display: none;
-    }
-}
-
-@media screen and (max-width: 640px),
-       screen and (max-height: 640px) {
-    div.clipContainer {
-        visibility: hidden;
-        display: none;
-    }
 }

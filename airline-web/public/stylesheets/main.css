@@ -1,7 +1,8 @@
 html {
   --text-color: #606060;
+  --item-label-color: DimGray;
   --text-shadow: 0;
-  --background-gradient-image: linear-gradient(to bottom, #EEEEEE, #EEEEEE 90%, #D0D0D0);
+  --background-gradient-image: linear-gradient(to bottom, #EEEEEE, #EEEEEE 95%, #DDDDDD);
   --section-background-image: var(--background-gradient-image);
   --button-shadow: inset 0 0 2px white, 0 0 4px rgba(0, 0, 0, 0.6);
   --button-background: #ebebeb;
@@ -48,6 +49,7 @@ html {
 
 html[data-theme='dark'] {
   --text-color: rgba(255, 255, 255, 0.8);
+  --item-label-color: lightgray;
   --background-gradient-color: background-color: rgba(0, 0, 0, 0.4);
   --background-gradient-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
   --section-background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6));
@@ -225,7 +227,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
 .section-grid {
   display: grid;
   grid-template-columns: 1fr 1.618fr; /* Golden ratio proportions */
-  gap: 24px;
+  gap: 8px;
 }
 
 @media (max-width: 768px) {
@@ -398,7 +400,7 @@ body.christmas {
 .table .table-row {
 	display: table-row;
 	width: 100%;
-	height: 16px;
+	height: 18px;
 }
 
 
@@ -469,21 +471,35 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
 	background: var(--table-odd-row-background-color);
 }
 
+.inline-icons img {
+    vertical-align: middle;
+}
+
 .item-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 24px;
+  position: relative;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
   width: 100%;
+  overflow: hidden;
 }
 
 .item {
-    width: 180px;
+    width: 160px;
     height: 40px;
+    padding-bottom: 8px;
+}
+
+.item-span-2 {
+    grid-row: span 2;
+    width: auto;
+    height: auto;
     padding-bottom: 8px;
 }
 
 .i-label {
     font-size: 13px;
+    color: var(--item-label-color);
     letter-spacing: -0.1px;
     margin-bottom: 4px;
     font-weight: 700;
@@ -493,6 +509,7 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
 
 .i-label .tooltip {
     height: 0;
+    display: inline;
 }
 
 .i-value {

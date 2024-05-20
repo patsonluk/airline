@@ -390,14 +390,17 @@ function getYearMonthText(weekDuration) {
 function getOpennessIcon(openness, size=null, isDomesticAirport=false, isGateway=false) {
 	var description
 	var icon
-	if (size && size <= 2 && ! isGateway || isDomesticAirport){
+	if (size && size <= 2 && ! isGateway ){
+        description = "No International Flights"
+        icon = "prohibition.png"
+    } else if (isDomesticAirport){
 	    description = "Limited International Flights"
         icon = "prohibition.png"
 	} else if (openness >= 7 || size >= 7) {
-		description = "All International Connections"
+		description = "All International Transfers"
 		icon = "globe--plus.png"
 	} else {
-		description = "No International to International Connections"
+		description = "No International to International Transfers"
 		icon = "globe--exclamation.png"
 	}
 	return "<img src='assets/images/icons/" + icon + "' title='" + description + "'/>"
@@ -422,7 +425,7 @@ function getOpennessSpan(openness, size=null, isDomesticAirport=false) {
 		description = "No Foreign Airline"
 		icon = "prohibition.png"
 	}*/
-	return "<span>" + description + "&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
+	return "" + description + "&nbsp;<img src='assets/images/icons/" + icon + "'/>"
 }
 
 function scrollToRow($matchingRow, $container) {
