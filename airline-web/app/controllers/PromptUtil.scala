@@ -12,6 +12,12 @@ case class Prompts(notices : ListBuffer[AirlineNotice], tutorials : ListBuffer[A
     this.notices.appendAll(that.notices)
     this.tutorials.appendAll(that.tutorials)
   }
+
+  def appendNotices(notices : List[AirlineNotice]) = {
+    this.notices.appendAll(notices)
+  }
+
+
 }
 case class AirlineTutorial(airline : Airline, tutorial : Tutorial)
 
@@ -28,6 +34,7 @@ object PromptUtil {
     //check loyalist
     result.append(getLoyalistPrompts(airline, completedNoticesByCategory.get(NoticeCategory.LOYALIST), completedTutorials.filter(_.category == "loyalist")))
 
+    result.appendNotices(NoticeSource.loadTrackingNotices(airline.id).map(AirlineNotice(airline, _, "")))
     result
   }
 

@@ -8,6 +8,7 @@ import scala.collection.immutable
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.patson.model.airplane.Airplane
+import com.patson.model.notice.GameOverNotice
 import com.patson.model.oil.OilPrice
 import com.patson.model.oil.OilInventoryPolicy
 import com.patson.model.oil.OilConsumptionHistory
@@ -404,6 +405,7 @@ object AirlineSimulation {
             }
             println(s"Resetting $airline due to negative cash and unprofitable flights")
             Airline.resetAirline(airline.id, newBalance = resetBalance)
+            NoticeSource.saveTrackingNotice(airline.id, GameOverNotice())
           }
         }
 
