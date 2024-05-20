@@ -289,7 +289,7 @@ case class LastMinutePreference(homeAirport : Airport, override val priceModifie
   }
 
   val getPreferenceType = {
-    if (priceSensitivity > 1) {
+    if (priceModifier > 1) {
       LAST_MINUTE_DEAL
     } else {
       LAST_MINUTE

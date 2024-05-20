@@ -20,7 +20,7 @@ object AirlineSimulation {
   val MAX_SERVICE_QUALITY_INCREMENT : Double = 0.5
   val MAX_SERVICE_QUALITY_DECREMENT : Double = 10
   val MAX_REPUTATION_DELTA = 1
-  val MINIMUM_CASH_BALANCE_STOCKS = 100000000 //100M
+  val MINIMUM_CASH_BALANCE_STOCKS = 10000000 //10M
   val BANKRUPTCY_ASSETS_THRESHOLD = -50000000 //-50M
   val BANKRUPTCY_CASH_THRESHOLD = -10000000 //-10M
 
@@ -166,7 +166,7 @@ object AirlineSimulation {
 
         //stock price
         var dividendsFunding = airline.getWeeklyDividends()
-        if (airlineValue.existingBalance > MINIMUM_CASH_BALANCE_STOCKS + dividendsFunding) {
+        if (airlineValue.existingBalance < MINIMUM_CASH_BALANCE_STOCKS + dividendsFunding) {
           airline.setWeeklyDividends(0)
           dividendsFunding = 0
         }
@@ -514,7 +514,8 @@ object AirlineSimulation {
       exponent += 1
     }
     val newStockPrice = if (exponent > 0) {
-      0.004 * Math.pow(1.7, (exponent + 1)) + Math.sqrt(sentiment)
+      val sign = if (sentiment < 0) -1 else 1
+      0.004 * Math.pow(1.7, (exponent + 1)) + Math.sqrt(sentiment.abs) * sign
     } else {
       0.0
     }
