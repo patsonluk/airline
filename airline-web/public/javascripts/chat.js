@@ -293,7 +293,7 @@ function handleScrollChatTop() {
   //$(this).css('overflow', 'hidden')
 
   if (!$chatTab.find('.loading').length){ //scrolled to top and not already loading
-     var $loadingDiv = $("<div class='loading'><img src='https://i.stack.imgur.com/FhHRx.gif'></div>")
+     var $loadingDiv = $("<div class='loading'><img src='assets/images/icons/spinning-wheel.gif'></div>")
      $chatTab.prepend($loadingDiv)
      //scrolled to top
      var activeRoomId = parseInt($('#live-chat .tab-link.current').data('roomId'))
