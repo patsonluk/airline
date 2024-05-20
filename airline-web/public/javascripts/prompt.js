@@ -312,16 +312,14 @@ function initNotices() {
     })
     $('#loyalistMilestonePopup').data('promptCloseCallback', stopFirework)
 
-    var $trackingNoticePopup
-    if (json.category == 'GAME_OVER') {
-        $trackingNoticePopup = $('#bankruptcyPopup')
-    }
-
-    $trackingNoticePopup.data('function', function(json) {
-        $trackingNoticePopup.data('id', json.id)
-        $trackingNoticePopup.data('category', json.category)
-        showTrackingNoticePopup($trackingNoticePopup, json.description)
-    })
+    $('.trackingNoticePopup').each(function() {
+        var $this = $(this);
+        $this.data('function', function(json) {
+            $this.data('id', json.id);
+            $this.data('category', json.category);
+            showTrackingNoticePopup($this, json.description);
+        });
+    });
 }
 
 function showLevelUpPopup(level, description) {

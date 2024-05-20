@@ -20,7 +20,7 @@ abstract class TrackingNotice(override val category: NoticeCategory.Value, track
 
 case class GameOverNotice(var trackingId : Int = 0) extends TrackingNotice(NoticeCategory.GAME_OVER, trackingId) {
   override val descriptions : Airline => String = airline => {
-    s"Unfortunately ${airline.name} is forced into bankruptcy due to balance below ${AirlineSimulation.BANKRUPTCY_CASH_THRESHOLD / 1_000_000}M and negative flight profit!"
+    s"Unfortunately ${airline.name} is forced into bankruptcy due to balance below $$${AirlineSimulation.BANKRUPTCY_CASH_THRESHOLD / 1_000_000}M and negative flight profit!"
   }
 }
 

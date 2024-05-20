@@ -58,8 +58,12 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
               out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
             case NoticeCategory.LOYALIST =>
               out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
-            case trackingNotice : TrackingNotice =>
-              out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "description" -> trackingNotice.descriptions(airline))
+            case _ =>
+              notice match {
+                case trackingNotice: TrackingNotice =>
+                  out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "description" -> trackingNotice.descriptions(airline))
+              }
+
           }
       }
       prompts.tutorials.foreach {
