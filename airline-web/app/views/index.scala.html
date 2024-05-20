@@ -1032,15 +1032,30 @@
 
 	  <div id="airportCanvas" class="canvas" style="display: none;">
 		  <!-- left panel -->
-		  <div class="vertical-group" style="max-width: 1200px;">
+		  <div class="vertical-group" style="max-width: 1280px;">
 			  <div style="display: flex; flex-flow: row; flex-wrap: wrap; gap: 8px;">
 				  <div class="vertical-group" style="flex-basis : 66%; flex-grow: 1; box-sizing:border-box;">
 					  <div class="section" style="display: flex; flex-wrap: wrap;">
-						  <h2 style="width:100%;"><span class="airportName">Airport Details</span> | <i
-								  class="airportCityName"></i>, <i class="airportCountryName"></i></h2>
+						  <h2 style="width:100%;"><span class="airportName">Airport Details</span> | <i class="airportCityName"></i>, <i class="airportCountryName"></i></h2>
+						  <p class="flex-row pt-1 inline-icons"><span class="airportCountryFlag"></span> <b class="airportIataIaco"></b> <span id="airportDetailsOpenness"></span></p>
 						  <p class="pb-6" style="width:100%;">Airport Rating: <span class="economicRating rating"></span> |
 							  Competition: <span class="competitionRating rating"></span></p>
 						  <div class="item-grid">
+							  <div class="item-span-2">
+								  <div class="i-label">Affinity affiliations
+									  <div class="tooltip">
+										  <img src='@routes.Assets.versioned("images/icons/information.png")'>
+										  <span class="tooltiptext alignLeft" style="width: 400px;">
+										<p>If an airport shares trade agreements and widely spoken langauges with a
+											foreign airport, they're listed as "<b>affinities</b>" and modify the
+											demand up, especially over long distances.</p>
+									</span>
+									  </div>
+								  </div>
+								  <div class="i-value">
+									  <span id="airportDetailsAffinityZone"></span>
+								  </div>
+							  </div>
 							  <div class="item">
 								  <div class="i-label">Charms</div>
 								  <div class="flex-row airportFeatures"></div>
@@ -1074,7 +1089,7 @@
 								  </div>
 							  </div>
 							  <div class="item">
-								  <div class="i-label">Percent middle income
+								  <div class="i-label"><span class="">Percent </span>middle income
 									  <div class="tooltip">
 										  <img src='@routes.Assets.versioned("images/icons/information.png")'>
 										  <div class="tooltiptext alignLeft" style="width: 400px;">
@@ -1112,61 +1127,14 @@
 									  <span id="airportDetailsGini"></span>
 								  </div>
 							  </div>
-							  <div class="item">
-								  <div class="i-label">International transfers</div>
-								  <div class="i-value" id="airportDetailsOpenness"></div>
-							  </div>
-							  <div class="item pb-16">
-								  <div class="i-label">Affinity affiliations
-									  <div class="tooltip">
-										  <img src='@routes.Assets.versioned("images/icons/information.png")'>
-										  <span class="tooltiptext alignLeft" style="width: 400px;">
-										<p>If an airport shares trade agreements and widely spoken langauges with a
-											foreign airport, they're listed as "<b>affinities</b>" and modify the
-											demand up, especially over long distances.</p>
-									</span>
-									  </div>
-								  </div>
-								  <div class="i-value">
-									  <span id="airportDetailsAffinityZone"></span>
-								  </div>
-							  </div>
-
 						  </div>
 					  </div>
 					  <div id="airportBaseDetails" class="section"
 						   style="box-sizing:border-box; margin-left: 0; margin-right: 0; margin-bottom:0px;">
 						  <h4 id="airportBaseDetailsHeading" class="pb-2">Your Airline <span
-								  id="airportDetailsBaseType">Headquarters</span></h4>
-						  <div class="item-grid" id="airportBaseIsBase">
-							  <div class="item">
-								  <div class="i-label">Upkeep Costs</div>
-								  <div class="i-value"><span id="airportDetailsBaseUpkeep"></span></div>
-							  </div>
-							  <div class="item">
-								  <div class="i-label">Regulatory status</div>
-								  <div class="i-value" style="display: flex; align-items: center;">
-									  <img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>
-									  <p class="airlineTitle titleCue"></p>
-								  </div>
-							  </div>
-							  <div class="item">
-								  <div class="i-label">Delegates Required</div>
-								  <div class="i-value">
-									  <span id="airportDetailsBaseDelegatesRequired"></span>
-									  <img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship'
-										   class="clickable detailsIcon titleCue"
-										   onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'), function(){ showAirportDetails(activeAirportId) })"
-										   style="vertical-align: middle;">
-								  </div>
-							  </div>
-							  <div class="item">
-								  <div class="i-label">Facilities</div>
-								  <div class="i-value" id="airportDetailsFacilities"></div>
-							  </div>
-							  <div class="item">
-								  <div class="i-label">Staff required / capacity<span class="tooltip"
-																					  onmouseover="showBaseDetailsModal()">
+								  id="airportDetailsBaseType">Headquarters</span>
+							  <span class="tooltip"
+									onmouseover="showBaseDetailsModal()">
 									<img src='@routes.Assets.versioned("images/icons/information.png")'>
 									<span class="tooltiptext below alignLeft" style="width: 400px;">
 										<div id="baseDetailsModal">
@@ -1194,14 +1162,42 @@
 											</div>
 										</div>
 									</span>
-								</span>
+							  </span>
+						  </h4>
+						  <div class="item-grid" id="airportBaseIsBase">
+							  <div class="item">
+								  <div class="i-label">Upkeep Costs</div>
+								  <div class="i-value"><span id="airportDetailsBaseUpkeep"></span></div>
+							  </div>
+							  <div class="item">
+								  <div class="i-label">Regulatory status</div>
+								  <div class="i-value" style="display: flex; align-items: center;">
+									  <img class="airlineTitleIcon" style='display : none; vertical-align: middle;'>
+									  <p class="airlineTitle titleCue"></p>
 								  </div>
+							  </div>
+							  <div class="item">
+								  <div class="i-label">Delegates Required</div>
+								  <div class="i-value inline-icons">
+									  <span id="airportDetailsBaseDelegatesRequired"></span>
+									  <img src='@routes.Assets.versioned("images/icons/gear.png")' title='Manage Relationship'
+										   class="clickable detailsIcon openCountryRelationship"
+										   onclick="showRelationshipDetailsModal($(this).data('relationship'), $(this).data('title'), $(this).data('countryCode'), function(){ showAirportDetails(activeAirportId) })"
+										   >
+								  </div>
+							  </div>
+							  <div class="item">
+								  <div class="i-label">Facilities</div>
+								  <div class="i-value" id="airportDetailsFacilities"></div>
+							  </div>
+							  <div class="item">
+								  <div class="i-label">Staff required / capacity</div>
 								  <div class="i-value" style="display: flex; align-items: center;">
 									  <span id="airportDetailsStaff"></span>
 								  </div>
 							  </div>
 							  <div class="item">
-								  <div class="i-label">Upgrade Cost</div>
+								  <div class="i-label upgradeCostLabel">Upgrade Cost</div>
 								  <div class="i-value" id="airportDetailsBaseUpgradeCost"></div>
 							  </div>
 							  <div class="item">
@@ -1227,7 +1223,7 @@
 							  Base</button>
 						  <button type="button" class="button ml-0" id="upgradeBaseButton" data-scale=""
 								  style="display: none;"
-								  onclick='promptConfirm("Upgrade this base to scale " + (parseInt($("#airportDetailsBaseScale").text()) + 1) + "?", data => buildBase(false, parseInt($("#airportDetailsBaseScale").text()) + 1))'>Upgrade</button>
+								  onclick='promptConfirm("Upgrade this base to scale " + (parseInt(airportBase.scale) + 1) + "?", data => {console.log(data); buildBase(false, parseInt(airportBase.scale) + 1)})'>Upgrade</button>
 						  <button type="button" class="button" id="downgradeBaseButton" style="display: none;"
 								  onclick='promptConfirm("Downgrade this base?", downgradeBase)'>Downgrade</button>
 						  <button type="button" class="button" id="deleteBaseButton" style="display: none;"
@@ -1269,26 +1265,22 @@
 				  </div>
 			  </div>
 
-			  <div style="width: 100%; display: flex; flex-wrap: wrap; gap: 8px;">
+			  <div class="section-grid">
 				  <div class="section tight">
-					  <img style="float: left;" src='@routes.Assets.versioned("images/icons/crown.png")'>
-					  <h4 style="width:100%">Rankings</h4>
+					  <h4 class="pt-2 inline-icons"><img src='@routes.Assets.versioned("images/icons/crown.png")'> Rankings</h4>
 					  <div id="airportDetailsChampionList" style="width: 100%; margin-bottom: 15px;" class="table data">
 						  <div class="table-header">
 							  <div class="cell" style="width: 5%">&nbsp;</div>
-							  <div class="cell" style="width: 50%">Airline</div>
+							  <div class="cell" style="width: 40%">Airline</div>
 							  <div class="cell" style="width: 20%; text-align: right;">Loyalist</div>
 							  <div class="cell" style="width: 20%; text-align: right;">Loyalty</div>
-							  <div class="cell" style="width: 20%; text-align: right;">Reputation Boost</div>
+							  <div class="cell" style="width: 25%; text-align: right;">Reputation Boost</div>
 						  </div>
 					  </div>
 				  </div>
-				  <div class="section" style="width: 60%; flex-grow: 1;">
-					  <div class="flex-row pt-4">
-						  <img height="16px"
-							  src='@routes.Assets.versioned("images/icons/building-hedge.png")'>
-						  <h4>Airline Headquarters</h4>
-					  </div>
+				  <div class="section">
+					  <h4 class="inline-icons pt-4"><img height="16px"
+								   src='@routes.Assets.versioned("images/icons/building-hedge.png")'> Airline Headquarters</h4>
 					  <div id="airportDetailsHeadquarterList" style="width: 100%; margin-bottom: 15px;"
 						   class="table data">
 						  <div class="table-header">
@@ -1299,9 +1291,7 @@
 							  <div class="cell" style="width: 25%; text-align: right;">Weekly Passengers</div>
 						  </div>
 					  </div>
-					  <div class="flex-row pt-4">
-						  <img src='@routes.Assets.versioned("images/icons/building-low.png")'><h4>Airline Bases</h4>
-					  </div>
+					  <h4 class="inline-icons pt-4"><img src='@routes.Assets.versioned("images/icons/building-low.png")'> Airline Bases</h4>
 					  <div id="airportDetailsBaseList" style="width: 100%; margin-bottom: 15px;" class="table data">
 						  <div class="table-header">
 							  <div class="cell" style="width: 30%">Airline</div>
@@ -1311,7 +1301,7 @@
 							  <div class="cell" style="width: 25%; text-align: right;">Weekly Passengers</div>
 						  </div>
 					  </div>
-					  <div class="flex-row pt-4"><img src='@routes.Assets.versioned("images/icons/sofa.png")'><h4>Airline Lounges</h4></div>
+					  <h4 class="inline-icons pt-4"><img src='@routes.Assets.versioned("images/icons/sofa.png")'> Airline Lounges</h4>
 					  <div id="airportDetailsLoungeList" style="width: 100%;" class="table data">
 						  <div class="table-header">
 							  <div class="cell" style="width: 20%">Airline</div>
@@ -1361,7 +1351,7 @@
 						  </div>
 					  </div>
 				  </div>
-				  <div id="airportStatistics" class="py-2 flex-row overflow-x-auto" style="width: 100%;">
+				  <div id="airportStatistics" class="py-2 flex-row overflow-x-auto" style="width: 100%;height: 180px;">
 					  <div>
 						  <h5 align="center">Airline share (as Departure)</h5>
 						  <div id="airlineDeparturePie" style="height: 160px; width: 250px;" align="center"></div>
@@ -1422,7 +1412,7 @@
 	  </div>
 	<!--   			end airport canvas -->
 				<div id="departuresCanvas" class="canvas" style="display: none; height: 100%">
-					<div style="height: 610px ; width : 1200px; float: left;" class="section">
+					<div style="height: 610px ; width : 1280px; float: left;" class="section">
 						<div class="title" style="float: left;">Departures</div>
 						<div id="weather" style="float: right;">
 							<div style="float: right;">
@@ -3776,23 +3766,23 @@
 		  <div class="table" style="min-width: 150px;">
 			  <div class="table">
 				  <div class="table-row">
-					  <div class="cell"><h5>Capacity:</h5></div>
+					  <div class="cell"><p>Capacity:</p></div>
 					  <div class="cell capacity"></div>
 				  </div>
 				  <div class="table-row">
-					  <div class="cell"><h5>Range:</h5></div>
+					  <div class="cell"><p>Range:</p></div>
 					  <div class="cell"><span class="range"></span>&nbsp;km</div>
 				  </div>
 				  <div class="table-row">
-					  <div class="cell"><h5>Lifespan:</h5></div>
+					  <div class="cell"><p>Lifespan:</p></div>
 					  <div class="cell"><span class="lifespan"></span>&nbsp;years</div>
 				  </div>
 				  <div class="table-row">
-					  <div class="cell"><h5>Condition:</h5></div>
+					  <div class="cell"><p>Condition:</p></div>
 					  <div class="cell"><span class="condition"></span>%</div>
 				  </div>
 				  <div class="table-row">
-					  <div class="cell"><h5>Value:</h5></div>
+					  <div class="cell"><p>Value:</p></div>
 					  <div class="cell">$<span class="airplaneValue"></span></div>
 				  </div>
 			  </div>
@@ -4681,12 +4671,6 @@
 	  <div class="modal-content" style="width : 520px; max-width : 95vw;">
 		  <span class="close" onclick="closeModal($('#negotiationAnimation'))">&times;</span>
 		  <h4 class="modalHeader" style="margin-bottom: 10px; text-align: center;">Negotiation in progress... Success Rate:&nbsp;<span class="successRate"></span>%</h4>
-<!--		  <div class="clipContainer desktopOnly">-->
-<!--		  	<iframe class="clip" width="480" height="270" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>-->
-<!--			<div style="float: left;"><input type="checkbox" class="autoplay" onclick="toggleAutoplay()">&nbsp;Autoplay</div>-->
-<!--			<div style="float: right;" class="animationLabel label"></div>-->
-<!--		  	<div style="clear: both;"></div>-->
-<!--		  </div>-->
 		  <div class="negotiationIcons" style="width: 260px; height: 35px; margin: auto;text-align:center;"></div>
 		  <div class="negotiationDescriptions" class="py-2 px-8" style="height: 15px; text-align: center;"></div>
 		  <div class="negotiationBar progressbar" style="margin: auto;">
@@ -4895,60 +4879,60 @@
 
 	<!-- popup of owned airplane details and control -->
 	<div id="ownedAirplaneDetailModal" class="modal">
-		<div class="modal-content"  style="width : 600px;">
+		<div class="modal-content py-2">
 			<span class="close" onclick="closeModal($('#ownedAirplaneDetailModal'))">&times;</span>
 			<h4>Owned Airplane Details</h4>
 			<div id="ownedAirplaneDetail" style="width: 100%;">
-				<div class="modelIllustration" style="width:100%; position: relative; max-width: 500px;">
+				<div class="modelIllustration pb-4" style="width:100%; position: relative; max-width: 500px;">
 					<img src='#' style="width: 100%;">
 					<div class="label" style="right: 0px; bottom: 0px; position: absolute; font-style: italic;"><a href='#' target="_blank">Illustration courtesy of Norebbo</a></div>
 				</div>
 				<div class="table" style="width: 100%">
 					<div class="table-header">
-						<div class="cell" style="width: 25%;  border-bottom: none"></div>
-						<div class="cell" style="width: 75%; border-bottom: none"></div>
+						<div class="cell" style="width: 33%;  border-bottom: none"></div>
+						<div class="cell" style="width: 67%; border-bottom: none"></div>
 					</div>
 					<div class="table-row">
-						<div class="cell"><h5>Airplane ID:</h5></div>
+						<div class="cell"><p>Airplane ID:</p></div>
 						<div class="cell" id="airplaneDetailsId"></div>
 					</div>
 					<div class="table-row">
-						<div class="cell"><h5>Condition:</h5></div>
+						<div class="cell"><p>Condition:</p></div>
 						<div class="cell" id="airplaneDetailsCondition"></div>
 					</div>
 					<div class="table-row" id="airplaneDetailsAgeRow">
-						<div class="cell"><h5>Age:</h5></div>
+						<div class="cell"><p>Age:</p></div>
 						<div class="cell" id="airplaneDetailsAge"></div>
 					</div>
 					<div class="table-row" id="airplaneDetailsDeliveryRow">
-						<div class="cell"><h5>Deliver in:</h5></div>
+						<div class="cell"><p>Deliver in:</p></div>
 						<div class="cell" id="airplaneDetailsDelivery" style="font-weight: bold;"></div>
 					</div>
 					<div class="table-row">
-						<div class="cell"><h5>Selling value:</h5></div>
+						<div class="cell"><p>Selling value:</p></div>
 						<div class="cell" id="airplaneDetailsSellValue"></div>
 					</div>
 					<div class="table-row">
-						<div class="cell"><h5>Replace cost:</h5></div>
+						<div class="cell"><p>Replace cost:</p></div>
 						<div class="cell" id="airplaneDetailsReplaceCost"></div>
 					</div>
 					<div class="table-row">
-						<div class="cell"><h5>Assigned route(s):</h5></div>
+						<div class="cell"><p>Assigned route(s):</p></div>
 						<div class="cell" id="airplaneDetailsLink"></div>
 					</div>
 					<div class="table-row">
-						<div class="cell"><h5>Available flight time:</h5></div>
+						<div class="cell"><p>Available flight time:</p></div>
 						<div class="cell"><span class="availableFlightMinutes"></span> Minute(s)</div>
 					</div>
 					<div class="table-row">
-						<div class="cell"><h5>Home airport:</h5></div>
+						<div class="cell"><p>Home airport:</p></div>
 						<div class="cell">
-							<div class="homeView" style="display: flex; align-items: center;">
-								<div class="home" style="width: 80%;  float: left;" ></div>
-								<div style="float: left;"  data-tooltip-text="Change home airport"><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button edit' style="vertical-align: middle;" onclick="toggleAirplaneHome()"/></div>
-								<div style="float: left;"  data-tooltip-text="Cannot change home airport with active route(s)"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;"/></div>
+							<div class="homeView flex-row">
+								<div class="home"></div>
+								<div data-tooltip-text="Change home airport"><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button edit' style="vertical-align: middle;" onclick="toggleAirplaneHome()"/></div>
+								<div data-tooltip-text="Cannot change home airport with active route(s)"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;"/></div>
 							</div>
-							<div class="homeEdit"; style="display:none">
+							<div class="homeEdit" style="display:none">
 								<select class="homeOptions select-css"></select>
 								<img src='@routes.Assets.versioned("images/icons/tick.png")' class='button' style="vertical-align: middle;" onclick="confirmAirplaneHome()"/>
 								<img src='@routes.Assets.versioned("images/icons/cross.png")' class='button' style="vertical-align: middle;" onclick="cancelAirplaneHome()"/>
@@ -4956,14 +4940,13 @@
 						</div>
 					</div>
 					<div class="table-row">
-						<div class="cell"><h5>Seat configuration:</h5></div>
-						<div class="cell configuration-view" style="display: flex; align-items: center;">
-							<div class="configurationBar" style="width: 80%; float: left"></div>
-							<div style="float: left;"><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button edit' style="vertical-align: middle;" onclick="toggleAirplaneConfiguration()" title="Pick configuration"/></div>
-							<div style="float: left;"  data-tooltip-text="Need at least 2 configurations for changes"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;"/></div>
-							<div style="clear:both;"></div>
+						<div class="cell"><p>Seat configuration:</p></div>
+						<div class="cell configuration-view flex-row">
+							<div class="configurationBar"></div>
+							<div><img src='@routes.Assets.versioned("images/icons/gear.png")' class='button edit' style="vertical-align: middle;" onclick="toggleAirplaneConfiguration()" title="Pick configuration"/></div>
+							<div data-tooltip-text="Need at least 2 configurations for changes"><img src='@routes.Assets.versioned("images/icons/information.png")' class='button editDisabled' style="vertical-align: middle; display: none;"/></div>
 						</div>
-						<div class="cell configuration-edit"; style="display:none">
+						<div class="cell configuration-edit flex-row" style="display:none">
 							<img src='@routes.Assets.versioned("images/icons/arrow-180.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption($('#ownedAirplaneDetail'), -1)"/>
 							<div class="configuration-options" style="display : inline-block; width: 80%"></div>
 							<img src='@routes.Assets.versioned("images/icons/arrow.png")' class='button' style="vertical-align: middle;" onclick="switchAirplaneConfigurationOption($('#ownedAirplaneDetail'), 1)"/>
@@ -5150,7 +5133,7 @@
 			  <span class="close" onclick="closeModal($('#airlineCountryRelationshipModal'))">&times;</span>
 			  <h2 style="margin-bottom: 20px">Relationship Management with&nbsp;<span class="country"></span></h2>
 			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Airline Title</h4>
-			  <div class="section" style="width: 95%; display:flex; flex-direction:column; align-items:center; margin: auto;">
+			  <div class="section">
 				<div class="currentTitle" style="margin-bottom: 20px; display: flex;"><span>Current:&nbsp;</span><img class="titleIcon">&nbsp;<span class="titleDescription"></span></div>
 				<div style="display:flex; align-items:center; flex-wrap: wrap;" class="titleProgression">
 
@@ -5158,7 +5141,7 @@
 			  </div>
 
 			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Relationship Factors</h4>
-			  <div class="table data section factors" style="width: 95%; margin: auto;">
+			  <div class="table data section factors">
 				  <div class="table-header">
 					  <div class="cell" style="width: 80%">Factor</div>
 					  <div class="cell" style="width: 20%">Value</div>
@@ -5166,7 +5149,7 @@
 			  </div>
 
 			  <h4 style="margin-bottom: 10px; margin-top: 30px;">Delegates<span class="delegatesTooltip"><img src='@routes.Assets.versioned("images/icons/information.png")'></span></h4>
-			  <div class="delegateSection section" style="width: 95%; margin: auto;">
+			  <div class="delegateSection section">
 				  <h4>Pool</h4>
 				  <div class="delegateStatus">
 
@@ -5187,9 +5170,9 @@
 						  </div>
 					  </div>
 				  </div>
-				  <h5><span class="dot"/>Cannot assign temporary delegates awarded as bonus</h5>
-				  <h5><span class="dot"/>Require&nbsp;<span class="delegatesRequired"></span>&nbsp;delegates to maintain current bases in this country</h5>
-				  <h5><span class="dot"/>Each delegate level provides&nbsp;<span class="delegateMultiplier"></span>&nbsp;relationship points. Delegate starts at level 0 and progress over time. Hover over each delegate above to see details</h5>
+				  <p><span class="dot"/>Cannot assign Olympic bonus delegates</p>
+				  <p><span class="dot"/>Currenlty need &nbsp;<span class="delegatesRequired"></span>&nbsp;delegates to maintain bases in this country</p>
+				  <p><span class="dot"/>Each delegate level provides&nbsp;<span class="delegateMultiplier"></span>&nbsp;relationship points. Each delegate starts at level 0 and progress over time. Hover for details.</p>
 				  <button type="button" class="button" onclick="updateCountryDelegates()">Confirm</button>
 				  <button type="button" class="button" onclick="closeModal($('#airlineCountryRelationshipModal'))">Cancel</button>
 			  </div>
@@ -5325,23 +5308,23 @@
       </div>
 <!--  end campaign model-->
 
-<!--	  <div id="baseDetailsModal" class="modal">-->
-<!--		  <div class="modal-content"  style="width : 400px;">-->
-<!--			  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>-->
-<!--			  <h4 style="margin-bottom: 10px;">Office Scale Details</h4>-->
-<!--			  <div class="table data scaleDetails" style="width: 100%;">-->
-<!--				  <div class="table-header">-->
-<!--					  <div class="cell" style="width: 20%;"><h5>Scale</h5></div>-->
-<!--					  <div class="cell" style="width: 20%;"><h5>Staff Cap (HQ/base)</h5></div>-->
-<!--					  <div class="cell" data-group="GROUP_1" style="width: 20%;"><h5>Freq Cap 1</h5></div>-->
-<!--					  <div class="cell" data-group="GROUP_2" style="width: 20%;"><h5>Freq Cap 2</h5></div>-->
-<!--					  <div class="cell" data-group="GROUP_3" style="width: 20%;"><h5>Freq Cap 3</h5></div>-->
-<!--				  </div>-->
-<!--			  </div>-->
-<!--			  <div class="groupRemarks">-->
-<!--			  </div>-->
-<!--		  </div>-->
-<!--	  </div>-->
+	  <div id="baseDetailsModal" class="modal">
+		  <div class="modal-content"  style="width : 400px;">
+			  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
+			  <h4 style="margin-bottom: 10px;">Office Scale Details</h4>
+			  <div class="table data scaleDetails" style="width: 100%;">
+				  <div class="table-header">
+					  <div class="cell" style="width: 20%;"><h5>Scale</h5></div>
+					  <div class="cell" style="width: 20%;"><h5>Staff Cap (HQ/base)</h5></div>
+					  <div class="cell" data-group="GROUP_1" style="width: 20%;"><h5>Freq Cap 1</h5></div>
+					  <div class="cell" data-group="GROUP_2" style="width: 20%;"><h5>Freq Cap 2</h5></div>
+					  <div class="cell" data-group="GROUP_3" style="width: 20%;"><h5>Freq Cap 3</h5></div>
+				  </div>
+			  </div>
+			  <div class="groupRemarks">
+			  </div>
+		  </div>
+	  </div>
 
 	  <div id="sendAirlineMessageModal" class="modal">
 		  <div class="modal-content"  style="width : 500px;">

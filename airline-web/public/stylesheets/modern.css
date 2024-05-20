@@ -31,7 +31,6 @@ html[data-theme="dark"] {
 
 html[data-ui-light-mode="true"] {
     --backdrop-blur: none;
-    --background-1: #212b3b;
 }
 
 .section, div.modal-content, .tab-icon, #live-chat header, .chat, input, #topBar > div, #map .gmnoprint[role="menubar"], .gm-fullscreen-control, .googleMapIcon, .gm-svpc, .gm-control-active, div[style="position: relative; overflow: hidden; width: 30px; height: 1px; margin: 0px 5px; background-color: rgb(230, 230, 230); top: 0px;"], div[style="user-select: none; box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px; border-radius: 2px; cursor: pointer; background-color: rgb(255, 255, 255); width: 40px; height: 81px;"], .extendedTopBarDetails, .customTooltip .tooltiptext, #moreTopBarTab li {
