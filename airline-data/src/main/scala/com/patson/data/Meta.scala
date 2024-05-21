@@ -1822,6 +1822,19 @@ object Meta {
     statement.execute()
     statement.close()
 
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + TRACKING_NOTICE_TABLE)
+    statement.execute()
+    statement.close()
+
+
+    statement = connection.prepareStatement("CREATE TABLE " + TRACKING_NOTICE_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
+      "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+      "category VARCHAR(256)" +
+      ")")
+    statement.execute()
+    statement.close()
+
   }
 
   def createAirportChampion(connection : Connection) {

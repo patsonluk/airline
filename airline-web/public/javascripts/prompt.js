@@ -83,6 +83,8 @@ function queueNotice(noticeJson) {
         htmlId = "levelUpPopup"
     } else if (category === "LOYALIST") {
         htmlId = "loyalistMilestonePopup"
+    } else if (category === "GAME_OVER") {
+        htmlId = "bankruptcyPopup"
     } else {
         console.warn("Unhandled notice " + noticeJson)
     }
@@ -100,6 +102,8 @@ function queueTutorialByJson(json) {
         htmlId = "tutorialAirlineGrade"
     } else if (category === "loyalist") {
         htmlId = "tutorialLoyalistMilestone"
+    } else if (category === "loyalist") {
+        htmlId = "trackingNotice"
     } else {
         console.warn("Unhandled tutorial " + noticeJson)
     }
@@ -307,6 +311,15 @@ function initNotices() {
         showLoyalistPopup(json.level, json.description)
     })
     $('#loyalistMilestonePopup').data('promptCloseCallback', stopFirework)
+
+    $('.trackingNoticePopup').each(function() {
+        var $this = $(this);
+        $this.data('function', function(json) {
+            $this.data('id', json.id);
+            $this.data('category', json.category);
+            showTrackingNoticePopup($this, json.description);
+        });
+    });
 }
 
 function showLevelUpPopup(level, description) {
@@ -330,4 +343,10 @@ function showLoyalistPopup(level, description) {
     $popup.fadeIn(500)
 
     startFirework(20000, level)
+}
+
+
+function showTrackingNoticePopup($popup, description) {
+    $popup.fadeIn(500)
+    $popup.find('.description').text(description)
 }

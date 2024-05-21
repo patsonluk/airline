@@ -150,6 +150,7 @@ object Constants {
   val LOYALIST_HISTORY_INDEX_PREFIX = "loyalist_history_index_"
   val COMPLETED_TUTORIAL_TABLE = "completed_tutorial"
   val COMPLETED_NOTICE_TABLE = "completed_notice"
+  val TRACKING_NOTICE_TABLE = "tracking_notice"
   val AIRPORT_ANIMATION_TABLE = "airport_animation"
   val ADMIN_LOG_TABLE = "admin_log"
   val USER_WALLPAPER_TABLE = "user_wallpaper"

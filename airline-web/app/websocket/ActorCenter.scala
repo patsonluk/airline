@@ -3,11 +3,11 @@ package websocket
 import akka.actor.{Actor, ActorRef, ActorSelection, Props, Terminated}
 import akka.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import com.patson.model.Airline
-import com.patson.model.notice.{AirlineNotice, NoticeCategory}
+import com.patson.model.notice.{AirlineNotice, NoticeCategory, TrackingNotice}
 import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
 import com.patson.util.{AirlineCache, AirplaneModelDiscountCache, AirplaneOwnershipCache, AirportCache}
 import com.typesafe.config.ConfigFactory
-import controllers.{AirlineTutorial, AirportUtil, GooglePhotoUtil, SearchUtil}
+import controllers.{AirlineTutorial, AirportUtil, GooglePhotoUtil, PromptUtil, SearchUtil}
 import models.PendingAction
 import play.api.libs.json.{JsNumber, Json}
 import websocket.chat.TriggerPing
@@ -58,6 +58,11 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
               out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
             case NoticeCategory.LOYALIST =>
               out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "level" -> notice.id, "description" -> description)
+            case _ =>
+              notice match {
+                case trackingNotice: TrackingNotice =>
+                  out ! Json.obj("messageType" -> "notice", "category" -> notice.category.toString, "id" -> notice.id, "description" -> trackingNotice.descriptions(airline))
+              }
 
           }
       }

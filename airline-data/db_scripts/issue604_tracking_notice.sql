@@ -1,0 +1,5 @@
+CREATE TABLE tracking_notice(
+      id INTEGER PRIMARY KEY AUTO_INCREMENT,
+      airline INTEGER REFERENCES airline(id) ON DELETE CASCADE ON UPDATE CASCADE,
+      category VARCHAR(256)
+)
