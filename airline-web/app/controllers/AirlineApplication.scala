@@ -269,6 +269,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (cost > airline.getBalance) {
       return Some("Not enough cash to build/upgrade the base")
     }
+    if (targetBase.scale < 1) {
+      return Some(s"Invalid scale ${targetBase.scale}")
+    }
 
     if (targetBase.scale == 1) { //building something new
       if (airline.getHeadQuarter().isDefined) { //building non-HQ
@@ -403,7 +406,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
 
    def getDowngradeRejection(base : AirlineBase) : Option[String] = {
-     if (base.scale == 1) { //cannot downgrade any further
+     if (base.scale <= 1) { //cannot downgrade any further
        return Some("Cannot downgrade this base any further")
      }
 //     val airport = AirportCache.getAirport(base.airport.id, true).get
