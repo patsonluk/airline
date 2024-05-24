@@ -209,7 +209,7 @@ object AirlineGenerator extends App {
       i += 1
       val distance = Computation.calculateDistance(fromAirport, toAirport)
       val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-      val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
+      val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode, relationship)
       val demand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
       val targetSeats = demand.travelerDemand.total * 3
 

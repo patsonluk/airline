@@ -655,7 +655,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         var existingLink: Option[Link] = LinkSource.loadFlightLinkByAirportsAndAirline(fromAirportId, toAirportId, airlineId)
 
         val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
-        val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
+        val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode, relationship)
         val distance = Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
         val flightType = Computation.getFlightType(fromAirport, toAirport, distance, relationship)
 
@@ -802,7 +802,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "toCountryCode" -> toAirport.countryCode,
           "flightCode" -> flightCode,
           "mutualRelationship" -> relationship,
-          "affinity" -> Computation.constructAffinityText(fromAirport.zone,toAirport.zone,relationship),
+          "affinity" -> Computation.constructAffinityText(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode,  relationship, affinity),
           "distance" -> distance,
           "flightType" -> FlightType.label(flightType),
           "suggestedPrice" -> suggestedPrice,

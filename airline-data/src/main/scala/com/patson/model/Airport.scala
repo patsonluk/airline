@@ -219,7 +219,33 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
          case None => None
        }
      }
-     
+  }
+
+  def getZoneAffinities() : String = {
+    val affinites = zone.split("-")
+    val domestics = affinites.filterNot(_.startsWith("|")).filterNot(_.endsWith("|"))
+    val internationals = affinites.filter(_.endsWith("|")).map(_.dropRight(1))
+    val diasporas = affinites.filter(_.startsWith("|")).map(_.drop(4)).toSet
+
+    val result = new StringBuilder()
+
+    if (domestics.nonEmpty) {
+      result.append(domestics.mkString(", "))
+    }
+
+    if (internationals.nonEmpty) {
+      if (result.nonEmpty) result.append("; ")
+      result.append("international: ")
+      result.append(internationals.mkString(", "))
+    }
+
+    if (diasporas.nonEmpty) {
+      if (result.nonEmpty) result.append("; ")
+      result.append("diaspora communities: ")
+      result.append(diasporas.mkString(", "))
+    }
+
+    result.toString()
   }
   
   def isFeaturesLoaded = featuresLoaded

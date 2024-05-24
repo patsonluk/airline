@@ -605,7 +605,7 @@ package object controllers {
         "popElite" -> JsString(popElite),
         "popMiddleIncome" -> JsNumber(popMiddleIncome),
         "radius" -> JsNumber(airport.airportRadius),
-        "zone" -> JsString(airport.zone),
+        "zone" -> JsString(airport.getZoneAffinities()),
         "incomeLevel" -> JsNumber(airport.income.toInt)))
 
 

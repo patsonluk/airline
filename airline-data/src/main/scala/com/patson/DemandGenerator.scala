@@ -17,10 +17,10 @@ import scala.util.Random
 object DemandGenerator {
 
   private[this] val FIRST_CLASS_INCOME_MAX = 135_000
-  private[this] val FIRST_CLASS_PERCENTAGE_MAX: Map[PassengerType.Value, Double] = Map(PassengerType.TRAVELER -> 0, PassengerType.BUSINESS -> 0.09, PassengerType.TOURIST -> 0, PassengerType.ELITE -> 1, PassengerType.OLYMPICS -> 0)
+  private[this] val FIRST_CLASS_PERCENTAGE_MAX: Map[PassengerType.Value, Double] = Map(PassengerType.TRAVELER -> 0, PassengerType.BUSINESS -> 0.12, PassengerType.TOURIST -> 0, PassengerType.ELITE -> 1, PassengerType.OLYMPICS -> 0)
   private[this] val BUSINESS_CLASS_INCOME_FLOOR = 8_000 //effectively boost low-income
   private[this] val BUSINESS_CLASS_INCOME_MAX = 135_000
-  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX: Map[PassengerType.Value, Double] = Map(PassengerType.TRAVELER -> 0.15, PassengerType.BUSINESS -> 0.42, PassengerType.TOURIST -> 0.07, PassengerType.ELITE -> 0, PassengerType.OLYMPICS -> 0.15)
+  private[this] val BUSINESS_CLASS_PERCENTAGE_MAX: Map[PassengerType.Value, Double] = Map(PassengerType.TRAVELER -> 0.16, PassengerType.BUSINESS -> 0.46, PassengerType.TOURIST -> 0.08, PassengerType.ELITE -> 0, PassengerType.OLYMPICS -> 0.15)
   val MIN_DISTANCE = 50
   
   import scala.collection.JavaConverters._
@@ -43,7 +43,7 @@ object DemandGenerator {
         val distance = Computation.calculateDistance(fromAirport, toAirport)
         if (fromAirport != toAirport && fromAirport.population != 0 && toAirport.population != 0 && distance >= MIN_DISTANCE) {
           val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-          val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
+          val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode, relationship)
 
           val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
           if (demand.travelerDemand.total > 0) {
@@ -111,46 +111,56 @@ object DemandGenerator {
       if (distance < 350) {
         distance.toDouble / 350
       } else if (distance > 5000) { //about long-distance or longer
-        1.01 - distance.toDouble / (15000 * (affinity + 2)) //affinity affects perceived distance
+        1.01 - distance.toDouble / (15000 * (affinity + 1)) //affinity affects perceived distance
       } else if (distance > 2000) { //bit less than medium-distance
         1.11 - distance.toDouble / 20000 //i.e 0.1, and then adding a .01 boost
       } else 1
 
     //domestic/foreign/affinity relation multiplier
     val airportAffinityMutliplier : Double =
-      if (affinity == 5) 1.0 //domestic
-      else if (affinity >= 4) 0.4
-      else if (affinity == 3) 0.35
-      else if (affinity == 2) 0.3
-      else if (affinity == 1) 0.2
-      else if (affinity == 0) 0.1
-      else 0.05
+      if (affinity >= 5) affinity.toDouble / 5.0 //domestic
+      else if (affinity == 4) 0.4
+      else if (affinity == 3) 0.3
+      else if (affinity == 2) 0.2
+      else if (affinity == 1) 0.1
+      else if (affinity == 0) 0.05
+      else 0.025
 
     val specialCountryModifier =
       if (fromAirport.countryCode == "AU" || fromAirport.countryCode == "NZ") {
-        16.0 //they travel a lot
-      } else if (fromAirport.countryCode == "ZA" || fromAirport.countryCode == "BW" || fromAirport.countryCode == "SZ") {
-        5.0
-      } else if (toAirport.countryCode == "ID") {
-        2.0 //island nation with top10 domestic routes & big tourism destination
-      } else if (fromAirport.countryCode == "KR" && toAirport.countryCode == "KR") {
-        4.0 //top 10 domestic routes
-      } else if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN" && distance < 1100) {
-        0.6 //China has a very extensive highspeed rail network (1100km is Beijing to Shanghai)
+        9.0 //they travel a lot; difficult to model
+      } else if (fromAirport.countryCode == "NO" && toAirport.countryCode == "NO") {
+        4.0 //very busy domestic routes
+      } else if (List("NO", "IS", "FO", "GL", "GR", "CY", "FJ").contains(fromAirport.countryCode)) {
+        2.0 //very high per captia flights https://ourworldindata.org/grapher/air-trips-per-capita
+      } else if (List("SE", "GB", "CL", "BS", "KR").contains(fromAirport.countryCode)) {
+        1.5 // high per captia flights
+      } else if (List("CD", "CG", "CV", "CI", "GN", "GW", "LR", "ML", "MR", "NE", "SD", "SO", "SS", "TD", "TG").contains(fromAirport.countryCode)) {
+        4.0 //very poor roads but unstable governance
+      } else if (List("AO", "BI", "BJ", "BW", "CM", "CV", "DJ", "ET", "GA", "GH", "GM", "GQ", "KE", "KM", "LS", "MG", "MU", "MW", "MZ", "NA", "NG", "RW", "SC", "SL", "SN", "ST", "SZ", "TZ", "UG", "ZA", "ZM", "ZW").contains(fromAirport.countryCode)) {
+        6.0 //very poor roads
+      } else if (fromAirport.countryCode == "IN" && toAirport.countryCode == "IN") {
+        0.7 //pops are just very large
+      } else if (fromAirport.countryCode == "CN" && toAirport.countryCode == "CN") {
+        if(distance < 900) {
+          0.7 //China has a very extensive highspeed rail network, pops are just very large
+        } else {
+          0.85
+        }
       } else if (fromAirport.countryCode == "JP" && toAirport.countryCode == "JP" && distance < 500) {
         0.4 //also interconnected by HSR / intercity rail
       } else if (fromAirport.countryCode == "FR" && distance < 550 && toAirport.countryCode != "GB") {
-        0.3
+        0.2
       } else if (fromAirport.countryCode == "IT" && distance < 500) {
         0.5
-      } else if (fromAirport.zone.contains("EU") && distance < 260) {
+      } else if (distance < 260 && fromAirport.zone.contains("EU")) {
         0.6
       } else 1.0
 
-    val baseDemand : Double = specialCountryModifier * airportAffinityMutliplier * fromPopIncomeAdjusted * toAirport.population.toDouble / 225_000 / 225_000
+    val baseDemand : Double = specialCountryModifier * airportAffinityMutliplier * fromPopIncomeAdjusted * toAirport.population.toDouble / 250_000 / 250_000
     var demand = (Math.pow(baseDemand, distanceReducerExponent)).toInt
 
-    //modeling provincial travel dynamics, but not for tourists
+    //modeling provincial travel dynamics where folks go from small city to big city, but not for tourists
     val maxBonus = 2.0
     val populationRatio = if (distance < 2500 && toAirport.population > fromPopIncomeAdjusted) {
       math.min(maxBonus, math.pow(toAirport.population / fromPopIncomeAdjusted.toDouble, .125))
@@ -159,17 +169,18 @@ object DemandGenerator {
     }
     //lower demand to poor places, but not for tourists
     val toIncomeAdjust = Math.min(1.0, toAirport.income.toDouble / 20_000)
+    //however squash tourism if extremely poor
+    val toTourismIncomeAdjust = Math.min(1.0, toAirport.income.toDouble / 6000)
     //people migrate from poor to rich, affects travelers only
     //(commented out as isn't quite intuitive)
 //    val travelerIncomeRatio = math.min(1.5, (toAirport.income.toDouble / fromAirport.income.toDouble + 1) / 2.0)
 
-    val demands = Map((PassengerType.TRAVELER -> demand * 0.7 * populationRatio * toIncomeAdjust), (PassengerType.BUSINESS -> demand * 0.2 * populationRatio * toIncomeAdjust), (PassengerType.TOURIST -> demand * 0.1))
+    val demands = Map((PassengerType.TRAVELER -> demand * 0.7 * populationRatio * toIncomeAdjust), (PassengerType.BUSINESS -> demand * 0.2 * toIncomeAdjust), (PassengerType.TOURIST -> demand * 0.1 * toTourismIncomeAdjust))
 
     val featureAdjustedDemands = demands.map { case (passengerType, demand) =>
       val fromAdjustments = fromAirport.getFeatures().map(feature => feature.demandAdjustment(demand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, affinity, distance))
       val toAdjustments = toAirport.getFeatures().map(feature => feature.demandAdjustment(demand, passengerType, toAirport.id, fromAirport, toAirport, flightType, affinity, distance))
       (passengerType, (fromAdjustments.sum + toAdjustments.sum + demand).toDouble)
-//      (passengerType, (fromAdjustments.sum + demand).toDouble)
     }.toMap
 
     Demand(
@@ -268,7 +279,7 @@ object DemandGenerator {
         val toAirport = olympicsAirport
         val distance = Computation.calculateDistance(fromAirport, toAirport)
         val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
-        val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
+        val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode, relationship)
         //        val computedDemand = computeDemandBetweenAirports(fromAirport, toAirport, relationship, PassengerType.OLYMPICS)
         val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
 //        val computedDemand = computeClassDemandBetweenAirports(fromAirport, toAirport, relationship, distance, PassengerType.OLYMPICS, (demand * 0.3).toInt)
