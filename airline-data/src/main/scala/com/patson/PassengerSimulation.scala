@@ -495,7 +495,7 @@ object PassengerSimulation {
           if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness, link.from.size)) {
             linkConsiderations.add(linkConsideration1)
           }
-          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness, link.from.size)) {
+          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness, link.to.size)) {
             linkConsiderations.add(linkConsideration2)
           }
       }
