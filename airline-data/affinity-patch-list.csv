@@ -1,686 +1,1019 @@
-#airportCode,airportZone
-HAM,|Afghan|DE|
-KBL,|Afghan|DE|
-MZR,|Afghan|DE|
-KBL,|Afghan|PK|
-KHI,|Afghan|PK|
-PEW,|Afghan|PK|
-MZR,|Afghan|PK|
-IST,|Afghan|TR|
-KBL,|Afghan|TR|
-MZR,|Afghan|TR|
-ALG,|Algerian|CA|
-ORN,|Algerian|CA|
-YUL,|Algerian|CA|
-ALG,|Algerian|FR|
-CDG,|Algerian|FR|
-MRS,|Algerian|FR|
-ORN,|Algerian|FR|
-ORY,|Algerian|FR|
-TLS,|Algerian|FR|
-CDG,|Armenian|FR|
-EVN,|Armenian|FR|
-LYS,|Armenian|FR|
-DME,|Armenian|RU|
-EVN,|Armenian|RU|
-KRR,|Armenian|RU|
-LED,|Armenian|RU|
-SIP,|Armenian|RU|
-SVO,|Armenian|RU|
-EVN,|Armenian|US|
-DAC,|Bangladeshi|SA|
-DMM,|Bangladeshi|SA|
-JED,|Bangladeshi|SA|
-RUH,|Bangladeshi|SA|
-CCU,|Bengali|
-LHR,|Bengali|
-MAN,|Bengali|
-CCU,|Bengali|CA|
-YVR,|Bengali|CA|
-YYZ,|Bengali|CA|
-CCU,|Bengali|US|
-SFO,|Bengali|US|
-SJC,|Bengali|US|
-CBB,|Bolivian|AR|
-EZE,|Bolivian|AR|
-LPB,|Bolivian|AR|
-CBB,|Bolivian|BR|
-GRU,|Bolivian|BR|
-LPB,|Bolivian|BR|
-VVI,|Bolivian|BR|
-VVI,|Bolivian|MX|
-GRU,|Brazilian|NG|
-LOS,|Brazilian|NG|
-BOS,|Brazilian|US|
-EWR,|Brazilian|US|
-GRU,|Brazilian|US|
-MCO,|Brazilian|US|
-PBI,|Brazilian|US|
-PVD,|Brazilian|US|
-HKG,|Cantonese|
-CAN,|Cantonese|
-SIN,|Cantonese|
-SZX,|Cantonese|
-MFM,|Cantonese|
-SFO,|Cantonese|
-KUL,|Cantonese|
-JFK,|Cantonese|
-YVR,|Cantonese|
-FOC,|Chinese|AU|
-PEK,|Chinese|AU|
-PVG,|Chinese|AU|
-CTU,|Chinese|AU|
-XMN,|Chinese|AU|
-HGH,|Chinese|AU|
-TAO,|Chinese|AU|
-KMG,|Chinese|AU|
-WUH,|Chinese|AU|
-NKG,|Chinese|AU|
-PER,|Chinese|AU|
-SYD,|Chinese|AU|
-BNE,|Chinese|AU|
-MEL,|Chinese|AU|
-FOC,|Chinese|CA|
-PEK,|Chinese|CA|
-PVG,|Chinese|CA|
-CTU,|Chinese|CA|
-XMN,|Chinese|CA|
-HGH,|Chinese|CA|
-TAO,|Chinese|CA|
-KMG,|Chinese|CA|
-WUH,|Chinese|CA|
-NKG,|Chinese|CA|
-YHM,|Chinese|CA|
-YVR,|Chinese|CA|
-YYZ,|Chinese|CA|
-YYC,|Chinese|CA|
-FOC,|Chinese|SEAsia|
-PEK,|Chinese|SEAsia|
-PVG,|Chinese|SEAsia|
-CTU,|Chinese|SEAsia|
-XMN,|Chinese|SEAsia|
-HGH,|Chinese|SEAsia|
-TAO,|Chinese|SEAsia|
-KMG,|Chinese|SEAsia|
-WUH,|Chinese|SEAsia|
-NKG,|Chinese|SEAsia|
-SIN,|Chinese|SEAsia|
-KUL,|Chinese|SEAsia|
-BKK,|Chinese|SEAsia|
-FOC,|Chinese|US|
-PEK,|Chinese|US|
-PVG,|Chinese|US|
-CTU,|Chinese|US|
-XMN,|Chinese|US|
-HGH,|Chinese|US|
-TAO,|Chinese|US|
-KMG,|Chinese|US|
-WUH,|Chinese|US|
-NKG,|Chinese|US|
-SEA,|Chinese|US|
-SFO,|Chinese|US|
-JFK,|Chinese|US|
-ORD,|Chinese|US|
-SJC,|Chinese|US|
-LAX,|Chinese|US|
-DFW,|Chinese|US|
-IAH,|Chinese|US|
-BAQ,|Colombian|CL|
-BOG,|Colombian|CL|
-CLO,|Colombian|CL|
-MDE,|Colombian|CL|
-SLC,|Colombian|CL|
-BAQ,|Colombian|MX|
-BOG,|Colombian|MX|
-CLO,|Colombian|MX|
-MDE,|Colombian|MX|
-MEX,|Colombian|MX|
-ATL,|Colombian|US|
-BAQ,|Colombian|US|
-BOG,|Colombian|US|
-CLO,|Colombian|US|
-MDE,|Colombian|US|
-MIA,|Colombian|US|
-BRU,|Congolese|
-FIH,|Congolese|
-FBM,|Congolese|
-FLL,|Cuban|
-HAV,|Cuban|
-HOG,|Cuban|
-MIA,|Cuban|
-PBI,|Cuban|
-VRA,|Cuban|
-AGU,|Durango & Zacatecas|
-AUS,|Durango & Zacatecas|
-DFW,|Durango & Zacatecas|
-DGO,|Durango & Zacatecas|
-IAH,|Durango & Zacatecas|
-MAF,|Durango & Zacatecas|
-OKC,|Durango & Zacatecas|
-ZCL,|Durango & Zacatecas|
-GYE,|Ecuadorian|ES|
-MAD,|Ecuadorian|ES|
-UIO,|Ecuadorian|ES|
-GYE,|Ecuadorian|US|
-HPN,|Ecuadorian|US|
-UIO,|Ecuadorian|US|
-ADD,|Ethiopian|IE|
-TLV,|Ethiopian|IE|
-ADD,|Ethiopian|US|
-DEN,|Ethiopian|US|
-IAD,|Ethiopian|US|
-CRK,|Filipino|IE|
-DVO,|Filipino|IE|
-MNL,|Filipino|IE|
-TLV,|Filipino|IE|
-CRK,|Filipino|IT|
-DVO,|Filipino|IT|
-FCO,|Filipino|IT|
-MNL,|Filipino|IT|
-MXP,|Filipino|IT|
-CRK,|Filipino|US|
-DVO,|Filipino|US|
-HNL,|Filipino|US|
-MNL,|Filipino|US|
-OAK,|Filipino|US|
-ONT,|Filipino|US|
-ACC,|Ghanaian|NL|
-AMS,|Ghanaian|NL|
-ATH,|Greek|AU|
-MEL,|Greek|AU|
-SYD,|Greek|AU|
-BWI,|Guatemalan|US|
-GUA,|Guatemalan|US|
-HPN,|Guatemalan|US|
-IAD,|Guatemalan|US|
-ACA,|Guerrero & Oaxaca|
-ACV,|Guerrero & Oaxaca|
-FAT,|Guerrero & Oaxaca|
-FAT,|Guerrero & Oaxaca|
-OAX,|Guerrero & Oaxaca|
-PHX,|Guerrero & Oaxaca|
-SAN,|Guerrero & Oaxaca|
-SBD,|Guerrero & Oaxaca|
-SMF,|Guerrero & Oaxaca|
-STS,|Guerrero & Oaxaca|
-ZIH,|Guerrero & Oaxaca|
-AMD,|Gujarati|
-BHJ,|Gujarati|
-STV,|Gujarati|
-PAP,|Haitian|CA|
-YUL,|Haitian|CA|
-HAN,|Hmong|TH|
-MSP,|Hmong|TH|
-HAN,|Hmong|US|
-MSP,|Hmong|US|
-AKL,|Indian|AU|
-SYD,|Indian|AU|
-CNS,|Indian|AU|
-AVV,|Indian|AU|
-BNE,|Indian|AU|
-ADL,|Indian|AU|
-PER,|Indian|AU|
-MAN,|Indian|GB|
-LPL,|Indian|GB|
-LHR,|Indian|GB|
-BHX,|Indian|GB|
-STN,|Indian|GB|
-LTN,|Indian|GB|
-LGW,|Indian|GB|
-EWR,|Indian|US|
-DFW,|Indian|US|
-EWR,|Indian|US|
-IAH,|Indian|US|
-ORD,|Indian|US|
-SFO,|Indian|US|
-SJC,|Indian|US|
-LGA,|Indian|US|
-SEA,|Indian|US|
-IAD,|Indian|US|
-BER,|Iranian|DE|
-HAM,|Iranian|DE|
-IFN,|Iranian|DE|
-IKA,|Iranian|DE|
-TBZ,|Iranian|DE|
-THR,|Iranian|DE|
-IST,|Iranian|TR|
-IFN,|Iranian|US|
-IKA,|Iranian|US|
-LAX,|Iranian|US|
-SAN,|Iranian|US|
-SNA,|Iranian|US|
-TBZ,|Iranian|US|
-THR,|Iranian|US|
-BGW,|Iraqi|SE|
-BSR,|Iraqi|SE|
-ISU,|Iraqi|SE|
-EBL,|Iraqi|SE|
-ORB,|Iraqi|SE|
-ARN,|Iraqi|SE|
-BGW,|Iraqi|TR|
-BSR,|Iraqi|TR|
-ISU,|Iraqi|TR|
-IST,|Iraqi|TR|
-SAW,|Iraqi|TR|
-ESB,|Iraqi|TR|
-MEL,|Italian|AU|
-FCO,|Italian|AU|
-MXP,|Italian|AU|
-CTA,|Italian|AU|
-PMO,|Italian|AU|
-AAV,|Italian|AU|
-GRU,|Italian|BR|
-PHL,|Italian|US|
-MDW,|Italian|US|
-NAP,|Italian|US|
-FCO,|Italian|US|
-MXP,|Italian|US|
-CTA,|Italian|US|
-PMO,|Italian|US|
-CLQ,|Jalisco & Michoacán|
-CMH,|Jalisco & Michoacán|
-DFW,|Jalisco & Michoacán|
-DSM,|Jalisco & Michoacán|
-GDL,|Jalisco & Michoacán|
-ICT,|Jalisco & Michoacán|
-IND,|Jalisco & Michoacán|
-MCI,|Jalisco & Michoacán|
-MLM,|Jalisco & Michoacán|
-ORD,|Jalisco & Michoacán|
-PHX,|Jalisco & Michoacán|
-UPN,|Jalisco & Michoacán|
-YKM,|Jalisco & Michoacán|
-ZLO,|Jalisco & Michoacán|
-CDG,|Jewish|FR|
-TLV,|Jewish|FR|
-LCY,|Jewish|UK|
-LTN,|Jewish|UK|
-TLV,|Jewish|UK|
-BLR,|Kannada|AE|
-DXB,|Kannada|AE|
-IXE,|Kannada|AE|
-HND,|Korean|JP|
-ITM,|Korean|JP|
-LIM,|Korean|UK|
-ATL,|Korean|US|
-GMP,|Korean|US|
-IAD,|Korean|US|
-ICN,|Korean|US|
-LAX,|Korean|US|
-LGA,|Korean|US|
-PHL,|Korean|US|
-PUS,|Korean|US|
-COK,|Malayali|AE|
-TRV,|Malayali|AE|
-CCJ,|Malayali|AE|
-CNN,|Malayali|AE|
-DXB,|Malayali|AE|
-SHJ,|Malayali|AE|
-AUH,|Malayali|AE|
-AAN,|Malayali|AE|
-RKT,|Malayali|AE|
-FJR,|Malayali|AE|
-COK,|Malayali|MY|
-TRV,|Malayali|MY|
-CCJ,|Malayali|MY|
-CNN,|Malayali|MY|
-KUL,|Malayali|MY|
-JHB,|Malayali|MY|
-SZB,|Malayali|MY|
-PEN,|Malayali|MY|
-COK,|Malayali|MY|
-TRV,|Malayali|MY|
-CCJ,|Malayali|MY|
-CNN,|Malayali|MY|
-MCT,|Malayali|OM|
-SLL,|Malayali|OM|
-COK,|Malayali|OM|
-TRV,|Malayali|OM|
-CCJ,|Malayali|OM|
-CNN,|Malayali|OM|
-COK,|Malayali|SA|
-TRV,|Malayali|SA|
-CCJ,|Malayali|SA|
-CNN,|Malayali|SA|
-DMM,|Malayali|SA|
-RUH,|Malayali|SA|
-JED,|Malayali|SA|
-SIN,|Marathi|
-BOM,|Marathi|
-IXU,|Marathi|
-NAG,|Marathi|
-PNQ,|Marathi|
-CMN,|Moroccan|CA|
-YUL,|Moroccan|CA|
-RAK,|Moroccan|FR|
-CMN,|Moroccan|FR|
-RBA,|Moroccan|FR|
-FEZ,|Moroccan|FR|
-CDG,|Moroccan|FR|
-ORY,|Moroccan|FR|
-MRS,|Moroccan|FR|
-TLS,|Moroccan|FR|
-RAK,|Moroccan|NL|
-CMN,|Moroccan|NL|
-RBA,|Moroccan|NL|
-FEZ,|Moroccan|NL|
-AMS,|Moroccan|NL|
-LGW,|Nigerian|UK|
-LHR,|Nigerian|UK|
-LOS,|Nigerian|UK|
-ATL,|Nigerian|US|
-IAH,|Nigerian|US|
-LOS,|Nigerian|US|
-NRT,|Nikkei|AR|
-CGR,|Nikkei|BR|
-CMG,|Nikkei|BR|
-CWB,|Nikkei|BR|
-GRU,|Nikkei|BR|
-HND,|Nikkei|BR|
-IGU,|Nikkei|BR|
-ITM,|Nikkei|BR|
-KIK,|Nikkei|BR|
-NRT,|Nikkei|BR|
-HND,|Nikkei|MP|
-SPN,|Nikkei|MP|
-HND,|Nikkei|MX|
-ITM,|Nikkei|MX|
-KIK,|Nikkei|MX|
-MXL,|Nikkei|MX|
-NRT,|Nikkei|MX|
-HND,|Nikkei|PE|
-ITM,|Nikkei|PE|
-KIK,|Nikkei|PE|
-LIM,|Nikkei|PE|
-NRT,|Nikkei|PE|
-HND,|Nikkei|US|
-HNL,|Nikkei|US|
-ITM,|Nikkei|US|
-KIK,|Nikkei|US|
-LAX,|Nikkei|US|
-NRT,|Nikkei|US|
-CPH,|Pakistani|DK|
-AHB,|Pakistani|SA|
-DMM,|Pakistani|SA|
-JED,|Pakistani|SA|
-RUH,|Pakistani|SA|
-TIF,|Pakistani|SA|
-LHR,|Pakistani|UK|
-MAN,|Pakistani|UK|
-AUS,|Pakistani|US|
-EWR,|Pakistani|US|
-IAH,|Pakistani|US|
-ISB,|Pakistani|US|
-KHI,|Pakistani|US|
-LHE,|Pakistani|US|
-MAD,|Peruvian|ES|
-MEX,|Peruvian|MX|
-CDG,|Polish|FR|
-BVA,|Polish|FR|
-ORY,|Polish|FR|
-SXB,|Polish|FR|
-DUB,|Polish|IE|
-GDN,|Polish|IE|
-KRK,|Polish|IE|
-WAW,|Polish|IE|
-EDI,|Polish|UK|
-LGW,|Polish|UK|
-MAN,|Polish|UK|
-GDN,|Polish|US|
-KRK,|Polish|US|
-ORD,|Polish|US|
-MDW,|Polish|US|
-BDL,|Polish|US|
-LGA,|Polish|US|
-WAW,|Polish|US|
-AIP,|Punjabi|CA|
-ATQ,|Punjabi|CA|
-IXC,|Punjabi|CA|
-YVR,|Punjabi|CA|
-YYC,|Punjabi|CA|
-YYZ,|Punjabi|CA|
-CIA,|Romanian|IT|
-OTP,|Romanian|IT|
-LIN,|Romanian|IT|
-TRN,|Romanian|IT|
-BGY,|Romanian|IT|
-TSF,|Romanian|IT|
-PSA,|Romanian|IT|
-LGB,|Salvadoran|US|
-SNA,|Salvadoran|US|
-BWI,|Salvadoran|US|
-ISP,|Salvadoran|US|
-SAL,|Salvadoran|US|
-APW,|Samoan|CL|
-SLC,|Samoan|CL|
-AKL,|Samoan|NZ|
-APW,|Samoan|NZ|
-HGA,|Somali|NO|
-MGQ,|Somali|NO|
-OSL,|Somali|NO|
-HGA,|Somali|US|
-MGQ,|Somali|US|
-SEA,|Somali|US|
-AMS,|Surinamese|
-PBM,|Surinamese|
-ALP,|Syrian|BR|
-DAM,|Syrian|BR|
-ALP,|Syrian|NL|
-ARN,|Syrian|NL|
-DAM,|Syrian|NL|
-CJB,|Tamil|AE|
-DXB,|Tamil|AE|
-IXM,|Tamil|AE|
-MAA,|Tamil|AE|
-TCR,|Tamil|AE|
-TRZ,|Tamil|AE|
-CJB,|Tamil|MY|
-IXM,|Tamil|MY|
-KUL,|Tamil|MY|
-LGK,|Tamil|MY|
-MAA,|Tamil|MY|
-PEN,|Tamil|MY|
-TCR,|Tamil|MY|
-TRZ,|Tamil|MY|
-YYZ,|Telugu|CA|
-HYD,|Telugu|CA|
-TIR,|Telugu|CA|
-VGA,|Telugu|CA|
-VTZ,|Telugu|CA|
-MRS,|Tunisian|FR|
-NBE,|Tunisian|FR|
-ORY,|Tunisian|FR|
-TUN,|Tunisian|FR|
-BER,|Turkish|DE|
-FRA,|Turkish|DE|
-HAM,|Turkish|DE|
-MUC,|Turkish|DE|
-ADA,|Turkish|DK|
-ADB,|Turkish|DK|
-CPH,|Turkish|DK|
-ESB,|Turkish|DK|
-IST,|Turkish|DK|
-ADA,|Turkish|NL|
-ADB,|Turkish|NL|
-AMS,|Turkish|NL|
-ESB,|Turkish|NL|
-IST,|Turkish|NL|
-HRK,|Ukrainian|US|
-JFK,|Ukrainian|US|
-KPB,|Ukrainian|US|
-CCS,|Venezuelan|CL|
-MAR,|Venezuelan|CL|
-SLC,|Venezuelan|CL|
-CCS,|Venezuelan|PE|
-LIM,|Venezuelan|PE|
-MAR,|Venezuelan|PE|
-CCS,|Venezuelan|US|
-FLL,|Venezuelan|US|
-MAR,|Venezuelan|US|
-MIA,|Venezuelan|US|
-BNE,|Vietnamese|AU|
-DAD,|Vietnamese|AU|
-HAN,|Vietnamese|AU|
-MEL,|Vietnamese|AU|
-SGN,|Vietnamese|AU|
-SYD,|Vietnamese|AU|
-DAD,|Vietnamese|JP|
-HAN,|Vietnamese|JP|
-HND,|Vietnamese|JP|
-HPH,|Vietnamese|JP|
-KIK,|Vietnamese|JP|
-SGN,|Vietnamese|JP|
-DAD,|Vietnamese|US|
-HAN,|Vietnamese|US|
-IAH,|Vietnamese|US|
-LAX,|Vietnamese|US|
-SEA,|Vietnamese|US|
-SGN,|Vietnamese|US|
-SJC,|Vietnamese|US|
-SNA,|Vietnamese|US|
-SEA,Amazon
-DUB,Amazon
-HYD,Amazon
-CUN,Anglophone
-SJC,Apple
-SZX,Apple
-ORK,Apple
-BSL,Art Industry
-MLH,Art Industry
-VCE,Art Industry
-HKG,Art Industry
-MIA,Art Industry
-DTW,Automotive Industry
-STR,Automotive Industry
-NGO,Automotive Industry
-HMO,Automotive Industry
-TLC,Automotive Industry
-YQG,Automotive Industry
-MTY,Automotive Industry
-FLL,CC
-JFK,CC
-MIA,CC
-PQI,Francophonie
-YBC,Francophonie
-YBG,Francophonie
-YCL,Francophonie
-YGP,Francophonie
-YHU,Francophonie
-YMT,Francophonie
-YQB,Francophonie
-YRJ,Francophonie
-YTF,Francophonie
-YTM,Francophonie
-YUL,Francophonie
-YUY,Francophonie
-YVO,Francophonie
-YXK,Francophonie
-YYY,Francophonie
-YZV,Francophonie
-ZBF,Francophonie
-AGT,German
-WDH,German
-ABQ,Hispanic
-BFL,Hispanic
-BFL,Hispanic
-BRO,Hispanic
-BUR,Hispanic
-CRP,Hispanic
-ELP,Hispanic
-FLL,Hispanic
-HPN,Hispanic
-HRL,Hispanic
-JFK,Hispanic
-LAS,Hispanic
-LAX,Hispanic
-LRD,Hispanic
-MFE,Hispanic
-MFR,Hispanic
-MIA,Hispanic
-NLD,Hispanic
-OAK,Hispanic
-ONT,Hispanic
-PUB,Hispanic
-RSW,Hispanic
-SAF,Hispanic
-SAT,Hispanic
-SJC,Hispanic
-SNA,Hispanic
-TUS,Hispanic
-YUM,Hispanic
-MGM,Hyundai
-ATL,Hyundai
-MAA,Hyundai
-ICN,Hyundai
-BDL,Irish American
-BOS,Irish American
-DUB,Irish American
-HPN,Irish American
-MHT,Irish American
-ORH,Irish American
-PHL,Irish American
-SNN,Irish American
-EWR,Jewish
-FLL,Jewish
-IAD,Jewish
-JFK,Jewish
-LAX,Jewish
-LGA,Jewish
-MIA,Jewish
-ORD,Jewish
-PBI,Jewish
-PHL,Jewish
-SFO,Jewish
-SNA,Jewish
-TLV,Jewish
-EWR,Johnson & Johnson
-BRU,Johnson & Johnson
-CRH,Johnson & Johnson
-PVG,Johnson & Johnson
-MIA,Lusophone
-GVA,Nestlé
-CLE,Nestlé
-PEK,Nestlé
-DXB,Nestlé
-PVG,Renewable Energy Industry
-SZX,Renewable Energy Industry
-CPH,Renewable Energy Industry
-BER,Renewable Energy Industry
-ICN,Samsung
-AUS,Samsung
-DEL,Samsung
-SGN,Samsung
-BDL,Stateside Puerto Ricans
-CLE,Stateside Puerto Ricans
-HVN,Stateside Puerto Ricans
-LGA,Stateside Puerto Ricans
-MCO,Stateside Puerto Ricans
-MDW,Stateside Puerto Ricans
-PHL,Stateside Puerto Ricans
-YXU,Toyota
-SDF,Toyota
-SAT,Toyota
-CAN,Toyota
-NGO,Toyota
-BOD,Vitticulture
-STS,Vitticulture
-MDZ,Vitticulture
-CPT,Vitticulture
-ADL,Vitticulture
-CHC,Vitticulture
-FLR,Vitticulture
-OAK,Vitticulture
-HAJ,Volkswagen
-IGS,Volkswagen
-STR,Volkswagen
-PRG,Volkswagen
-CHA,Volkswagen
-PBC,Volkswagen
-DUB,Whiskey Industry
-LEX,Whiskey Industry
-ABZ,Whiskey Industry
-INV,Whiskey Industry
-GLA,Whiskey Industry
-EDI,Whiskey Industry
-HND,Whiskey Industry
-SDF,Whiskey Industry
+airportCode,airportZone,,
+AAN,|AE|Malayali,,
+AAV,|AU|Italian,,
+ABQ,Hispanic|,,
+ABZ,Whiskey Industry,,
+ACA,|US|Guerrero & Oaxaca,,
+ACC,|NL|Ghanaian,,
+ACV,|US|Guerrero & Oaxaca,,
+ADA,|DK|Turkish,,
+ADA,|NL|Turkish,,
+ADB,|DK|Turkish,,
+ADB,|NL|Turkish,,
+ADD,|IE|Ethiopian,,
+ADD,|US|Ethiopian,,
+ADD,|US|Ethiopian,,
+ADD,|ZA|Ethiopian,,
+ADL,|AU|Indian,,
+ADL,Vitticulture,,
+AGP,|ES|Ecuadorian,,
+AGT,German|,,
+AGU,|US|Durango & Zacatecas,,
+AHB,|SA|Pakistani,,
+AHB,Oil Industry,,
+AIP,|CA|Punjabi,,
+AJF,Oil Industry,,
+AKL,|AU|Indian,,
+AKL,|NZ|Samoan,,
+ALC,Loves Tenerife x2|,,
+ALG,|CA|Algerian,,
+ALG,|FR|Algerian,,
+ALP,|BR|Syrian,,
+ALP,|NL|Syrian,,
+AMD,|KE|Gujarati,,
+AMH,|US|Ethiopian,,
+AMH,|ZA|Ethiopian,,
+AMS,|NL|Ghanaian,,
+AMS,|NL|Moroccan,,
+AMS,|NL|Surinamese,,
+AMS,|NL|Turkish,,
+ANC,|US|Samoan,,
+ANC,LNG,,
+ANC,Oil Industry,"Anchorage Alaska, USA",
+ANF,Copper,Antofagasta Chile,
+ANR,Loves Tiroler Unterlan x2|,,
+ANR,Nokia,,
+AQP,Copper,Arequipa Peru,
+ARN,|NL|Syrian,,
+ARN,|SE|Iraqi,,
+ASB,Oil Industry,,
+ATH,|AU|Greek,,
+ATL,|US|Colombian,,
+ATL,|US|Korean,,
+ATL,|US|Nigerian,,
+ATL,Hyundai,,
+ATQ,|CA|Punjabi,,
+ATY,Loves Antalya x2|,,
+AUH,|AE|Malayali,,
+AUS,|US|Durango & Zacatecas,,
+AUS,|US|Pakistani,,
+AUS,Samsung,,
+AUS,Technology Industry,,
+AUS,Tesla,,
+AVV,|AU|Indian,,
+BAQ,|CL|Colombian,,
+BAQ,|MX|Colombian,,
+BAQ,|US|Colombian,,
+BAV,Rare earths,Baotou,
+BCN,|ES|Ecuadorian,,
+BDA,Global Finance,,
+BDL,|US|Irish American,,
+BDL,|US|Polish,,
+BDL,|US|Stateside Puerto Ricans,,
+BEG,|DE|Serbian,,
+BEG,|FR|Serbian,,
+BER,|DE|Iranian,,
+BER,|DE|Turkish,,
+BER,Renewable Energy Industry,,
+BER,Siemens,,
+BER,Technology Industry,,
+BER,Tesla,,
+BER,|DE|Serbian,,
+BET,Oil Industry,"Bethel Alaska, USA",
+BFL,Hispanic|,,
+BFL,Hispanic|,,
+BGW,|SE|Iraqi,,
+BGW,|TR|Iraqi,,
+BGY,|IT|Romanian,,
+BHJ,|KE|Gujarati,,
+BHX,|GB|Indian,,
+BJR,|ZA|Ethiopian,,
+BKK,|TH|Chinese,,
+BKK,Toyota,,
+BLR,|AE|Kannada,,
+BLR,|OM|Kannada,,
+BLR,Technology Industry,,
+BNE,|AU|Chinese,,
+BNE,|AU|Indian,,
+BNE,|AU|Vietnamese,,
+BNE,Renewable Energy Industry,,
+BOD,Vitticulture,,
+BOG,|CL|Colombian,,
+BOG,|MX|Colombian,,
+BOG,|US|Colombian,,
+BOM,|SG|Marathi,,
+BOM,Siemens,,
+BOS,|US|Brazilian,,
+BOS,|US|Irish American,,
+BOS,Technology Industry,,
+BPN,Oil Industry,"Balikpapan, Indonesia",
+BRE,Loves Bolzano x2|,,
+BRO,Hispanic|,,
+BRU,|CD|Congolese,,
+BRU,Johnson & Johnson ,,
+BRW,LNG,,
+BRW,Oil Industry,"Barrow Alaska, USA",
+BSL,Art Industry,,
+BSR,|SE|Iraqi,,
+BSR,|TR|Iraqi,,
+BSR,Oil Industry,,
+BTK,Gold Industry,Bratsk (Lena goldfields) Russia,
+BTR,LNG,,
+BUF,Tesla,,
+BUR,Entertainment Industry,,
+BUR,Hispanic|,,
+BVA,|FR|Polish,,
+BVA,|FR|Serbian,,
+BWI,|US|Guatemalan,,
+BWI,|US|Salvadoran,,
+BWI,Oil Industry,Bakersfield USA,
+BWN,LNG,,
+BZO,Loves Bolzano x2|,,
+CAB,Francophonie|,,
+CAK,LNG,,
+CAN,Cantonese|,,
+CAN,Toyota,,
+CAY,Global Finance,,
+CAZ,Copper,Cobar,
+CAZ,Gold Industry,Cobar (various mines) New South Wales,
+CBB,|AR|Bolivian,,
+CBB,|BR|Bolivian,,
+CCD,Gold Industry,Cloncurry (Ernest Henry Mine) Queensland,
+CCJ,|AE|Malayali,,
+CCJ,|MY|Malayali,,
+CCJ,|MY|Malayali,,
+CCJ,|OM|Malayali,,
+CCJ,|SA|Malayali,,
+CCS,|CL|Venezuelan,,
+CCS,|PE|Venezuelan,,
+CCS,|US|Venezuelan,,
+CCU,|CA|Bengali,,
+CCU,|US|Bengali,,
+CCU,Bengali|,,
+CDG,|FR|Algerian,,
+CDG,|FR|Jewish,,
+CDG,|FR|Moroccan,,
+CDG,|FR|Polish,,
+CDG,Renault,,
+CDG,Technology Industry,,
+CGK,Toyota,,
+CGN,Loves Bolzano x2|,,
+CGO,Nokia,,
+CGR,|BR|Nikkei,,
+CHA,Volkswagen,,
+CHC,|NZ|Samoan,,
+CHC,Vitticulture,,
+CHN,Nokia,,
+CIA,|IT|Romanian,,
+CJB,|AE|Tamil,,
+CJB,|MY|Tamil,,
+CJC,Copper,Calama Chile,
+CLE,|US|Stateside Puerto Ricans,,
+CLE,Nestlé,,
+CLO,|CL|Colombian,,
+CLO,|MX|Colombian,,
+CLO,|US|Colombian,,
+CLQ,|US|Jalisco & Michoacán,,
+CLT,Siemens,,
+CME,Oil Industry,,
+CMG,|BR|Nikkei,,
+CMH,|US|Jalisco & Michoacán,,
+CMN,|CA|Moroccan,,
+CMN,|FR|Moroccan,,
+CMN,|NL|Moroccan,,
+CNN,|AE|Malayali,,
+CNN,|MY|Malayali,,
+CNN,|MY|Malayali,,
+CNN,|OM|Malayali,,
+CNN,|SA|Malayali,,
+CNS,|AU|Indian,,
+COK,|AE|Malayali,,
+COK,|MY|Malayali,,
+COK,|MY|Malayali,,
+COK,|OM|Malayali,,
+COK,|SA|Malayali,,
+COR,Loves Porto Alegre x2|,,
+CPH,|DK|Pakistani,,
+CPH,|DK|Turkish,,
+CPH,Renewable Energy Industry,,
+CPO,Copper,Copiapó Chile,
+CPT,Vitticulture,,
+CRH,Johnson & Johnson ,,
+CRK,|IE|Filipino,,
+CRK,|IT|Filipino,,
+CRK,|US|Filipino,,
+CRP,Hispanic|,,
+CRZ,Oil Industry,,
+CTA,|AU|Italian,,
+CTA,|BR|Italian,,
+CTA,|US|Italian,,
+CTU,|AU|Chinese,,
+CTU,|CA|Chinese,,
+CTU,|TH|Chinese,,
+CTU,|US|Chinese,,
+CUN,|MX|Bolivian,,
+CUN,Anglophone|,,
+CWB,|BR|Nikkei,,
+CWG,Copper,Chingola Zambia,
+DAC,|SA|Bangladeshi,,
+DAD,|AU|Vietnamese,,
+DAD,|JP|Vietnamese,,
+DAD,|US|Vietnamese,,
+DAM,|BR|Syrian,,
+DAM,|NL|Syrian,,
+DEL,Nokia,,
+DEL,Samsung,,
+DEN,|US|Ethiopian,,
+DFW,|US|Chinese,,
+DFW,|US|Durango & Zacatecas,,
+DFW,|US|Indian,,
+DFW,|US|Jalisco & Michoacán,,
+DFW,Nokia,,
+DGO,|US|Durango & Zacatecas,,
+DHA,Oil Industry,,
+DLG,Oil Industry,"Dillingham Alaska, USA",
+DME,Loves Pattaya x2|,,
+DME,|RU|Armenian,,
+DME,Loves Antalya x2|,,
+DME,Loves El Sheikh x2|,,
+DMK,|TH|Chinese,,
+DMM,|SA|Bangladeshi,,
+DMM,|SA|Malayali,,
+DMM,|SA|Pakistani,,
+DMM ,Oil Industry,,
+DOH,LNG,,
+DPS,Loves Bali x2|,,
+DSM,|US|Jalisco & Michoacán,,
+DSS,Oil Industry,,
+DTM,Loves Bolzano x2|,,
+DTM,|DE|Serbian,,
+DTW,Automotive Industry,,
+DUB,|IE|Polish,,
+DUB,|US|Irish American,,
+DUB,Global Finance,,
+DUB,Whiskey Industry,,
+DUR,|ZA|Ethiopian,,
+DUS,Loves Bolzano x2|,,
+DUS,|DE|Serbian,,
+DVO,|IE|Filipino,,
+DVO,|IT|Filipino,,
+DVO,|US|Filipino,,
+DXB,|AE|Malayali,,
+DXB,Gold Industry,Dubai,
+DXB,Nestlé,,
+DXB,Oil Industry,,
+EBL,|SE|Iraqi,,
+EDI,|UK|Polish,,
+EDI,Whiskey Industry,,
+EIS,Global Finance,,
+ELG,Gold Industry,El Gouera (FIFO),
+ELP,Hispanic|,,
+ENA,LNG,,
+ESB,|DK|Turkish,,
+ESB,|NL|Turkish,,
+ESB,|TR|Iraqi,,
+EVN,|FR|Armenian,,
+EVN,|RU|Armenian,,
+EWR,|US|Brazilian,,
+EWR,|US|Chinese,,
+EWR,|US|Indian,,
+EWR,|US|Pakistani,,
+EWR,Jewish|,,
+EWR,Johnson & Johnson ,,
+EZE,|AR|Bolivian,,
+EZE,Loves Porto Alegre x2|,,
+FAI,Oil Industry,"Fairbanks Alaska, USA",
+FAT,|US|Guerrero & Oaxaca,,
+FAT,|US|Guerrero & Oaxaca,,
+FBM,|CD|Congolese,,
+FBM,Copper,Lubumbashi DRC,
+FCO,|AU|Italian,,
+FCO,|BR|Italian,,
+FCO,|IT|Filipino,,
+FCO,|US|Italian,,
+FEZ,|FR|Moroccan,,
+FEZ,|NL|Moroccan,,
+FIH,|CD|Congolese,,
+FJR,|AE|Malayali,,
+FLL,|CU|Cuban,,
+FLL,|US|Venezuelan,,
+FLL,CC|,,
+FLL,Hispanic|,,
+FLL,Jewish|,,
+FLR,Vitticulture,,
+FMM,Loves Bolzano x2|,,
+FOC,|AU|Chinese,,
+FOC,|CA|Chinese,,
+FOC,|TH|Chinese,,
+FOC,|US|Chinese,,
+FRA,|DE|Turkish,,
+FRA,Loves Bolzano x2|,,
+FRA,|DE|Serbian,,
+GDL,|US|Jalisco & Michoacán,,
+GDN,|IE|Polish,,
+GDN,|US|Polish,,
+GDX,Gold Industry,Magadan (Kolyma region) Russia,
+GEO,Oil Industry,Georgetown,
+GLA,Whiskey Industry,,
+GLT,LNG,,
+GMP,|JP|Korean,,
+GMP,|US|Korean,,
+GOM,Rwanda-Rundi|,,
+GRU,|BR|Bolivian,,
+GRU,|BR|Italian,,
+GRU,|BR|Nikkei,,
+GRU,|BR|Syrian,,
+GRU,|US|Brazilian,,
+GRU,BMW,,
+GUA,|US|Guatemalan,,
+GUW,Oil Industry,,
+GUW,Uranium industry,Atyrau,Kazakhstan
+GVA,Francophonie|,,
+GVA,Nestlé,,
+GYE,|ES|Ecuadorian,,
+GYE,|US|Ecuadorian,,
+HAJ,Loves Bolzano x2|,,
+HAJ,Volkswagen,,
+HAM,|DE|Afghan,,
+HAM,|DE|Iranian,,
+HAM,|DE|Turkish,,
+HAM,Loves Bolzano x2|,,
+HAN,|AU|Vietnamese,,
+HAN,|JP|Vietnamese,,
+HAN,|US|Hmong,,
+HAN,|US|Vietnamese,,
+HAV,|CU|Cuban,,
+HEL,Nokia,,
+HGA,|NO|Somali,,
+HGA,|US|Somali,,
+HGH,|AU|Chinese,,
+HGH,|CA|Chinese,,
+HGH,|TH|Chinese,,
+HGH,|US|Chinese,,
+HHN,Loves Bolzano x2|,,
+HKG,Art Industry,,
+HKG,Cantonese|,,
+HKG,Global Finance,,
+HKT,Loves Phuket x2|,,
+HLA,Gold Industry,,
+HMO,Automotive Industry,,
+HND,|BR|Nikkei,,
+HND,|JP|Korean,,
+HND,|JP|Vietnamese,,
+HND,|MP|Nikkei,,
+HND,|PE|Nikkei,,
+HND,|US|Nikkei,,
+HND,Renault,,
+HNL,|US|Filipino,,
+HNL,|US|Nikkei,,
+HNL,|US|Samoan,,
+HOG,|CU|Cuban,,
+HOU,|US|Durango & Zacatecas,,
+HOU,Oil Industry,,
+HPH,|JP|Vietnamese,,
+HPN,|US|Ecuadorian,,
+HPN,|US|Guatemalan,,
+HPN,|US|Irish American,,
+HPN,Hispanic|,,
+HRE,Platinum Mining,,
+HRL,Hispanic|,,
+HUY,Siemens,,
+HVN,|US|Stateside Puerto Ricans,,
+HYD,|CA|Telugu,,
+HYD,Technology Industry,,
+IAD,|US|Ethiopian,,
+IAD,|US|Guatemalan,,
+IAD,|US|Indian,,
+IAD,|US|Korean,,
+IAD,Jewish|,,
+IAD,Siemens,,
+IAD,Technology Industry,,
+IAH,|US|Chinese,,
+IAH,|US|Indian,,
+IAH,|US|Nigerian,,
+IAH,|US|Pakistani,,
+IAH,|US|Vietnamese,,
+IAH,LNG,,
+IAH,Oil Industry,,
+ICN,|JP|Korean,,
+ICN,|US|Korean,,
+ICN,Hyundai,,
+ICN,Samsung,,
+ICT,|US|Jalisco & Michoacán,,
+IFN,|DE|Iranian,,
+IFN,|TR|Iranian,,
+IFN,|US|Iranian,,
+IGS,Volkswagen,,
+IGU,|BR|Nikkei,,
+IKA,|DE|Iranian,,
+IKA,|TR|Iranian,,
+IKA,|US|Iranian,,
+IKT,Gold Industry,Irkutsk (Bodaibo) Russia,
+IND,|US|Jalisco & Michoacán,,
+INN,Loves Tiroler Unterlan x2|,,
+INV,Whiskey Industry,,
+IQM,Gold Industry,Qiemo (various mines) Xinjiang,
+IQQ,Copper,Iquique Chile,
+ISA,Copper,Mount Isa,
+ISB,|US|Pakistani,,
+ISP,|US|Salvadoran,,
+IST,|DK|Turkish,,
+IST,|NL|Turkish,,
+IST,|TR|Afghan,,
+IST,|TR|Iranian,,
+IST,|TR|Iraqi,,
+ISU,|SE|Iraqi,,
+ISU,|TR|Iraqi,,
+ITM,|JP|Korean,,
+IXC,|CA|Punjabi,,
+IXE,|AE|Kannada,,
+IXE,|OM|Kannada,,
+IXM,|AE|Tamil,,
+IXM,|MY|Tamil,,
+IXU,|SG|Marathi,,
+JED,|DK|Pakistani,,
+JED,|SA|Bangladeshi,,
+JED,|SA|Malayali,,
+JED,|SA|Pakistani,,
+JFK,|US|Ukrainian,,
+JFK,Cantonese|,,
+JFK,CC|,,
+JFK,Entertainment Industry,,
+JFK,Global Finance,,
+JFK,Hispanic|,,
+JFK,Jewish|,,
+JGD,Gold Industry,Jiagedaqi (various mines) Heilongjiang,
+JHB,|MY|Malayali,,
+JNB,|ZA|Ethiopian,,
+JNB,Copper,Johannesbug,
+JNB,Gold Industry,Johannesburg,
+JNB,Platinum Mining,,
+JNB,Uranium industry,,
+JNZ,Gold Industry,Jinzhou (various mines) Liaoning,
+KBL,|DE|Afghan,,
+KBL,|PK|Afghan,,
+KBL,|TR|Afghan,,
+KBL,Pashto|,,
+KDH,Pashto|,,
+KGI,Gold Industry,Kalgoorlie (FIFO),
+KGI,Gold Industry,Kalgoorlie-Boulder (Super Pit) Western Australia,
+KGL,Gold Industry,Kigali,
+KHI,|PK|Afghan,,
+KHI,|US|Pakistani,,
+KHS,Oil Industry,,
+KIT,Copper,Kitwe Zambia,
+KIX,|BR|Nikkei,,
+KIX,|JP|Vietnamese,,
+KIX,|MP|Nikkei,,
+KIX,|PE|Nikkei,,
+KIX,|US|Nikkei,,
+KJA,Gold Industry,Krasnoyarsk (various mines) Russia,
+KME,|US|Salvadoran,,
+KMG,|AU|Chinese,,
+KMG,|CA|Chinese,,
+KMG,|TH|Chinese,,
+KMG,|US|Chinese,,
+KMG,Rare earths,Kunming,
+KRK,|IE|Polish,,
+KRK,|US|Polish,,
+KRL,Oil Industry,,
+KRR,|RU|Armenian,,
+KTA,LNG,,
+KTW,Volkswagen,,
+KUF,Loves Pattaya x2|,,
+KUF,Loves Antalya x2|,,
+KUL,|MY|Malayali,,
+KUL,|MY|Tamil,,
+KUL,Cantonese|,,
+KVA,Loves Kavala x2|,,
+KWI,Oil Industry,,
+KWZ,Copper,Kolwezi DRC,
+KZN,Loves Pattaya x2|,,
+KZN,Loves Antalya x2|,,
+KZO,Oil Industry,,
+KZO,Uranium industry,Kyzylorda Kazakhstan,
+LAD,Oil Industry,,
+LAS,Hispanic|,,
+LAX,|US|Chinese,,
+LAX,|US|Filipino,,
+LAX,|US|Iranian,,
+LAX,|US|Korean,,
+LAX,|US|Nikkei,,
+LAX,|US|Vietnamese,,
+LAX,Entertainment Industry,,
+LAX,Hispanic|,,
+LCX,Copper,Longyan,
+LCY,|UK|Jewish,,
+LEA,Gold Industry,Laverton (Telfer Mine) Western Australia,
+LED,Loves Pattaya x2|,,
+LED,|RU|Armenian,,
+LED,Loves Antalya x2|,,
+LED,Loves El Sheikh x2|,,
+LEO,Gold Industry,Leinster (various mines) Western Australia,
+LEX,Whiskey Industry,,
+LFT,LNG,,
+LGA,|US|Indian,,
+LGA,|US|Korean,,
+LGA,|US|Polish,,
+LGA,|US|Stateside Puerto Ricans,,
+LGA,Jewish|,,
+LGB,|US|Salvadoran,,
+LGB,|US|Samoan,,
+LGK,|MY|Tamil,,
+LGW,|GB|Indian,,
+LGW,|UK|Nigerian,,
+LGW,|UK|Polish,,
+LHE,|US|Pakistani,,
+LHR,|GB|Indian,,
+LHR,|UK|Nigerian,,
+LHR,|UK|Pakistani,,
+LHR,Bengali|,,
+LHR,Global Finance,,
+LHR,Technology Industry,,
+LIM,|PE|Nikkei,,
+LIM,|PE|Venezuelan,,
+LIM,Copper,Lima Peru,
+LIN,|IT|Romanian,,
+LLF,Rare earths,Lingling,China
+LNG,LNG,,
+LNL,Gold Industry,Lianshanguan (various mines) Heilongjiang,
+LOS,|UK|Nigerian,,
+LOS,|US|Nigerian,,
+LOS,Oil Industry,,
+LPB,|AR|Bolivian,,
+LPB,|BR|Bolivian,,
+LPL,|GB|Indian,,
+LRD,Hispanic|,,
+LTN,|GB|Indian,,
+LTN,|UK|Jewish,,
+LUG,Italian|,,
+LUN,Anglophone|,,
+LUN,Copper,Lusaka Zambia,
+LUX,Global Finance,,
+LUX,Lusophone|,,
+LVO,Gold Industry,Leonora (Sunrise Dam) Western Australia,
+LYS,|FR|Armenian,,
+LYS,|FR|Serbian,,
+MAA,|AE|Tamil,,
+MAA,|MY|Tamil,,
+MAA,Hyundai,,
+MAD,|ES|Ecuadorian,,
+MAD,|ES|Peruvian,,
+MAF,|US|Durango & Zacatecas,,
+MAF,Oil Industry,Midland USA,
+MAN,|GB|Indian,,
+MAN,|UK|Pakistani,,
+MAN,|UK|Polish,,
+MAN,Bengali|,,
+MAR,|CL|Venezuelan,,
+MAR,|PE|Venezuelan,,
+MAR,|US|Venezuelan,,
+MBA,Oil Industry,,
+MCI,|US|Jalisco & Michoacán,,
+MCO,|US|Brazilian,,
+MCO,|US|Stateside Puerto Ricans,,
+MCT,|OM|Malayali,,
+MCT,Oil Industry,,
+MDE,|CL|Colombian,,
+MDE,|MX|Colombian,,
+MDE,|US|Colombian,,
+MDW,|US|Italian,,
+MDW,|US|Polish,,
+MDW,|US|Stateside Puerto Ricans,,
+MDZ,Loves Porto Alegre x2|,,
+MDZ,Vitticulture,,
+MEA,Oil Industry,,
+MEL,|AU|Chinese,,
+MEL,|AU|Greek,,
+MEL,|AU|Italian,,
+MEL,|AU|Vietnamese,,
+MEL,Copper,Melbourne,
+MEX,|ES|Peruvian,,
+MEX,|MX|Bolivian,,
+MEX,|MX|Colombian,,
+MFE,Hispanic|,,
+MFM,Cantonese|,,
+MFR,Hispanic|,,
+MGM,Hyundai,,
+MGQ,|NO|Somali,,
+MGQ,|US|Somali,,
+MHT,|US|Irish American,,
+MIA,|CU|Cuban,,
+MIA,|US|Venezuelan,,
+MIA,Art Industry,,
+MIA,CC|,,
+MIA,Hispanic|,,
+MIA,Jewish|,,
+MIA,Lusophone|,,
+MLH,Art Industry,,
+MLM,|US|Jalisco & Michoacán,,
+MNL,|IE|Filipino,,
+MNL,|IT|Filipino,,
+MNL,|US|Filipino,,
+MPM,Lusophone|,,
+MRS,|FR|Algerian,,
+MRS,|FR|Moroccan,,
+MRS,|FR|Tunisian,,
+MSP,|US|Hmong,,
+MTQ,Gold Industry,Mount Isa (various mines) Queensland,
+MTT,Oil Industry,,
+MTY,|MX|Bolivian,,
+MTY,Automotive Industry,,
+MTY,Tesla,,
+MUC,|DE|Turkish,,
+MUC,BMW,,
+MUC,Siemens,,
+MUC,|DE|Serbian,,
+MXP,|AU|Italian,,
+MXP,|BR|Italian,,
+MXP,|IT|Filipino,,
+MXP,|US|Italian,,
+MXZ,Rare earths,Meixian,China
+MZR,|DE|Afghan,,
+MZR,|PK|Afghan,,
+MZR,|TR|Afghan,,
+NAG,|SG|Marathi,,
+NAP,|BR|Italian,,
+NAP,|US|Italian,,
+NAS,Global Finance,,
+NBE,|FR|Tunisian,,
+NBO,|KE|Gujarati,,
+NCE,|FR|Serbian,,
+NGO,|BR|Nikkei,,
+NGO,|MP|Nikkei,,
+NGO,|PE|Nikkei,,
+NGO,|US|Nikkei,,
+NGO,Automotive Industry,,
+NGO,Toyota,,
+NKG,|AU|Chinese,,
+NKG,|CA|Chinese,,
+NKG,|TH|Chinese,,
+NKG,|US|Chinese,,
+NLA,Copper,Ndola Zambia,
+NLD,Hispanic|,,
+NNM,Loves Pattaya x2|,,
+NNM,Loves Antalya x2|,,
+NNM,Loves El Sheikh x2|,,
+NOR,Copper,Norilsk Russia,
+NQN,Oil Industry,Neuquén AR,
+NRT,|AR|Nikkei,,
+NRT,|BR|Nikkei,,
+NRT,|MP|Nikkei,,
+NRT,|PE|Nikkei,,
+NRT,|US|Nikkei,,
+NTY,Platinum Mining,,
+NUX,LNG,,
+NZH,Gold Industry,Manzhouli (various mines) Inner Mongolia,
+OAK,|US|Filipino,,
+OAK,Hispanic|,,
+OAK,Vitticulture,,
+OAX,|US|Guerrero & Oaxaca,,
+OKC,|US|Durango & Zacatecas,,
+OLP,Copper,Olympic Dam,
+ONT,|US|Filipino,,
+ONT,Hispanic|,,
+ORB,|SE|Iraqi,,
+ORD,|US|Chinese,,
+ORD,|US|Indian,,
+ORD,|US|Jalisco & Michoacán,,
+ORD,|US|Polish,,
+ORD,Jewish|,,
+ORD,Nokia,,
+ORH,|US|Irish American,,
+ORK,Apple,,
+ORN,|CA|Algerian,,
+ORN,|FR|Algerian,,
+ORY,|FR|Algerian,,
+ORY,|FR|Armenian,,
+ORY,|FR|Moroccan,,
+ORY,|FR|Polish,,
+ORY,|FR|Tunisian,,
+ORY,|FR|Serbian,,
+OSL,|NO|Somali,,
+OTP,|IT|Romanian,,
+OTP,Renault,,
+PAP,|CA|Haitian,,
+PAP,|CL|Haitian,,
+PBC,Volkswagen,,
+PBI,|CU|Cuban,,
+PBI,|US|Brazilian,,
+PBI,|US|Colombian,,
+PBI,Jewish|,,
+PBM,|NL|Surinamese,,
+PEE,Loves Pattaya x2|,,
+PEE,Loves Antalya x2|,,
+PEK,|AU|Chinese,,
+PEK,|CA|Chinese,,
+PEK,|TH|Chinese,,
+PEK,|US|Chinese,,
+PEK,BMW,,
+PEK,Nestlé,,
+PEN,|MY|Malayali,,
+PEN,|MY|Tamil,,
+PER,|AU|Chinese,,
+PER,|AU|Indian,,
+PER,Gold Industry,Perth,
+PER,LNG,,
+PER,Uranium industry,Perth,Australia
+PEW,|PK|Afghan,,
+PEW,Pashto|,,
+PHC,Oil Industry,,
+PHL,|US|Irish American,,
+PHL,|US|Italian,,
+PHL,|US|Korean,,
+PHL,|US|Stateside Puerto Ricans,,
+PHL,Jewish|,,
+PHO,Copper,Phoenix USA,
+PHX,|US|Guerrero & Oaxaca,,
+PHX,|US|Jalisco & Michoacán,,
+PKC,Gold Industry,Petropavlovsk-Kamchatsky (Kamchatka) Russia,
+PMI,Loves Mallorca x2|,,
+PMO,|AU|Italian,,
+PMO,|BR|Italian,,
+PMO,|US|Italian,,
+PNQ,|SG|Marathi,,
+PNS,Oil Industry,Pensacola USA,
+POA,Loves Porto Alegre x2|,,
+POS,Oil Industry,,
+PQI,Francophonie|,,
+PRG,Volkswagen,,
+PSA,|IT|Romanian,,
+PUB,Hispanic|,,
+PUS,|JP|Korean,,
+PUS,|US|Korean,,
+PVD,|US|Brazilian,,
+PVD,Lusophone|,,
+PVG,|AU|Chinese,,
+PVG,|CA|Chinese,,
+PVG,|TH|Chinese,,
+PVG,|US|Chinese,,
+PVG,Johnson & Johnson ,,
+PVG,Nokia,,
+PVG,Renewable Energy Industry,,
+PVG,Tesla,,
+PXH,Copper,Mount Eba,
+QRW,Oil Industry,,
+RAI,Lusophone|,,
+RAK,|FR|Moroccan,,
+RAK,|NL|Moroccan,,
+RBA,|FR|Moroccan,,
+RBA,|NL|Moroccan,,
+REN,Gold Industry,Reno,
+REX,Oil Industry,,
+RKT,|AE|Malayali,,
+RNO,Tesla,,
+ROS,Loves Porto Alegre x2|,,
+RSW,Hispanic|,,
+RUH,|DK|Pakistani,,
+RUH,|SA|Bangladeshi,,
+RUH,|SA|Malayali,,
+RUH,|SA|Pakistani,,
+SAB,LNG,,
+SAF,Hispanic|,,
+SAL,|US|Salvadoran,,
+SAN,|US|Guerrero & Oaxaca,,
+SAN,|US|Iranian,,
+SAN,|US|Samoan,,
+SAT,Hispanic|,,
+SAT,Toyota,,
+SAW,|TR|Iraqi,,
+SBD,|US|Guerrero & Oaxaca,,
+SCC,LNG,,
+SCL,|CL|Haitian,,
+SCL,Copper,Santiago Chile,
+SCO,LNG,,
+SCO,Oil Industry,,
+SCO,Uranium industry,Aktau,Kazakhstan
+SDF,Toyota,,
+SDF,Whiskey Industry,,
+SEA,|US|Chinese,,
+SEA,|US|Indian,,
+SEA,|US|Samoan,,
+SEA,|US|Somali,,
+SEA,|US|Vietnamese,,
+SEA,Technology Industry,,
+SFO,|US|Bengali,,
+SFO,|US|Chinese,,
+SFO,|US|Indian,,
+SFO,Cantonese|,,
+SFO,Jewish|,,
+SFO,Technology Industry,,
+SGN,|AU|Vietnamese,,
+SGN,|JP|Vietnamese,,
+SGN,|US|Vietnamese,,
+SGN,Samsung,,
+SHJ,|AE|Malayali,,
+SIN,|SG|Marathi,,
+SIN,Cantonese|,,
+SIN,Global Finance,,
+SIN,Nokia,,
+SIP,|RU|Armenian,,
+SJC,|US|Bengali,,
+SJC,|US|Chinese,,
+SJC,|US|Indian,,
+SJC,|US|Vietnamese,,
+SJC,Apple,,
+SJC,Hispanic|,,
+SJC,Technology Industry,,
+SJC,Tesla,,
+SLC,|CL|Colombian,,
+SLC,|CL|Samoan,,
+SLC,|CL|Venezuelan,,
+SLI,Copper,Solwesi Zambia,
+SLL,|OM|Malayali,,
+SLW,Automotive Industry,,
+SLY,Loves Pattaya x2|,,
+SLY,Loves Antalya x2|,,
+SLY,Loves El Sheikh x2|,,
+SMF,|US|Guerrero & Oaxaca,,
+SNA,|US|Iranian,,
+SNA,|US|Samoan,,
+SNA,|US|Vietnamese,,
+SNA,Hispanic|,,
+SNA,Jewish|,,
+SNN,|US|Irish American,,
+SOF,Loves Kavala x2|,,
+SSG,Oil Industry,,
+SSH,Loves El Sheikh x2|,,
+STN,|GB|Indian,,
+STR,Loves Bolzano x2|,,
+STR,Automotive Industry,,
+STR,Volkswagen,,
+STR,|DE|Serbian,,
+STS,|US|Guerrero & Oaxaca,,
+STS,Vitticulture,,
+STV,|KE|Gujarati,,
+SUB,Oil Industry,Cepu Block,
+SVG,Oil Industry,,
+SVO,Loves Pattaya x2|,,
+SVO,|RU|Armenian,,
+SVO,LNG,,
+SVO,Loves Antalya x2|,,
+SVO,Loves El Sheikh x2|,,
+SVX,Loves Pattaya x2|,,
+SVX,Loves Antalya x2|,,
+SWP,Uranium industry,Swakopmund,Namibia
+SXB,|FR|Polish,,
+SYD,|AU|Chinese,,
+SYD,|AU|Greek,,
+SYD,|AU|Indian,,
+SYD,|AU|Vietnamese,,
+SZB,|MY|Malayali,,
+SZX,Apple,,
+SZX,Cantonese|,,
+SZX,Renewable Energy Industry,,
+TAM,Oil Industry,,
+TAO,|AU|Chinese,,
+TAO,|CA|Chinese,,
+TAO,|TH|Chinese,,
+TAO,|US|Chinese,,
+TBZ,|DE|Iranian,,
+TBZ,|TR|Iranian,,
+TBZ,|US|Iranian,,
+TCR,|AE|Tamil,,
+TCR,|MY|Tamil,,
+TFN,Loves Tenerife x2|,,
+TFS,Loves Tenerife x2|,,
+THR,|DE|Iranian,,
+THR,|TR|Iranian,,
+THR,|US|Iranian,,
+TIF,|DK|Pakistani,,
+TIF,|SA|Pakistani,,
+TIR,|CA|Telugu,,
+TLC,Automotive Industry,,
+TLS,|FR|Algerian,,
+TLS,|FR|Moroccan,,
+TLV,|FR|Jewish,,
+TLV,|IE|Ethiopian,,
+TLV,|IE|Filipino,,
+TLV,|UK|Jewish,,
+TLV,Jewish|,,
+TLV,Technology Industry,,
+TNH,Gold Industry,,
+TPE,Technology Industry,,
+TRN,|IT|Romanian,,
+TRU,Copper,Trujillo Peru,
+TRV,|AE|Malayali,,
+TRV,|MY|Malayali,,
+TRV,|MY|Malayali,,
+TRV,|OM|Malayali,,
+TRV,|SA|Malayali,,
+TRZ,|AE|Tamil,,
+TRZ,|MY|Tamil,,
+TSF,|IT|Romanian,,
+TUN,|FR|Tunisian,,
+TUN,Renault,,
+TUS,Hispanic|,,
+UET,Pashto|,,
+UIO,|ES|Ecuadorian,,
+UIO,|US|Ecuadorian,,
+UPN,|US|Jalisco & Michoacán,,
+UPT,|TH|Chinese,,
+URA,Oil Industry,,
+URC,Oil Industry,,
+USK,Loves Pattaya x2|,,
+USK,Loves Antalya x2|,,
+USK,Loves El Sheikh x2|,,
+UTP,Loves Pattaya x2|,,
+UUD,Gold Industry,Ulan-Ude (Transbaikal) Russia,
+UUS,Gold Industry,Yuzhno-Sakhalinsk (Kurils) Russia,
+UUS,LNG,,
+VCE,Art Industry,,
+VER,Oil Industry,,
+VGA,|CA|Telugu,,
+VKO,Loves Pattaya x2|,,
+VKO,Loves Antalya x2|,,
+VKO,Loves El Sheikh x2|,,
+VKT,Loves Pattaya x2|,,
+VKT,Loves Antalya x2|,,
+VKT,Loves El Sheikh x2|,,
+VRA,|CU|Cuban,,
+VTZ,|CA|Telugu,,
+VVI,|BR|Bolivian,,
+VVI,|MX|Bolivian,,
+WAU,Gold Industry,Wau (Granites Mine) Northern Territory,
+WAW,|IE|Polish,,
+WAW,|US|Polish,,
+WDH,German|,,
+WDH,Gold Industry,Windhoek,
+WDH,Uranium industry,Windhoek (Eros),Namibia
+WEL,|NZ|Samoan,,
+WUH,|AU|Chinese,,
+WUH,|CA|Chinese,,
+WUH,|TH|Chinese,,
+WUH,|US|Chinese,,
+WVB,Uranium industry,Walvis Bay,Namibia
+XMN,|AU|Chinese,,
+XMN,|CA|Chinese,,
+XMN,|TH|Chinese,,
+XMN,|US|Chinese,,
+XWA,Oil Industry,,
+YAT,Gold Industry,Attawapiskat (De Beers Victor Mine) Ontario,
+YBC,Francophonie|,,
+YBG,Francophonie|,,
+YCL,Francophonie|,,
+YEG,LNG,,
+YEG,Oil Industry,Edmonton Canada,
+YGP,Francophonie|,,
+YHM,|CA|Chinese,,
+YHU,Francophonie|,,
+YIN,Gold Industry,Yining (various mines) Xinjiang,
+YKM,|US|Jalisco & Michoacán,,
+YLW,Gold Industry,Kelowna (B.C. mines) British Columbia,
+YMJ,Uranium industry,Moose Jaw,Canada
+YMM,Oil Industry,Fort McMurray Canada,
+YMT,Francophonie|,,
+YOW,Gold Industry,Ottawa (Canadian HQs) Ontario,
+YQB,Francophonie|,,
+YQB,Gold Industry,Quebec City (Canadian HQs) Quebec,
+YQG,Automotive Industry,,
+YQR,Oil Industry,Estevan Saskatchewan,
+YQR,Uranium industry,Regina,Canada
+YQU,Oil Industry,Grande Prairie Canada,
+YRJ,Francophonie|,,
+YTF,Francophonie|,,
+YTM,Francophonie|,,
+YUL,|CA|Algerian,,
+YUL,|CA|Haitian,,
+YUL,|CA|Moroccan,,
+YUL,Francophonie|,,
+YUM,Hispanic|,,
+YUY,Francophonie|,,
+YVO,Francophonie|,,
+YVR,|CA|Bengali,,
+YVR,|CA|Chinese,,
+YVR,|CA|Punjabi,,
+YVR,Cantonese|,,
+YVR,Copper,Vancouver Canada,
+YVR,Gold Industry,Vancouver,
+YVR,Technology Industry,,
+YXE,Uranium industry,Saskatoon,Canada
+YXJ,Oil Industry,Fort St. John Canada,
+YXK,Francophonie|,,
+YXU,LNG,,
+YXU,Renewable Energy Industry,,
+YXU,Toyota,,
+YXY,Gold Industry,Whitehorse (Yukon mines) Yukon,
+YXY,Uranium industry,Whitehorse,Canada
+YXZ,Gold Industry,Yellowknife (Diavik/Ekati) Northwest Territories,
+YYC,|CA|Chinese,,
+YYC,|CA|Punjabi,,
+YYC,Oil Industry,Calgary Canada,
+YYF,Gold Industry,Penticton (B.C. mines) British Columbia,
+YYT,Oil Industry,,
+YYY,Francophonie|,,
+YYZ,|CA|Bengali,,
+YYZ,|CA|Chinese,,
+YYZ,|CA|Punjabi,,
+YYZ,|CA|Telugu,,
+YYZ,Global Finance,,
+YYZ,Technology Industry,,
+YZR,Oil Industry,Sarnia Canada,
+YZV,Francophonie|,,
+ZBF,Francophonie|,,
+ZCL,|US|Durango & Zacatecas,,
+ZIH,|US|Guerrero & Oaxaca,,
+ZLO,|US|Jalisco & Michoacán,,
+ZNE,Copper,Newman,
+ZRH,Global Finance,,
+ZUH,Rare earths,Zhuhai,China
