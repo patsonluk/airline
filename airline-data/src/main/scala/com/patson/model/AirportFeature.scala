@@ -116,8 +116,8 @@ sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBo
       }
       val airportAffinityMutliplier: Double =
         if (affinity >= 5) affinity.toDouble / 5.0 //domestic
-        else if (affinity == 4) 0.4
-        else if (affinity == 3) 0.2
+        else if (affinity == 4) 0.5
+        else if (affinity == 3) 0.3
         else if (affinity == 2) 0.1
         else if (affinity == 1) 0.05
         else 0

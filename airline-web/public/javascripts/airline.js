@@ -966,7 +966,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
     $('.planToIata').text(linkInfo.toAirportCode)
     $('.planFromIata').text(linkInfo.fromAirportCode)
 	$('#planLinkMutualRelationship').html(getCountryFlagImg(linkInfo.fromCountryCode) + " ⇄ " + getCountryFlagImg(linkInfo.toCountryCode) + getCountryRelationshipDescription(linkInfo.mutualRelationship))
-	$('#planLinkAffinity').html(buildAffinityText(linkInfo.affinity))
+	$('#planLinkAffinity').html(linkInfo.affinity)
 
 	var relationship = linkInfo.toCountryRelationship
     var relationshipSpan = getAirlineRelationshipDescriptionSpan(relationship.total)
@@ -986,17 +986,18 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
 
     var $breakdown = $("#planLinkDetails .directDemandBreakdown")
+    plannedLinkDemands = linkInfo.demands
     $breakdown.find(".fromAirport .airportLabel").empty()
     $breakdown.find(".fromAirport .airportLabel").append(getAirportSpan({ "iata" : linkInfo.fromAirportCode, "countryCode" : linkInfo.fromCountryCode, "city" : linkInfo.fromAirportCity}))
-    $breakdown.find(".fromAirport .travelerDemand").text(toLinkClassValueString(linkInfo.fromAirportTravelerDemand))
-    $breakdown.find(".fromAirport .businessDemand").text(toLinkClassValueString(linkInfo.fromAirportBusinessDemand))
-    $breakdown.find(".fromAirport .touristDemand").text(toLinkClassValueString(linkInfo.fromAirportTouristDemand))
+    $breakdown.find(".fromAirport .travelerDemand").text(toLinkClassValueString(linkInfo.demands.TouristFrom))
+    $breakdown.find(".fromAirport .businessDemand").text(toLinkClassValueString(linkInfo.demands.BusinessFrom))
+    $breakdown.find(".fromAirport .touristDemand").text(toLinkClassValueString(linkInfo.demands.TouristFrom))
 
     $breakdown.find(".toAirport .airportLabel").empty()
     $breakdown.find(".toAirport .airportLabel").append(getAirportSpan({ "iata" : linkInfo.toAirportCode, "countryCode" : linkInfo.toCountryCode, "city" : linkInfo.toAirportCity}))
-    $breakdown.find(".toAirport .travelerDemand").text(toLinkClassValueString(linkInfo.toAirportTravelerDemand))
-    $breakdown.find(".toAirport .businessDemand").text(toLinkClassValueString(linkInfo.toAirportBusinessDemand))
-    $breakdown.find(".toAirport .touristDemand").text(toLinkClassValueString(linkInfo.toAirportTouristDemand))
+    $breakdown.find(".toAirport .travelerDemand").text(toLinkClassValueString(linkInfo.demands.TravelerTo))
+    $breakdown.find(".toAirport .businessDemand").text(toLinkClassValueString(linkInfo.demands.BusinessTo))
+    $breakdown.find(".toAirport .touristDemand").text(toLinkClassValueString(linkInfo.demands.TouristTo))
 
 	 //+ " (business: " + linkInfo.businessPassengers + " tourist: " + linkInfo.touristPassengers + ")")
 	//$('#planLinkAirportLinkCapacity').text(linkInfo.airportLinkCapacity)
@@ -1087,9 +1088,9 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 
     var initialPrice = {}
 	if (!linkInfo.existingLink) {
-	    initialPrice.economy = linkInfo.suggestedPrice.economy
-	    initialPrice.business = linkInfo.suggestedPrice.business
-	    initialPrice.first = linkInfo.suggestedPrice.first
+	    initialPrice.economy = linkInfo.suggestedPrice.Traveler.economy
+	    initialPrice.business = linkInfo.suggestedPrice.Traveler.business
+	    initialPrice.first = linkInfo.suggestedPrice.Traveler.first
 
 		$('#addLinkButton').show()
 		$('#deleteLinkButton').hide()
@@ -1239,13 +1240,55 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	$("#planLinkDetails div.value").show()
 }
 
+function calculateDemand() {
+    const totalDemand = {
+      economy: 0,
+      business: 0,
+      first: 0,
+    };
+    const currentPrices = {
+        economy: parseFloat($('#planLinkEconomyPrice').val()),
+        business: parseFloat($('#planLinkBusinessPrice').val()),
+        first: parseFloat($('#planLinkFirstPrice').val()),
+    }
+    const suggestedPrice = planLinkInfo.suggestedPrice
+    for (const passengerType in suggestedPrice) {
+        console.log(passengerType)
+        if (currentPrices.economy <= suggestedPrice[passengerType].discountEconomy) {
+            totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].discountEconomy);
+        } else if (currentPrices.economy <= suggestedPrice[passengerType].discountEconomy * 1.15) {
+            totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].discountEconomy * 0.4);
+        }
+        if (currentPrices.economy <= suggestedPrice[passengerType].economy) {
+            totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].economy);
+        } else if (currentPrices.economy <= suggestedPrice[passengerType].economy * 1.06) {
+            totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].economy * 0.4);
+        }
+        if (currentPrices.business <= suggestedPrice[passengerType].business) {
+            totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business);
+        } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.1) {
+            totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business * 0.4);
+        } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.2) {
+            totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business * 0.2);
+        }
+        if (currentPrices.first <= suggestedPrice[passengerType].first) {
+            totalDemand.first += Math.floor(planLinkInfo.demands[passengerType].first);
+        } else if (currentPrices.first <= suggestedPrice[passengerType].first * 1.1) {
+            totalDemand.first += Math.floor(planLinkInfo.demands[passengerType].first * 0.4);
+        }  else if (currentPrices.first <= suggestedPrice[passengerType].first * 1.3) {
+            totalDemand.first += Math.floor(planLinkInfo.demands[passengerType].first * 0.2);
+      }
+    }
+    $('#planLinkDirectDemand').text(toLinkClassValueString(totalDemand))
+}
+
 function resetPrice() {
 	updatePrice(1)
 }
 
 function increasePrice() {
 	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 20
-	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 20
+	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.Traveler.economy) / 20
 	var newPercentage = currentPercentage + 0.05
 	updatePrice(newPercentage)
 	$('#planLinkPricePercentage').val(newPercentage)
@@ -1253,7 +1296,7 @@ function increasePrice() {
 
 function decreasePrice() {
 	var currentPrice = parseFloat($('#planLinkEconomyPrice').val()) * 20
-	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.economy) / 20
+	var currentPercentage = Math.round(currentPrice / planLinkInfo.suggestedPrice.Traveler.economy) / 20
 	var newPercentage = currentPercentage
 	if (currentPercentage > 0) {
 		newPercentage -= 0.05
@@ -1264,16 +1307,17 @@ function decreasePrice() {
 }
 
 function updatePrice(percentage) {
-	$('#planLinkEconomyPrice').val(Math.round(planLinkInfo.suggestedPrice.economy * percentage))
-	$('#planLinkBusinessPrice').val(Math.round(planLinkInfo.suggestedPrice.business * percentage))
-	$('#planLinkFirstPrice').val(Math.round(planLinkInfo.suggestedPrice.first * percentage))
+	$('#planLinkEconomyPrice').val(Math.round(planLinkInfo.suggestedPrice.Traveler.economy * percentage))
+	$('#planLinkBusinessPrice').val(Math.round(planLinkInfo.suggestedPrice.Traveler.business * percentage))
+	$('#planLinkFirstPrice').val(Math.round(planLinkInfo.suggestedPrice.Traveler.first * percentage))
 	updateMarkup();
+	calculateDemand();
 }
 
 function updateMarkup(){
-    $('#planMarkupEconomy').text(($('#planLinkEconomyPrice').val()/planLinkInfo.suggestedPrice.economy*100).toFixed(0)+"%")
-    $('#planMarkupBusiness').text(($('#planLinkBusinessPrice').val()/planLinkInfo.suggestedPrice.business*100).toFixed(0)+"%")
-    $('#planMarkupFirst').text(($('#planLinkFirstPrice').val()/planLinkInfo.suggestedPrice.first*100).toFixed(0)+"%")
+    $('#planMarkupEconomy').text(($('#planLinkEconomyPrice').val()/planLinkInfo.suggestedPrice.Traveler.economy*100).toFixed(0)+"%")
+    $('#planMarkupBusiness').text(($('#planLinkBusinessPrice').val()/planLinkInfo.suggestedPrice.Traveler.business*100).toFixed(0)+"%")
+    $('#planMarkupFirst').text(($('#planLinkFirstPrice').val()/planLinkInfo.suggestedPrice.Traveler.first*100).toFixed(0)+"%")
 }
 
 function updateFrequencyBar(frequencyBar, valueContainer, airplane, currentFrequency) {
@@ -1947,6 +1991,7 @@ function showLinkExpectedQualityModal(isFromAirport) {
 	    	$('#expectedQualityModal .expectedQualityValue.firstClass').html(getGradeStarsImgs(Math.round(result.F / 10)))
 	    	$('#expectedQualityModal .expectedQualityValue.businessClass').html(getGradeStarsImgs(Math.round(result.J / 10)))
 	    	$('#expectedQualityModal .expectedQualityValue.economyClass').html(getGradeStarsImgs(Math.round(result.Y / 10)))
+	    	$('#expectedQualityModal .expectedQualityValue.discountClass').html(getGradeStarsImgs(Math.round(result.D / 10)))
 	    	$('#expectedQualityModal').fadeIn(200)
 	    },
         error: function(jqXHR, textStatus, errorThrown) {

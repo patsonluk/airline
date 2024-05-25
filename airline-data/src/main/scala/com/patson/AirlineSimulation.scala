@@ -509,13 +509,13 @@ object AirlineSimulation {
     val returnsRatio = shareholderReturns / normalizedCompanyValue
     var ratioBand = 0.0006
     var exponent = 0
-    while (returnsRatio > ratioBand && exponent < 30) {
+    while (returnsRatio > ratioBand && exponent < 30) { //first level is 0.000702
       ratioBand = 0.0006 * Math.pow(1.17, (exponent + 1))
       exponent += 1
     }
     val newStockPrice = if (exponent > 0) {
       val sign = if (sentiment < 0) -1 else 1
-      0.004 * Math.pow(1.7, (exponent + 1)) + Math.sqrt(sentiment.abs) * sign
+      Math.max(0.0, 0.004 * Math.pow(1.7, (exponent + 1)) + Math.sqrt(sentiment.abs) * sign)
     } else {
       0.0
     }

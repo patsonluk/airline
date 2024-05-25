@@ -130,6 +130,7 @@ package object controllers {
     }
 
     def writes(linkClassValues: LinkClassValues): JsValue = JsObject(List(
+      "discountEconomy" -> JsNumber(linkClassValues(DISCOUNT_ECONOMY)),
       "economy" -> JsNumber(linkClassValues(ECONOMY)),
       "business" -> JsNumber(linkClassValues(BUSINESS)),
       "first" -> JsNumber(linkClassValues(FIRST)),

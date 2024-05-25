@@ -107,8 +107,14 @@ object CountryMutualRelationshipGenerator extends App {
     Relation("JP", Direction.BI, 2, List(
       "PE", "BR", "IN", "VN", "TH", "FJ", "PG", "SB"
     )),
+    Relation("KR", Direction.BI, 4, List(
+      "SG", "JP", "TW", "US"
+    )),
+    Relation("KR", Direction.BI, 2, List(
+      "MY", "TH", "VN"
+    )),
     Relation("TW", Direction.BI, 4, List(
-      "NL","CA","US"
+      "NL","CA","US","JP"
     )),
     Relation("TW", Direction.BI, 3, List(
       "DE","GB","HK","JP","KR","SG","AU"

@@ -409,8 +409,11 @@ function getOpennessIcon(openness, size=null, isDomesticAirport=false, isGateway
 function getOpennessSpan(openness, size=null, isDomesticAirport=false) {
 	var description
 	var icon
-	if (size && size <= 2 || isDomesticAirport){
-	    description = "Limited International Flights"
+    if (size && size <= 2 && ! isGateway ){
+        description = "No International Flights"
+        icon = "prohibition.png"
+    } else if (isDomesticAirport){
+        description = "Limited International Flights"
         icon = "prohibition.png"
 	} else if (openness >= 7 || size >= 7) {
 		description = "All International Connections"

@@ -642,6 +642,7 @@ object AirportSizeAdjust {
         "KOA" -> 4,
         "LIH" -> 4,
         //downgrade secondary USA airports
+        "BFI" -> 3,
         "LCK" -> 3,
         "BLV" -> 3,
         "GRK" -> 2,

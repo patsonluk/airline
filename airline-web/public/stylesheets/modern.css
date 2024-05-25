@@ -94,7 +94,7 @@ div.button:active:not([class*="disabled"]), button.button:hover:not([class*="dis
 	border-color: #ccc;
 }
 .gm-style-iw .gm-style-iw-d {
-    overflow: clip !important;
+    overflow: hidden !important;
 }
 .gm-style-iw[style*="padding-bottom: 0px"] {
     padding-bottom: 12px !important
@@ -290,7 +290,7 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
     width: 50%;
 }
 #sidePanel {
-	pa  dding-left: 0px;
+	padding-left: 0px;
 	padding-right: 48px;
 	box-sizing: border-box;
 	pointer-events: none;
@@ -434,7 +434,9 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
     }
     #sidePanel {
         width: calc(100vw - 48px);
-        /* margin-top: 50vh; */
+        margin-top: 50vh;
+        padding-right: 40px;
+        padding-left: 0px;
     }
     #live-chat {
         left: 0% !important;

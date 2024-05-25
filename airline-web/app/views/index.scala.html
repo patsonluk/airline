@@ -976,8 +976,8 @@
 								<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
 							</div>
 							<div style="overflow-x: scroll;">
-								<div style="width: 840px; height: 100%;overflow-x: auto;overflow-y: hidden;">
-									<div class="table data" style="height: 20px;">
+								<div class="table-container" style="width: 840px;">
+									<div class="table data" style="width: 840px; height: 20px;">
 										<div class="table-header" id="linksTableSortHeader">
 											<div class="cell clickable selected" style="width: 16%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
 											<div class="cell clickable" style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></div> <!--hidden column for last update (cannot be first otherwise the left round corner would not work -->
@@ -992,33 +992,31 @@
 											<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 										</div>
 									</div>
-									<div style="height: calc(100vh - 40px); overflow-y:auto;">
-										<div class="table data" id="linksTable" style="max-height: 100%;">
-											<div class="table-header">
-												<div class="cell" style="width: 16%; border-bottom: none;"></div>
-												<div class="cell" style="width: 16%; border-bottom: none;"></div>
-												<div class="cell" style="width: 15%; border-bottom: none;"></div>
-												<div class="cell" style="width: 8%; border-bottom: none;"></div>
-												<div class="cell" style="width: 8%; border-bottom: none;"></div>
-												<div class="cell" style="width: 5%; border-bottom: none;"></div>
-												<div class="cell" style="width: 5%; border-bottom: none;"></div>
-												<div class="cell" style="width: 5%; border-bottom: none;"></div>
-												<div class="cell" style="width: 11%; border-bottom: none;"></div>
-												<div class="cell" style="width: 11%; border-bottom: none;"></div>
-											</div>
+									<div class="table data table-data-container" id="linksTable" style="width: 840px;">
+										<div class="table-header">
+											<div class="cell" style="width: 16%; border-bottom: none;"></div>
+											<div class="cell" style="width: 16%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+											<div class="cell" style="width: 8%; border-bottom: none;"></div>
+											<div class="cell" style="width: 8%; border-bottom: none;"></div>
+											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+											<div class="cell" style="width: 11%; border-bottom: none;"></div>
+											<div class="cell" style="width: 11%; border-bottom: none;"></div>
 										</div>
-										<div style="height: 100px; width: 100%; min-width: 600px; display:none;" class="noLinkTips">
-											<div style="height: 100%; width: 100%; display:flex; justify-content: center; align-items: center;">
-												<div class="tooltip clickable">
-													<span style="vertical-align:middle">No flights yet</span>
-													<img src='@routes.Assets.versioned("images/icons/information.png")' style="vertical-align:middle">
-													<span class="tooltiptext below">
-														<h4>First build your Headquarters</h4>
-														<img data-src='@routes.Assets.versioned("images/tutorial/build-hq.gif")' class="lazyload" alt="">
-														<h4 style="margin-top: 10px;">Then select the Destination Airport from the world map</h4>
-														<img data-src='@routes.Assets.versioned("images/tutorial/plan-link-1.gif")' class="lazyload" alt="">
-													</span>
-												</div>
+									</div>
+									<div style="height: 100px; width: 100%; min-width: 600px; display:none;" class="noLinkTips">
+										<div style="height: 100%; width: 100%; display:flex; justify-content: center; align-items: center;">
+											<div class="tooltip clickable">
+												<span style="vertical-align:middle">No flights yet</span>
+												<img src='@routes.Assets.versioned("images/icons/information.png")' style="vertical-align:middle">
+												<span class="tooltiptext below">
+													<h4>First build your Headquarters</h4>
+													<img data-src='@routes.Assets.versioned("images/tutorial/build-hq.gif")' class="lazyload" alt="">
+													<h4 style="margin-top: 10px;">Then select the Destination Airport from the world map</h4>
+													<img data-src='@routes.Assets.versioned("images/tutorial/plan-link-1.gif")' class="lazyload" alt="">
+												</span>
 											</div>
 										</div>
 									</div>
@@ -1117,7 +1115,7 @@
 									  <div class="tooltip">
 										  <img src='@routes.Assets.versioned("images/icons/information.png")'>
 										  <span class="tooltiptext alignLeft" style="width: 400px;">
-										<p><b>Gini coefficient</b> is a common measure of inequlaity. In-game,
+										<p><b>Gini coefficient</b> is a common measure of inequality. In-game,
 											population, income, and inequality is applied to determine how much of
 											each airport is low, middle, and extremely-high income.</p>
 									</span>
@@ -1562,8 +1560,8 @@
 							</div>
 
 							<div class="detailsGroup" style="width: 100%; overflow-x: scroll;">
-								<div class="market details" style="min-width: 980px;">
-									<div class="table data" style="height: 20px; width: 100%;">
+								<div class="market details table-container" style="hmin-width: 980px;">
+									<div class="table data" style="height: 20px; min-width: 980px;">
 										<div class="table-header" id="airplaneModelSortHeader">
 											<div class="cell clickable" style="width: 20%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
 											<div class="cell clickable" style="width: 12%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
@@ -1578,20 +1576,18 @@
 <!--											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>-->
 										</div>
 									</div>
-									<div style="height: calc(100vh - 60px); width: 100%; overflow-y: auto; min-width: 980px">
-										<div class="table data" id="airplaneModelTable" style="max-height: 100%; width: 100%; ">
-											<div class="table-header">
-												<div class="cell" style="width: 20%; border-bottom: none;"></div>
-												<div class="cell" style="width: 12%; border-bottom: none;"></div>
-												<div class="cell" style="width: 10%; border-bottom: none;"></div>
-												<div class="cell" style="width: 8%; border-bottom: none;"></div>
-												<div class="cell" style="width: 10%; border-bottom: none;"></div>
-												<div class="cell" style="width: 9%; border-bottom: none;"></div>
-												<div class="cell" style="width: 7%; border-bottom: none;"></div>
-												<div class="cell" style="width: 7%; border-bottom: none;"></div>
-												<div class="cell" style="width: 9%; border-bottom: none;"></div>
-												<div class="cell" style="width: 7%; border-bottom: none;"></div>
-											</div>
+									<div class="table data table-data-container" id="airplaneModelTable" style="min-width: 980px;">
+										<div class="table-header">
+											<div class="cell" style="width: 20%; border-bottom: none;"></div>
+											<div class="cell" style="width: 12%; border-bottom: none;"></div>
+											<div class="cell" style="width: 10%; border-bottom: none;"></div>
+											<div class="cell" style="width: 8%; border-bottom: none;"></div>
+											<div class="cell" style="width: 10%; border-bottom: none;"></div>
+											<div class="cell" style="width: 9%; border-bottom: none;"></div>
+											<div class="cell" style="width: 7%; border-bottom: none;"></div>
+											<div class="cell" style="width: 7%; border-bottom: none;"></div>
+											<div class="cell" style="width: 9%; border-bottom: none;"></div>
+											<div class="cell" style="width: 7%; border-bottom: none;"></div>
 										</div>
 									</div>
 								</div>
@@ -2839,26 +2835,26 @@
 									<img src='@routes.Assets.versioned("images/icons/clock-frame.png")'>
 								</span>
 							</div>
-							<div id="rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px; min-width: 500px;">
-								<div class="table-header">
-									<div class="cell clickable" style="width: 5%" data-sort-property="loginStatus" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">&nbsp;</div>
-									<div class="cell clickable" style="width: 35%" data-sort-property="name" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Name</div>
-									<div class="cell clickable" style="width: 30%" data-sort-property="headquartersCity" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Headquarters</div>
-									<div class="cell clickable selected" style="width: 15%" align="right" data-sort-property="reputation" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Reputation</div>
-									<div class="cell clickable" style="width: 15%" align="right" data-sort-property="baseCount" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Bases</div>
-								</div>
-							</div>
-							<div style="height: calc(100vh - 60px); width: 100%; overflow-y: auto; min-width: 500px;">
-									<div id="rivalsTable" class="table data" style="height: 100%; width: 100%;">
-										<div class="table-header">
-											<div class="cell" style="width: 5%; border-bottom: none;"></div>
-											<div class="cell" style="width: 35%; border-bottom: none;"></div>
-											<div class="cell" style="width: 30%; border-bottom: none;"></div>
-											<div class="cell" style="width: 15%; border-bottom: none;"></div>
-											<div class="cell" style="width: 15%; border-bottom: none;"></div>
-										</div>
+							<div class="table-container" style="min-width: 500px;">
+								<div id="rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px; min-width: 500px;">
+									<div class="table-header">
+										<div class="cell clickable" style="width: 5%" data-sort-property="loginStatus" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">&nbsp;</div>
+										<div class="cell clickable" style="width: 35%" data-sort-property="name" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Name</div>
+										<div class="cell clickable" style="width: 30%" data-sort-property="headquartersCity" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">Headquarters</div>
+										<div class="cell clickable selected" style="width: 15%" align="right" data-sort-property="reputation" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Reputation</div>
+										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="baseCount" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Bases</div>
 									</div>
 								</div>
+								<div id="rivalsTable" class="table data table-data-container" style="min-width: 500px;">
+									<div class="table-header">
+										<div class="cell" style="width: 5%; border-bottom: none;"></div>
+										<div class="cell" style="width: 35%; border-bottom: none;"></div>
+										<div class="cell" style="width: 30%; border-bottom: none;"></div>
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
+										<div class="cell" style="width: 15%; border-bottom: none;"></div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 
@@ -2955,13 +2951,13 @@
 								</div>
 							</div>
 						</div>
-						<div class="section" style="display: flex; flex-wrap: wrap; gap: 8px;">
-							<div style="min-width: 200px; flex: 1;">
+						<div class="section flex-container-width-half">
+							<div style="min-width: 200px;">
 								<h4>Airline Headquarters</h4>
 								<div style="position: relative; height: 150px; width: 100%" class="headquartersMap"></div>
 							</div>
 
-							<div style="min-width: 200px; height: 100%;  overflow: auto; flex: 1;">
+							<div style="min-width: 200px;">
 								<h4>Airline Bases</h4>
 								<div id="rivalBases" style="width: 100%;" class="table data">
 								</div>
@@ -3348,10 +3344,10 @@
 
 
 				<div id="eventCanvas" class="canvas" style="height: 100%; display: none;">
-					<div class="vertical-group firstColumn" style="min-height: 200px; float:left;">
-						<div style="width : 90%" class="section">
+					<div class="vertical-group firstColumn" style="min-height: 200px; min-width: 400px;">
+						<div class="section">
 							<h4>Olympics</h4>
-							<div id = "olympicsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
+							<div id="olympicsTableSortHeader" class="table data" style="width: 100%; height: 20px;">
 								<div class="table-header">
 									<div class="cell clickable selected" style="width: 15%" data-sort-property="startCycle" data-sort-order="descending" onclick="toggleOlympicTableSortOrder($(this))">Start Week</div>
 									<div class="cell clickable" style="width: 30%" data-sort-property="hostCity" data-sort-order="descending" onclick="toggleOlympicTableSortOrder($(this))">Host City</div>
@@ -3371,8 +3367,8 @@
 							</div>
 						</div>
 					</div>
-					<div class="vertical-group secondColumn" style="float:left;">
-						<div id="olympicsDetails" style="width : 90%; display: none;" class="section">
+					<div class="vertical-group secondColumn">
+						<div id="olympicsDetails" style="display: none;min-width: 400px;" class="section">
 							<h4><img class="year1 yearStatus">Year 1 - Host City Voting</h4>
 							<div class="table data" id="olympicsCandidatesTable" style="width: 100%; max-height: 100%">
 								<div class="table-header">
@@ -3432,7 +3428,6 @@
 							<button type="button" class="button glow passengerReward" onclick="showOlympicsPassengerRewardModal()">Claim Reward</button>
 						</div>
   					</div>
-	  				<div style="clear: both;"></div>
 				</div>
 				<!-- end event canvas -->
 

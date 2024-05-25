@@ -9,7 +9,7 @@ import FlightType._
 import com.patson.model
 
 /**
- * 
+ *
  * Frequency sum of all assigned plane
  */
 case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, var capacity: LinkClassValues, rawQuality : Int, duration : Int, var frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends Transport {
@@ -20,7 +20,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   @volatile override var minorDelayCount = 0
   @volatile private var assignedAirplanes : Map[Airplane, LinkAssignment] = Map.empty
   @volatile private var assignedModel : Option[Model] = None
-  
+
   @volatile private var hasComputedQuality = false
   @volatile private var computedQualityStore : Int = 0
 
@@ -49,11 +49,11 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
     }
     inServiceAirplanes = this.assignedAirplanes.filter(_._1.isReady)
   }
-  
+
   def getAssignedAirplanes() = {
     assignedAirplanes
   }
-  
+
   def getAssignedModel() : Option[Model] = {
     assignedModel
   }
@@ -148,7 +148,7 @@ case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClas
   def futureFrequency() = {
     assignedAirplanes.values.map(_.frequency).sum
   }
-  
+
   override def toString() = {
     s"Flight $id; ${airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); distance $distance; freq $frequency; capacity $capacity; price $price"
   }
@@ -187,7 +187,7 @@ object Link {
   def fromId(id : Int) : Link = {
     Link(from = Airport.fromId(0), to = Airport.fromId(0), Airline.fromId(0), price = LinkClassValues.getInstance(), distance = 0, capacity = LinkClassValues.getInstance(), rawQuality = 0, duration = 0, frequency = 0, flightType = FlightType.SHORT_HAUL_DOMESTIC, id = id)
   }
-  
+
    //adjust by quality
 //  import FlightType._
 //  val neutralQualityOfClass = (linkClass : LinkClass, from : Airport, to : Airport, flightType : FlightType.Value) => {
@@ -251,7 +251,7 @@ object ExplicitLinkConsideration {
 }
 
 object LinkConsideration {
-  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new DealPreference(Airport.fromId(0), 1.0, ECONOMY), PassengerType.TRAVELER)
+  val DUMMY_PASSENGER_GROUP  = PassengerGroup(Airport.fromId(0), new DealPreference(Airport.fromId(0), ECONOMY, 1.0), PassengerType.TRAVELER)
   def getExplicit(link : Transport, cost : Double, linkClass : LinkClass, inverted : Boolean, id : Int = 0) : LinkConsideration = {
     LinkConsideration(link, linkClass, inverted, DUMMY_PASSENGER_GROUP, None, SimpleCostProvider(cost), id)
   }
@@ -270,7 +270,7 @@ case class LinkConsideration(link : Transport,
                              var id : Int = 0) extends IdObject {
     lazy val from : Airport = if (inverted) link.to else link.from
     lazy val to : Airport = if (inverted) link.from else link.to
-    
+
     override def toString() : String = {
       s"Consideration [${linkClass} -  Flight $id; ${link.airline.name}; ${from.city}(${from.iata}) => ${to.city}(${to.iata}); capacity ${link.capacity}; price ${link.price}; cost: $cost]"
     }
@@ -321,17 +321,21 @@ case object FIRST extends LinkClass("F", spaceMultiplier = 6, resourceMultiplier
 case object BUSINESS extends LinkClass("J", spaceMultiplier = 2.5, resourceMultiplier = 1.5, priceMultiplier = 3, priceSensitivity = 0.85, level = 2) {
   override def label = "business"
 }
-case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1.0, priceSensitivity = 1, level = 1) {
+case object ECONOMY extends LinkClass("Y", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 1.15, priceSensitivity = 1, level = 1) {
   override def label = "economy"
 }
+
+case object DISCOUNT_ECONOMY extends LinkClass("D", spaceMultiplier = 1, resourceMultiplier = 1, priceMultiplier = 0.9, priceSensitivity = 0.95, level = 0) {
+  override def label = "discount economy"
+}
 object LinkClass {
-  val values = List(FIRST, BUSINESS, ECONOMY)
-  
+  val values = List(FIRST, BUSINESS, ECONOMY, DISCOUNT_ECONOMY)
+
   val fromCode : String => LinkClass = (code : String) => {
     values.find { _.code == code }.get
   }
-  
+
   val fromLevel : Int => LinkClass = (level : Int) => {
-    values.find { _.level  == level}.get 
+    values.find { _.level  == level}.get
   }
 }

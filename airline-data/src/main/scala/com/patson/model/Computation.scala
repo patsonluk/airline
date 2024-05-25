@@ -148,7 +148,7 @@ object Computation {
    * @return
    */
 
-def calculateAffinityValue(fromZone : String, toZone : String, fromCountry : String, toCountry : String, relationship : Int) : Int = {
+def calculateAffinityValue(fromZone : String, toZone : String, relationship : Int) : Int = {
   val relationshipModifier =
     if (relationship >= 5) { //domestic
       5
@@ -160,12 +160,12 @@ def calculateAffinityValue(fromZone : String, toZone : String, fromCountry : Str
       0
     }
 
-  val set1 = if (fromCountry == toCountry) {
+  val set1 = if (relationship >= 5) {
     fromZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_!="None")
   } else {
     fromZone.split("-").filter(_!="None")
   }
-  val set2 = if (fromCountry == toCountry) {
+  val set2 = if (relationship >= 5) {
     toZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_!="None")
   } else {
     toZone.split("-").filter(_!="None")

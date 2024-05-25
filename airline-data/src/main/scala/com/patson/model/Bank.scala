@@ -12,7 +12,7 @@ object Bank {
   val MAX_LOANS = 10
   val MIN_LOAN_AMOUNT = 10000
   val MAX_LOAN_AMOUNT = 1500000000 //1.5b max
-  val LOAN_REAPPLY_MIN_INTERVAL = 13 //only every quarter
+  val LOAN_REAPPLY_MIN_INTERVAL = 2
   def getMaxLoan(airlineId : Int) : LoanReply = {
     val existingLoans = BankSource.loadLoansByAirline(airlineId)
     
