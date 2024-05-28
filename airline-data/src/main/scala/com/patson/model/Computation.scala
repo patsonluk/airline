@@ -171,7 +171,7 @@ def calculateAffinityValue(fromZone : String, toZone : String, relationship : In
     toZone.split("-").filter(_!="None")
   }
   val affinitySet = set1.intersect(set2)
-  countX2(affinitySet) + affinitySet.size  + relationshipModifier
+  countX2(affinitySet) + affinitySet.size + relationshipModifier
 }
 
 def countX2(strings: Array[String]): Int = {
@@ -181,9 +181,25 @@ def countX2(strings: Array[String]): Int = {
 }
 
 def constructAffinityText(fromZone : String, toZone : String, fromCountry : String, toCountry : String, relationship : Int, affinity : Int) : String = {
-  val set1 = fromZone.split("-").filter(_!="None")
-  val set2 = toZone.split("-").filter(_!="None")
+  val set1 = if (relationship >= 5) {
+    fromZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_ != "None")
+  } else {
+    fromZone.split("-").filter(_ != "None")
+  }
+  val set2 = if (relationship >= 5) {
+    toZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_ != "None")
+  } else {
+    toZone.split("-").filter(_ != "None")
+  }
   var matchingItems = set1.intersect(set2).toArray
+
+  if (relationship <= 5) {
+    matchingItems = matchingItems.map(item => {
+      if (item.endsWith("|")) item.dropRight(1)
+      else if (item.startsWith("|")) item.drop(4) + " diaspora"
+      else item
+    })
+  }
 
   if (relationship <= -1) {
     matchingItems = Array("Political Acrimony") ++ matchingItems

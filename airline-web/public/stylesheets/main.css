@@ -484,7 +484,6 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 16px;
   width: 100%;
-  overflow: hidden;
 }
 
 .item {
@@ -512,7 +511,6 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
 
 .i-label .tooltip {
     height: 0;
-    display: inline;
 }
 
 .i-value {
@@ -739,7 +737,6 @@ div.section div.section {
 
 div.section {
     background: var(--section-background-image);
-    overflow: hidden;
 }
 
 .modal-content {
@@ -861,7 +858,6 @@ li.row, div.table-row {
 .table.data {
     table-layout:fixed;
     height: min-content;
-    overflow: hidden;
 }
 
 .table.data .table-row div {

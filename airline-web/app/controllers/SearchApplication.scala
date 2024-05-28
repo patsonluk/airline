@@ -429,7 +429,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     val toAirport = AirportCache.getAirport(toAirportId, true).get
     val distance = Computation.calculateDistance(fromAirport, toAirport)
     val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
-    val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode, relationship)
+    val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
     val affinityText = Computation.constructAffinityText(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode, relationship, affinity)
 
     val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
