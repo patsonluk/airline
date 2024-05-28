@@ -70,7 +70,7 @@ abstract class Transport extends IdObject{
     * Returns the tuple of the matching class and seats available for that class
     */
   def availableSeatsAtOrBelowClass(targetLinkClass : LinkClass) : Option[(LinkClass, Int)] = {
-    if (targetLinkClass == ECONOMY) {
+    if (targetLinkClass == ECONOMY || targetLinkClass == DISCOUNT_ECONOMY) {
       if (availableSeats(ECONOMY) > 0) {
         return Some(ECONOMY, availableSeats(ECONOMY))
       }

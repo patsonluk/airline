@@ -115,7 +115,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
         const countryFlagUrl = getCountryFlagUrl(airport.countryCode)
         return countryFlagUrl ? "<img src='" + countryFlagUrl + "' />" : ""
 	})
-	$("#airportDetailsAffinityZone").text(buildAffinityText(airport.zone.replaceAll("-", ", ")))
+	$("#airportDetailsAffinityZone").text(airport.zone)
 	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness, airport.size, airport.isDomesticAirport))
 	
 	refreshAirportExtendedDetails(airport)

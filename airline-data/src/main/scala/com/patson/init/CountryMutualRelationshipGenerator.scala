@@ -12,7 +12,7 @@ object CountryMutualRelationshipGenerator extends App {
    *
    * Some relations set in the computation function!
    */
-  lazy val OECDish = List("CA","US","FR","DE","AT","CH","IT","GB","ES","NL","BE","PL","DK","SE","IE","JP","KR","AU")
+  lazy val OECDish = List("CA","US","FR","DE","AT","CH","IT","GB","ES","NL","BE","PL","DK","SE","IE","JP","KR","AU","SG")
 
   lazy val AFFILIATIONS = List(
 
@@ -67,6 +67,9 @@ object CountryMutualRelationshipGenerator extends App {
 //    Affiliation("ECCAS", 2, List(
 //      "AO", "BI", "CM", "TD", "CD", "GQ", "GA", "CG", "RW", "ST"
 //    )),
+    Affiliation("SADC+", 3, List(
+      "ZA", "BW", "SZ", "LS", "NA", "ZM", "ZW"
+    )),
     Affiliation("SADC", 4, List(
       "ZA", "BW", "SZ", "LS", "NA"
     )),
@@ -99,16 +102,22 @@ object CountryMutualRelationshipGenerator extends App {
       "KH", "PK", "RU"
     )),
     Relation("CN", Direction.BI, 2, List(
-      "KP", "ET", "DJ", "VN", "IR"
+      "KP", "ET", "DJ", "VN", "IR", "SG", "MY", "MM"
     )),
     Relation("JP", Direction.BI, 2, List(
       "PE", "BR", "IN", "VN", "TH", "FJ", "PG", "SB"
     )),
+    Relation("KR", Direction.BI, 4, List(
+      "SG", "JP", "TW", "US"
+    )),
+    Relation("KR", Direction.BI, 2, List(
+      "MY", "TH", "VN"
+    )),
     Relation("TW", Direction.BI, 4, List(
-      "NL","CA","US"
+      "NL","CA","US","JP","HK"
     )),
     Relation("TW", Direction.BI, 3, List(
-      "DE","GB","HK","JP","KR","SG","AU"
+      "DE","GB","JP","KR","SG","AU"
     )),
     //se-asia
     Relation("ID", Direction.BI, 3, List(
@@ -132,18 +141,21 @@ object CountryMutualRelationshipGenerator extends App {
     Relation("TH", Direction.TO, 2, List(
       "RU","IL","FR","DE","GB","NL","BE","DK","SE","NO","FI","AU","NZ","US"
     )),
+    Relation("MY", Direction.TO, 2, List(
+      "RU", "IL", "FR", "DE", "GB", "NL", "BE", "DK", "SE", "NO", "FI", "AU", "NZ", "US", "JP", "TW", "KR"
+    )),
     //south-asia
     Relation("IN", Direction.BI, 4, List(
       "BT"
     )),
     Relation("IN", Direction.BI, 3, List(
-      "NP", "LK", "BD"
+      "NP", "LK", "BD", "AE"
     )),
     Relation("IN", Direction.BI, 2, List(
-      "GB", "FR", "MY", "AE", "US", "CA", "SG", "SA"
+      "GB", "FR", "MY", "MM", "US", "CA", "SG", "SA", "KW", "OM", "QA", "PH", "ID", "JP", "ZA", "KR"
     )),
     Relation("IN", Direction.BI, 1, List(
-      "KE", "ZA", "IL", "JP", "AF", "RU"
+      "KE", "IL", "AF", "RU"
     )),
     Relation("BD", Direction.BI, 2, List(
       "SG", "MY", "AE", "SA", "GB", "US", "CA", "CN", "IT"
@@ -174,11 +186,23 @@ object CountryMutualRelationshipGenerator extends App {
     Relation("GR", Direction.TO, 3, List(
       "DE", "BG", "GB", "IT", "FR"
     )),
+    Relation("RS", Direction.BI, 2, List(
+      "DE", "FR", "RU", "TR", "RO", "CY"
+    )),
+    Relation("BA", Direction.BI, 2, List(
+      "DE", "FR", "IT", "HU"
+    )),
+    Relation("FR", Direction.BI, 4, List(
+      "GB", "US", "CA"
+    )),
     Relation("FR", Direction.BI, 2, List(
       "TN", "DZ", "MA", "SN", "CI"
     )),
     Relation("IT", Direction.BI, 2, List(
       "TN", "MA", "DZ", "IL", "TR",
+    )),
+    Relation("CH", Direction.BI, 4, List(
+      "FR","DE","AT","IT","ES","NL","BE","DK","SE"
     )),
     //UK territories
     Relation("GB", Direction.BI, 5, List(
@@ -192,13 +216,13 @@ object CountryMutualRelationshipGenerator extends App {
       "IN", "RO", "PL", "GB", "RU"
     )),
     Relation("IL", Direction.BI, 3, List(
-      "CA", "US", "BG"
+      "CA", "US", "BG", "SG"
     )),
     Relation("SA", Direction.BI, 1, List(
       "SG", "CN", "IN", "BD", "NG"
     )),
     Relation("SA", Direction.BI, 2, List(
-      "DZ", "LY", "TR", "TN"
+      "BN", "DZ", "LY", "TR", "TN"
     )),
     Relation("SA", Direction.BI, 3, List(
       "MY", "PK"
@@ -220,13 +244,13 @@ object CountryMutualRelationshipGenerator extends App {
     )),
     //africa, sub
     Relation("ZA", Direction.BI, 2, List(
-      "ZW", "MZ", "GB", "DE", "US", "AU"
+      "ZW", "MZ", "GB", "DE", "US", "AU", "MW", "IN", "TZ", "KE", "CN", "TZ", "ET"
     )),
-    Relation("ZA", Direction.BI, 1, List(
-      "MW", "IN", "TZ", "KE", "CN"
+    Relation("ET", Direction.BI, 2, List(
+      "EG", "CN", "KE", "AE"
     )),
     Relation("ET", Direction.BI, 1, List(
-      "CN", "IT", "TR", "EG", "SD", "ZA", "KE", "AE", "US"
+      "IT", "SD", "US"
     )),
     //americas
     Relation("US", Direction.BI, 4, List(
@@ -245,13 +269,13 @@ object CountryMutualRelationshipGenerator extends App {
       "CL", "BO", "EC", "CO", "MX", "US", "CN", "JP"
     )),
     Relation("BR", Direction.BI, 3, List(
-      "AR", "BO", "PY", "UY"
+      "AR", "BO", "PY", "UY", "PE", "CL"
     )),
     Relation("BR", Direction.BI, 2, List(
-      "PE", "CL", "BO", "CO", "MX", "US", "CN", "ZA", "AO", "PT"
+      "BO", "CO", "MX", "US", "CN", "ZA", "AO", "PT", "JP", "DE"
     )),
     Relation("BR", Direction.BI, 1, List(
-      "IN", "JP", "DE", "FR"
+      "IN", "FR"
     )),
     Relation("CL", Direction.BI, 3, List(
       "PE","AR","US","CA","PA" //chile has FTAs with everyone

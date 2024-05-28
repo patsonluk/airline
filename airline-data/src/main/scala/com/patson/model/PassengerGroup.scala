@@ -10,6 +10,11 @@ object PassengerType extends Enumeration {
         case ELITE => "Elite"
         case TRAVELER => "Traveler"
     }
+    val priceAdjust = (paxType: PassengerType.Value) => paxType match {
+        case BUSINESS => 1.1
+        case TOURIST => 0.9
+        case _ => 1.0
+    }
 }
 
 case class PassengerGroup(fromAirport : Airport, preference : FlightPreference, passengerType : PassengerType.Value)

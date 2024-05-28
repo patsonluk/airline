@@ -12,671 +12,821 @@ object AirportFeaturePatcher extends App {
   import AirportFeatureType._
 
   lazy val featureList = Map(
-/*
+
     INTERNATIONAL_HUB -> Map[String, Int](
-/**
-*destinations with unusually more premium & intercontinental visitors relative to population
-**/
-
-//EU hubs+++ as they're relatively low pop
-"LHR" -> 65, //London
-"CDG" -> 60, //Paris
-"AMS" -> 40, //Amsterdam
-"FRA" -> 35, //Frankfurt
-"FCO" -> 30, //Rome
-"MXP" -> 25, //Milan
-"ZRH" -> 25, //Zurich
-"MAD" -> 25, //Madrid
-"GVA" -> 20, //Geneva; low-pop
-"BRU" -> 20, //Brussels
-"DUB" -> 15, //Dublin
-"CPH" -> 15, //Copenhagen
-"ARN" -> 15, //Stockholm
-"DME" -> 15, //Moscow
-"SVO" -> 15, //Moscow
-"ORY" -> 10, //Paris
-"LGW" -> 10, //London
-"ATH" -> 10, //Athens
-"MUC" -> 10, //Munich
-"BCN" -> 10, //Barcelona
-"NCE" -> 10, //Nice
-"OSL" -> 10, //Oslo
-"LIS" -> 10, //Lisbon
-"VIE" -> 5, //Vienna
-"HEL" -> 5, //Helsinki
-"WAW" -> 5, //Warsaw
-
-//north-america
-"JFK" -> 50, //New York
-"SFO" -> 45, //San Francisco; low-pop
-"YYZ" -> 30, //Toronto
-"BOS" -> 30, //Boston; medium-pop
-"LAX" -> 25, //Los Angeles
-"MIA" -> 25, //Miami; medium-pop
-"IAD" -> 25, //Washington DC; low-pop airport
-"IAH" -> 20, //Houston
-"SEA" -> 20, //Seattle
-"MEX" -> 15, //Mexico City; very high-pop
-"YVR" -> 15, //Vancouver
-"LAS" -> 15, //Las Vegas
-"HNL" -> 15, //Honolulu
-"ORD" -> 10, //Chicago
-"ATL" -> 10, //Atlanta; high-pop
-"DFW" -> 10, //Dallas Fort Worth
-"EWR" -> 10, //New York
-"DTW" -> 5, //Detroit
-"DEN" -> 5, //Denver
-"CLT" -> 5, //Charlotte
-"SLC" -> 5, //Salt Lake City
-"PHX" -> 5, //Phoenix
-"MSP" -> 5, //Minneapolis
-
-//oceania
-"SYD" -> 50, //Sydney
-"MEL" -> 20, //Melbourne
-"AKL" -> 10, //Auckland
-
-//east-asia
-"SIN" -> 65, //Singapore; medium pop
-"NRT" -> 60, //Tokyo
-"HKG" -> 45, //Hong Kong
-"TPE" -> 35, //Taipei
-"PVG" -> 30, //Shanghai
-"ICN" -> 30, //Seoul
-"HND" -> 30, //Tokyo; huge pop
-"CAN" -> 20, //Guangzhou
-"SZX" -> 15, //Shenzhen
-"BKK" -> 15, //Bangkok
-"KUL" -> 15, //Kuala Lumpur
-"KIX" -> 15, //Osaka
-"PEK" -> 10, //Beijing; huge pop
-"CGK" -> 10, //Jakarta
-"SGN" -> 10, //Ho Chi Minh City
-"CTU" -> 5, //Chengdu
-"KMG" -> 5, //Kunming
-"MNL" -> 5, //Manila
-"XIY" -> 5, //Xi'an
-
-//india
-"BOM" -> 10, //Mumbai
-"DEL" -> 5, //New Delhi; 150m pop so ~same as 100 charm on 7m pop airport
-
-//MENA
-"DXB" -> 20, //Dubai
-"JNB" -> 20, //Johannesburg
-"JED" -> 15, //Jeddah
-"IST" -> 15, //Istanbul
-"AUH" -> 10, //Abu Dhabi
-"DOH" -> 10, //Doha
-"RUH" -> 5, //Riyadh
-"CAI" -> 5, //Cairo
-"ADD" -> 5, //Addis Ababa
-"NBO" -> 5, //Nairobi
-"TLV" -> 5, //Tel Aviv
-
-//south-america
-"GRU" -> 25, //Sao Paulo
-"SCL" -> 15, //Santiago
-"EZE" -> 10, //Buenos Aires
-"BOG" -> 5, //Bogota
-"LIM" -> 5, //Lima
-"PTY" -> 5 //Panama
-    ),
- */
-    VACATION_HUB -> Map[String, Int](
-/**
- *destinations with unusually more tourists relative to population
-**/
-"HNL" -> 100, //Honolulu
-"BKK" -> 100, //Bangkok
-"CDG" -> 65, //Paris
-"MCO" -> 108, //Orlando
-"MLE" -> 55, //Malé
-"JTR" -> 46, //Santorini Island
-"PEK" -> 4, //Beijing
-"DPS" -> 144, //Denpasar-Bali Island
-"NAN" -> 41, //Nadi
+      /**
+       * international vacation destinations
+       */
+"CNX" -> 110, //Chiang Mai
+"HKT" -> 109, //Phuket
+"CXR" -> 96, //Nha Trang
+"CUZ" -> 85, //Cusco
+"KBV" -> 84, //Krabi
+"DPS" -> 84, //Denpasar-Bali Island
+"PQC" -> 82, //Phu Quoc Island
+"IST" -> 80, //Istanbul
+"CDG" -> 80, //Paris
+"LGK" -> 76, //Langkawi
+"AYT" -> 75, //Antalya
+"LHR" -> 75, //London
+"BKK" -> 66, //Bangkok
+"DXB" -> 65, //Dubai
+"HKG" -> 63, //Hong Kong
+"PNH" -> 62, //Phnom Penh
+"CUN" -> 58, //Cancún
+"JED" -> 55, //Jeddah
+"MLE" -> 55, //Malé Maldives
+"JFK" -> 54, //New York
+"NRT" -> 53, //Tokyo / Narita
+"RAK" -> 51, //Marrakech
+"CMB" -> 48, //Colombo
+"FCO" -> 46, //Rome
+"DMK" -> 45, //Bangkok
+"HAV" -> 45, //Havana
+"KUL" -> 43, //Kuala Lumpur
+"CEB" -> 42, //Lapu-Lapu City
+"SIN" -> 42, //Singapore
 "VCE" -> 42, //Venice
-"ATH" -> 46, //Athens
-"DXB" -> 82, //Dubai
-"MLA" -> 39, //Valletta
-"PRG" -> 44, //Prague
-"LPA" -> 57, //Gran Canaria Island
-"FCO" -> 38, //Rome
-"IST" -> 49, //Istanbul
-"TFS" -> 50, //Tenerife Island
-"PPT" -> 34, //Papeete
-"HER" -> 44, //Heraklion
-"CNS" -> 54, //Cairns
-"PUJ" -> 129, //Punta Cana
-"OKA" -> 92, //Naha
-"CUN" -> 150, //Cancún
-"JED" -> 32, //Jeddah
-"GUM" -> 40, //Hagåtña, Guam International Airport
-"KIX" -> 30, //Osaka
-"LAS" -> 113, //Las Vegas
-"MIA" -> 30, //Miami
-"SIN" -> 73, //Singapore
-"HKG" -> 67, //Hong Kong
-"NRT" -> 28, //Tokyo / Narita
-"VIE" -> 30, //Vienna
-"BCN" -> 86, //Barcelona
-"HAV" -> 68, //Havana
-"MRS" -> 40, //Marseille
-"MXP" -> 27, //Milan
-"SJD" -> 75, //San José del Cabo
-"GIG" -> 29, //Rio De Janeiro
-"KOA" -> 25, //Kailua-Kona
-"NAS" -> 37, //Nassau
-"DBV" -> 44, //Dubrovnik
-"KEF" -> 24, //Reykjavík
-"BUD" -> 24, //Budapest
-"NCE" -> 22, //Nice
-"PSA" -> 44, //Pisa
-"OSL" -> 21, //Oslo
-"AMS" -> 22, //Amsterdam
-"TLV" -> 21, //Tel Aviv
-"CPH" -> 21, //Copenhagen
-"CAI" -> 5, //Cairo
-"SPX" -> 25, //Cairo
-"LHR" -> 20, //London
-"BOM" -> 49, //Mumbai
-"LAX" -> 20, //Los Angeles
-"SNA" -> 10, //Santa Ana
-"YVR" -> 20, //Vancouver
-"IAD" -> 25, //Washington, DC
-"SJU" -> 43, //San Juan
-"GRU" -> 70, //São Paulo
-"BNE" -> 135, //Brisbane
-"AKL" -> 54, //Auckland
-"SFO" -> 20, //San Francisco
-"OOL" -> 74, //Gold Coast
-"CMB" -> 52, //Colombo
-"MRU" -> 42, //Port Louis
-"KIN" -> 37, //Kingston
-"BWN" -> 31, //Bandar Seri Begawan
-"MFM" -> 71, //Macau
-"CTS" -> 153, //Chitose / Tomakomai
-"HKT" -> 150, //Phuket
-"PMI" -> 110, //Palma De Mallorca
-"KUL" -> 119, //Kuala Lumpur
+"MIA" -> 42, //Miami
+"AMS" -> 41, //Amsterdam
+"LAX" -> 41, //Los Angeles
+"MBJ" -> 40, //Montego Bay
+"DAD" -> 40, //Da Nang
+"KIX" -> 40, //Osaka
+"RUN" -> 40, //St Denis
+"CAI" -> 40, //Cairo Egypt
+"GRU" -> 39, //São Paulo
+"VIE" -> 39, //Vienna
+"ATH" -> 39, //Athens
+"BCN" -> 38, //Barcelona
+"EWR" -> 38, //New York City USA
+"LGW" -> 38, //London United Kingdom
+"HND" -> 38, //Tokyo / Haneda
+"BKI" -> 37, //Kota Kinabalu
+"PUJ" -> 36, //Punta Cana
+"CPT" -> 35, //Cape Town
+"SPX" -> 35, //Cairo
+"GIG" -> 35, //Rio De Janeiro
+"HRG" -> 34, //Hurghada
+"NCE" -> 34, //Nice
+"YYZ" -> 34, //Toronto Canada
+"ICN" -> 34, //Seoul
+"BER" -> 33, //Berlin
+"UTP" -> 32, //Rayong
+"LOP" -> 32, //Mataram
+"HNL" -> 31, //Honolulu
+"SAI" -> 31, //Siem Reap
+"AGA" -> 31, //Agadir
+"SYD" -> 30, //Sydney Australia
+"AGP" -> 30, //MÃ¡laga
+"AEP" -> 30, //Buenos Aires
+"USM" -> 30, //Na Thon (Ko Samui Island)
+"ARN" -> 30, //Stockholm
+"PEK" -> 29, //Beijing
+"MXP" -> 29, //Milan
+"DUB" -> 29, //Dublin Ireland
+"MUC" -> 29, //Munich
+"MEX" -> 29, //Mexico City
+"MCO" -> 28, //Orlando
+"MPH" -> 28, //Malay
 "LIS" -> 28, //Lisbon
-"OGG" -> 58, //Kahului
-"SYX" -> 70, //Sanya
-"BAR" -> 35, //Qionghai
-"XIY" -> 70, //Xi'an
-"PVG" -> 10, //Shanghai
-"PER" -> 92, //Perth
-"FLN" -> 67, //Florianópolis
-"NAP" -> 25, //Nápoli
-"KRK" -> 31, //Kraków
-"VRA" -> 43, //Varadero
-"HEL" -> 27, //Helsinki
-"LED" -> 25, //St. Petersburg
-"CJU" -> 142, //Jeju City
-"HGH" -> 42, //Hangzhou
-"SJO" -> 27, //San Jose
-"LIH" -> 16, //Lihue
-"CEB" -> 88, //Lapu-Lapu City
-"ITO" -> 15, //Hilo
-"WAW" -> 15, //Warsaw
-"KWL" -> 31, //Guilin City
+"PEN" -> 28, //Penang
+"DJE" -> 28, //Djerba
+"PRG" -> 28, //Prague
+"ZNZ" -> 28, //Zanzibar
+"PPT" -> 28, //Papeete
+"AUA" -> 28, //Oranjestad
+"SSH" -> 27, //Sharm el-Sheikh
+"BOM" -> 27, //Mumbai
+"LPB" -> 27, //La Paz / El Alto
+"VRA" -> 27, //Varadero
+"SCL" -> 26, //Santiago
+"TLV" -> 26, //Tel Aviv
+"BUD" -> 26, //Budapest
+"KEF" -> 26, //Reykjavík
+"BAH" -> 25, //Manama
+"GOI" -> 25, //Vasco da Gama
+"YVR" -> 25, //Vancouver
+"ZQN" -> 25, //Queenstown
+"CMN" -> 25, //Casablanca
+"RHO" -> 24, //Rodes Island
+"LAP" -> 24, //La Paz
+"NOU" -> 24, //Nouméa
+"PTP" -> 24, //Pointe-Ã -Pitre
+"PMO" -> 23, //Palermo
+"GUM" -> 23, //Hagåtña Guam International Airport
+"KTM" -> 23, //Kathmandu
+"CPH" -> 23, //Copenhagen
+"ORY" -> 22, //Paris
+"SXM" -> 22, //Saint Martin
+"MRU" -> 22, //Port Louis
+"EZE" -> 22, //Buenos Aires
+"BNE" -> 21, //Brisbane
+"NAP" -> 21, //Nápoli
+"IAD" -> 21, //Washington
+"TRV" -> 21, //Thiruvananthapuram
+"LXA" -> 21, //Lhasa
+"SFO" -> 21, //San Francisco
+"MQP" -> 21, //Mpumalanga
+"SEZ" -> 21, //Mahe Island
+"LIM" -> 21,
+"PDL" -> 21, //Azores
+"POA" -> 20, //Porto Alegre
+"HER" -> 20, //Heraklion
+"LPQ" -> 20, //Luang Phabang
+"OSL" -> 20, //Oslo
+"LIN" -> 20, //Milan Italian Alps
+"CUR" -> 20, //Willemstad
+"NAN" -> 20, //Nadi
+"GAN" -> 20, //Maldives
+"CAG" -> 20, //Cagliari
+"FLR" -> 20, //Firenze
+"FNC" -> 20, //Funchal
+"MEL" -> 19, //Melbourne
+"LAS" -> 19, //Las Vegas
+"IBZ" -> 19, //Ibiza
+"SJO" -> 19, //San Jose
+"ZRH" -> 19, //Zurich
+"EBB" -> 19, //Kampala
+"SVO" -> 19, //Moscow
+"CTG" -> 18, //Cartagena
+"AKL" -> 18, //Auckland
+"PSA" -> 18, //Pisa
 "DRW" -> 18, //Darwin
-"STX" -> 14, //Christiansted
-"MBJ" -> 76, //Montego Bay
-"LXA" -> 54, //Lhasa
-"MYR" -> 24, //Myrtle Beach
-"KBV" -> 105, //Krabi
-"AUA" -> 35, //Oranjestad
-"BGI" -> 16, //Bridgetown
-"IBZ" -> 46, //Ibiza
-"TAO" -> 40, //Qingdao
-"NOU" -> 10, //Nouméa
-"YZF" -> 10, //Yellowknife
-"CUR" -> 25, //Willemstad
-"DMK" -> 100, //Bangkok
-"ORY" -> 32, //Paris
-"SAW" -> 21, //Istanbul
-"TFN" -> 25, //Tenerife Island
-"CHQ" -> 14, //Heraklion
-"FLL" -> 22, //Miami
-"HND" -> 14, //Tokyo / Narita
-"SDU" -> 13, //Rio De Janeiro
-"UNA" -> 15, //Transamérica Resort, Comandatuba Island
-"DCA" -> 25, //Washington, DC
-"CGH" -> 35, //São Paulo
-"SHJ" -> 12, //Dubai
-"BGY" -> 10, //Milan
-"BWI" -> 25, //Washington, DC
-"EZE" -> 20, //Buenos Aires
-"BRC" -> 25, //San Carlos de Bariloche
-"IGR" -> 44, //Puerto Iguazu
-"USH" -> 16, //Ushuahia
-"FTE" -> 17, //El Calafate
-"NQN" -> 32, //Neuquen
-"LPB" -> 52, //La Paz / El Alto
-"IGU" -> 40, //Foz Do IguaÃ§u
-"NVT" -> 54, //Navegantes
-"IOS" -> 17, //IlhÃ©us
-"FEN" -> 10, //Fernando De Noronha
-"BPS" -> 36, //Porto Seguro
-"VIX" -> 39, //VitÃ³ria
-"FOR" -> 113, //Fortaleza
-"REC" -> 43, //Recife
-"SSA" -> 23, //Salvador
-"PUQ" -> 33, //Punta Arenas
-"CJC" -> 44, //Calama
-"PMC" -> 66, //Puerto Montt
-"IPC" -> 10, //Isla De Pascua
-"SCL" -> 65, //Santiago
-"ADZ" -> 34, //San AndrÃ©s
-"CTG" -> 68, //Cartagena, Colombia
-"SMR" -> 30, //Santa Marta, Colombia
-"BAQ" -> 12, //Barranquilla, Colombia
-"GPS" -> 20, //Baltra
-"LIR" -> 29, //Liberia
-"CUZ" -> 75, //Cusco
-"MVD" -> 29, //Montevideo
-"PMV" -> 87, //Isla Margarita
-"ANU" -> 17, //St. John's
-"BON" -> 10, //Kralendijk, Bonaire
-"CCC" -> 12, //Cayo Coco
-"SDQ" -> 19, //Santo Domingo
-"STI" -> 19, //Santiago
-"PTP" -> 22, //Pointe-Ã -Pitre
-"RTB" -> 17, //Roatan Island
-"GCM" -> 12, //Georgetown
-"UVF" -> 14, //Vieux Fort
-"FDF" -> 10, //Fort-de-France
-"SXM" -> 35, //Saint Martin
-"STT" -> 52, //Charlotte Amalie, Harry S. Truman Airport
-"YYC" -> 24, //Calgary
-"YUL" -> 18, //Montreal
-"YYT" -> 14, //St John
-"YHZ" -> 12, //Halifax
-"YQB" -> 12, //Quebec
-"MEX" -> 30, //Mexico City
-"CZM" -> 42, //Cozumel
-"PVR" -> 92, //Puerto Vallarta
-"LAP" -> 34, //La Paz
-"CTM" -> 21, //Chetumal
-"HUX" -> 29, //Huatulco
-"TGZ" -> 43, //Tuxtla GutiÃ©rrez
-"MID" -> 21, //Mérida
-"ANC" -> 11, //Anchorage
-"FAI" -> 8,  //Fairbanks
-"JNU" -> 15, //Juneau
-"KTN" -> 12, //Ketchikan
-"BZN" -> 16, //Bozeman
-"ASE" -> 15, //Aspen
-"BUF" -> 35, //Buffalo
-"RNO" -> 23, //Reno
-"RSW" -> 32, //Fort Myers
-"GCN" -> 20, //Grand Canyon
-"JAC" -> 14, //Jackson
-"EYW" -> 20, //Key West
-"BNA" -> 51, //Nashville
-"ACK" -> 21, //Nantucket
-"HYA" -> 11, //Cape Cod
-"MSY" -> 67, //New Orleans
-"JFK" -> 30, //New York
-"SLC" -> 53, //Salt Lake City
-"MTJ" -> 9, //Montrose (Ski resort)
-"TPA" -> 64, //Tampa
-"SAI" -> 69, //Siem Reap
-"PNH" -> 67, //Phnom Penh
-"KOS" -> 56, //Sihanukville
-"HAK" -> 50, //Haikou
-"TRV" -> 36, //Thiruvananthapuram
-"COK" -> 47, //Kochi
-"CCJ" -> 43, //Calicut
-"GOI" -> 75, //Vasco da Gama
-"SXR" -> 67, //Srinagar
-"JAI" -> 75, //Jaipur
-"VNS" -> 64, //Varanasi
-"AGX" -> 12, //Agatti
-"IXZ" -> 9, //Port Blair
-"BTH" -> 51, //Batam Island
-"LOP" -> 36, //Mataram
-"YIA" -> 96, //Yogyakarta
-"NGO" -> 10, //Tokoname
-"FUK" -> 10, //Fukuoka
-"LPQ" -> 24, //Luang Phabang
-"LGK" -> 90, //Langkawi
-"BKI" -> 98, //Kota Kinabalu
-"KTM" -> 39, //Kathmandu
-"ICN" -> 7, //Seoul
-"PPS" -> 26, //Puerto Princesa City
-"MPH" -> 55, //Malay
-"CNX" -> 150, //Chiang Mai
-"USM" -> 70, //Na Thon (Ko Samui Island)
-"UTP" -> 90, //Rayong
-"DAD" -> 113, //Da Nang
-"PQC" -> 98, //Phu Quoc Island
-"CXR" -> 113, //Nha Trang
-"GYD" -> 30, //Baku
-"BAH" -> 76, //Manama
-"TBS" -> 14, //Tbilisi
-"ETM" -> 7, //Eilat
-"MHD" -> 51, //Mashhad
-"IKA" -> 34, //Tehran
-"KIH" -> 34, //Kish Island
-"AMM" -> 34, //Amman
-"SLL" -> 25, //Salalah
-"MED" -> 45, //Medina
-"ASR" -> 51, //Kayseri
-"GZP" -> 38, //GazipaÅŸa
-"AYT" -> 150, //Antalya
-"ADB" -> 10, //Izmir
-"BJV" -> 52, //Bodrum
-"SID" -> 14, //Espargos
+"MVD" -> 18, //Montevideo
+"BGI" -> 18, //Bridgetown
 "BVC" -> 18, //Rabil
-"RAI" -> 10, //Praia
-"RMF" -> 39, //Marsa Alam
-"SSH" -> 57, //Sharm el-Sheikh
-"LXR" -> 8,  //Luxor
-"HRG" -> 74, //Hurghada
-"BJL" -> 10, //Banjul
-"NBO" -> 49, //Nairobi
-"AGA" -> 23, //Agadir
-"RAK" -> 134, //Marrakech
-"RUN" -> 43, //St Denis
-"EBB" -> 45, //Kampala
-"SEZ" -> 14, //Mahe Island
-"ZNZ" -> 34, //Zanzibar
-"JRO" -> 54, //Arusha
-"NBE" -> 19, //Enfidha
-"DJE" -> 27, //Djerba
+"HEL" -> 18, //Helsinki
 "MIR" -> 18, //Monastir
-"CPT" -> 70, //Cape Town
-"JNB" -> 40, //Johannesburg
-"MQP" -> 32, //Mpumalanga
-"LVI" -> 66, //Livingstone
-"VFA" -> 66, //Victoria Falls
-"MUB" -> 28,
-"BOJ" -> 28, //Burgas
-"VAR" -> 56, //Varna
-"RVN" -> 14, //Rovaniemi
-"LYS" -> 10, //Lyon
-"AJA" -> 27, //Ajaccio/NapolÃ©on Bonaparte
-"BIA" -> 24, //Bastia-Poretta
-"CLY" -> 15, //Calvi-Sainte-Catherine
-"LCA" -> 33, //Larnarca
-"BER" -> 87, //Berlin
-"MUC" -> 12, //Munich
-"HAM" -> 38, //Hamburg
-"ALC" -> 38, //Alicante
-"FUE" -> 38, //Fuerteventura Island
-"GRO" -> 39, //Girona
-"ACE" -> 49, //Lanzarote Island
-"AGP" -> 146, //MÃ¡laga
-"REU" -> 28, //Reus
-"VLC" -> 30, //Valencia
+"PVG" -> 18, //Shanghai
+"ORD" -> 18, //Chicago
+"SGN" -> 18,
+"CNS" -> 18, //Cairns
+"LVI" -> 18, //Livingstone
+"SJU" -> 18, //San Juan
+"OGG" -> 17, //Kahului
+"ASR" -> 17, //Kayseri
+"STT" -> 17, //Charlotte Amalie
+"CFU" -> 17, //Kerkyra Island
+"LCA" -> 17, //Larnarca
+"NBE" -> 17, //Enfidha
+"RTB" -> 17, //Roatan Island
+"ATL" -> 17,
+"GPS" -> 17, //Baltra Galapagos
+"MUB" -> 16, //Maun
+"FDF" -> 16, //Fort-de-France
+"WAW" -> 16, //Warsaw
+"BSL" -> 16, //Mulhouse French/Swiss Alps
+"BOG" -> 16,
+"TIA" -> 16, //Triana
+"DOH" -> 16,
+"VFA" -> 16, //Victoria Falls
+"BJV" -> 15, //Bodrum
 "MAD" -> 15, //Madrid
-"FLR" -> 40, //Firenze
-"BLQ" -> 11, //Bologna
-"BRI" -> 20, //Bari
-"CAG" -> 67, //Cagliari
-"OLB" -> 47, //Olbia (SS)
-"CTA" -> 44, //Catania
-"PMO" -> 44, //Palermo
-"ZTH" -> 32, //Zakynthos Island
-"CFU" -> 48, //Kerkyra Island
-"KGS" -> 43, //Kos Island
-"RHO" -> 74, //Rodes Island
-"EFL" -> 16, //Kefallinia Island
-"JMK" -> 38, //Mykonos Island
-"SPU" -> 20, //Split
-"ZAD" -> 10, //Zemunik (Zadar)
-"GDN" -> 36, //GdaÅ„sk
-"FAO" -> 77, //Faro
-"FNC" -> 29, //Funchal
-"TIV" -> 30, //Tivat
-"ARN" -> 10, //Stockholm
-"LLA" -> 16, //LuleÃ¥
-"OTP" -> 5, //Bucharest
-"KZN" -> 44, //Kazan
-"KRR" -> 66, //Krasnodar
-"SVO" -> 16, //Moscow
-"ZIA" -> 5, //Moscow
-"IKT" -> 21, //Irkutsk
-"AER" -> 72, //Sochi
-"VOG" -> 11, //Volgograd
-"EDI" -> 40, //Edinburgh
-"SIP" -> 48, //Simferopol
-"TSV" -> 33, //Townsville
-"HTI" -> 21, //Hamilton Island Resort
-"PPP" -> 14, //Whitsunday Coast Airport
-"AYQ" -> 10, //Ayers Rock
-"BME" -> 10, //Broome
-"HBA" -> 47, //Hobart
-"ASP" -> 12, //Alice Springs
-"LIF" -> 10, //Lifou
-"CHC" -> 137, //Christchurch
-"LGK" -> 89, //Langkawi
-"PEN" -> 43, //Penang
-"SKD" -> 34, //Samarkand
-"MAH" -> 27, //Menorca Island
-"AEP" -> 69, //Buenos Aires
-"CTU" -> 20, //Chengdu
-"TFU" -> 20, //Chengdu
-"LGA" -> 19, //New York
-"SRQ" -> 10, //Sarasota/Bradenton
-"THR" -> 34, //Tehran
-"FSC" -> 10, //Figari Sud-Corse
-"PFO" -> 10, //Paphos
-"BDS" -> 10, //Brindisi
-"DME" -> 10, //Moscow
-"ECN" -> 12, //Nicosia
+"IKA" -> 15, //Tehran
+"JMK" -> 15, //Mykonos Island
+"ADB" -> 15, //Izmir
+"BOD" -> 15, //prehistoric caves France
+"FLG" -> 15, //Flagstaff Grand Canyon
+"JNB" -> 15, //Johannesburg
+"SJD" -> 14, //San José del Cabo
+"PVR" -> 14, //Puerto Vallarta
+"PER" -> 14, //Perth
+"JRO" -> 14, //Arusha
+"NAS" -> 14, //Nassau
+"KRK" -> 14, //Kraków
+"AMM" -> 14, //Amman
+"SID" -> 14, //Espargos
+"YZF" -> 14, //Yellowknife
+"DME" -> 14, //Moscow
+"MED" -> 13, //Medina
+"LED" -> 13, //St. Petersburg
+"KOS" -> 12, //Sihanukville
+"BTH" -> 12, //Batam Island
+"THR" -> 12, //Tehran
+"PLZ" -> 12, //Addo Elephant National Park South Africa
+"XIY" -> 12, //Xi'an
+"TBS" -> 12, //Tbilisi
+"RAI" -> 12, //Praia
+"LBJ" -> 12, //Komodo National Park Indonesia
+"VTE" -> 12, //Luang Prabang Laos
+"SLC" -> 12, //Salt Lake City
+"PTY" -> 12,
+"JNU" -> 12, //Juneau
+"JAI" -> 11, //Jaipur
+"LIR" -> 11, //Liberia Costa Rica
+"ANC" -> 11, //Anchorage
+"TER" -> 11, //Azores
+"SAW" -> 10, //Istanbul
+"FAO" -> 10, //Faro
+"DEL" -> 10,
+"CZM" -> 10, //Cozumel
+"IGU" -> 10, //Foz Do IguaÃ§u
+"CJC" -> 10, //Calama
 "VKO" -> 10, //Moscow
-"ZRH" -> 20, //Zurich
-"ZQN" -> 15, //Queenstown
-"TNM" -> 12, //AQ
-"INN" -> 10, //Innsbruck
-"JER" -> 6, //Guernsey
-"GCI" -> 6, //Jersey
-"SCR" -> 5, //Salzburg
-"SVG" -> 5, //Salzburg
-"SGU" -> 5, //Zion National Park
+"CHQ" -> 10, //Heraklion
+"CIA" -> 10, //Ostia Antica Italy
+"GYD" -> 10, //Baku
+"YUL" -> 10, //Montreal
+"PLS" -> 10, //Providenciales Turks and Caicos
+"BON" -> 10, //Kralendijk Bonaire
+"CCC" -> 10, //Cayo Coco
+"PFO" -> 10, //Paphos
+"SRQ" -> 10, //Sarasota/Bradenton
+"DEN" -> 10,
+"AUH" -> 10,
+"CGK" -> 10,
+"TPE" -> 10,
+"SEA" -> 10,
+"REC" -> 9, //Recife
+"TGZ" -> 9, //Tuxtla GutiÃ©rrez
+"NBO" -> 9, //Nairobi
+"GND" -> 9,
+"ECN" -> 9, //Nicosia
+"LIF" -> 9, //Lifou
+"GUA" -> 9, //Tikal Guatemala
+"LJU" -> 9, //Triglav National Park Slovenia
+"MSY" -> 8, //New Orleans
+"CTA" -> 8, //Catania
+"CCJ" -> 8, //Calicut
+"BWN" -> 8, //Bandar Seri Begawan
+"SMR" -> 8, //Santa Marta
+"SSA" -> 8, //Salvador
+"UVF" -> 8, //Vieux Fort
+"STX" -> 8, //Christiansted
+"SZG" -> 8, //Salzburg Austrian Alps
+"USH" -> 8, //Ushuahia
+"UPN" -> 8, //Kgalagadi Transfrontier Park South Africa/Botswana
+"GDT" -> 8, //Cockburn Town
+"CYO" -> 8, //Cayo Largo del Sur Cuba
+"SMA" -> 8, //Azores
+"KGS" -> 7, //Kos Island
+"SKD" -> 7, //Samarkand
+"SZG" -> 7, //Berchtesgaden National Park Germany
+"TNM" -> 7, //AQ
+"BTS" -> 7, //Devin Castle Slovakia
+"IGR" -> 6, //Puerto Iguazu
+"GCN" -> 6, //Grand Canyon
+"LXR" -> 6, //Luxor
+"PNT" -> 6, //Torres del Paine National Park Chile
+"BZE" -> 6, //Chiquibul National Park Belize
+"DBV" -> 5, //Dubrovnik
+"JTR" -> 5, //Santorini Island
+"KIN" -> 5, //Kingston
+"EDI" -> 5, //Edinburgh
+"XIY" -> 5, //Terracotta Army China
+"ASP" -> 5, //Alice Springs
+"FAT" -> 5, //Yosemite National Park USA
+"HDS" -> 5, //Kruger National Park South Africa
+"AYQ" -> 5, //Ayers Rock
+"UNA" -> 5, //Transamérica Resort Comandatuba Island
+"BZN" -> 5, //Bozeman
 "FCA" -> 5, //Glacier National Park
-"STS" -> 5 //Sedona
-   
+"PUQ" -> 5, //Punta Arenas
+"SCR" -> 5, //Salzburg
+"ASW" -> 5, //Abu Simbel Egypt
+"MHH" -> 5, //Marsh Harbour Bahammas
+"AEY" -> 5, //Thingvellir National Park Iceland
+"BOB" -> 5, //Bora Bora French Polynesia
+"MRE" -> 5, //Maasai Mara National Reserve Kenya
+"SEU" -> 5,
+"MFU" -> 5,
+"YXY" -> 5, //Whitehorse
+"GHB" -> 5, //Governor's Harbour Bahamas
+"GGT" -> 5, //Bahamas
+"CYB" -> 5 //West End
+    ),
+    VACATION_HUB -> Map[String, Int](
+"CJU" -> 190, //Jeju City
+"CTS" -> 130, //Chitose / Tomakomai
+"MEL" -> 94, //Melbourne
+"PMI" -> 90, //Palma De Mallorca
+"MCO" -> 90, //Orlando
+"YIA" -> 86, //Yogyakarta
+"SYD" -> 84, //Sydney Australia
+"CUN" -> 80, //Cancún
+"JED" -> 80, //Jeddah
+"AGP" -> 80, //MÃ¡laga
+"AER" -> 75, //Sochi
+"SYX" -> 75, //Sanya
+"HAK" -> 75, //Haikou
+"HNL" -> 75, //Honolulu
+"LAS" -> 75, //Las Vegas
+"OKA" -> 70, //Naha
+"LPA" -> 70, //Gran Canaria Island
+"TFS" -> 70, //Tenerife Island
+"CTG" -> 68, //Cartagena
+"FLN" -> 67, //Florianópolis
+"SXR" -> 67, //Srinagar
+"VNS" -> 66, //Varanasi
+"PUJ" -> 65, //Punta Cana
+"RHO" -> 60, //Rodes Island
+"SJD" -> 60, //San José del Cabo
+"MFM" -> 60, //Macau
+"KRR" -> 60, //Krasnodar
+"PKX" -> 60, //Beijing China
+"PMC" -> 60, //Puerto Montt
+"PMV" -> 60, //Isla Margarita
+"PVR" -> 59, //Puerto Vallarta
+"OGG" -> 58, //Kahului
+"BNA" -> 58, //Nashville
+"OOL" -> 57, //Gold Coast
+"VAR" -> 56, //Varna
+"COK" -> 55, //Kochi
+"SAW" -> 52, //Istanbul
+"BAH" -> 51, //Manama
+"MHD" -> 51, //Mashhad
+"AYT" -> 50, //Antalya
+"BCN" -> 50, //Barcelona
+"BKI" -> 50, //Kota Kinabalu
+"POA" -> 50, //Porto Alegre
+"SJU" -> 50, //San Juan
+"FAO" -> 50, //Faro
+"BGO" -> 50, //Bergen
+"GRU" -> 49, //São Paulo
+"BNE" -> 49, //Brisbane
+"CGH" -> 49, //São Paulo
+"KOS" -> 48, //Sihanukville
+"MLA" -> 48, //Valletta
+"MSY" -> 47, //New Orleans
+"OLB" -> 47, //Olbia (SS)
+"DMK" -> 45, //Bangkok
+"KUL" -> 45, //Kuala Lumpur
+"CAG" -> 45, //Cagliari
+"TRD" -> 45, //Trondheim
+"HBA" -> 45, //Hobart
+"BAR" -> 45, //Qionghai
+"GIG" -> 44, //Rio De Janeiro
+"GOI" -> 44, //Vasco da Gama
+"KZN" -> 44, //Kazan
+"RMF" -> 44, //Marsa Alam
+"AEP" -> 42, //Buenos Aires
+"GRO" -> 41, //Girona
+"HRG" -> 40, //Hurghada
+"UTP" -> 40, //Rayong
+"USM" -> 40, //Na Thon (Ko Samui Island)
+"SCL" -> 40, //Santiago
+"CNS" -> 40, //Cairns
+"BJV" -> 40, //Bodrum
+"DEL" -> 40,
+"DBV" -> 40, //Dubrovnik
+"ITM" -> 40, //Osaka Japan
+"LGA" -> 40, //New York
+"RAK" -> 39, //Marrakech
+"ASR" -> 39, //Kayseri
+"BTH" -> 39, //Batam Island
+"REC" -> 39, //Recife
+"VIX" -> 39, //VitÃ³ria
+"SHA" -> 39, //Shanghai China
+"POP" -> 39, //Puerto Plata Dominican Republic
+"MAD" -> 38, //Madrid
+"CTA" -> 38, //Catania
+"JTR" -> 38, //Santorini Island
+"MRS" -> 38, //Marseille
+"FUE" -> 38, //Fuerteventura Island
+"GZP" -> 38, //GazipaÅŸa
+"MBJ" -> 36, //Montego Bay
+"CPT" -> 36, //Cape Town
+"FLR" -> 36, //Firenze
+"AKL" -> 36, //Auckland
+"BPS" -> 36, //Porto Seguro
+"TSV" -> 36, //Townsville
+"BKK" -> 35, //Bangkok
+"YVR" -> 35, //Vancouver
+"LVI" -> 35, //Livingstone
+"STT" -> 35, //Charlotte Amalie
+"PER" -> 35, //Perth
+"MED" -> 35, //Medina
+"CCJ" -> 35, //Calicut
+"KGS" -> 35, //Kos Island
+"IGR" -> 35, //Puerto Iguazu
+"ALC" -> 35, //Alicante
+"KWL" -> 35, //Guilin City
+"LYS" -> 35, //Lyon
+"HAN" -> 35, //Hanoi
+"CZM" -> 34, //Cozumel
+"HGH" -> 34, //Hangzhou
+"ACE" -> 34, //Lanzarote Island
+"GDN" -> 34, //GdaÅ„sk
+"KIH" -> 34, //Kish Island
+"NQN" -> 34, //Neuquen
+"TAO" -> 34, //Qingdao
+"TAO" -> 34, //Qingdao
+"HER" -> 33, //Heraklion
+"RSW" -> 33, //Fort Myers
+"ZTH" -> 33, //Zakynthos Island
+"IGU" -> 32, //Foz Do IguaÃ§u
+"KIN" -> 32, //Kingston
+"CNF" -> 31, //Belo Horizonte
+"CEB" -> 30, //Lapu-Lapu City
+"DAD" -> 30, //Da Nang
+"MPH" -> 30, //Malay
+"LIS" -> 30, //Lisbon
+"SSH" -> 30, //Sharm el-Sheikh
+"PSA" -> 30, //Pisa
+"CFU" -> 30, //Kerkyra Island
+"IKA" -> 30, //Tehran
+"JRO" -> 30, //Arusha
+"THR" -> 30, //Tehran
+"CJC" -> 30, //Calama
+"VKO" -> 30, //Moscow
+"TGZ" -> 30, //Tuxtla GutiÃ©rrez
+"SKD" -> 30, //Samarkand
+"ADZ" -> 30, //San AndrÃ©s
+"CTU" -> 30, //Chengdu
+"DCA" -> 30, //Washington
+"TFN" -> 30, //Tenerife Island
+"TIV" -> 30, //Tivat
+"VLC" -> 30, //Valencia
+"FOR" -> 29, //Fortaleza
+"HUX" -> 29, //Huatulco
+"MAH" -> 29, //Menorca Island
+"RNO" -> 29, //Reno
+"BOJ" -> 28, //Burgas
+"KOA" -> 28, //Kailua-Kona
+"MAA" -> 28, //Chennai
+"BOS" -> 28,
+"REU" -> 27, //Reus
+"SLL" -> 27, //Salalah
+"FLL" -> 26, //Miami
+"MYR" -> 26, //Myrtle Beach
+"SDU" -> 26, //Rio De Janeiro
+"PXO" -> 26, //Peneda-Gerês National Park Portugal
+"ORY" -> 25, //Paris
+"IBZ" -> 25, //Ibiza
+"VFA" -> 25, //Victoria Falls
+"JMK" -> 25, //Mykonos Island
+"EDI" -> 25, //Edinburgh
+"BRC" -> 25, //San Carlos de Bariloche
+"SPU" -> 25, //Split
+"HIJ" -> 25, //Hiroshima
+"KMQ" -> 25, //Kumamoto
+"BWI" -> 25, //Washington
+"NAS" -> 24, //Nassau
+"CHQ" -> 24, //Heraklion
+"CIA" -> 24, //Ostia Antica Italy
+"BWN" -> 24, //Bandar Seri Begawan
+"HAM" -> 24, //Hamburg
+"AJA" -> 24, //Ajaccio/NapolÃ©on Bonaparte
+"BIA" -> 24, //Bastia-Poretta
+"NVT" -> 24, //Navegantes
+"PPS" -> 24, //Puerto Princesa City
+"STI" -> 24, //Santiago
+"TPA" -> 24, //Tampa
+"YYC" -> 24, //Calgary
+"SDQ" -> 24, //Santo Domingo
+"JAI" -> 22, //Jaipur
+"SMR" -> 22, //Santa Marta
+"IKT" -> 22, //Irkutsk
+"SIP" -> 22, //Simferopol
+"TFU" -> 22, //Chengdu
+"SSA" -> 21, //Salvador
+"BUF" -> 21, //Buffalo
+"CTM" -> 21, //Chetumal
+"HTI" -> 21, //Hamilton Island Resort
+"MID" -> 21, //Mérida
+"IXB" -> 21, //Bagdogra Darjeeling
+"NCE" -> 20, //Nice
+"BER" -> 20, //Berlin
+"SAI" -> 20, //Siem Reap
+"PMO" -> 20, //Palermo
+"NAP" -> 20, //Nápoli
+"SVO" -> 20, //Moscow
+"KRK" -> 20, //Kraków
+"LED" -> 20, //St. Petersburg
+"LIR" -> 20, //Liberia Costa Rica
+"GYD" -> 20, //Baku
+"UVF" -> 20, //Vieux Fort
+"XIY" -> 20, //Terracotta Army China
+"BRI" -> 20, //Bari
+"PNQ" -> 20, //Pune
+"KNH" -> 20, //Kinmen
+"NKG" -> 20, //Nanjing
+"RUH" -> 20,
+"FNC" -> 19, //Funchal
+"AMM" -> 19, //Amman
+"LIH" -> 19, //Lihue
+"AMD" -> 19, //Ahmedabad
+"YUL" -> 18, //Montreal
+"NBO" -> 18, //Nairobi
+"ITO" -> 18, //Hilo
+"ANU" -> 18, //St. John's
+"EFL" -> 18, //Kefallinia Island
+"IOS" -> 18, //IlhÃ©us
+"RVN" -> 18, //Rovaniemi
+"CGB" -> 18, //Cuiabá
+"DLC" -> 18, //Dalian
+"PHL" -> 18,
+"INN" -> 18, //Innsbruck
+"EYW" -> 17, //Key West
+"FTE" -> 17, //El Calafate
+"SHJ" -> 17, //Dubai
+"IXC" -> 17, //Chandigarh
+"FOC" -> 17, //Fuzhou
+"BGY" -> 16, //Milan
+"GCM" -> 16, //Georgetown
+"LLA" -> 16, //LuleÃ¥
+"PPP" -> 16, //Whitsunday Coast Airport
+"YQB" -> 16, //Quebec
+"PEN" -> 15, //Penang
+"IAD" -> 15, //Washington
+"LCA" -> 15, //Larnarca
+"JNB" -> 15, //Johannesburg
+"PLS" -> 15, //Providenciales Turks and Caicos
+"ASP" -> 15, //Alice Springs
+"BLQ" -> 15, //Bologna
+"SNA" -> 15, //Santa Ana
+"YYT" -> 15, //St John
+"XMN" -> 15, //Xiamen
+"ISG" -> 15, //Ishigaki JP
+"JAC" -> 14, //Jackson
+"OTP" -> 14, //Bucharest
+"YHZ" -> 14, //Halifax
+"CWB" -> 14, //Curitiba
+"LPQ" -> 12, //Luang Phabang
+"FAT" -> 12, //Yosemite National Park USA
+"HDS" -> 12, //Kruger National Park South Africa
+"NGO" -> 12, //Tokoname
+"AGX" -> 12, //Agatti
+"BAQ" -> 12, //Barranquilla
+"BDS" -> 12, //Brindisi
+"FEN" -> 12, //Fernando De Noronha
+"KTN" -> 12, //Ketchikan
+"TSN" -> 12, //Tianjin
+"ATQ" -> 12, //Amritsar
+"BSB" -> 12, //Brasília
+"HFE" -> 12, //Hefei
+"LKO" -> 12, //Lucknow
+"MAO" -> 12, //Manaus
+"SHE" -> 12, //Shenyang
+"VCP" -> 12, //Campinas
+"WRE" -> 12, //Lake District National Park England
+"FUK" -> 11, //Fukuoka
+"BTV" -> 11, //Burlington Stowe/Sugarbush Vermont USA
+"VOG" -> 11, //Volgograd
+"GYN" -> 11, //Goiânia
+"AMS" -> 10, //Amsterdam
+"LAP" -> 10, //La Paz
+"MUB" -> 10, //Maun
+"PLZ" -> 10, //Addo Elephant National Park South Africa
+"STX" -> 10, //Christiansted
+"GCN" -> 10, //Grand Canyon
+"AYQ" -> 10, //Ayers Rock
+"UNA" -> 10, //Transamérica Resort Comandatuba Island
+"IPC" -> 10, //Isla De Pascua
+"GRQ" -> 10, //Grenoble French Alps
+"FSZ" -> 10, //Fuji-Hakone-Izu National Park Japan
+"BJL" -> 10, //Banjul
+"BME" -> 10, //Broome
+"FSC" -> 10, //Figari Sud-Corse
+"MTJ" -> 10, //Montrose (Ski resort)
+"ZIA" -> 10, //Moscow
+"HRB" -> 10, //Harbin
+"CSX" -> 10, //Changsha
+"OMA" -> 10, //Pico de Orizaba National Park Mexico
+"ISG" -> 10, //Ishigaki
+"TRN" -> 9, //Turin Italian Alps
+"ASE" -> 9, //Aspen
+"IXZ" -> 9, //Port Blair
+"KTA" -> 9, //Blue Mountains National Park Australia
+"YXC" -> 9, //Banff National Park Canada
+"ZAD" -> 9, //Zemunik (Zadar)
+"SZG" -> 8, //Salzburg Austrian Alps
+"SZG" -> 8, //Berchtesgaden National Park Germany
+"FAI" -> 8, //Fairbanks
+"CHC" -> 8, //Christchurch
+"CLY" -> 8, //Calvi-Sainte-Catherine
+"SLZ" -> 8, //São Luís
+"SUN" -> 8, //Hailey Sun Valley Idaho USA
+"THE" -> 8, //Teresina
+"GCI" -> 8, //Jersey
+"JER" -> 8, //Guernsey
+"BZN" -> 7, //Bozeman
+"HYA" -> 7, //Cape Cod
+"YDF" -> 7, //Gros Morne National Park Canada
+"ACK" -> 6, //Nantucket
+"EGE" -> 6, //Vail/Beaver Creek Colorado USA
+"YLW" -> 6, //Jasper National Park Canada
+"YYJ" -> 5, //Yoho National Park Canada
+"SGU" -> 5, //Zion National Park
+"STS" -> 5, //Sedona
+"SVG" -> 5, //Salzburg
+"BRW" -> 5, //Denali National Park USA
+"CNY" -> 5, //Arches National Park USA
+"ZUH" -> 5, //Zhuhai
+"SAN" -> 5, //San Diego USA
+"HDN" -> 5, //Hayden Steamboat Springs Colorado USA
+"CLQ" -> 5, //Nevado de Colima National Park Mexico
+"CCK" -> 5,
+"XCH" -> 5,
+"NLK" -> 5,
+"SUV" -> 5,
+"LDH" -> 5,
+"CMF" -> 5, //Chambéry
+"CPX" -> 5, //Culebra PR
+"VQS" -> 5 //Vieques PR
  ),
     FINANCIAL_HUB -> Map[String, Int](
-      "LHR" -> 100, //London
-      "JFK" -> 100, //New York
-      "HND" -> 95, //Tokyo
-      "PEK" -> 90, //Beijing
-      "SFO" -> 80, //San Francisco
-      "SIN" -> 70, //Singapore
-      "CDG" -> 65, //Paris
-      "FRA" -> 65, //Frankfurt
-      "CAN" -> 61, //Guangzhou
-      "HKG" -> 60, //Hong Kong
-      "YYZ" -> 60, //Toronto
-      "MUC" -> 60, //Munich
-      "BOS" -> 57, //Boston
-      "STR" -> 56, //Stuttgart
-      "BER" -> 55, //Berlin
-      "ORD" -> 55, //Chicago
-      "SZX" -> 55, //Shenzhen
-      "LAX" -> 55, //Los Angeles
-      "ZRH" -> 54, //Zurich
-      "GVA" -> 50, //Geneva
-      "MEL" -> 50, //Melbourne
-      "ICN" -> 50, //Seoul
-      "PVG" -> 50, //Shanghai
-      "BRU" -> 50, //Brussels
-      "FCO" -> 50, //Rome
-      "TPE" -> 49, //Taipei
-      "DFW" -> 55, //Dallas Fort Worth
-      "ATL" -> 45, //Atlanta
-      "MIA" -> 45, //Miami
-      "AMS" -> 50, //Amsterdam
-      "DXB" -> 44, //Dubai
-      "DUB" -> 44, //Dublin
-      "KUL" -> 44, //Kuala Lumpur
-      "HAM" -> 42, //Hamburg
-      "ARN" -> 37, //Stockholm
-      "CTU" -> 20, //Chengdu
-      "TFU" -> 20, //Chengdu
-      "BOM" -> 40, //Mumbai
-      "DCA" -> 39, //Washington DC
-      "ITM" -> 38, //Osaka
-      "CPH" -> 36, //Copenhagen
-      "EDI" -> 36, //Edinburgh
-      "MAD" -> 36, //Madrid
-      "DEL" -> 36, //New Delhi
-      "YVR" -> 35, //Vancouver
-      "IAD" -> 35, //Washington DC
-      "GRU" -> 35, //Sao Paulo
-      "DEN" -> 34, //Denver
-      "SHA" -> 34, //Shanghai
-      "MSP" -> 33, //Minneapolis
-      "CPT" -> 33, //Cape Town
-      "SCL" -> 33, //Santiago
-      "SYD" -> 38, //Sydney
-      "TLV" -> 33,
-      "JNB" -> 42, //Johannesburg
-      "EWR" -> 33, //New York
-      "VIE" -> 32, //Vienna
-      "AUH" -> 32, //Abu Dhabi
-      "LGW" -> 32, //London
-      "IST" -> 31, //Istanbul
-      "IOM" -> 31, //Castletown
-      "TLL" -> 31, //Tallinn
-      "LGA" -> 31, //New York
-      "SVO" -> 31, //Moscow
-      "PKX" -> 30, //Beijing
-      "HGH" -> 27, //Hangzhou
-      "OSL" -> 30, //Oslo
-      "LUX" -> 30, //Luxembourg
-      "YYC" -> 30, //Calgary
-      "MEX" -> 30, //Mexico City
-      "SEA" -> 30, //Seattle
-      "DLC" -> 30, //Dalian
-      "BAH" -> 30, //Bahrain
-      "YUL" -> 29, //Montreal
-      "TSN" -> 29, //Tianjin
-      "NKG" -> 29, //Nanjing
-      "DOH" -> 29, //Doha
-      "TAO" -> 28, //Qingdao
-      "PUS" -> 28, //Busan
-      "CLT" -> 28, //Charlotte
-      "DME" -> 28, //Moscow
-      "LIS" -> 27, //Lisbon
-      "KGL" -> 26, //Kigali
-      "KIX" -> 26, //Osaka
-      "SJC" -> 26, //San Francisco
-      "PHL" -> 25, //Philadelphia
-      "ORY" -> 25, //Paris
-      "DAL" -> 25, //Dallas
-      "PHX" -> 25, //Phoenix
-      "BUD" -> 24, //Budapest
-      "PRG" -> 24, //Prague
-      "GLA" -> 24, //Glasgow
-      "HAJ" -> 24, //Hanover
-      "GMP" -> 24, //Seoul
-      "DTW" -> 24, //Detroit
-      "BLR" -> 23, //Bangalore
-      "KWI" -> 23, //Kuwait City
-      "BSB" -> 23, //Brasilia
-      "WAW" -> 22, //Warsaw
-      "LCA" -> 22, //Nicosia
-      "NCE" -> 22, //Monaco
-      "KHH" -> 22, //Kaohsiung
-      "NAS" -> 22, //Nassau
-      "PTY" -> 22, //Panama City
-      "IKA" -> 22, //Tehran
-      "MDW" -> 22, //Chicago
-      "IAH" -> 21, //Houston
-      "BWI" -> 21, //Baltimore
-      "LED" -> 21, //St Petersburg
-      "EZE" -> 21, //Buenos Aires
-      "NGO" -> 21, //Nagoya
-      "FUK" -> 20, //Fukuoka
-      "TAS" -> 20, //Tashkent
-      "AUS" -> 20, //Austin
-      "BKK" -> 20, //Bangkok
-      "LCY" -> 20, //London
-      "LIN" -> 20, //Milan
-      "BLQ" -> 20, //Bologna
-      "BOG" -> 19, //Bogota
-
-      "MXP" -> 19, //Milan
-      "BNA" -> 19, //Nashville
-      "SMF" -> 19, //Sacramento
-      "MLA" -> 18, //Malta
-      "BHX" -> 18, //Birmingham
-      "HEL" -> 18, //Helsinki
-      "MNL" -> 18, //Manila
-      "MAN" -> 18, //Manchester
-      "DUS" -> 18, //Dusseldorf
-      "CGN" -> 18, //Cologne
-      "OTP" -> 18, //Bucharest
-      "GIG" -> 18, //Rio de Janeiro
-      "BGI" -> 18, //Bridgetown
-      "PIT" -> 18, //Pittsburgh
-      "BCN" -> 18, //Barcelona
-      "OAK" -> 18, //San Francisco
-      "HYD" -> 18, //Hyderabad
-      "CBR" -> 18, //Canberra
-      "MAA" -> 17, //Chennai
-      "BTS" -> 17, //Bratislava
-      "JED" -> 17, //Jeddah
-      "MAA" -> 17, //Chennai
-      "TLS" -> 17, //Toulouse
-      "SAN" -> 16, //San Diego
-      "GOT" -> 16, //Gothenburg
-      "AMD" -> 16, //GIFT City-Gujarat
-      "KHI" -> 16, //Karachi
-      "RMO" -> 16, //Chisinau
-      "BNE" -> 16, //Brisbane
-      "NBO" -> 16, //Nairobi
-      "PLS" -> 15, //Providenciales
-      "LEJ" -> 15, //Leipzig
-      "ADL" -> 15, //Adelaide
-      "RTM" -> 15, //The Hague
-      "BDA" -> 14, //Bermuda
-      "KEF" -> 14, //Reykjavik
-      "CMN" -> 14, //Casablanca
-      "RUH" -> 14, //Riyadh
-      "PDX" -> 14, //Portland
-      "WUH" -> 14, //Wuhan
-      "XIY" -> 14, //Xi'an
-      "AKL" -> 14, //Auckland
-      "BLL" -> 14, //Aarhus
-      "VCE" -> 14, //Padua
-      "GYD" -> 13, //Baku
-      "TRN" -> 13, //Turin
-      "VNO" -> 12, //Vilnius
-      "RIX" -> 11, //Riga
-      "SOF" -> 12, //Sofia
-      "WLG" -> 12, //Wellington
-      "LOS" -> 12, //Lagos
-      "CKG" -> 12, //Jakarta
-      "SGN" -> 12, //Ho Chi Minh City
-      "DTM" -> 12, //Dortmund
-      "LIM" -> 12, //Lima
-      "PNQ" -> 12, //Pune
-      "ALG" -> 12, //Algiers
-      "KUN" -> 12, //Kaunas
-      "YQB" -> 12, //Quebec City
-      "DAC" -> 11, //Dhaka
-      "CCU" -> 10, //Kolkata
-      "DMK" -> 10, //Bangkok
-      "CGH" -> 10, //Sao Paulo
-      "SDU" -> 10, //Rio de Janeiro
-      "AEP" -> 10, //Buenos Aires
-      "TSA" -> 10, //Taipei
-      "ATH" -> 9, //Athens
-      "NCL" -> 9, //Newcastle
-      "LYS" -> 8, //Grenoble
-      "ANC" -> 8, //Anchorage
-      "NQZ" -> 7, //Nursultan Nazarbayev Nur-Sultan
-      "ALA" -> 6, //Almaty
-      "GIB" -> 5, //Gibraltar
-      "JNU" -> 5 //Juneau
+"SIN" -> 80, //Singapore
+"JFK" -> 75, //New York
+"HND" -> 75, //Tokyo
+"LHR" -> 75, //London
+"FRA" -> 65, //Frankfurt
+"HKG" -> 60, //Hong Kong
+"CDG" -> 60, //Paris
+"MUC" -> 60, //Munich
+"YYZ" -> 60, //Toronto
+"ICN" -> 58, //Seoul
+"EWR" -> 55, //New York
+"DXB" -> 55, //Dubai
+"PEK" -> 50, //Beijing
+"JNB" -> 48, //Johannesburg
+"ORD" -> 45, //Chicago
+"TPE" -> 45, //Taipei
+"AMS" -> 45, //Amsterdam
+"STR" -> 45, //Stuttgart
+"BRU" -> 45, //Brussels
+"KUL" -> 44, //Kuala Lumpur
+"GVA" -> 44, //Geneva
+"SZX" -> 42, //Shenzhen
+"AUH" -> 42, //Abu Dhabi
+"LAX" -> 40, //Los Angeles
+"DUB" -> 40, //Dublin
+"BER" -> 40, //Berlin
+"ZRH" -> 40, //Zurich
+"GRU" -> 40, //Sao Paulo
+"SYD" -> 39, //Sydney
+"LGW" -> 36, //London
+"MAD" -> 36, //Madrid
+"CAN" -> 36, //Guangzhou
+"PVG" -> 36, //Shanghai
+"BOS" -> 35, //Boston
+"DFW" -> 35, //Dallas Fort Worth
+"LGA" -> 35, //New York
+"YVR" -> 35, //Vancouver
+"BOM" -> 35, //Mumbai
+"ARN" -> 34, //Stockholm
+"DOH" -> 34, //Doha
+"CPH" -> 34, //Copenhagen
+"HAM" -> 34, //Hamburg
+"MEL" -> 34, //Melbourne
+"KWI" -> 33, //Kuwait City
+"TLV" -> 33, //Tel Aviv
+"SCL" -> 33, //Santiago
+"YUL" -> 32, //Montreal
+"VIE" -> 32, //Vienna
+"DME" -> 31, //Moscow
+"SFO" -> 30, //San Francisco
+"OSL" -> 30, //Oslo
+"MEX" -> 30, //Mexico City
+"LUX" -> 30, //Luxembourg
+"ITM" -> 30, //Osaka
+"KIX" -> 30, //Osaka
+"SVO" -> 29, //Moscow
+"EDI" -> 29, //Edinburgh
+"IST" -> 28, //Istanbul
+"PUS" -> 28, //Busan
+"DEL" -> 28, //New Delhi
+"BOG" -> 26, //Bogota
+"EZE" -> 26, //Buenos Aires
+"CPT" -> 25, //Cape Town
+"FCO" -> 25, //Rome
+"MXP" -> 25, //Milan
+"ORY" -> 25, //Paris
+"PKX" -> 25, //Beijing
+"YYC" -> 25, //Calgary
+"BAH" -> 25, //Bahrain
+"ATL" -> 24, //Atlanta
+"CLT" -> 24, //Charlotte
+"GMP" -> 24, //Seoul
+"SHA" -> 24, //Shanghai
+"LOS" -> 24, //Lagos
+"GIG" -> 22, //Rio de Janeiro
+"RUH" -> 21, //Riyadh
+"LIM" -> 21, //Lima
+"NGO" -> 21, //Nagoya
+"TAS" -> 20, //Tashkent
+"IAD" -> 20, //Washington DC
+"DEN" -> 20, //Denver
+"BKK" -> 20, //Bangkok
+"FUK" -> 20, //Fukuoka
+"LIN" -> 20, //Milan
+"BUD" -> 20, //Budapest
+"LCY" -> 20, //London
+"HAJ" -> 20, //Hanover
+"WAW" -> 19, //Warsaw
+"PRG" -> 19, //Prague
+"DCA" -> 18, //Washington DC
+"MSP" -> 18, //Minneapolis
+"AKL" -> 18, //Auckland
+"NBO" -> 18, //Nairobi
+"BLQ" -> 18, //Bologna
+"BLR" -> 18, //Bangalore
+"MAN" -> 18, //Manchester
+"BCN" -> 18, //Barcelona
+"BSB" -> 18, //Brasilia
+"SGN" -> 18, //Ho Chi Minh City
+"CGK" -> 18, //Jakarta
+"JED" -> 17, //Jeddah
+"MNL" -> 17, //Manila
+"OAK" -> 16, //San Francisco
+"HYD" -> 16, //Hyderabad
+"TLL" -> 16, //Tallinn
+"DUS" -> 16, //Dusseldorf
+"CGN" -> 16, //Cologne
+"MDW" -> 15, //Chicago
+"IAH" -> 15, //Houston
+"MIA" -> 15, //Miami
+"SEA" -> 15, //Seattle
+"PHX" -> 15, //Phoenix
+"SJC" -> 15, //San Francisco
+"DAL" -> 15, //Dallas
+"DTW" -> 15, //Detroit
+"RTM" -> 15, //The Hague
+"RMO" -> 15, //Chisinau
+"HEL" -> 15, //Helsinki
+"CGH" -> 15, //Sao Paulo
+"PHL" -> 14, //Philadelphia
+"KHH" -> 14, //Kaohsiung
+"TRN" -> 14, //Turin
+"IKA" -> 14, //Tehran
+"AMD" -> 14, //GIFT City-Gujarat
+"PER" -> 14, //Perth
+"BNE" -> 14, //Brisbane
+"ALA" -> 13, //Almaty
+"TLS" -> 13, //Toulouse
+"VNO" -> 12, //Vilnius
+"ALG" -> 12, //Algiers
+"LEJ" -> 12, //Leipzig
+"TAO" -> 12, //Qingdao
+"TSN" -> 12, //Tianjin
+"CBR" -> 12, //Canberra
+"CMN" -> 11, //Casablanca
+"KUN" -> 11, //Kaunas
+"DAC" -> 11, //Dhaka
+"BGI" -> 11, //Bridgetown
+"HAN" -> 11, //Hanoi
+"TSA" -> 10, //Taipei
+"DMK" -> 10, //Bangkok
+"LED" -> 10, //St Petersburg
+"RIX" -> 10, //Riga
+"MAA" -> 10, //Chennai
+"SDU" -> 10, //Rio de Janeiro
+"AEP" -> 10, //Buenos Aires
+"PTY" -> 9, //Panama City
+"BWI" -> 9, //Baltimore
+"BGO" -> 9, //Bergen
+"MLA" -> 9, //Malta
+"ATH" -> 9, //Athens
+"TFU" -> 9, //Chengdu
+"MDE" -> 9, //Medellin
+"AUS" -> 8, //Austin
+"SAN" -> 8, //San Diego
+"BTS" -> 8, //Bratislava
+"GOT" -> 8, //Gothenburg
+"OTP" -> 8, //Bucharest
+"KHI" -> 8, //Karachi
+"CCU" -> 8, //Kolkata
+"CKG" -> 8, //Jakarta
+"NCL" -> 8, //Newcastle
+"LYS" -> 8, //Grenoble
+"BLL" -> 8, //Aarhus
+"LCA" -> 8, //Nicosia
+"NKG" -> 8, //Nanjing
+"CTU" -> 8, //Chengdu
+"BDA" -> 8, //Bermuda
+"ADL" -> 8, //Adelaide
+"PDX" -> 7, //Portland
+"PIT" -> 7, //Pittsburgh
+"NQZ" -> 7, //Nur-Sultan
+"DLC" -> 7, //Dalian
+"GYD" -> 7, //Baku
+"PNQ" -> 6, //Pune
+"HGH" -> 6, //Hangzhou
+"NAS" -> 6, //Nassau
+"SOF" -> 6, //Sofia
+"BNA" -> 5, //Nashville
+"SMF" -> 5, //Sacramento
+"ANC" -> 5, //Anchorage
+"JNU" -> 5, //Juneau
+"DMM" -> 5, //
+"AHB" -> 5, //
+"KGL" -> 5, //Kigali
+"WLG" -> 5, //Wellington
+"TRD" -> 5, //Trondheim
+"ABV" -> 5, //
+"MTY" -> 5, //Monterrey
+"KEF" -> 5, //Reykjavik
+"IOM" -> 5, //Castletown
+"GLA" -> 5, //Glasgow
+"BHX" -> 5, //Birmingham
+"ADD" -> 5, //Addis Ababa
+"DTM" -> 5, //Dortmund
+"CLO" -> 5, //Cali
+"XIY" -> 5, //Xi'an
+"YQB" -> 5, //Quebec City
+"BEG" -> 5, //Belgrade
+"DUR" -> 5 //Durban
     ), 
     DOMESTIC_AIRPORT -> Map(
       "LGA" -> 0,
@@ -684,6 +834,7 @@ object AirportFeaturePatcher extends App {
       "MDW" -> 0,
       "SNA" -> 0,
       "BUR" -> 0,
+      "OAK" -> 0,
       "DAL" -> 0,
       "HOU" -> 0,
       "AZA" -> 0,
@@ -701,7 +852,6 @@ object AirportFeaturePatcher extends App {
       //canada
       "YTZ" -> 0,
       "YHU" -> 0,
-      "YZF" -> 0,
       "YFB" -> 0,
       //mexico
       "TLC" -> 0,
@@ -779,7 +929,6 @@ object AirportFeaturePatcher extends App {
       "AVV" -> 0,
       "MCY" -> 0,
       "LST" -> 0
-
     )
   ) + (GATEWAY_AIRPORT -> getGatewayAirports().map(iata => (iata, 0)).toMap) + (ELITE_CHARM -> getEliteDestinations())
 
@@ -879,6 +1028,10 @@ object AirportFeaturePatcher extends App {
       "SFO",
       "MIA",
       "BOM", //India
+      "RUH", //Saudi
+      "AUH", //UAE
+      "AYT", //Turkey
+      "CPT", //South Africa
       "GIG", //Brazil
       "GRU",
       "NRT", //Japan
@@ -887,11 +1040,14 @@ object AirportFeaturePatcher extends App {
       "LED",
       "FCO", //Italy
       "MXP",
+      "MAD", //Spain
+      "BCN",
       "FRA", //Germany
       "MUC",
       "SYD", //Australia
       "MEL",
       "YVR", //Canada
+      "YUL",
       "YYZ"))
     list.toList
   }

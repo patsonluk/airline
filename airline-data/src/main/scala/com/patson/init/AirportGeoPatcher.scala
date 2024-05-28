@@ -40,7 +40,7 @@ object AirportGeoPatcher extends App {
     val cities = AdditionalLoader.loadAdditionalCities()
     //make sure cities are saved first as we need the id for airport info
     try {
-      AirportSource.deleteAllAirports()
+//      AirportSource.deleteAllAirports()
       CitySource.deleteAllCitites()
       CitySource.saveCities(cities)
     } catch {
@@ -65,29 +65,29 @@ object AirportGeoPatcher extends App {
 
 
     AirportFeaturePatcher.patchFeatures()
-    GenericTransitGenerator.generateGenericTransit()
+//    GenericTransitGenerator.generateGenericTransit()
 
-    val updatingCountries = ListBuffer[Country]()
-    computedAirports.groupBy(_.countryCode).foreach {
-      case (countryCode, airports) =>
-        val totalAirportPopulation : Long = airports.map {
-          _.population
-        }.sum
-        val averageIncome = if (totalAirportPopulation == 0) {
-          0
-        } else {
-          airports.map {
-            _.power
-          }.sum / totalAirportPopulation
-       }
-
-        CountrySource.loadCountryByCode(countryCode) match {
-          case Some(country) => updatingCountries.append(country.copy(airportPopulation = totalAirportPopulation.toInt))
-          case None => println(s"Country $countryCode not found!")
-        }
-
-    }
-    CountrySource.updateCountries(updatingCountries.toList)
+//    val updatingCountries = ListBuffer[Country]()
+//    computedAirports.groupBy(_.countryCode).foreach {
+//      case (countryCode, airports) =>
+//        val totalAirportPopulation : Long = airports.map {
+//          _.population
+//        }.sum
+//        val averageIncome = if (totalAirportPopulation == 0) {
+//          0
+//        } else {
+//          airports.map {
+//            _.power
+//          }.sum / totalAirportPopulation
+//       }
+//
+//        CountrySource.loadCountryByCode(countryCode) match {
+//          case Some(country) => updatingCountries.append(country.copy(airportPopulation = totalAirportPopulation.toInt))
+//          case None => println(s"Country $countryCode not found!")
+//        }
+//
+//    }
+//    CountrySource.updateCountries(updatingCountries.toList)
 
 
     Await.result(actorSystem.terminate(), Duration.Inf)

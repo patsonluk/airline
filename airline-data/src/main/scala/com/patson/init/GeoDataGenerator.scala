@@ -152,11 +152,10 @@ object GeoDataGenerator extends App {
       //csv = country-code,country-name,openness,gini,nominal-to-real-conversion-ratio,(5)zone,group1,lang1,group2,lang2,lang3
       val countryZoneMap = scala.io.Source.fromFile("country-data-2022.csv").getLines().map(_.split(",", -1)).map { tokens =>
         val innerString = List(
+          if (tokens(5).isEmpty) "" else tokens(5),
           if (tokens(6).isEmpty) "" else tokens(6),
           if (tokens(7).isEmpty) "" else tokens(7),
-//          if (tokens(8).isEmpty) "" else tokens(8),
-          if (tokens(9).isEmpty) "" else tokens(9),
-          if (tokens(10).isEmpty) "" else tokens(10)
+          if (tokens(8).isEmpty) "" else tokens(8)
         ).filter(_.nonEmpty).mkString("-")
 
         if (innerString.nonEmpty) (tokens(0), innerString) else (tokens(0), "None")
@@ -366,7 +365,7 @@ object GeoDataGenerator extends App {
         } else {
           elitePop
         }
-        val middleIncomePop = Math.max(0, -1 * elitePopAdjusted + Computation.populationAboveThreshold(normalizedIncome, population.toInt, gini, 34_000))
+        val middleIncomePop = Math.max(0, -1 * elitePopAdjusted + Computation.populationAboveThreshold(normalizedIncome, population.toInt, gini, 30_000))
         val airportCopy = airport.copy(baseIncome = normalizedIncome , basePopulation = population, popMiddleIncome = middleIncomePop, popElite = elitePopAdjusted)
         //YIKE copy here does not copy everything, we need to manually look up what does updateAirport/saveAirport do and clone stuff here...
         airportCopy.setRunways(airport.getRunways())

@@ -150,6 +150,7 @@ object AirportSizeAdjust {
         //algeria
         "TMR" -> 3,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Angola
+        "MSZ" -> 4,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Argentina
         "MDZ" -> 5,
         "BRC" -> 5,
@@ -419,6 +420,8 @@ object AirportSizeAdjust {
         "MBJ" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Madagascar
         "ERS" -> 2,
+        //Mayotte
+        "DZA" -> 4,
         //https://en.wikipedia.org/wiki/List_of_airports_in_the_Republic_of_Macedonia
         //https://en.wikipedia.org/wiki/List_of_airports_in_Mali
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Mexico
@@ -448,6 +451,10 @@ object AirportSizeAdjust {
         //morocco
         "ERH" -> 3,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Mozambique
+        //namibia
+        "WVB" -> 3,
+        "OMD" -> 3,
+        "MPA" -> 3,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Niger
         //https://en.wikipedia.org/wiki/List_of_airports_in_Nicaragua
         //https://en.wikipedia.org/wiki/List_of_airports_in_Nepal
@@ -635,6 +642,7 @@ object AirportSizeAdjust {
         "KOA" -> 4,
         "LIH" -> 4,
         //downgrade secondary USA airports
+        "BFI" -> 3,
         "LCK" -> 3,
         "BLV" -> 3,
         "GRK" -> 2,

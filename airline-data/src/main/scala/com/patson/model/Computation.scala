@@ -136,53 +136,92 @@ object Computation {
     }
   }
 
+  /**
+   * Matches shared strings, deliminated by a dash "-"
+   * international only, any that start with a "|"
+   * diaspora, discards strings with |first-code|second-code| pattern unless toCountryCode & fromCountryCode are also matched (only different for text, not value)
+   *
+   * @param fromZone
+   * @param toZone
+   * @param toCountryCode
+   * @param relationship
+   * @return
+   */
+
 def calculateAffinityValue(fromZone : String, toZone : String, relationship : Int) : Int = {
-  if (relationship >= 5) { //domestic
-    5
-  } else {
-    val relationshipModifier = if(relationship < 0){
-      -1
-    } else if(relationship > 0){
+  val relationshipModifier =
+    if (relationship >= 5) { //domestic
+      5
+    } else if (relationship < 0) {
+      Math.floor(relationship.toDouble / 2.0).toInt
+    } else if (relationship > 0) {
       (relationship / 2).toInt
     } else {
       0
     }
-    val set1 = fromZone.split("-").filter(_!="None")
-    val set2 = toZone.split("-").filter(_!="None")
-    val affinity = set1.intersect(set2).size
-    affinity + relationshipModifier
+
+  val set1 = if (relationship >= 5) {
+    fromZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_!="None")
+  } else {
+    fromZone.split("-").filter(_!="None")
+  }
+  val set2 = if (relationship >= 5) {
+    toZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_!="None")
+  } else {
+    toZone.split("-").filter(_!="None")
+  }
+  val affinitySet = set1.intersect(set2)
+  countX2(affinitySet) + affinitySet.size + relationshipModifier
+}
+
+def countX2(strings: Array[String]): Int = {
+  strings.count { str =>
+    str.length >= 5 && str.substring(str.length - 3, str.length - 1) == "x2"
   }
 }
 
-def constructAffinityText(fromZone : String, toZone : String, relationship : Int) : String = {
-  if (relationship == 5) {
-    "Domestic"
+def constructAffinityText(fromZone : String, toZone : String, fromCountry : String, toCountry : String, relationship : Int, affinity : Int) : String = {
+  val set1 = if (relationship >= 5) {
+    fromZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_ != "None")
   } else {
-    val set1 = fromZone.split("-").filter(_!="None")
-    val set2 = toZone.split("-").filter(_!="None")
-    val affinity = calculateAffinityValue(fromZone, toZone, relationship)
-    var matchingItems = set1.intersect(set2).toArray.toArray
-    if (relationship < 0) {
-      matchingItems = Array("Political Acrimony") ++ matchingItems
-    } else if (relationship >= 4) {
-      matchingItems = Array("Excellent Relations") ++ matchingItems
-    } else if (relationship >= 2) {
-      matchingItems = Array("Good Relations") ++ matchingItems
-    } else {
-      set1.intersect(set2).toArray
-    }
-    val introText = if (affinity == 0 && matchingItems.size == 0){
-      "Neutral"
-    } else if (affinity == 0){
-      "Neutral:"
-    } else if (affinity > 0){
-      s"+${affinity}:"
-    } else {
-      s"${affinity}:"
-    }
+    fromZone.split("-").filter(_ != "None")
+  }
+  val set2 = if (relationship >= 5) {
+    toZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_ != "None")
+  } else {
+    toZone.split("-").filter(_ != "None")
+  }
+  var matchingItems = set1.intersect(set2).toArray
+
+  if (relationship <= 5) {
+    matchingItems = matchingItems.map(item => {
+      if (item.endsWith("|")) item.dropRight(1)
+      else if (item.startsWith("|")) item.drop(4) + " diaspora"
+      else item
+    })
+  }
+
+  if (relationship <= -1) {
+    matchingItems = Array("Political Acrimony") ++ matchingItems
+  } else if (relationship >= 5) {
+    matchingItems = Array("Domestic") ++ matchingItems
+  } else if (relationship >= 4) {
+    matchingItems = Array("Excellent Relations") ++ matchingItems
+  } else if (relationship >= 2) {
+    matchingItems = Array("Good Relations") ++ matchingItems
+  }
+
+  val introText = if (affinity == 0 && matchingItems.size == 0){
+    "Neutral"
+  } else if (affinity == 0){
+    "Neutral:"
+  } else if (affinity > 0){
+    s"+${affinity}:"
+  } else {
+    s"${affinity}:"
+  }
 
   s"${introText} ${matchingItems.mkString(", ")}"
-  }
 }
   
 

@@ -16,7 +16,7 @@ import com.patson.model.CashFlowType
 import com.patson.model.CashFlowType
 import com.patson.model.AirlineCashFlowItem
 import com.patson.model.airplane.Model.Category
-import com.patson.util.{AirplaneOwnershipCache, CountryCache}
+import com.patson.util.{AirplaneOwnershipCache, AirplaneModelCache, CountryCache}
 
 import javax.inject.Inject
 import scala.collection.{MapView, mutable}
@@ -160,19 +160,21 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
   
   def getAirplaneModelsByAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val originalModels = ModelSource.loadAllModels()
-    val originalModelsById = originalModels.map(model => (model.id, model)).toMap
-//    val airlineDiscountsByModelId = ModelSource.loadAirlineDiscountsByAirlineId(airlineId).groupBy(_.modelId)
-//    val blanketDiscountsByModelId = ModelSource.loadAllModelDiscounts().groupBy(_.modelId)
+    val originalModelsById = AirplaneModelCache.allModels
+    val allAirplanes = AirplaneSource.loadAllAirplanes()
+    val allModelsAndCount = allAirplanes.groupBy(_.model).map {
+      case (model, airplanes) =>
+        (model.id, airplanes.length)
+    }.toMap
+
     val discountsByModelId = ModelDiscount.getAllCombinedDiscountsByAirlineId(airlineId)
 
-    val discountedModels = originalModels.map { originalModel =>
-      discountsByModelId.get(originalModel.id) match {
-        case Some(discounts) => originalModel.applyDiscount(discounts)
-        case None => originalModel
+    val discountedModels = originalModelsById.map { originalModel =>
+      discountsByModelId.get(originalModel._2.id) match {
+        case Some(discounts) => originalModel._2.applyDiscount(discounts)
+        case None => originalModel._2
       }
-
-    }
+    }.toList
 
     val discountedModelWithRejections : Map[Model, Option[String]]= getRejections(discountedModels, request.user)
 
@@ -199,6 +201,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         if (favoriteOption.isDefined && favoriteOption.get._1 == originalModel.id) {
           modelJson = modelJson + ("isFavorite" -> JsBoolean(true))
         }
+        val total = allModelsAndCount.getOrElse(originalModel.id, 0)
+        modelJson = modelJson + ("total" -> JsNumber(total))
         result = result.append(modelJson)
     }
 
@@ -230,7 +234,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   
   def getRejection(model: Model, quantity : Int, relationship : AirlineCountryRelationship, ownedModels : Set[Model], airline : Airline) : Option[String]= {
     if (quantity > 10) {
-      return Some("Cannot order more than 20 planes in one order")
+      return Some("Cannot order more than 10 planes in one order")
     }
 
     if (airline.getHeadQuarter().isEmpty) { //no HQ

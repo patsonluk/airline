@@ -264,7 +264,7 @@ object RankingLeaderboards {
       case(details, index) => {
         val lounge = details.lounge
         val ranking = Ranking(RankingType.LOUNGE,
-          key = lounge.airline.id,
+          key = s"$lounge.airline.id|$lounge.airport.id",
           entry = lounge,
           ranking = index + 1,
           rankedValue = details.selfVisitors + details.allianceVisitors,

@@ -69,7 +69,7 @@ object PassengerSimulation {
   def passengerConsume[T <: Transport](demand : List[(PassengerGroup, Airport, Int)], links : List[T]) : PassengerConsumptionResult = {
     val consumptionResult = Collections.synchronizedList(new ArrayList[(PassengerGroup, Airport, Int, Route)]())
     val missedDemandChunks = Collections.synchronizedList(new ArrayList[(PassengerGroup, Airport, Int)]())
-    val consumptionCycleMax = 10; //try and rebuild routes 10 times
+    val consumptionCycleMax = 12; //try and rebuild routes 10 times
     var consumptionCycleCount = 0;
     //start consumption cycles
 
@@ -150,8 +150,8 @@ object PassengerSimulation {
 
       //og AC at 4, 5, 6
        val iterationCount =
-        if (consumptionCycleCount < 4) 3
-        else if (consumptionCycleCount < 7) 4
+        if (consumptionCycleCount < 5) 3
+        else if (consumptionCycleCount < 8) 4
         else 6
       val allRoutesMap = mutable.HashMap[PassengerGroup, Map[Airport, Route]]()
 
@@ -495,7 +495,7 @@ object PassengerSimulation {
           if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness, link.from.size)) {
             linkConsiderations.add(linkConsideration1)
           }
-          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness, link.from.size)) {
+          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness, link.to.size)) {
             linkConsiderations.add(linkConsideration2)
           }
       }
@@ -665,14 +665,16 @@ object PassengerSimulation {
             if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
               isValid = false
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
-              connectionCost = 5
+              connectionCost = 20
             } else {
               connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
               val frequency = Math.max(predecessorLink.frequencyByClass(predecessorLinkConsideration.linkClass), linkConsideration.link.frequencyByClass(linkConsideration.linkClass))
               //if the bigger of the 2 is less than 21, impose extra layover time (if either one is frequent enough, then consider that as ok)
-              if (frequency < Link.HIGH_FREQUENCY_THRESHOLD) {
-                connectionCost += (4 * 24 * 5) / frequency //each extra hour wait is like $5 more
+              if (frequency < 7) {
+                connectionCost += (7 * 24 * 10) / frequency //possible overnight connection
+              } else if (frequency < 28) {
+                connectionCost += (7 * 24 * 5) / frequency //$5 per hour wait
               }
 
               if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost

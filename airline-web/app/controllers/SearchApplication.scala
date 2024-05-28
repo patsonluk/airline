@@ -39,14 +39,14 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     }
   }
 
-  implicit object ZoneSearchResultWrites extends Writes[ZoneSearchResult] {
-    def writes(result : ZoneSearchResult) : JsValue = {
-      Json.obj(
-        "zoneName" -> result.getName,
-        "zone" -> result.getZone,
-        "score" -> result.getScore)
-    }
-  }
+//  implicit object ZoneSearchResultWrites extends Writes[ZoneSearchResult] {
+//    def writes(result : ZoneSearchResult) : JsValue = {
+//      Json.obj(
+//        "zoneName" -> result.getName,
+//        "zone" -> result.getZone,
+//        "score" -> result.getScore)
+//    }
+//  }
 
   class AirlineSearchResultWrites(searchString : String) extends Writes[AirlineSearchResult] {
     def writes(result : AirlineSearchResult) : JsValue = {
@@ -257,18 +257,18 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     }
   }
 
-  def searchZone(input : String) = Action {
-    if (input.length < 2) {
-      Ok(Json.obj("message" -> "Search with at least 2 characters"))
-    } else {
-      val result: List[ZoneSearchResult] = SearchUtil.searchZone(input).asScala.toList
-      if (result.isEmpty) {
-        Ok(Json.obj("message" -> "No match"))
-      } else {
-        Ok(Json.obj("entries" -> Json.toJson(result)))
-      }
-    }
-  }
+//  def searchZone(input : String) = Action {
+//    if (input.length < 2) {
+//      Ok(Json.obj("message" -> "Search with at least 2 characters"))
+//    } else {
+//      val result: List[ZoneSearchResult] = SearchUtil.searchZone(input).asScala.toList
+//      if (result.isEmpty) {
+//        Ok(Json.obj("message" -> "No match"))
+//      } else {
+//        Ok(Json.obj("entries" -> Json.toJson(result)))
+//      }
+//    }
+//  }
 
   def searchAirline(input : String) = Action {
     if (input.length < 2) {
@@ -430,6 +430,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     val distance = Computation.calculateDistance(fromAirport, toAirport)
     val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
     val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
+    val affinityText = Computation.constructAffinityText(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode, relationship, affinity)
 
     val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
     val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, distance)
@@ -459,6 +460,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       "flightType" -> FlightType.label(Computation.getFlightType(fromAirport, toAirport, distance)),
       "directDemand" -> directDemand,
       "mutualRelationship" -> relationship,
+      "affinity" -> affinityText,
       "fromAirportTravelerDemand" -> directFromAirportTravelerDemand,
       "toAirportTravelerDemand" -> directToAirportTravelerDemand,
       "fromAirportBusinessDemand" -> directFromAirportBusinessDemand,

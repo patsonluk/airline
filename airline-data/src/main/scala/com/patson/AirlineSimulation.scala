@@ -161,9 +161,6 @@ object AirlineSimulation {
         val reputationBonusFromLeaderboards: Double = rankingsByAirlineId.getOrElse(airline.id, 0)
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.LEADERBOARD_BONUS, reputationBonusFromLeaderboards))
 
-        val finalBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
-        AirlineSource.updateReputationBreakdowns(airline.id, finalBreakdowns)
-
         //stock price
         var dividendsFunding = airline.getWeeklyDividends()
         if (airlineValue.existingBalance < MINIMUM_CASH_BALANCE_STOCKS + dividendsFunding) {
@@ -174,21 +171,25 @@ object AirlineSimulation {
         totalCashExpense += dividendsFunding
 
         val oldStockPrice = airline.getStockPrice()
-        val companySentiment = finalBreakdowns.total - currentReputation + ThreadLocalRandom.current().nextDouble(0.1)
+        val exStockBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
+        val companySentiment = exStockBreakdowns.total - currentReputation + ThreadLocalRandom.current().nextDouble(0.1)
         val stockPrice = getNewStockPrice(dividendsFunding, airlineValue.overall, oldStockPrice, companySentiment)
         airline.setStockPrice(stockPrice)
 
         val reputationByStockPrice = 10 * airline.airlineGradeStockPrice.level
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.STOCK_PRICE, reputationByStockPrice))
 
+        //set reputation
+        val finalBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
+        AirlineSource.updateReputationBreakdowns(airline.id, finalBreakdowns)
         var targetReputation = finalBreakdowns.total
-        //make sure it increases/decreases gradually based on passenger volume
         if (targetReputation > currentReputation && targetReputation - currentReputation > MAX_REPUTATION_DELTA) {
-          targetReputation = currentReputation + MAX_REPUTATION_DELTA
+          targetReputation = currentReputation + MAX_REPUTATION_DELTA //make sure it increases/decreases gradually based on passenger volume
         } else if (targetReputation < currentReputation && currentReputation - targetReputation > MAX_REPUTATION_DELTA) {
           targetReputation = currentReputation - MAX_REPUTATION_DELTA
         }
         airline.setReputation(targetReputation)
+
 
         //income statement
         val isBankrupt = if (airlineValue.overall < BANKRUPTCY_ASSETS_THRESHOLD && airlineValue.existingBalance < BANKRUPTCY_CASH_THRESHOLD) {
@@ -509,13 +510,13 @@ object AirlineSimulation {
     val returnsRatio = shareholderReturns / normalizedCompanyValue
     var ratioBand = 0.0006
     var exponent = 0
-    while (returnsRatio > ratioBand && exponent < 30) {
+    while (returnsRatio > ratioBand && exponent < 30) { //first level is 0.000702
       ratioBand = 0.0006 * Math.pow(1.17, (exponent + 1))
       exponent += 1
     }
     val newStockPrice = if (exponent > 0) {
       val sign = if (sentiment < 0) -1 else 1
-      0.004 * Math.pow(1.7, (exponent + 1)) + Math.sqrt(sentiment.abs) * sign
+      Math.max(0.0, 0.004 * Math.pow(1.7, (exponent + 1)) + Math.sqrt(sentiment.abs) * sign)
     } else {
       0.0
     }

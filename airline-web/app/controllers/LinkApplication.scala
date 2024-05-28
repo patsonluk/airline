@@ -724,34 +724,56 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
             planLinkInfoByModel.append(ModelPlanLinkInfo(model, duration, flightMinutesRequired, assignedModel.isDefined && assignedModel.get.id == model.id, maxFrequency, airplaneList))
         }
 
-
-        var suggestedPrice: LinkClassValues = LinkClassValues.getInstance(
-          Pricing.computeStandardPrice(distance, flightType, ECONOMY),
-          Pricing.computeStandardPrice(distance, flightType, BUSINESS),
-          Pricing.computeStandardPrice(distance, flightType, FIRST)
-        )
+//        val priceAdjust = PassengerType.priceAdjust(paxType)
+        val paxTypes = List(PassengerType.TOURIST, PassengerType.BUSINESS, PassengerType.TRAVELER)
+        val suggestedPrice: Map[String, LinkClassValues] = paxTypes.map { paxType =>
+          val multiplier = PassengerType.priceAdjust(paxType)
+          (PassengerType.label(paxType) -> LinkClassValues.getInstance(
+            (Pricing.computeStandardPrice(distance, flightType, ECONOMY) * multiplier).toInt,
+            (Pricing.computeStandardPrice(distance, flightType, BUSINESS) * multiplier).toInt,
+            (Pricing.computeStandardPrice(distance, flightType, FIRST) * multiplier).toInt,
+            (Pricing.computeStandardPrice(distance, flightType, DISCOUNT_ECONOMY) * multiplier).toInt
+          ))
+        }.toMap
+//        val suggestedPrice: scala.collection.mutable.Map[String, LinkClassValues] = scala.collection.mutable.Map(
+//          ("Traveler", ),
+//          ("Tourist", LinkClassValues.getInstance(
+//            Pricing.computeStandardPrice(distance, flightType, ECONOMY, PassengerType.TOURIST),
+//            Pricing.computeStandardPrice(distance, flightType, BUSINESS, PassengerType.TOURIST),
+//            Pricing.computeStandardPrice(distance, flightType, FIRST, PassengerType.TOURIST),
+//            Pricing.computeStandardPrice(distance, flightType, DISCOUNT_ECONOMY, PassengerType.TOURIST)
+//          )),
+//          ("Business", LinkClassValues.getInstance(
+//            Pricing.computeStandardPrice(distance, flightType, ECONOMY, PassengerType.BUSINESS),
+//            Pricing.computeStandardPrice(distance, flightType, BUSINESS, PassengerType.BUSINESS),
+//            Pricing.computeStandardPrice(distance, flightType, FIRST, PassengerType.BUSINESS),
+//            Pricing.computeStandardPrice(distance, flightType, DISCOUNT_ECONOMY, PassengerType.BUSINESS)
+//          ))
+//          ("BusinessPlus", LinkClassValues.getInstance(
+//            (Pricing.computeStandardPrice(distance, flightType, ECONOMY, PassengerType.BUSINESS).toDouble * 1.15).toInt,
+//            Pricing.computeStandardPrice(distance, flightType, BUSINESS, PassengerType.BUSINESS),
+//            Pricing.computeStandardPrice(distance, flightType, FIRST, PassengerType.BUSINESS),
+//            Pricing.computeStandardPrice(distance, flightType, DISCOUNT_ECONOMY, PassengerType.BUSINESS)
+//          ))
+//        )
 
         //adjust suggestedPrice with Lounge
-        toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
-          suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY),
-            (suggestedPrice(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
-            (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
-
-        }
-
-        fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
-          suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY),
-            (suggestedPrice(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
-            (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
-        }
-//        val countryRelationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
-//        val directFromAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.BUSINESS)
-//        val directToAirportBusinessDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.BUSINESS)
-//        val directBusinessDemand =  directFromAirportBusinessDemand + directToAirportBusinessDemand
+//        toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
+//          suggestedPrice("Business") = LinkClassValues.getInstance(
+//            suggestedPrice("Business")(ECONOMY),
+//            (suggestedPrice("Business")(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
+//            (suggestedPrice("Business")(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt
+//          )
+//        }
 //
-//        val directFromAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, countryRelationship, PassengerType.TOURIST)
-//        val directToAirportTouristDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, countryRelationship, PassengerType.TOURIST)
-//        val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
+//        fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
+//          suggestedPrice("Business") = LinkClassValues.getInstance(
+//            suggestedPrice("Business")(ECONOMY),
+//            (suggestedPrice("Business")(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
+//            (suggestedPrice("Business")(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt
+//          )
+//        }
+
 
         val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
         val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, distance)
@@ -767,6 +789,18 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val directFromAirportTouristDemand = fromDemand.touristDemand
         val directToAirportTouristDemand = toDemand.touristDemand
         val directTouristDemand = directFromAirportTouristDemand + directToAirportTouristDemand
+
+        val demandMap: Map[String, LinkClassValues] = Map(
+          "Traveler" -> directTravelerDemand,
+          "TravelerFrom" -> directFromAirportTravelerDemand,
+          "TravelerTo" -> directToAirportTravelerDemand,
+          "Business" -> directBusinessDemand,
+          "BusinessFrom" -> directFromAirportBusinessDemand,
+          "BusinessTo" -> directToAirportBusinessDemand,
+          "Tourist" -> directTouristDemand,
+          "TouristFrom" -> directFromAirportTouristDemand,
+          "TouristTo" -> directToAirportTouristDemand
+        )
 
         val directDemand = directTravelerDemand + directBusinessDemand + directTouristDemand
 
@@ -802,7 +836,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "toCountryCode" -> toAirport.countryCode,
           "flightCode" -> flightCode,
           "mutualRelationship" -> relationship,
-          "affinity" -> Computation.constructAffinityText(fromAirport.zone,toAirport.zone,relationship),
+          "affinity" -> Computation.constructAffinityText(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode,  relationship, affinity),
           "distance" -> distance,
           "flightType" -> FlightType.label(flightType),
           "suggestedPrice" -> suggestedPrice,
@@ -810,12 +844,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           "businessSpaceMultiplier" -> BUSINESS.spaceMultiplier,
           "firstSpaceMultiplier" -> FIRST.spaceMultiplier,
           "directDemand" -> directDemand,
-          "fromAirportTravelerDemand" -> directFromAirportTravelerDemand,
-          "toAirportTravelerDemand" -> directToAirportTravelerDemand,
-          "fromAirportBusinessDemand" -> directFromAirportBusinessDemand,
-          "toAirportBusinessDemand" -> directToAirportBusinessDemand,
-          "fromAirportTouristDemand" -> directFromAirportTouristDemand,
-          "toAirportTouristDemand" -> directToAirportTouristDemand,
+          "demands" -> demandMap,
           "cost" -> cost).+("modelPlanLinkInfo", Json.toJson(planLinkInfoByModel.toList))
 
         estimatedDifficulty.foreach { difficulty => resultObject = resultObject + ("estimatedDifficulty" -> JsNumber(difficulty)) }
@@ -1560,16 +1589,6 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     Ok(result)
 
   }
-
-
-  val getPassengerTypeTitle = (passengerType : PassengerType.Value) =>  passengerType match {
-    case PassengerType.BUSINESS => "Business"
-    case PassengerType.TOURIST => "Tourist"
-    case PassengerType.OLYMPICS => "Olympics"
-    case PassengerType.ELITE => "Elite"
-    case PassengerType.TRAVELER => "Traveler"
-  }
-
 
 
   class PlanLinkResult(distance : Double, availableAirplanes : List[Airplane])

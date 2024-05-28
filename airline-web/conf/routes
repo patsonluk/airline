@@ -197,7 +197,6 @@ GET      /santa-claus/pick-award/:airlineId/:optionId   controllers.ChristmasApp
 GET     /search-route/:fromAirportId/:toAirportId controllers.SearchApplication.searchRoute(fromAirportId : Int, toAirportId : Int)
 GET     /search-airport  controllers.SearchApplication.searchAirport(input: String ?= "")
 GET     /search-country  controllers.SearchApplication.searchCountry(input: String ?= "")
-GET     /search-zone  controllers.SearchApplication.searchZone(input: String ?= "")
 GET     /search-airline  controllers.SearchApplication.searchAirline(input: String ?= "")
 GET     /search-alliance  controllers.SearchApplication.searchAlliance(input: String ?= "")
 

@@ -275,7 +275,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
 }
 .officeCanvasRightGroup {
     width: 34%;
-    overflow: hidden;
+    overflow-x: hidden;
     gap: 8px;
     display: flex;
     flex-direction: column;
@@ -332,7 +332,7 @@ h1, h2, h3, h4, h5, h6, .font-display {
 }
 
 #eventCanvas .secondColumn {
-    width: 70%;
+    min-width: 400px;
 }
 
 body.christmas {
@@ -375,7 +375,10 @@ body.christmas {
 
 .table {
 	display: table;
-	//display: block;
+}
+
+.table.data {
+	width: 100%;
 }
 
 .table .label {
@@ -481,7 +484,6 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 16px;
   width: 100%;
-  overflow: hidden;
 }
 
 .item {
@@ -509,7 +511,6 @@ div.section.clickable:hover, div.section.clickable.selected, .allianceMissionCan
 
 .i-label .tooltip {
     height: 0;
-    display: inline;
 }
 
 .i-value {
@@ -844,10 +845,19 @@ li.row, div.table-row {
 	color: var(--text-color);
 }
 
+.table-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.table-data-container {
+    max-height: calc(100vh - 80px);
+    overflow-y: scroll;
+}
+
 .table.data {
     table-layout:fixed;
     height: min-content;
-    overflow: hidden;
 }
 
 .table.data .table-row div {
@@ -938,6 +948,7 @@ div.future {
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: var(--modal-background-color); /* Black w/ opacity */
     /*backdrop-filter: blur(2px);*/
+    /* margin: auto; */
 }
 
 .modal.transparentBackground {
@@ -950,10 +961,13 @@ div.future {
 
 /* Modal Content/Box */
 .modal-content {
+    position: relative;
     z-index: 11;
-    margin: 15% auto; /* 15% from the top and centered */
-    width: 50%; /* Could be more or less, depending on screen size */
+    margin: 10% auto; /* 15% from the top and centered */
     max-width: 95%;
+    width: 100%;
+    display: block;
+    position: relative;
 }
 
 
@@ -1167,11 +1181,12 @@ img.flag {
 ::-webkit-scrollbar-thumb {
     -webkit-box-shadow: inset 0 0 6px var(--scrollbar-shadow-color);
 }
-
+/**
 div {
      scrollbar-width: thin;
      scrollbar-color: var(--scrollbar-color);
 }
+*/
 
 input:disabled, .button.disabled, .clickable.disabled, .round-button.disabled {
   color: #a0a0a0;

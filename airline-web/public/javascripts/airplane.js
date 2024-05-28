@@ -120,7 +120,7 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
             row.append("<div class='cell'>" + modelOwnerInfo.name + "</div>")
 		}
 		row.append("<div class='cell'>" + modelOwnerInfo.family + "</div>")
-		row.append("<div class='cell' align='right'>" + commaSeparateNumber(modelOwnerInfo.price) + "</div>")
+		row.append("<div class='cell' align='right'>$" + commaSeparateNumber(modelOwnerInfo.price) + "</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.capacity + "</div>")
 		row.append(stars)
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.range + " km</div>")
@@ -128,6 +128,7 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.lifespan / 52 + " yrs</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.speed + " km/h</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.runwayRequirement + " m</div>")
+		row.append("<div class='cell' align='right'>" + modelOwnerInfo.total + "</div>")
 //		row.append("<div class='cell' align='right'>" + modelOwnerInfo.assignedAirplanes.length + "/" + modelOwnerInfo.availableAirplanes.length + "/" + modelOwnerInfo.constructingAirplanes.length + "</div>")
 
 		

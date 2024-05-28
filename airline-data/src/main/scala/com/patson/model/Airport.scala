@@ -219,7 +219,33 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
          case None => None
        }
      }
-     
+  }
+
+  def getZoneAffinities() : String = {
+    val affinites = zone.split("-")
+    val domestics = affinites.filterNot(_.startsWith("|")).filterNot(_.endsWith("|"))
+    val internationals = affinites.filter(_.endsWith("|")).map(_.dropRight(1))
+    val diasporas = affinites.filter(_.startsWith("|")).map(_.drop(4) + " diaspora").toSet
+
+    val result = new StringBuilder()
+
+    if (domestics.nonEmpty) {
+      result.append("Trade affinities: ")
+      result.append(domestics.mkString(", "))
+    }
+
+    if (internationals.nonEmpty) {
+      if (result.nonEmpty) result.append("; ")
+      result.append("Cultural-political affinities: ")
+      result.append(internationals.mkString(", "))
+    }
+
+    if (diasporas.nonEmpty) {
+      if (result.nonEmpty) result.append(", ")
+      result.append(diasporas.mkString(", "))
+    }
+
+    result.toString()
   }
   
   def isFeaturesLoaded = featuresLoaded
@@ -427,7 +453,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
 
   val expectedQuality = (flightType : FlightType.Value, linkClass : LinkClass) => {
-    Math.max(0, Math.min((incomeLevel/1.5).toInt, 35) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //35% on income level, 45% on flight type, 5% for elite add-on, 20% for GOOD_QUALITY_DELTA
+    Math.max(0, Math.min((baseIncome.toDouble / 70000 * 35).toInt, 35) + Airport.qualityExpectationFlightTypeAdjust(flightType)(linkClass)) //35% on income level, 45% on flight type, 5% for elite add-on, 20% for GOOD_QUALITY_DELTA
   }
 
   private[this] def getCountry() : Country = {
@@ -522,14 +548,14 @@ object Airport {
   import FlightType._
   val qualityExpectationFlightTypeAdjust =
   Map(
-    SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-10, 5, 15),
-    MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 10, 25),
-    LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 35),
-    ULTRA_LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 20, 40),
-    SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 10, 20),
-    MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 20, 35),
-    LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(10, 30, 45),
-    ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 30, 45)
+    SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-10, 5, 15, -15),
+    MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 10, 25, -15),
+    LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(0, 15, 30, -10),
+    ULTRA_LONG_HAUL_DOMESTIC -> LinkClassValues.getInstance(5, 20, 35, -5),
+    SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(0, 10, 20, -15),
+    MEDIUM_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(5, 20, 30, -15),
+    LONG_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(10, 30, 35, -10),
+    ULTRA_LONG_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(10, 30, 40, -5)
   )
 }
 

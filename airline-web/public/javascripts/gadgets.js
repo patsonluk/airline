@@ -138,7 +138,8 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	if (!suffix) {
 		suffix = ""
 	}
-	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy : '-'
+	var discountValue = linkValues.hasOwnProperty('discountEconomy') ? linkValues.discountEconomy : 0
+	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy + discountValue : '-'
 	var businessValue = linkValues.hasOwnProperty('business') ? linkValues.business : '-'
 	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
 
@@ -409,8 +410,11 @@ function getOpennessIcon(openness, size=null, isDomesticAirport=false, isGateway
 function getOpennessSpan(openness, size=null, isDomesticAirport=false) {
 	var description
 	var icon
-	if (size && size <= 2 || isDomesticAirport){
-	    description = "Limited International Flights"
+    if (size && size <= 2 && ! isGateway ){
+        description = "No International Flights"
+        icon = "prohibition.png"
+    } else if (isDomesticAirport){
+        description = "Limited International Flights"
         icon = "prohibition.png"
 	} else if (openness >= 7 || size >= 7) {
 		description = "All International Connections"
