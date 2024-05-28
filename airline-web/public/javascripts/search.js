@@ -813,6 +813,7 @@ function researchFlight(fromAirportId, toAirportId) {
                 $("#researchSearchResult .toAirport .incomeLevel").text(result.toAirport.incomeLevel)
 
                 $("#researchSearchResult .relationship").html(getCountryFlagImg(result.fromAirport.countryCode) + "&nbsp;vs&nbsp;" + getCountryFlagImg(result.toAirport.countryCode) + getCountryRelationshipDescription(result.mutualRelationship))
+                $("#researchSearchResult .affinities").text(result.affinity)
                 $("#researchSearchResult .distance").text(result.distance)
                 $("#researchSearchResult .flightType").text(result.flightType)
                 $("#researchSearchResult .demand").text(toLinkClassValueString(result.directDemand))

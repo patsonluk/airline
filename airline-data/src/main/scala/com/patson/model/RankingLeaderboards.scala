@@ -256,24 +256,23 @@ object RankingLeaderboards {
   }
 
   private[this] def getLoungeRanking(loungeConsumptions : List[LoungeConsumptionDetails], airlinesById : Map[Int, Airline]) : List[Ranking] = {
-    val mostVisitedLounges = loungeConsumptions.groupBy(_.lounge.airline.id).mapValues { consumptionDetails =>
-      consumptionDetails.sortBy(entry => entry.selfVisitors + entry.allianceVisitors)(Ordering[Int].reverse)
-    }.values.flatten.toList
+    val mostVisitedLounges = loungeConsumptions.groupBy(_.lounge.airline.id)
+      .mapValues(_.maxBy(entry => entry.selfVisitors + entry.allianceVisitors))
+      .values.toList
 
     mostVisitedLounges.zipWithIndex.map {
       case(details, index) => {
         val lounge = details.lounge
-        val ranking = Ranking(RankingType.LOUNGE,
-          key = s"$lounge.airline.id|$lounge.airport.id",
+        Ranking(RankingType.LOUNGE,
+          key = lounge.airline.id,
           entry = lounge,
           ranking = index + 1,
           rankedValue = details.selfVisitors + details.allianceVisitors,
           reputationPrize = reputationBonus(16, index)
         )
-        ranking
       }
 
-    }.toList.sortBy(_.ranking)
+    }.sortBy(_.ranking)
   }
 
   //  import scala.collection.mutable.LinkedHashMap
