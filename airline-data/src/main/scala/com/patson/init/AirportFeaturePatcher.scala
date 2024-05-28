@@ -33,13 +33,16 @@ object AirportFeaturePatcher extends App {
 "DXB" -> 65, //Dubai
 "HKG" -> 63, //Hong Kong
 "PNH" -> 62, //Phnom Penh
+"CUN" -> 58, //Cancún
 "JED" -> 55, //Jeddah
 "MLE" -> 55, //Malé Maldives
 "JFK" -> 54, //New York
 "NRT" -> 53, //Tokyo / Narita
+"RAK" -> 51, //Marrakech
 "CMB" -> 48, //Colombo
 "FCO" -> 46, //Rome
 "DMK" -> 45, //Bangkok
+"HAV" -> 45, //Havana
 "KUL" -> 43, //Kuala Lumpur
 "CEB" -> 42, //Lapu-Lapu City
 "SIN" -> 42, //Singapore
@@ -47,7 +50,6 @@ object AirportFeaturePatcher extends App {
 "MIA" -> 42, //Miami
 "AMS" -> 41, //Amsterdam
 "LAX" -> 41, //Los Angeles
-"CUN" -> 40, //Cancún
 "MBJ" -> 40, //Montego Bay
 "DAD" -> 40, //Da Nang
 "KIX" -> 40, //Osaka
@@ -64,6 +66,7 @@ object AirportFeaturePatcher extends App {
 "PUJ" -> 36, //Punta Cana
 "CPT" -> 35, //Cape Town
 "SPX" -> 35, //Cairo
+"GIG" -> 35, //Rio De Janeiro
 "HRG" -> 34, //Hurghada
 "NCE" -> 34, //Nice
 "YYZ" -> 34, //Toronto Canada
@@ -73,9 +76,9 @@ object AirportFeaturePatcher extends App {
 "LOP" -> 32, //Mataram
 "HNL" -> 31, //Honolulu
 "SAI" -> 31, //Siem Reap
+"AGA" -> 31, //Agadir
 "SYD" -> 30, //Sydney Australia
 "AGP" -> 30, //MÃ¡laga
-"GIG" -> 30, //Rio De Janeiro
 "AEP" -> 30, //Buenos Aires
 "USM" -> 30, //Na Thon (Ko Samui Island)
 "ARN" -> 30, //Stockholm
@@ -88,6 +91,7 @@ object AirportFeaturePatcher extends App {
 "MPH" -> 28, //Malay
 "LIS" -> 28, //Lisbon
 "PEN" -> 28, //Penang
+"DJE" -> 28, //Djerba
 "PRG" -> 28, //Prague
 "ZNZ" -> 28, //Zanzibar
 "PPT" -> 28, //Papeete
@@ -104,6 +108,7 @@ object AirportFeaturePatcher extends App {
 "GOI" -> 25, //Vasco da Gama
 "YVR" -> 25, //Vancouver
 "ZQN" -> 25, //Queenstown
+"CMN" -> 25, //Casablanca
 "RHO" -> 24, //Rodes Island
 "LAP" -> 24, //La Paz
 "NOU" -> 24, //Nouméa
@@ -116,7 +121,6 @@ object AirportFeaturePatcher extends App {
 "SXM" -> 22, //Saint Martin
 "MRU" -> 22, //Port Louis
 "EZE" -> 22, //Buenos Aires
-"RAK" -> 21, //Marrakech
 "BNE" -> 21, //Brisbane
 "NAP" -> 21, //Nápoli
 "IAD" -> 21, //Washington
@@ -125,8 +129,9 @@ object AirportFeaturePatcher extends App {
 "SFO" -> 21, //San Francisco
 "MQP" -> 21, //Mpumalanga
 "SEZ" -> 21, //Mahe Island
+"LIM" -> 21,
+"PDL" -> 21, //Azores
 "POA" -> 20, //Porto Alegre
-"HAV" -> 20, //Havana
 "HER" -> 20, //Heraklion
 "LPQ" -> 20, //Luang Phabang
 "OSL" -> 20, //Oslo
@@ -134,12 +139,16 @@ object AirportFeaturePatcher extends App {
 "CUR" -> 20, //Willemstad
 "NAN" -> 20, //Nadi
 "GAN" -> 20, //Maldives
+"CAG" -> 20, //Cagliari
+"FLR" -> 20, //Firenze
+"FNC" -> 20, //Funchal
 "MEL" -> 19, //Melbourne
 "LAS" -> 19, //Las Vegas
 "IBZ" -> 19, //Ibiza
 "SJO" -> 19, //San Jose
 "ZRH" -> 19, //Zurich
 "EBB" -> 19, //Kampala
+"SVO" -> 19, //Moscow
 "CTG" -> 18, //Cartagena
 "AKL" -> 18, //Auckland
 "PSA" -> 18, //Pisa
@@ -151,33 +160,35 @@ object AirportFeaturePatcher extends App {
 "MIR" -> 18, //Monastir
 "PVG" -> 18, //Shanghai
 "ORD" -> 18, //Chicago
+"SGN" -> 18,
+"CNS" -> 18, //Cairns
+"LVI" -> 18, //Livingstone
+"SJU" -> 18, //San Juan
 "OGG" -> 17, //Kahului
 "ASR" -> 17, //Kayseri
 "STT" -> 17, //Charlotte Amalie
 "CFU" -> 17, //Kerkyra Island
-"SVO" -> 17, //Moscow
 "LCA" -> 17, //Larnarca
 "NBE" -> 17, //Enfidha
 "RTB" -> 17, //Roatan Island
 "ATL" -> 17,
-"LIM" -> 17,
 "GPS" -> 17, //Baltra Galapagos
-"CNS" -> 16, //Cairns
 "MUB" -> 16, //Maun
 "FDF" -> 16, //Fort-de-France
 "WAW" -> 16, //Warsaw
 "BSL" -> 16, //Mulhouse French/Swiss Alps
 "BOG" -> 16,
 "TIA" -> 16, //Triana
-"CAG" -> 15, //Cagliari
+"DOH" -> 16,
+"VFA" -> 16, //Victoria Falls
 "BJV" -> 15, //Bodrum
 "MAD" -> 15, //Madrid
-"FLR" -> 15, //Firenze
 "IKA" -> 15, //Tehran
 "JMK" -> 15, //Mykonos Island
 "ADB" -> 15, //Izmir
 "BOD" -> 15, //prehistoric caves France
 "FLG" -> 15, //Flagstaff Grand Canyon
+"JNB" -> 15, //Johannesburg
 "SJD" -> 14, //San José del Cabo
 "PVR" -> 14, //Puerto Vallarta
 "PER" -> 14, //Perth
@@ -186,28 +197,26 @@ object AirportFeaturePatcher extends App {
 "KRK" -> 14, //Kraków
 "AMM" -> 14, //Amman
 "SID" -> 14, //Espargos
-"SGN" -> 14,
 "YZF" -> 14, //Yellowknife
+"DME" -> 14, //Moscow
 "MED" -> 13, //Medina
 "LED" -> 13, //St. Petersburg
-"DOH" -> 13,
 "KOS" -> 12, //Sihanukville
 "BTH" -> 12, //Batam Island
-"LVI" -> 12, //Livingstone
-"SJU" -> 12, //San Juan
 "THR" -> 12, //Tehran
 "PLZ" -> 12, //Addo Elephant National Park South Africa
+"XIY" -> 12, //Xi'an
 "TBS" -> 12, //Tbilisi
-"DME" -> 12, //Moscow
 "RAI" -> 12, //Praia
 "LBJ" -> 12, //Komodo National Park Indonesia
 "VTE" -> 12, //Luang Prabang Laos
 "SLC" -> 12, //Salt Lake City
 "PTY" -> 12,
-"VFA" -> 11, //Victoria Falls
+"JNU" -> 12, //Juneau
 "JAI" -> 11, //Jaipur
 "LIR" -> 11, //Liberia Costa Rica
 "ANC" -> 11, //Anchorage
+"TER" -> 11, //Azores
 "SAW" -> 10, //Istanbul
 "FAO" -> 10, //Faro
 "DEL" -> 10,
@@ -218,7 +227,6 @@ object AirportFeaturePatcher extends App {
 "CHQ" -> 10, //Heraklion
 "CIA" -> 10, //Ostia Antica Italy
 "GYD" -> 10, //Baku
-"FNC" -> 10, //Funchal
 "YUL" -> 10, //Montreal
 "PLS" -> 10, //Providenciales Turks and Caicos
 "BON" -> 10, //Kralendijk Bonaire
@@ -250,6 +258,8 @@ object AirportFeaturePatcher extends App {
 "USH" -> 8, //Ushuahia
 "UPN" -> 8, //Kgalagadi Transfrontier Park South Africa/Botswana
 "GDT" -> 8, //Cockburn Town
+"CYO" -> 8, //Cayo Largo del Sur Cuba
+"SMA" -> 8, //Azores
 "KGS" -> 7, //Kos Island
 "SKD" -> 7, //Samarkand
 "SZG" -> 7, //Berchtesgaden National Park Germany
@@ -260,12 +270,10 @@ object AirportFeaturePatcher extends App {
 "LXR" -> 6, //Luxor
 "PNT" -> 6, //Torres del Paine National Park Chile
 "BZE" -> 6, //Chiquibul National Park Belize
-"XIY" -> 5, //Xi'an
 "DBV" -> 5, //Dubrovnik
 "JTR" -> 5, //Santorini Island
 "KIN" -> 5, //Kingston
 "EDI" -> 5, //Edinburgh
-"DJE" -> 5, //Djerba
 "XIY" -> 5, //Terracotta Army China
 "ASP" -> 5, //Alice Springs
 "FAT" -> 5, //Yosemite National Park USA
@@ -286,40 +294,39 @@ object AirportFeaturePatcher extends App {
 "YXY" -> 5, //Whitehorse
 "GHB" -> 5, //Governor's Harbour Bahamas
 "GGT" -> 5, //Bahamas
-"ZSA" -> 5,
+"CYB" -> 5 //West End
     ),
     VACATION_HUB -> Map[String, Int](
-"CJU" -> 170, //Jeju City
+"CJU" -> 190, //Jeju City
 "CTS" -> 130, //Chitose / Tomakomai
-"CUN" -> 90, //Cancún
+"MEL" -> 94, //Melbourne
 "PMI" -> 90, //Palma De Mallorca
-"MEL" -> 88, //Melbourne
+"MCO" -> 90, //Orlando
 "YIA" -> 86, //Yogyakarta
 "SYD" -> 84, //Sydney Australia
+"CUN" -> 80, //Cancún
 "JED" -> 80, //Jeddah
 "AGP" -> 80, //MÃ¡laga
-"MCO" -> 79, //Orlando
 "AER" -> 75, //Sochi
 "SYX" -> 75, //Sanya
-"HNL" -> 70, //Honolulu
-"LAS" -> 70, //Las Vegas
+"HAK" -> 75, //Haikou
+"HNL" -> 75, //Honolulu
+"LAS" -> 75, //Las Vegas
 "OKA" -> 70, //Naha
+"LPA" -> 70, //Gran Canaria Island
+"TFS" -> 70, //Tenerife Island
 "CTG" -> 68, //Cartagena
 "FLN" -> 67, //Florianópolis
 "SXR" -> 67, //Srinagar
 "VNS" -> 66, //Varanasi
 "PUJ" -> 65, //Punta Cana
-"HAK" -> 65, //Haikou
 "RHO" -> 60, //Rodes Island
 "SJD" -> 60, //San José del Cabo
-"XIY" -> 60, //Xi'an
 "MFM" -> 60, //Macau
 "KRR" -> 60, //Krasnodar
 "PKX" -> 60, //Beijing China
 "PMC" -> 60, //Puerto Montt
 "PMV" -> 60, //Isla Margarita
-"LPA" -> 60, //Gran Canaria Island
-"TFS" -> 60, //Tenerife Island
 "PVR" -> 59, //Puerto Vallarta
 "OGG" -> 58, //Kahului
 "BNA" -> 58, //Nashville
@@ -333,6 +340,7 @@ object AirportFeaturePatcher extends App {
 "BCN" -> 50, //Barcelona
 "BKI" -> 50, //Kota Kinabalu
 "POA" -> 50, //Porto Alegre
+"SJU" -> 50, //San Juan
 "FAO" -> 50, //Faro
 "BGO" -> 50, //Bergen
 "GRU" -> 49, //São Paulo
@@ -340,7 +348,6 @@ object AirportFeaturePatcher extends App {
 "CGH" -> 49, //São Paulo
 "KOS" -> 48, //Sihanukville
 "MLA" -> 48, //Valletta
-"GIG" -> 47, //Rio De Janeiro
 "MSY" -> 47, //New Orleans
 "OLB" -> 47, //Olbia (SS)
 "DMK" -> 45, //Bangkok
@@ -349,6 +356,7 @@ object AirportFeaturePatcher extends App {
 "TRD" -> 45, //Trondheim
 "HBA" -> 45, //Hobart
 "BAR" -> 45, //Qionghai
+"GIG" -> 44, //Rio De Janeiro
 "GOI" -> 44, //Vasco da Gama
 "KZN" -> 44, //Kazan
 "RMF" -> 44, //Marsa Alam
@@ -358,17 +366,19 @@ object AirportFeaturePatcher extends App {
 "UTP" -> 40, //Rayong
 "USM" -> 40, //Na Thon (Ko Samui Island)
 "SCL" -> 40, //Santiago
-"HAV" -> 40, //Havana
 "CNS" -> 40, //Cairns
 "BJV" -> 40, //Bodrum
+"DEL" -> 40,
 "DBV" -> 40, //Dubrovnik
 "ITM" -> 40, //Osaka Japan
 "LGA" -> 40, //New York
+"RAK" -> 39, //Marrakech
 "ASR" -> 39, //Kayseri
 "BTH" -> 39, //Batam Island
 "REC" -> 39, //Recife
 "VIX" -> 39, //VitÃ³ria
 "SHA" -> 39, //Shanghai China
+"POP" -> 39, //Puerto Plata Dominican Republic
 "MAD" -> 38, //Madrid
 "CTA" -> 38, //Catania
 "JTR" -> 38, //Santorini Island
@@ -377,23 +387,23 @@ object AirportFeaturePatcher extends App {
 "GZP" -> 38, //GazipaÅŸa
 "MBJ" -> 36, //Montego Bay
 "CPT" -> 36, //Cape Town
-"AKL" -> 36, //Auckland
 "FLR" -> 36, //Firenze
+"AKL" -> 36, //Auckland
 "BPS" -> 36, //Porto Seguro
 "TSV" -> 36, //Townsville
 "BKK" -> 35, //Bangkok
 "YVR" -> 35, //Vancouver
+"LVI" -> 35, //Livingstone
 "STT" -> 35, //Charlotte Amalie
 "PER" -> 35, //Perth
 "MED" -> 35, //Medina
-"LVI" -> 35, //Livingstone
-"SJU" -> 35, //San Juan
 "CCJ" -> 35, //Calicut
 "KGS" -> 35, //Kos Island
 "IGR" -> 35, //Puerto Iguazu
 "ALC" -> 35, //Alicante
 "KWL" -> 35, //Guilin City
 "LYS" -> 35, //Lyon
+"HAN" -> 35, //Hanoi
 "CZM" -> 34, //Cozumel
 "HGH" -> 34, //Hangzhou
 "ACE" -> 34, //Lanzarote Island
@@ -401,7 +411,6 @@ object AirportFeaturePatcher extends App {
 "KIH" -> 34, //Kish Island
 "NQN" -> 34, //Neuquen
 "TAO" -> 34, //Qingdao
-"POP" -> 34, //Puerto Plata Dominican Republic
 "TAO" -> 34, //Qingdao
 "HER" -> 33, //Heraklion
 "RSW" -> 33, //Fort Myers
@@ -423,7 +432,6 @@ object AirportFeaturePatcher extends App {
 "VKO" -> 30, //Moscow
 "TGZ" -> 30, //Tuxtla GutiÃ©rrez
 "SKD" -> 30, //Samarkand
-"JNB" -> 30, //Johannesburg
 "ADZ" -> 30, //San AndrÃ©s
 "CTU" -> 30, //Chengdu
 "DCA" -> 30, //Washington
@@ -440,14 +448,14 @@ object AirportFeaturePatcher extends App {
 "BOS" -> 28,
 "REU" -> 27, //Reus
 "SLL" -> 27, //Salalah
-"AGA" -> 26, //Agadir
 "FLL" -> 26, //Miami
 "MYR" -> 26, //Myrtle Beach
 "SDU" -> 26, //Rio De Janeiro
+"PXO" -> 26, //Peneda-Gerês National Park Portugal
 "ORY" -> 25, //Paris
 "IBZ" -> 25, //Ibiza
-"JMK" -> 25, //Mykonos Island
 "VFA" -> 25, //Victoria Falls
+"JMK" -> 25, //Mykonos Island
 "EDI" -> 25, //Edinburgh
 "BRC" -> 25, //San Carlos de Bariloche
 "SPU" -> 25, //Split
@@ -466,13 +474,12 @@ object AirportFeaturePatcher extends App {
 "STI" -> 24, //Santiago
 "TPA" -> 24, //Tampa
 "YYC" -> 24, //Calgary
+"SDQ" -> 24, //Santo Domingo
 "JAI" -> 22, //Jaipur
 "SMR" -> 22, //Santa Marta
-"DJE" -> 22, //Djerba
 "IKT" -> 22, //Irkutsk
 "SIP" -> 22, //Simferopol
 "TFU" -> 22, //Chengdu
-"PXO" -> 22, //Peneda-Gerês National Park Portugal
 "SSA" -> 21, //Salvador
 "BUF" -> 21, //Buffalo
 "CTM" -> 21, //Chetumal
@@ -496,9 +503,8 @@ object AirportFeaturePatcher extends App {
 "KNH" -> 20, //Kinmen
 "NKG" -> 20, //Nanjing
 "RUH" -> 20,
-"AMM" -> 19, //Amman
 "FNC" -> 19, //Funchal
-"SDQ" -> 19, //Santo Domingo
+"AMM" -> 19, //Amman
 "LIH" -> 19, //Lihue
 "AMD" -> 19, //Ahmedabad
 "YUL" -> 18, //Montreal
@@ -525,13 +531,14 @@ object AirportFeaturePatcher extends App {
 "PEN" -> 15, //Penang
 "IAD" -> 15, //Washington
 "LCA" -> 15, //Larnarca
+"JNB" -> 15, //Johannesburg
 "PLS" -> 15, //Providenciales Turks and Caicos
 "ASP" -> 15, //Alice Springs
 "BLQ" -> 15, //Bologna
 "SNA" -> 15, //Santa Ana
 "YYT" -> 15, //St John
 "XMN" -> 15, //Xiamen
-"HAN" -> 15, //Hanoi
+"ISG" -> 15, //Ishigaki JP
 "JAC" -> 14, //Jackson
 "OTP" -> 14, //Bucharest
 "YHZ" -> 14, //Halifax
@@ -540,7 +547,6 @@ object AirportFeaturePatcher extends App {
 "FAT" -> 12, //Yosemite National Park USA
 "HDS" -> 12, //Kruger National Park South Africa
 "NGO" -> 12, //Tokoname
-"JNU" -> 12, //Juneau
 "AGX" -> 12, //Agatti
 "BAQ" -> 12, //Barranquilla
 "BDS" -> 12, //Brindisi
@@ -630,6 +636,7 @@ object AirportFeaturePatcher extends App {
 "CDG" -> 60, //Paris
 "MUC" -> 60, //Munich
 "YYZ" -> 60, //Toronto
+"ICN" -> 58, //Seoul
 "EWR" -> 55, //New York
 "DXB" -> 55, //Dubai
 "PEK" -> 50, //Beijing
@@ -641,7 +648,6 @@ object AirportFeaturePatcher extends App {
 "BRU" -> 45, //Brussels
 "KUL" -> 44, //Kuala Lumpur
 "GVA" -> 44, //Geneva
-"ICN" -> 58, //Seoul
 "SZX" -> 42, //Shenzhen
 "AUH" -> 42, //Abu Dhabi
 "LAX" -> 40, //Los Angeles
@@ -658,6 +664,7 @@ object AirportFeaturePatcher extends App {
 "DFW" -> 35, //Dallas Fort Worth
 "LGA" -> 35, //New York
 "YVR" -> 35, //Vancouver
+"BOM" -> 35, //Mumbai
 "ARN" -> 34, //Stockholm
 "DOH" -> 34, //Doha
 "CPH" -> 34, //Copenhagen
@@ -675,12 +682,11 @@ object AirportFeaturePatcher extends App {
 "LUX" -> 30, //Luxembourg
 "ITM" -> 30, //Osaka
 "KIX" -> 30, //Osaka
-"BOM" -> 35, //Mumbai
 "SVO" -> 29, //Moscow
 "EDI" -> 29, //Edinburgh
-"ATL" -> 28, //Atlanta
 "IST" -> 28, //Istanbul
 "PUS" -> 28, //Busan
+"DEL" -> 28, //New Delhi
 "BOG" -> 26, //Bogota
 "EZE" -> 26, //Buenos Aires
 "CPT" -> 25, //Cape Town
@@ -690,9 +696,11 @@ object AirportFeaturePatcher extends App {
 "PKX" -> 25, //Beijing
 "YYC" -> 25, //Calgary
 "BAH" -> 25, //Bahrain
+"ATL" -> 24, //Atlanta
 "CLT" -> 24, //Charlotte
 "GMP" -> 24, //Seoul
 "SHA" -> 24, //Shanghai
+"LOS" -> 24, //Lagos
 "GIG" -> 22, //Rio de Janeiro
 "RUH" -> 21, //Riyadh
 "LIM" -> 21, //Lima
@@ -700,9 +708,6 @@ object AirportFeaturePatcher extends App {
 "TAS" -> 20, //Tashkent
 "IAD" -> 20, //Washington DC
 "DEN" -> 20, //Denver
-"DCA" -> 20, //Washington DC
-"MDW" -> 20, //Chicago
-"IAH" -> 20, //Houston
 "BKK" -> 20, //Bangkok
 "FUK" -> 20, //Fukuoka
 "LIN" -> 20, //Milan
@@ -711,35 +716,36 @@ object AirportFeaturePatcher extends App {
 "HAJ" -> 20, //Hanover
 "WAW" -> 19, //Warsaw
 "PRG" -> 19, //Prague
+"DCA" -> 18, //Washington DC
 "MSP" -> 18, //Minneapolis
 "AKL" -> 18, //Auckland
-"LOS" -> 24, //Lagos
 "NBO" -> 18, //Nairobi
 "BLQ" -> 18, //Bologna
-"DEL" -> 28, //New Delhi
 "BLR" -> 18, //Bangalore
 "MAN" -> 18, //Manchester
 "BCN" -> 18, //Barcelona
 "BSB" -> 18, //Brasilia
+"SGN" -> 18, //Ho Chi Minh City
+"CGK" -> 18, //Jakarta
 "JED" -> 17, //Jeddah
+"MNL" -> 17, //Manila
 "OAK" -> 16, //San Francisco
-"MNL" -> 16, //Manila
 "HYD" -> 16, //Hyderabad
 "TLL" -> 16, //Tallinn
 "DUS" -> 16, //Dusseldorf
 "CGN" -> 16, //Cologne
+"MDW" -> 15, //Chicago
+"IAH" -> 15, //Houston
 "MIA" -> 15, //Miami
 "SEA" -> 15, //Seattle
 "PHX" -> 15, //Phoenix
 "SJC" -> 15, //San Francisco
 "DAL" -> 15, //Dallas
 "DTW" -> 15, //Detroit
-"PTY" -> 9, //Panama City
 "RTM" -> 15, //The Hague
 "RMO" -> 15, //Chisinau
 "HEL" -> 15, //Helsinki
 "CGH" -> 15, //Sao Paulo
-"SGN" -> 14, //Ho Chi Minh City
 "PHL" -> 14, //Philadelphia
 "KHH" -> 14, //Kaohsiung
 "TRN" -> 14, //Turin
@@ -749,7 +755,6 @@ object AirportFeaturePatcher extends App {
 "BNE" -> 14, //Brisbane
 "ALA" -> 13, //Almaty
 "TLS" -> 13, //Toulouse
-"AUS" -> 12, //Austin
 "VNO" -> 12, //Vilnius
 "ALG" -> 12, //Algiers
 "LEJ" -> 12, //Leipzig
@@ -760,9 +765,7 @@ object AirportFeaturePatcher extends App {
 "KUN" -> 11, //Kaunas
 "DAC" -> 11, //Dhaka
 "BGI" -> 11, //Bridgetown
-"BWI" -> 10, //Baltimore
-"SAN" -> 10, //San Diego
-"PDX" -> 10, //Portland
+"HAN" -> 11, //Hanoi
 "TSA" -> 10, //Taipei
 "DMK" -> 10, //Bangkok
 "LED" -> 10, //St Petersburg
@@ -770,11 +773,15 @@ object AirportFeaturePatcher extends App {
 "MAA" -> 10, //Chennai
 "SDU" -> 10, //Rio de Janeiro
 "AEP" -> 10, //Buenos Aires
+"PTY" -> 9, //Panama City
+"BWI" -> 9, //Baltimore
 "BGO" -> 9, //Bergen
 "MLA" -> 9, //Malta
 "ATH" -> 9, //Athens
 "TFU" -> 9, //Chengdu
-"BNA" -> 8, //Nashville
+"MDE" -> 9, //Medellin
+"AUS" -> 8, //Austin
+"SAN" -> 8, //San Diego
 "BTS" -> 8, //Bratislava
 "GOT" -> 8, //Gothenburg
 "OTP" -> 8, //Bucharest
@@ -789,6 +796,7 @@ object AirportFeaturePatcher extends App {
 "CTU" -> 8, //Chengdu
 "BDA" -> 8, //Bermuda
 "ADL" -> 8, //Adelaide
+"PDX" -> 7, //Portland
 "PIT" -> 7, //Pittsburgh
 "NQZ" -> 7, //Nur-Sultan
 "DLC" -> 7, //Dalian
@@ -797,7 +805,7 @@ object AirportFeaturePatcher extends App {
 "HGH" -> 6, //Hangzhou
 "NAS" -> 6, //Nassau
 "SOF" -> 6, //Sofia
-"HAN" -> 5, //Hanoi
+"BNA" -> 5, //Nashville
 "SMF" -> 5, //Sacramento
 "ANC" -> 5, //Anchorage
 "JNU" -> 5, //Juneau
@@ -814,7 +822,6 @@ object AirportFeaturePatcher extends App {
 "BHX" -> 5, //Birmingham
 "ADD" -> 5, //Addis Ababa
 "DTM" -> 5, //Dortmund
-"MDE" -> 9, //Medellin
 "CLO" -> 5, //Cali
 "XIY" -> 5, //Xi'an
 "YQB" -> 5, //Quebec City
@@ -827,6 +834,7 @@ object AirportFeaturePatcher extends App {
       "MDW" -> 0,
       "SNA" -> 0,
       "BUR" -> 0,
+      "OAK" -> 0,
       "DAL" -> 0,
       "HOU" -> 0,
       "AZA" -> 0,
@@ -921,7 +929,6 @@ object AirportFeaturePatcher extends App {
       "AVV" -> 0,
       "MCY" -> 0,
       "LST" -> 0
-
     )
   ) + (GATEWAY_AIRPORT -> getGatewayAirports().map(iata => (iata, 0)).toMap) + (ELITE_CHARM -> getEliteDestinations())
 

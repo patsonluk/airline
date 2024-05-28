@@ -18,9 +18,9 @@ abstract class AirportFeature {
 
   lazy val getDescription = {
     featureType match {
-      case INTERNATIONAL_HUB => "Global Vacation Destination - tourists & travelers travel here from everywhere."
+      case INTERNATIONAL_HUB => "Global Vacation Destination - Tourists travel here from everywhere."
       case ELITE_CHARM => "Elite Destination – Elites travel here. "
-      case VACATION_HUB => "Local Vacation Destination - domestic & high-affinity tourists travel here."
+      case VACATION_HUB => "Local Vacation Destination - Domestic & high-affinity tourists travel here."
       case FINANCIAL_HUB => "Business Hub - Center for business passengers."
       case DOMESTIC_AIRPORT => "Domestic Discount Airport – Lower base upkeep. If flight is international, only accepts small aircraft."
       case ISOLATED_TOWN => s"Isolated - Increased demand within ${this.asInstanceOf[IsolatedTownFeature].boostRange}km."

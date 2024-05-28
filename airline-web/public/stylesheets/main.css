@@ -948,6 +948,7 @@ div.future {
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: var(--modal-background-color); /* Black w/ opacity */
     /*backdrop-filter: blur(2px);*/
+    /* margin: auto; */
 }
 
 .modal.transparentBackground {
@@ -964,6 +965,9 @@ div.future {
     z-index: 11;
     margin: 10% auto; /* 15% from the top and centered */
     max-width: 95%;
+    width: 100%;
+    display: block;
+    position: relative;
 }
 
 
@@ -1177,11 +1181,12 @@ img.flag {
 ::-webkit-scrollbar-thumb {
     -webkit-box-shadow: inset 0 0 6px var(--scrollbar-shadow-color);
 }
-
+/**
 div {
      scrollbar-width: thin;
      scrollbar-color: var(--scrollbar-color);
 }
+*/
 
 input:disabled, .button.disabled, .clickable.disabled, .round-button.disabled {
   color: #a0a0a0;
