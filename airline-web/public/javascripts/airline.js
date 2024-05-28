@@ -983,13 +983,12 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 
 	$('#planLinkDistance').html(linkInfo.distance + " km")
 	$('.planLinkFlightType').html(linkInfo.flightType)
-	$('#planLinkDirectDemand').text(toLinkClassValueString(linkInfo.directDemand))
 
     var $breakdown = $("#planLinkDetails .directDemandBreakdown")
     plannedLinkDemands = linkInfo.demands
     $breakdown.find(".fromAirport .airportLabel").empty()
     $breakdown.find(".fromAirport .airportLabel").append(getAirportSpan({ "iata" : linkInfo.fromAirportCode, "countryCode" : linkInfo.fromCountryCode, "city" : linkInfo.fromAirportCity}))
-    $breakdown.find(".fromAirport .travelerDemand").text(toLinkClassValueString(linkInfo.demands.TouristFrom))
+    $breakdown.find(".fromAirport .travelerDemand").text(toLinkClassValueString(linkInfo.demands.TravelerFrom))
     $breakdown.find(".fromAirport .businessDemand").text(toLinkClassValueString(linkInfo.demands.BusinessFrom))
     $breakdown.find(".fromAirport .touristDemand").text(toLinkClassValueString(linkInfo.demands.TouristFrom))
 
@@ -1123,7 +1122,8 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
                 $(this).val(Math.floor(inputPrice))
             }
         }
-        updateMarkup();
+        updateMarkup()
+        calculateDemand()
 	})
 
 
@@ -1237,6 +1237,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 
 	updatePlanLinkInfoWithModelSelected(selectedModelId, assignedModelId, isRefresh)
 	updateMarkup()
+	calculateDemand()
 	$("#planLinkDetails div.value").show()
 }
 
@@ -1252,8 +1253,8 @@ function calculateDemand() {
         first: parseFloat($('#planLinkFirstPrice').val()),
     }
     const suggestedPrice = planLinkInfo.suggestedPrice
+    /** breakpoints manually copied from DemandGenerator...  */
     for (const passengerType in suggestedPrice) {
-        console.log(passengerType)
         if (currentPrices.economy <= suggestedPrice[passengerType].discountEconomy) {
             totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].discountEconomy);
         } else if (currentPrices.economy <= suggestedPrice[passengerType].discountEconomy * 1.15) {
@@ -1261,14 +1262,14 @@ function calculateDemand() {
         }
         if (currentPrices.economy <= suggestedPrice[passengerType].economy) {
             totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].economy);
-        } else if (currentPrices.economy <= suggestedPrice[passengerType].economy * 1.06) {
+        } else if (currentPrices.economy <= suggestedPrice[passengerType].economy * 1.05) {
             totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].economy * 0.4);
         }
         if (currentPrices.business <= suggestedPrice[passengerType].business) {
             totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business);
         } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.1) {
             totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business * 0.4);
-        } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.2) {
+        } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.25) {
             totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business * 0.2);
         }
         if (currentPrices.first <= suggestedPrice[passengerType].first) {

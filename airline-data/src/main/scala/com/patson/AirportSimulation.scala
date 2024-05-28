@@ -196,7 +196,6 @@ object AirportSimulation {
   private[patson] def computeLoyalists(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], existingLoyalistByAirportId : immutable.Map[Int, List[Loyalist]]) = {
     val result = ListBuffer[Loyalist]() //airlineId, amount
 
-    val highIncomeLevel = Computation.getIncomeLevel(Country.HIGH_INCOME_THRESHOLD)
     linkRidershipDetails.groupBy(_._1._1.fromAirport).foreach {
       case ((fromAirport, passengersFromThisAirport)) =>
         val loyalistIncrementOfAirlines = Map[Int, Int]() //airlineId, delta

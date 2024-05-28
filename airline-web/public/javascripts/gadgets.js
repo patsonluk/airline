@@ -138,7 +138,8 @@ function toLinkClassValueString(linkValues, prefix, suffix) {
 	if (!suffix) {
 		suffix = ""
 	}
-	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy : '-'
+	var discountValue = linkValues.hasOwnProperty('discountEconomy') ? linkValues.discountEconomy : 0
+	var economyValue = linkValues.hasOwnProperty('economy') ? linkValues.economy + discountValue : '-'
 	var businessValue = linkValues.hasOwnProperty('business') ? linkValues.business : '-'
 	var firstValue = linkValues.hasOwnProperty('first') ? linkValues.first : '-'
 

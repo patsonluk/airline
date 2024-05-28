@@ -103,7 +103,7 @@ object DemandGenerator {
   def computeBaseDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, affinity : Int, distance : Int) : Demand = {
     import FlightType._
     val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
-    val hasFirstClass = (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERNATIONAL)
+    val hasFirstClass = (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_DOMESTIC || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERNATIONAL)
     val fromPopIncomeAdjusted = if (fromAirport.popMiddleIncome > 0) fromAirport.popMiddleIncome else 1
     val demand = computeRawDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, affinity : Int, distance : Int)
 
@@ -325,56 +325,57 @@ object DemandGenerator {
     //price mods are also used on frontend for demand estimation
     //modding price by pax type
     val touristMod = PassengerType.priceAdjust(PassengerType.TOURIST)
-    val travlerMod = PassengerType.priceAdjust(PassengerType.TRAVELER)
+    val travelerMod = PassengerType.priceAdjust(PassengerType.TRAVELER)
     val defaultMod = PassengerType.priceAdjust(PassengerType.BUSINESS)
     //modding price (sometimes) by class
-    val discountPlus = 0.1
+    val discountPlus = 0.15
     val economyPlus = 0.05
     val businessPlus = 0.1
-    val firstPlus = 0.15
+    val firstPlus = 0.1
     val flightPreferences = Map(
       PassengerType.BUSINESS -> List( //is default, i.e. also elite & olympic
         (DealPreference(homeAirport, DISCOUNT_ECONOMY, defaultMod), 3),
         (DealPreference(homeAirport, DISCOUNT_ECONOMY, defaultMod + discountPlus), 2),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, defaultMod, loungeLevelRequired = 0), 1),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, defaultMod, loungeLevelRequired = 0, loyaltyRatio = 1.1), 1),
-        (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, defaultMod + economyPlus, loungeLevelRequired = 0, loyaltyRatio = 1.2), 1),
-        (LastMinutePreference(homeAirport, ECONOMY, defaultMod + economyPlus, loungeLevelRequired = 0), 1),
-        (LastMinutePreference(homeAirport, ECONOMY, defaultMod + economyPlus + 0.1, loungeLevelRequired = 0), 1),
+        (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, defaultMod, loungeLevelRequired = 0, loyaltyRatio = 1.2), 1),
+        (LastMinutePreference(homeAirport, ECONOMY, defaultMod + economyPlus + 0.05, loungeLevelRequired = 0), 1),
+        (LastMinutePreference(homeAirport, ECONOMY, defaultMod + economyPlus + 0.15, loungeLevelRequired = 0), 1),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, defaultMod, loungeLevelRequired = 1), 1),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, defaultMod, loungeLevelRequired = 2, loyaltyRatio = 1.15), 1),
-        (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, defaultMod + businessPlus, loungeLevelRequired = 2, loyaltyRatio = 1.25), 1),
+        (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, defaultMod, loungeLevelRequired = 2, loyaltyRatio = 1.25), 1),
         (LastMinutePreference(homeAirport, BUSINESS, defaultMod + businessPlus, loungeLevelRequired = 0), 1),
-        (LastMinutePreference(homeAirport, BUSINESS, defaultMod + businessPlus + 0.15, loungeLevelRequired = 0), 1),
+        (LastMinutePreference(homeAirport, BUSINESS, defaultMod + businessPlus + 0.16, loungeLevelRequired = 0), 1),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, defaultMod, loungeLevelRequired = 2), 1),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, defaultMod, loungeLevelRequired = 2, loyaltyRatio = 1.1), 1),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, FIRST, defaultMod + firstPlus, loungeLevelRequired = 3, loyaltyRatio = 1.2), 1),
         (LastMinutePreference(homeAirport, FIRST, defaultMod + firstPlus, loungeLevelRequired = 1), 1),
-        (LastMinutePreference(homeAirport, FIRST, defaultMod + firstPlus + 0.15, loungeLevelRequired = 0), 1),
+        (LastMinutePreference(homeAirport, FIRST, defaultMod + firstPlus + 0.2, loungeLevelRequired = 0), 1),
       ),
       PassengerType.TOURIST -> List(
         (DealPreference(homeAirport, DISCOUNT_ECONOMY, touristMod), 3),
         (DealPreference(homeAirport, DISCOUNT_ECONOMY, touristMod + discountPlus), 2),
         (DealPreference(homeAirport, ECONOMY, touristMod), 1),
-        (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, touristMod + 0.05, loungeLevelRequired = 0), 1),
-        (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, touristMod + 0.05, loungeLevelRequired = 0, loyaltyRatio = 1.1), 1),
-        (LastMinutePreference(homeAirport, ECONOMY, touristMod - 0.05, loungeLevelRequired = 0), 1),
+        (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, touristMod + economyPlus, loungeLevelRequired = 0), 1),
+        (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, touristMod + economyPlus, loungeLevelRequired = 0, loyaltyRatio = 1.1), 1),
+        (LastMinutePreference(homeAirport, ECONOMY, touristMod - 0.01, loungeLevelRequired = 0), 2),
         (DealPreference(homeAirport, BUSINESS, touristMod), 2),
-        (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, touristMod + 0.05, loungeLevelRequired = 1), 2),
-        (LastMinutePreference(homeAirport, BUSINESS, touristMod - 0.05, loungeLevelRequired = 1), 1),
+        (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, touristMod + businessPlus, loungeLevelRequired = 1), 1),
+        (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, touristMod + businessPlus + 0.16, loungeLevelRequired = 2, loyaltyRatio = 1.1), 1),
+        (LastMinutePreference(homeAirport, BUSINESS, touristMod - 0.01, loungeLevelRequired = 1), 1),
         (DealPreference(homeAirport, FIRST, touristMod), 1),
       ),
       PassengerType.TRAVELER -> List(
-        (DealPreference(homeAirport, DISCOUNT_ECONOMY, travelerMod), 1),
-        (DealPreference(homeAirport, DISCOUNT_ECONOMY, travelerMod + 0.05), 1),
+        (DealPreference(homeAirport, DISCOUNT_ECONOMY, travelerMod), 3),
+        (DealPreference(homeAirport, DISCOUNT_ECONOMY, travelerMod + discountPlus), 2),
         (DealPreference(homeAirport, ECONOMY, travelerMod), 1),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, travelerMod, loungeLevelRequired = 0), 2),
-        (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, travelerMod + 0.1, loungeLevelRequired = 0, loyaltyRatio = 1.1), 1),
-        (LastMinutePreference(homeAirport, ECONOMY, travelerMod + 0.15, loungeLevelRequired = 0), 1),
+        (AppealPreference.getAppealPreferenceWithId(homeAirport, ECONOMY, travelerMod + economyPlus, loungeLevelRequired = 0, loyaltyRatio = 1.1), 1),
+        (LastMinutePreference(homeAirport, ECONOMY, travelerMod + economyPlus + 0.06, loungeLevelRequired = 0), 1),
         (DealPreference(homeAirport, BUSINESS, travelerMod), 1),
         (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, travelerMod, loungeLevelRequired = 1), 2),
-        (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, travelerMod + 0.1, loungeLevelRequired = 1, loyaltyRatio = 1.2), 1),
-        (LastMinutePreference(homeAirport, BUSINESS, travelerMod + 0.2, loungeLevelRequired = 0), 1),
+        (AppealPreference.getAppealPreferenceWithId(homeAirport, BUSINESS, travelerMod + businessPlus, loungeLevelRequired = 1, loyaltyRatio = 1.2), 1),
+        (LastMinutePreference(homeAirport, BUSINESS, travelerMod + businessPlus + 0.16, loungeLevelRequired = 0), 1),
       )
     )
 

@@ -167,19 +167,21 @@ abstract class FlightPreference(homeAirport : Airport) {
 
   val tripDurationAdjustRatio = (link : Transport, linkClass : LinkClass, paxType: PassengerType.Value) => {
     val classModifier = linkClass match {
-      case FIRST => 0.5
-      case BUSINESS => 0.35
-      case _ => 0
+      case FIRST => 0.4
+      case BUSINESS => 0.3
+      case _ => 0.1
     }
     val flightDurationSensitivity = paxType match {
-      case PassengerType.ELITE => 0.9
-      case PassengerType.BUSINESS => 0.5 + classModifier
+      case PassengerType.ELITE => 0.6
+      case PassengerType.BUSINESS => 0.4 + classModifier
       case PassengerType.TOURIST => 0 + classModifier
-      case _ => 0.3 + classModifier
+      case _ => 0.1 + classModifier
     }
     val flightDurationRatioDelta = {
       if (flightDurationSensitivity == 0 || link.transportType != TransportType.FLIGHT) {
         0
+      } else if (flightDurationSensitivity < 0.7 && link.duration.toDouble / link.distance < 1.8) {
+        0 //do not apply duration sensitivity if on a slow blimp & pax isn't super sensitive
       } else {
         val flightDurationThreshold = Computation.computeStandardFlightDuration(link.distance)
         Math.min(flightDurationSensitivity, (link.duration - flightDurationThreshold).toFloat / flightDurationThreshold * flightDurationSensitivity)
@@ -281,7 +283,7 @@ case class DealPreference(homeAirport : Airport, preferredLinkClass: LinkClass, 
   }
 
   val getPreferenceType = DEAL
-  override val connectionCostRatio = 0.25 //more okay with taking connection
+  override val connectionCostRatio = 0.2 //okay with taking connection
 }
 
 
@@ -298,7 +300,7 @@ case class LastMinutePreference(homeAirport : Airport, preferredLinkClass: LinkC
       LAST_MINUTE
     }
   }
-  override val connectionCostRatio = 0.25 //more okay with taking connection
+  override val connectionCostRatio = 0.3
 }
 
 
@@ -316,6 +318,14 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
       FREQUENT
     } else {
       BRAND
+    }
+  }
+
+  override val connectionCostRatio = {
+    if (loyaltyRatio > 1) {
+      2.0
+    } else {
+      1.2
     }
   }
 

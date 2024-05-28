@@ -171,7 +171,8 @@ object AirlineSimulation {
         totalCashExpense += dividendsFunding
 
         val oldStockPrice = airline.getStockPrice()
-        val companySentiment = finalBreakdowns.total - currentReputation + ThreadLocalRandom.current().nextDouble(0.1)
+        val exStockBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
+        val companySentiment = exStockBreakdowns.total - currentReputation + ThreadLocalRandom.current().nextDouble(0.1)
         val stockPrice = getNewStockPrice(dividendsFunding, airlineValue.overall, oldStockPrice, companySentiment)
         airline.setStockPrice(stockPrice)
 
@@ -179,16 +180,16 @@ object AirlineSimulation {
         reputationBreakdowns.append(ReputationBreakdown(ReputationType.STOCK_PRICE, reputationByStockPrice))
 
         //set reputation
+        val finalBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
+        AirlineSource.updateReputationBreakdowns(airline.id, finalBreakdowns)
         var targetReputation = finalBreakdowns.total
         if (targetReputation > currentReputation && targetReputation - currentReputation > MAX_REPUTATION_DELTA) {
           targetReputation = currentReputation + MAX_REPUTATION_DELTA //make sure it increases/decreases gradually based on passenger volume
         } else if (targetReputation < currentReputation && currentReputation - targetReputation > MAX_REPUTATION_DELTA) {
           targetReputation = currentReputation - MAX_REPUTATION_DELTA
         }
-
         airline.setReputation(targetReputation)
-        val finalBreakdowns = ReputationBreakdowns(reputationBreakdowns.toList)
-        AirlineSource.updateReputationBreakdowns(airline.id, finalBreakdowns)
+
 
         //income statement
         val isBankrupt = if (airlineValue.overall < BANKRUPTCY_ASSETS_THRESHOLD && airlineValue.existingBalance < BANKRUPTCY_CASH_THRESHOLD) {

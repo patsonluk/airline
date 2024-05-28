@@ -667,7 +667,7 @@
 								</div>
 
 								<div class="flex-row py-2">
-									<div style="width:162px"><h5>Direct Demand (Y/J/F):</h5></div>
+									<div style="width:162px"><h5>Direct Demand:</h5></div>
 									<div style="display: flex; align-items : center">
 										<span id="planLinkDirectDemand"></span>
 										<div class="tooltip">
@@ -687,7 +687,7 @@
 													<p> Tourist: <span class="touristDemand"></span></p>
 													<p> Elite: - / - / ??</p>
 												</div>
-												<p class="leading-snug py-1">Elite demand can't be estimated because it changes every cycle!</p>
+												<p class="leading-snug py-1">Note: Most demand is indirect, not the direct demand shown here. Also, elite demand can't be estimated because it changes every cycle!</p>
 											</span>
 										</div>
 									</div>
@@ -706,7 +706,7 @@
 									<div></div>
 									<div class="h-8"><p>Set price</p></div>
 									<div class="h-8"><p class="leading-none h-7">Load factor<br><small style="font-size:10px">20 week average</small></p></div>
-									<div class="h-8"><p class="leading-none h-7">Percent<br><small style="font-size:10px">Off baseline</small></p></div>
+									<div class="h-8"><p class="leading-none h-7">Percent<br><small style="font-size:10px">base price</small></p></div>
 								</div>
 								<div class="flex-container-width-quarter">
 									<div><h5>Economy:</h5></div>
@@ -1559,9 +1559,9 @@
 								<div class="market details table-container" style="hmin-width: 980px;">
 									<div class="table data" style="height: 20px; min-width: 980px;">
 										<div class="table-header" id="airplaneModelSortHeader">
-											<div class="cell clickable" style="width: 20%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
-											<div class="cell clickable" style="width: 12%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
-											<div class="cell clickable selected" style="width: 10%" align="right" data-sort-property="price" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Price</div>
+											<div class="cell clickable" style="width: 18%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
+											<div class="cell clickable" style="width: 11%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
+											<div class="cell clickable selected" style="width: 9%" align="right" data-sort-property="price" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Price</div>
 											<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
 											<div class="cell clickable" style="width: 10%" align="right" data-sort-property="quality" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Passenger Experience</div>
 											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Range</div>
@@ -1569,14 +1569,15 @@
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="lifespan" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Lifespan</div>
 											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="speed" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Speed</div>
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="runwayRequirement" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Runway</div>
+											<div class="cell clickable" style="width: 4%" align="right" data-sort-property="total" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">#</div>
 <!--											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>-->
 										</div>
 									</div>
 									<div class="table data table-data-container" id="airplaneModelTable" style="min-width: 980px;">
 										<div class="table-header">
-											<div class="cell" style="width: 20%; border-bottom: none;"></div>
-											<div class="cell" style="width: 12%; border-bottom: none;"></div>
-											<div class="cell" style="width: 10%; border-bottom: none;"></div>
+											<div class="cell" style="width: 18%; border-bottom: none;"></div>
+											<div class="cell" style="width: 11%; border-bottom: none;"></div>
+											<div class="cell" style="width: 9%; border-bottom: none;"></div>
 											<div class="cell" style="width: 8%; border-bottom: none;"></div>
 											<div class="cell" style="width: 10%; border-bottom: none;"></div>
 											<div class="cell" style="width: 9%; border-bottom: none;"></div>
@@ -1584,6 +1585,7 @@
 											<div class="cell" style="width: 7%; border-bottom: none;"></div>
 											<div class="cell" style="width: 9%; border-bottom: none;"></div>
 											<div class="cell" style="width: 7%; border-bottom: none;"></div>
+											<div class="cell" style="width: 4%; border-bottom: none;"></div>
 										</div>
 									</div>
 								</div>
@@ -4875,7 +4877,7 @@
 
 	<!-- popup of owned airplane details and control -->
 	<div id="ownedAirplaneDetailModal" class="modal">
-		<div class="modal-content py-2">
+		<div class="modal-content py-2" style="max-width: 560px;">
 			<span class="close" onclick="closeModal($('#ownedAirplaneDetailModal'))">&times;</span>
 			<h4>Owned Airplane Details</h4>
 			<div id="ownedAirplaneDetail" style="width: 100%;">
