@@ -159,10 +159,10 @@ function updateAirlineBases() {
     	    	 $(activeAirline.baseAirports).each(function(index, base) {
                     var row = $("<div class='table-row clickable' data-link='airport' onclick='showAirportDetails(" + base.airportId+ ")'></div>")
                     if (base.headquarter) {
-                        row.append($("<div class='cell'><img src='assets/images/icons/building-hedge.png' class='pr-1'><span style='font-size: 130%;vertical-align: top;'>" + base.scale + "</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + base.city + "</div>"))
+                        row.append($("<div class='cell'><img src='assets/images/icons/building-hedge.png' class='pr-1'><span style='font-size: 130%;vertical-align: top;'>" + base.scale + "</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + base.city + " " + base.airportCode + "</div>"))
 
                     } else {
-                        row.append($("<div class='cell'><img src='assets/images/icons/building-low.png' class='pr-1'><span style='font-size: 130%;vertical-align: top;'>" + base.scale + "</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + base.city + "</div>"))
+                        row.append($("<div class='cell'><img src='assets/images/icons/building-low.png' class='pr-1'><span style='font-size: 130%;vertical-align: top;'>" + base.scale + "</span></div><div class='cell'>" + getCountryFlagImg(base.countryCode) + base.city + " " + base.airportCode + "</div>"))
                     }
                     var capacityInfo = officeCapacity[base.airportId]
                     var required = (capacityInfo.staffCapacity < capacityInfo.currentStaffRequired) ? "<span class='fatal'>" + capacityInfo.currentStaffRequired + "</span>" : capacityInfo.currentStaffRequired
