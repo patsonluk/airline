@@ -454,30 +454,30 @@ object AirlineGrades {
 
 object AirlineGradeStockPrice {
   val grades = List(
-    0.0 -> "n/a",
-    0.01 -> "Worthless",
-    0.03 -> "Basically Worthless",
-    0.05 -> "Toilet Paper",
-    0.09 -> "Penny Stock",
+    0.01 -> "n/a",
+    0.03 -> "Worthless",
+    0.05 -> "Basically Worthless",
+    0.09 -> "Toilet Paper",
     0.16 -> "Penny Stock",
-    0.28 -> "Bargain Bin",
+    0.28 -> "Penny Stock",
     0.47 -> "Bargain Bin",
-    0.86 -> "Promising",
+    0.86 -> "Bargain Bin",
     1.37 -> "Promising",
-    2.3 -> "Speculator's Pick",
+    2.3 -> "Promising",
     3.9 -> "Speculator's Pick",
-    6.7 -> "Analyst Hold Pick",
-    11.4 -> "Analyst Buy Pick",
+    6.7 -> "Speculator's Pick",
+    11.4 -> "Analyst Hold Pick",
     19.0 -> "Analyst Buy Pick",
-    33.0 -> "Blue Chip Beauty",
+    33.0 -> "Analyst Buy Pick",
     56.0 -> "Blue Chip Beauty",
-    95.0 -> "Russell 2000 Company",
+    95.0 -> "Blue Chip Beauty",
     160.0 -> "Russell 2000 Company",
-    270.0 -> "S&P 500 Company",
+    270.0 -> "Russell 2000 Company",
     460.0 -> "S&P 500 Company",
-    800.0 -> "Money Printing Epic",
-    1360.0 -> "Wall Street Legend",
-    2300.0 -> "Flying Cash Cow"
+    800.0 -> "S&P 500 Company",
+    1360.0 -> "Money Printing Epic",
+    2300.0 -> "Wall Street Legend",
+    2900.0 -> "Flying Cash Cow"
   )
 
   def findGrade(stockPrice: Double): AirlineGrade = {
@@ -498,7 +498,6 @@ object AirlineGradeStockPrice {
 object AirlineGradeElites {
   val grades = List(
     10 -> "None",
-    16 -> "None",
     25 -> "Deforemed Plastic",
     50 -> "Chunky Plastic",
     75 -> "Plywood",
@@ -519,7 +518,8 @@ object AirlineGradeElites {
     22150 -> "Diamond",
     32550 -> "Money Printing Epic",
     47850 -> "Unobtainium",
-    70350 -> "Antimatter"
+    70350 -> "Antimatter",
+    110000 -> "Rat Fur"
   )
 
   def findGrade(pax: Double): AirlineGrade = {
