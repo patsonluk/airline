@@ -12,7 +12,7 @@ object PassengerType extends Enumeration {
     }
     val priceAdjust = (paxType: PassengerType.Value) => paxType match {
         case BUSINESS => 1.1
-        case TOURIST => 0.9
+        case TOURIST => 0.95
         case _ => 1.0
     }
 }

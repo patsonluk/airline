@@ -259,6 +259,7 @@ object RankingLeaderboards {
     val mostVisitedLounges = loungeConsumptions.groupBy(_.lounge.airline.id)
       .mapValues(_.maxBy(entry => entry.selfVisitors + entry.allianceVisitors))
       .values.toList
+      .sortBy(details => details.selfVisitors + details.allianceVisitors)(Ordering[Int].reverse)
 
     mostVisitedLounges.zipWithIndex.map {
       case(details, index) => {

@@ -775,8 +775,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //        }
 
 
-        val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
-        val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, distance)
+        val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, relationship, distance)
+        val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, relationship, distance)
 
         val directFromAirportTravelerDemand = fromDemand.travelerDemand
         val directToAirportTravelerDemand = toDemand.travelerDemand

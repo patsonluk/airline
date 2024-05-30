@@ -46,7 +46,7 @@ object DemandGenerator {
           val relationship = countryRelationships.getOrElse((fromAirport.countryCode, toAirport.countryCode), 0)
           val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
 
-          val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, distance)
+          val demand = computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, relationship, distance)
           if (demand.travelerDemand.total > 0) {
             demandList.add((toAirport, (PassengerType.TRAVELER, demand.travelerDemand)))
           }
@@ -100,9 +100,9 @@ object DemandGenerator {
     allDemandChunks.toList
   }
 
-  def computeBaseDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, affinity : Int, distance : Int) : Demand = {
+  def computeBaseDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, affinity : Int, relationship : Int, distance : Int) : Demand = {
     import FlightType._
-    val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
+    val flightType = Computation.getFlightType(fromAirport, toAirport, distance, relationship)
     val hasFirstClass = (flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_DOMESTIC || flightType == LONG_HAUL_INTERNATIONAL || flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_INTERNATIONAL)
     val fromPopIncomeAdjusted = if (fromAirport.popMiddleIncome > 0) fromAirport.popMiddleIncome else 1
     val demand = computeRawDemandBetweenAirports(fromAirport : Airport, toAirport : Airport, affinity : Int, distance : Int)
@@ -144,7 +144,7 @@ object DemandGenerator {
       if (distance < 350 && !List("BS", "TC", "VI", "VG", "GR", "CY", "CO").contains(fromAirport.countryCode)) {
         distance.toDouble / 350
       } else if (distance > 5000) {
-        1.0 - distance.toDouble / 35000 * (1 - affinity.toDouble / 10.0) //affinity affects perceived distance
+        1.0 - distance.toDouble / 35000 * (1 - affinity.toDouble / 15.0) //affinity affects perceived distance
       } else if (distance > 2000) { //bit less than medium-distance, with a 0.01 boost
         1.11 - distance.toDouble / 20000 * (1 - affinity.toDouble / 20.0) //affinity affects perceived distance
       } else 1
@@ -328,7 +328,7 @@ object DemandGenerator {
     val travelerMod = PassengerType.priceAdjust(PassengerType.TRAVELER)
     val defaultMod = PassengerType.priceAdjust(PassengerType.BUSINESS)
     //modding price (sometimes) by class
-    val discountPlus = 0.15
+    val discountPlus = 0.1
     val economyPlus = 0.05
     val businessPlus = 0.1
     val firstPlus = 0.1
