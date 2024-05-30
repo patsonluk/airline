@@ -22,8 +22,7 @@ abstract class FlightPreference(homeAirport : Airport) {
 
   def computeCost(link : Transport, linkClass : LinkClass, paxType: PassengerType.Value, externalCostModifier : Double = 1.0) : Double = {
     val standardPrice = link.standardPrice(preferredLinkClass)
-    var cost = standardPrice * priceAdjustRatio(link, linkClass)
-
+    var cost = standardPrice * priceAdjustRatio(link, linkClass, paxType)
     cost = (cost * qualityAdjustRatio(homeAirport, link, linkClass, paxType)).toInt
 
     cost = (cost * frequencyAdjustRatio(link, linkClass, paxType)).toInt
@@ -49,7 +48,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     */
   def computeCostBreakdown(link : Transport, linkClass : LinkClass, paxType: PassengerType.Value) : CostBreakdown = {
     val standardPrice = link.standardPrice(preferredLinkClass)
-    val priceAdjust = priceAdjustRatio(link, linkClass)
+    val priceAdjust = priceAdjustRatio(link, linkClass, paxType)
     var cost = standardPrice * priceAdjust
 
     val qualityAdjust = qualityAdjustRatio(homeAirport, link, linkClass, paxType)
@@ -107,12 +106,18 @@ abstract class FlightPreference(homeAirport : Airport) {
    * 
    * Take note that 0 would means a preference that totally ignore the price difference (could be dangerous as very expensive ticket will get through)
    */
-  def priceAdjustRatio(link: Transport, linkClass: LinkClass) = {
+  def priceAdjustRatio(link: Transport, linkClass: LinkClass, paxType: PassengerType.Value) = {
+    val priceSensitivityModifier = paxType match {
+      case PassengerType.ELITE => 0.8
+      case PassengerType.BUSINESS => 0.7
+      case PassengerType.TOURIST => priceSensitivity + 0.1
+      case _ => priceSensitivity
+    }
     val standardPrice = link.standardPrice(preferredLinkClass)
     val deltaFromStandardPrice = priceAdjustedByLinkClassDiff(link, linkClass) - standardPrice
     val sfBuffer = 0.05
 
-    1 - sfBuffer + deltaFromStandardPrice * priceSensitivity / standardPrice
+    1 - sfBuffer + deltaFromStandardPrice * priceSensitivityModifier / standardPrice
   }
 
   def loyaltyAdjustRatio(link : Transport) = {

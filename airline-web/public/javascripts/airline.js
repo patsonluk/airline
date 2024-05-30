@@ -1257,7 +1257,7 @@ function calculateDemand() {
     for (const passengerType in suggestedPrice) {
         if (currentPrices.economy <= suggestedPrice[passengerType].discountEconomy) {
             totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].discountEconomy);
-        } else if (currentPrices.economy <= suggestedPrice[passengerType].discountEconomy * 1.15) {
+        } else if (currentPrices.economy <= suggestedPrice[passengerType].discountEconomy * 1.1) {
             totalDemand.economy += Math.floor(planLinkInfo.demands[passengerType].discountEconomy * 0.4);
         }
         if (currentPrices.economy <= suggestedPrice[passengerType].economy) {
@@ -1267,14 +1267,14 @@ function calculateDemand() {
         }
         if (currentPrices.business <= suggestedPrice[passengerType].business) {
             totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business);
-        } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.1) {
+        } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.11) {
             totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business * 0.4);
-        } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.25) {
+        } else if (currentPrices.business <= suggestedPrice[passengerType].business * 1.26) {
             totalDemand.business += Math.floor(planLinkInfo.demands[passengerType].business * 0.2);
         }
         if (currentPrices.first <= suggestedPrice[passengerType].first) {
             totalDemand.first += Math.floor(planLinkInfo.demands[passengerType].first);
-        } else if (currentPrices.first <= suggestedPrice[passengerType].first * 1.1) {
+        } else if (currentPrices.first <= suggestedPrice[passengerType].first * 1.11) {
             totalDemand.first += Math.floor(planLinkInfo.demands[passengerType].first * 0.4);
         }  else if (currentPrices.first <= suggestedPrice[passengerType].first * 1.3) {
             totalDemand.first += Math.floor(planLinkInfo.demands[passengerType].first * 0.2);
