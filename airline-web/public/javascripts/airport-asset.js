@@ -39,8 +39,8 @@ function showAirportAssets(airport) {
 
                     $assetImageDiv.append($airlineLogo)
 
-                    var fullStarSource = "assets/images/icons/star.png"
-                    var halfStarSource = "assets/images/icons/star-half.png"
+                    var fullStarSource = "assets/images/icons/star-full.svg"
+                    var halfStarSource = "assets/images/icons/star-half.svg"
                     var $levelBar = getHalfStepImageBarByValue(fullStarSource, halfStarSource, 1, asset.level).css({ 'position' : 'absolute', 'bottom' : '0', 'right' : '0'})
                     $assetImageDiv.append($levelBar)
                 }

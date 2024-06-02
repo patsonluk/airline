@@ -44,14 +44,6 @@ html[data-ui-light-mode="true"] {
     background-color: var(--background-1);
 }
 
-
-div.section {
-	border-radius: 8px;
-	padding: 16px 12px 20px 12px;
-}
-div.section.tight {
-	padding: 6px 4px;
-}
 /* sections broken with backdrop-filter */
 /* broken tooltips */
 /*
@@ -306,12 +298,6 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 }
 .officeCanvasRightGroup .section {
     padding: 16px 4px 4px 4px;
-}
-.officeCanvasRightGroup h4, .officeCanvasRightGroup li, .officeCanvasRightGroup .button, .sidePanel .tight h4 {
-    padding-left: 8px;
-}
-.officeCanvasRightGroup h4 {
-    padding-bottom: 8px;
 }
 #linksCanvas #sidePanel {
     position: unset;
