@@ -23,7 +23,7 @@ function showAirportDetails(airportId) {
 	
 	$.ajax({
 		type: 'GET',
-		url: "airports/" + airportId + "?image=false",
+		url: "airports/" + airportId + "?image=true",
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(airport) {
@@ -116,7 +116,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
         return countryFlagUrl ? "<img src='" + countryFlagUrl + "' />" : ""
 	})
 	$("#airportDetailsAffinityZone").text(airport.zone)
-	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness, airport.size, airport.isDomesticAirport))
+	$("#airportDetailsOpenness").html(getOpennessSpan(loadedCountriesByCode[airport.countryCode].openness, airport.size, airport.isDomesticAirport, airport.isGateway))
 	
 	refreshAirportExtendedDetails(airport)
 	//updateAirportSlots(airport.id)

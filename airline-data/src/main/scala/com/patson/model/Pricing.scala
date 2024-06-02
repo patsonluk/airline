@@ -35,12 +35,12 @@ object Pricing {
     (price * 1.5).toInt //increase the standard price by 50%
   }
   
-  def computeStandardPriceForAllClass(distance : Int, fromAirport : Airport, toAirport : Airport) : LinkClassValues = {
-    val priceByLinkClass : List[(LinkClass, Int)] = LinkClass.values.map { linkClass =>
-      (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), linkClass))
-    }
-    LinkClassValues.getInstanceByMap(priceByLinkClass.toMap)
-  }
+//  def computeStandardPriceForAllClass(distance : Int, fromAirport : Airport, toAirport : Airport) : LinkClassValues = {
+//    val priceByLinkClass : List[(LinkClass, Int)] = LinkClass.values.map { linkClass =>
+//      (linkClass, computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), linkClass))
+//    }
+//    LinkClassValues.getInstanceByMap(priceByLinkClass.toMap)
+//  }
   
   def computeStandardPriceForAllClass(distance : Int, flightType : FlightType.Value) : LinkClassValues = {
     val priceByLinkClass : List[(LinkClass, Int)] = LinkClass.values.map { linkClass =>

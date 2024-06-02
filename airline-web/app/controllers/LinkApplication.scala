@@ -486,6 +486,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   def getOvertimeCompensation(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val incomingLink = request.body.asInstanceOf[AnyContentAsJson].json.as[Link]
+    val incomingRelationship = request.body.asInstanceOf[AnyContentAsJson].json.\("relationship").as[Int]
     val existingListOption = LinkSource.loadFlightLinkByAirportsAndAirline(incomingLink.from.id, incomingLink.to.id, airlineId)
 
     val airline = request.user
@@ -510,7 +511,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     Ok(Json.obj(
       "extraOvertimeCompensation" -> extraOvertimeCompensation,
       "staffBreakdown" -> staffBreakdown,
-      "flightType" -> FlightType.label(Computation.getFlightType(incomingLink.from, incomingLink.to, incomingLink.distance))
+      "flightType" -> FlightType.label(Computation.getFlightType(incomingLink.from, incomingLink.to, incomingLink.distance, incomingRelationship))
     ))
   }
 
@@ -520,7 +521,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       case Some(fromAirport) =>
         AirportCache.getAirport(toAirportId) match {
           case Some(toAirport) =>
-            val flightType = Computation.getFlightType(fromAirport, toAirport, Computation.calculateDistance(fromAirport, toAirport))
+            val flightType = Computation.getFlightType(fromAirport, toAirport)
             val airport = if (fromAirportId == queryAirportId) fromAirport else toAirport
             var result = Json.obj()
             LinkClass.values.foreach { linkClass : LinkClass =>

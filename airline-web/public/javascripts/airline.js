@@ -1746,16 +1746,13 @@ function getLinkStaffingInfo() {
     var airlineId = activeAirline.id
     var url = "airlines/" + airlineId + "/link-overtime-compensation"
     //console.log("selected " + $("#planLinkAirplaneSelect").val())
-    var configuration = planLinkInfoByModel[$("#planLinkModelSelect").val()].configuration
     var linkData = {
         "fromAirportId" : parseInt($("#planLinkFromAirportId").val()),
         "toAirportId" : parseInt($("#planLinkToAirportId").val()),
-        //"airplanes" : $("#planLinkAirplaneSelect").val().map(Number),
         airplanes : getAssignedAirplaneFrequencies(),
         "airlineId" : airlineId,
-        //"configuration" : { "economy" : configuration.economy, "business" : configuration.business, "first" : configuration.first},
+        "relationship" : planLinkInfo.mutualRelationship,
         "price" : { "economy" : parseInt($("#planLinkEconomyPrice").val()), "business" : parseInt($("#planLinkBusinessPrice").val()), "first" : parseInt($("#planLinkFirstPrice").val())},
-        //"frequency" : parseInt($("#planLinkFrequency").val()),
         "model" : parseInt($("#planLinkModelSelect").val()),
         "rawQuality" : parseInt($("#planLinkServiceLevel").val()) * 20,
         "assignedDelegates" : assignedDelegates }

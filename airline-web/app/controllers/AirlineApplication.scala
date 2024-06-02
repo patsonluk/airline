@@ -959,7 +959,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
    Ok(LogoUtil.getLogo(airlineId)).as("image/png").withHeaders(
     CACHE_CONTROL -> "max-age=3600"
    )
-   //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
  }
 
  def setLogo(airlineId : Int, templateIndex : Int, color1 : String, color2 : String) = AuthenticatedAirline(airlineId) { request =>
@@ -1024,7 +1023,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     Ok(LiveryUtil.getLivery(airlineId)).as("image/png").withHeaders(
       CACHE_CONTROL -> "max-age=3600"
     )
-    //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
   }
 
   val MAX_SLOGAN_LENGTH = 200
@@ -1043,7 +1041,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   def getSlogan(airlineId : Int) = Action {
     val slogan : String = AirlineSource.loadSlogan(airlineId).getOrElse("")
     Ok(Json.obj("slogan" -> slogan))
-    //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
   }
 
 
@@ -1064,7 +1061,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
 
    Ok(result)
-   //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
  }
 
   def updateAirplaneRenewal(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
