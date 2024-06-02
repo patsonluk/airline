@@ -115,7 +115,7 @@ sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBo
         4000 / distance.toDouble
       }
       val airportAffinityMutliplier: Double =
-        if (affinity >= 5) affinity.toDouble / 5.0 //domestic
+        if (affinity >= 5) affinity.toDouble / 5.0 //domestic (extra increases 20%)
         else if (affinity == 4) 0.5
         else if (affinity == 3) 0.3
         else if (affinity == 2) 0.1
@@ -153,12 +153,12 @@ sealed case class FinancialHubFeature(baseStrength : Int, boosts : List[AirportB
         7000 / distance.toDouble
       }
       val airportAffinityMutliplier: Double =
-        if (affinity >= 5) affinity.toDouble / 5.0 //domestic
-        else if (affinity == 4) 0.6
-        else if (affinity == 3) 0.5
-        else if (affinity == 2) 0.4
-        else if (affinity == 1) 0.3
-        else if (affinity == 0) 0.2
+        if (affinity >= 5) (affinity - 5) * 0.1 + 1 //domestic+
+        else if (affinity == 4) 0.625
+        else if (affinity == 3) 0.525
+        else if (affinity == 2) 0.425
+        else if (affinity == 1) 0.325
+        else if (affinity == 0) 0.225
         else 0.1
 
       (fromAirport.popMiddleIncome * charmStrength * distanceModifier * airportAffinityMutliplier).toInt
@@ -196,9 +196,9 @@ sealed case class GatewayAirportFeature() extends AirportFeature {
         if (base >= 1) {
           val distanceMultiplier = {
             if (distance <= 2000) {
-              4
+              3
             } else if (distance <= 5000) {
-              2.0
+              1.5
             } else {
               0.25
             }

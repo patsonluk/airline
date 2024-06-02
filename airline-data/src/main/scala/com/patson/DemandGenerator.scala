@@ -153,7 +153,7 @@ object DemandGenerator {
     val airportAffinityMutliplier: Double =
       if (affinity >= 5) (affinity - 5) * 0.1 + 1 //domestic+
       else if (affinity < 0) 0.025
-      else affinity * 0.1 + 0.05
+      else affinity * 0.1 + 0.075
 
     val specialCountryModifier =
       if (fromAirport.countryCode == "AU" || fromAirport.countryCode == "NZ") {

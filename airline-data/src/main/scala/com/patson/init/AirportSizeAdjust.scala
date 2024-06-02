@@ -319,6 +319,7 @@ object AirportSizeAdjust {
         "ITM" -> 6,
         "KIX" -> 6,
         "KOJ" -> 5,
+        "OKD" -> 4,
         "TKS" -> 3,
         "NKM" -> 2,
         //https://en.wikipedia.org/wiki/List_of_airports_in_Kazakhstan
@@ -537,6 +538,8 @@ object AirportSizeAdjust {
         "BMA" -> 5,
         //switzerland
         "BRN" -> 3,
+        "LUG" -> 3,
+        "ACH" -> 3,
         //Tawain
         "RMQ" -> 3,
         "CYI" -> 3,
@@ -586,7 +589,7 @@ object AirportSizeAdjust {
         "BHD" -> 4,
         "SOU" -> 3,
         "LDY" -> 3,
-        "JER" -> 3,
+        "JER" -> 2,
         "BHD" -> 3,
         "ABZ" -> 3,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_the_United_States
