@@ -98,22 +98,20 @@ object Computation {
     Util.calculateDistance(fromAirport.latitude, fromAirport.longitude, toAirport.latitude, toAirport.longitude).toInt
   }
 
-  def getRelationship(fromAirport : Airport, toAirport : Airport) : Int = {
-    CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+  def getFlightType(fromAirport : Airport, toAirport : Airport) : FlightType.Value = {
+    val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+    getFlightType(fromAirport, toAirport, calculateDistance(fromAirport, toAirport), relationship)
   }
 
-  def getFlightType(fromAirport : Airport, toAirport : Airport) : FlightType.Value = {
-    getFlightType(fromAirport, toAirport, calculateDistance(fromAirport, toAirport), getRelationship(fromAirport, toAirport))
-  }
-  
-  def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int, relationship: Int = 0) = {
+  //not passing relationship in getRouteRejection()
+  def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int, relationship : Int = 0) = {
     import FlightType._
     //hard-coding some home markets into the computation functon to allow for independent relation values
     //https://en.wikipedia.org/wiki/European_Common_Aviation_Area
     val ECAA = List("AL", "AM", "AT", "BA", "BE", "BG", "CH", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GE", "GR", "HR", "HU", "IE", "IS", "IT", "LT", "LU", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS", "SI", "SK", "ES", "SE", "UA", "XK")
     val ANZAC = List("AU", "NZ", "CX", "CK", "NU", "CC")
     val USA = List("US", "PR", "VI", "GU", "AS", "MP", "MH", "PW", "FM") //US & COFA Pacific
-    if (relationship == 5 || ECAA.contains(fromAirport.countryCode) && ECAA.contains(toAirport.countryCode) || ANZAC.contains(fromAirport.countryCode) && ANZAC.contains(toAirport.countryCode) || USA.contains(fromAirport.countryCode) && USA.contains(toAirport.countryCode)){
+    if (fromAirport.countryCode == toAirport.countryCode || relationship == 5 || ECAA.contains(fromAirport.countryCode) && ECAA.contains(toAirport.countryCode) || ANZAC.contains(fromAirport.countryCode) && ANZAC.contains(toAirport.countryCode) || USA.contains(fromAirport.countryCode) && USA.contains(toAirport.countryCode)){
       if (distance <= 1000) {
         SHORT_HAUL_DOMESTIC
       } else if (distance <= 3000) {
@@ -161,14 +159,14 @@ def calculateAffinityValue(fromZone : String, toZone : String, relationship : In
     }
 
   val set1 = if (relationship >= 5) {
-    fromZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_!="None")
+    fromZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|"))
   } else {
-    fromZone.split("-").filter(_!="None")
+    fromZone.split("-").filter(_!="None|")
   }
   val set2 = if (relationship >= 5) {
-    toZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_!="None")
+    toZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|"))
   } else {
-    toZone.split("-").filter(_!="None")
+    toZone.split("-").filter(_!="None|")
   }
   val affinitySet = set1.intersect(set2)
   countX2(affinitySet) + affinitySet.size + relationshipModifier
@@ -182,14 +180,14 @@ def countX2(strings: Array[String]): Int = {
 
 def constructAffinityText(fromZone : String, toZone : String, fromCountry : String, toCountry : String, relationship : Int, affinity : Int) : String = {
   val set1 = if (relationship >= 5) {
-    fromZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_ != "None")
+    fromZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|"))
   } else {
-    fromZone.split("-").filter(_ != "None")
+    fromZone.split("-").filter(_ != "None|")
   }
   val set2 = if (relationship >= 5) {
-    toZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|")).filter(_ != "None")
+    toZone.split("-").filterNot(_.endsWith("|")).filterNot(_.startsWith("|"))
   } else {
-    toZone.split("-").filter(_ != "None")
+    toZone.split("-").filter(_ != "None|")
   }
   var matchingItems = set1.intersect(set2).toArray
 

@@ -407,7 +407,7 @@ function getOpennessIcon(openness, size=null, isDomesticAirport=false, isGateway
 	return "<img src='assets/images/icons/" + icon + "' title='" + description + "'/>"
 }
 
-function getOpennessSpan(openness, size=null, isDomesticAirport=false) {
+function getOpennessSpan(openness, size=null, isDomesticAirport=false, isGateway=false) {
 	var description
 	var icon
     if (size && size <= 2 && ! isGateway ){
@@ -422,13 +422,7 @@ function getOpennessSpan(openness, size=null, isDomesticAirport=false) {
 	} else {
 		description = "No International to International Connections"
 		icon = "globe--exclamation.png"
-	}/* else if (openness >= 2) {
-		description = "No Foreign Airline Base"
-		icon = "globe--minus.png"
-	} else {
-		description = "No Foreign Airline"
-		icon = "prohibition.png"
-	}*/
+	}
 	return "" + description + "&nbsp;<img src='assets/images/icons/" + icon + "'/>"
 }
 

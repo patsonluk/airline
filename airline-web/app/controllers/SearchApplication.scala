@@ -457,7 +457,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       "toAirport" -> toAirport,
       "toAirportText" -> toAirport.displayText,
       "distance" -> distance,
-      "flightType" -> FlightType.label(Computation.getFlightType(fromAirport, toAirport, distance)),
+      "flightType" -> FlightType.label(Computation.getFlightType(fromAirport, toAirport, relationship, distance)),
       "directDemand" -> directDemand,
       "mutualRelationship" -> relationship,
       "affinity" -> affinityText,

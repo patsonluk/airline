@@ -149,7 +149,7 @@ object RankingLeaderboards {
       qualityPaxMiles / paxMiles
     }.toMap
 
-    val sortedPassengerByAirline = passengerQualityByAirline.toList.sortBy(_._2)(Ordering[Double].reverse) //sort by total passengers of each airline
+    val sortedPassengerByAirline = passengerQualityByAirline.toList.sortBy(_._2)(Ordering[Double].reverse)
 
     sortedPassengerByAirline.zipWithIndex.map {
       case ((airlineId, satisfaction), index) => Ranking(

@@ -687,7 +687,7 @@
 													<p> Tourist: <span class="touristDemand"></span></p>
 													<p> Elite: - / - / ??</p>
 												</div>
-												<p class="leading-snug py-1">Note: Most demand is indirect, not the direct demand shown here. Also, elite demand can't be estimated because it changes every cycle!</p>
+												<p class="leading-snug py-1">Above is the total possible direct demand, however most traffic is indirect demand. Elite demand can't be estimated because it changes every cycle.</p>
 											</span>
 										</div>
 									</div>
@@ -754,7 +754,7 @@
 									</div>
 									<div class="table-row">
 										<div class="label">
-											<h5>
+											<p>
 												<span>Available Airplanes:</span>
 												<div style="display: inline-block">
 													<div style="display:flex ; align-items: baseline;">
@@ -764,7 +764,7 @@
 														<img src='@routes.Assets.versioned("images/icons/gear.png")' title="Toggle Airplane Condition">
 													</div>
 												</div>
-											</h5>
+											</p>
 										</div>
 										<div class="value">
 											<div class="noAirplaneHelp" style="display: none">
@@ -786,7 +786,7 @@
 									</div>
 									<div class="table-row">
 										<div class="label">
-											<h5>
+											<p>
 												<span>Flight Frequency:</span>
 												<div class="tooltip">
 													<img src='@routes.Assets.versioned("images/icons/information.png")'>
@@ -795,14 +795,14 @@
 														<img data-src='@routes.Assets.versioned("images/clips/flight-frequency.gif")' class="lazyload" alt="">
 													</span>
 												</div>
-											</h5>
+											</p>
 										</div>
 										<!--  <div class="value"><input type="text" id="planLinkFrequency"/></div> -->
 										<div class="value">
 											<div class="frequencyDetail table colored" style="width: 100%">
 												<div class="table-header"/>
-													<div class="cell" style="width: 20%; min-width: 100px;">Airplane</div>
-													<div class="cell" style="width: 20%">Seats Config</div>
+													<div class="cell" style="width: 15%; min-width: 100px;">Airplane</div>
+													<div class="cell" style="width: 25%">Seats Config</div>
 													<div class="cell" style="width: 60%">Flight Frequency</div>
 												</div>
 											</div>
@@ -887,7 +887,7 @@
 									$<span class="amount"></span>&nbsp;
 									will be charged per week for this change.
 								</div>
-								<div class="flex-container-width-half py-2 gap-2">
+								<div class="flex-container-width-half py-2 gap-2" style="max-width: 300px;">
 									<button type="button" class="button modifyLink ml-0" id="addLinkButton" onclick="linkConfirmation()">Create</button>
 									<button type="button" class="button modifyLink ml-0" id="updateLinkButton" onclick="linkConfirmation()">Update</button>
 									<button type="button" class="button mr-0" id="deleteLinkButton" onclick="promptConfirm('Delete this route?', deleteLink)">Delete</button>
@@ -975,9 +975,8 @@
 							<div style="height: 20px; text-align: left;">
 								<img src='@routes.Assets.versioned("images/icons/clock-frame.png")' class="button" title="Sort by last updated" onclick="toggleLinksTableSortOrder($('#hiddenLinkSortBy'))" style="vertical-align: text-bottom">
 							</div>
-							<div style="overflow-x: scroll;">
-								<div class="table-container" style="width: 840px;">
-									<div class="table data" style="width: 840px; height: 20px;">
+								<div class="table-container-x">
+									<div class="table data" style="min-width: 830px; height: 20px;">
 										<div class="table-header" id="linksTableSortHeader">
 											<div class="cell clickable selected" style="width: 16%" data-sort-property="fromAirportCode" data-sort-order="descending" onclick="toggleLinksTableSortOrder($(this))">From Airport</div>
 											<div class="cell clickable" style="width: 0%" data-sort-property="lastUpdate" data-sort-order="ascending" id="hiddenLinkSortBy"></div> <!--hidden column for last update (cannot be first otherwise the left round corner would not work -->
@@ -992,7 +991,8 @@
 											<div class="cell clickable" style="width: 11%" align="right" data-sort-property="profit" data-sort-order="ascending" onclick="toggleLinksTableSortOrder($(this))">Profit</div>
 										</div>
 									</div>
-									<div class="table data table-data-container" id="linksTable" style="width: 840px;">
+									<div class="table-container-y" style="min-width: 840px;">
+									<div class="table data" id="linksTable">
 										<div class="table-header">
 											<div class="cell" style="width: 16%; border-bottom: none;"></div>
 											<div class="cell" style="width: 16%; border-bottom: none;"></div>
@@ -1300,12 +1300,10 @@
 						  <div class="table-header">
 							  <div class="cell" style="width: 20%">Airline</div>
 							  <div class="cell" style="width: 20%">Lounge Name</div>
-							  <div class="cell" style="width: 10%; text-align: right;">Lounge Level</div>
+							  <div class="cell" style="width: 10%; text-align: right;">Level</div>
 							  <div class="cell" style="width: 10%; text-align: right;">Status</div>
-							  <div class="cell" style="width: 20%; text-align: right;">Weekly Passengers (self)</div>
-							  <div class="cell" style="width: 20%; text-align: right;">Weekly Passengers (alliance
-								  members)
-							  </div>
+							  <div class="cell" style="width: 20%; text-align: right;">Visitors</div>
+							  <div class="cell" style="width: 20%; text-align: right;">Alliance Visitors</div>
 						  </div>
 					  </div>
 				  </div>
@@ -1547,45 +1545,47 @@
 	<!--   			end country canvas -->
 				<div id="airplaneCanvas"  class="canvas" style="height: 100%; display: none;">
 					<div class="mainPanel airplaneCanvasLeftGroup">
-						<div class="section tight">
-							<div class="table" style="width: 30%; margin-bottom: 10px;">
-								<div class="table-header">
-									<div class="cell detailsSelection clickable selected" data-type="hangar" onclick="selectAirplaneTab($(this));" style="border-radius: 5px 0 0 5px">Hangar</div>
-									<div class="cell detailsSelection clickable" data-type="market" onclick="selectAirplaneTab($(this))" style="border-radius: 0 5px 5px 0">Market</div>
-								</div>
+						<div class="table" style="width: 30%; margin-top: 8px; margin-left: 12px;">
+							<div class="table-header">
+								<div class="cell detailsSelection clickable selected" data-type="hangar" onclick="selectAirplaneTab($(this));" style="border-radius: 5px 0 0 0">Hangar</div>
+								<div class="cell detailsSelection clickable" data-type="market" onclick="selectAirplaneTab($(this))" style="border-radius: 0 5px 0 0">Market</div>
 							</div>
-
-							<div class="detailsGroup" style="width: 100%; overflow-x: scroll;">
-								<div class="market details table-container" style="hmin-width: 980px;">
+						</div>
+						<div class="section tight">
+							<div class="detailsGroup border-radius-cut">
+								<div class="market details table-container-x">
 									<div class="table data" style="height: 20px; min-width: 980px;">
 										<div class="table-header" id="airplaneModelSortHeader">
 											<div class="cell clickable" style="width: 18%" data-sort-property="name" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Name</div>
 											<div class="cell clickable" style="width: 11%" data-sort-property="family" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Family</div>
 											<div class="cell clickable selected" style="width: 9%" align="right" data-sort-property="price" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Price</div>
-											<div class="cell clickable" style="width: 8%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
+											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="capacity" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Capacity</div>
 											<div class="cell clickable" style="width: 10%" align="right" data-sort-property="quality" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Passenger Experience</div>
-											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Range</div>
-											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="fuelPerPax" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Fuel Burn</div>
+											<div class="cell clickable" style="width: 8%" align="right" data-sort-property="range" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Range</div>
+											<div class="cell clickable" style="width: 5%" align="right" data-sort-property="fuelPerPax" title="Per Passenger" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Fuel Burn</div>
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="lifespan" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Lifespan</div>
 											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="speed" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Speed</div>
 											<div class="cell clickable" style="width: 7%" align="right" data-sort-property="runwayRequirement" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">Runway</div>
-											<div class="cell clickable" style="width: 4%" align="right" data-sort-property="total" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">#</div>
-<!--											<div class="cell clickable" style="width: 9%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Inventory</div>-->
+											<div class="cell clickable" style="width: 4%" align="right" data-sort-property="totalOwned" data-sort-order="descending" onclick="toggleAirplaneModelTableSortOrder($(this))">Roster</div>
+											<div class="cell clickable" style="width: 5%" align="right" data-sort-property="total" title="Total in Circulation" data-sort-order="ascending" onclick="toggleAirplaneModelTableSortOrder($(this))">#</div>
 										</div>
 									</div>
-									<div class="table data table-data-container" id="airplaneModelTable" style="min-width: 980px;">
-										<div class="table-header">
-											<div class="cell" style="width: 18%; border-bottom: none;"></div>
-											<div class="cell" style="width: 11%; border-bottom: none;"></div>
-											<div class="cell" style="width: 9%; border-bottom: none;"></div>
-											<div class="cell" style="width: 8%; border-bottom: none;"></div>
-											<div class="cell" style="width: 10%; border-bottom: none;"></div>
-											<div class="cell" style="width: 9%; border-bottom: none;"></div>
-											<div class="cell" style="width: 7%; border-bottom: none;"></div>
-											<div class="cell" style="width: 7%; border-bottom: none;"></div>
-											<div class="cell" style="width: 9%; border-bottom: none;"></div>
-											<div class="cell" style="width: 7%; border-bottom: none;"></div>
-											<div class="cell" style="width: 4%; border-bottom: none;"></div>
+									<div class="table-container-y" style="min-width: 980px;">
+										<div class="table data" id="airplaneModelTable">
+											<div class="table-header">
+												<div class="cell" style="width: 18%; border-bottom: none;"></div>
+												<div class="cell" style="width: 11%; border-bottom: none;"></div>
+												<div class="cell" style="width: 9%; border-bottom: none;"></div>
+												<div class="cell" style="width: 7%; border-bottom: none;"></div>
+												<div class="cell" style="width: 10%; border-bottom: none;"></div>
+												<div class="cell" style="width: 8%; border-bottom: none;"></div>
+												<div class="cell" style="width: 5%; border-bottom: none;"></div>
+												<div class="cell" style="width: 7%; border-bottom: none;"></div>
+												<div class="cell" style="width: 9%; border-bottom: none;"></div>
+												<div class="cell" style="width: 7%; border-bottom: none;"></div>
+												<div class="cell" style="width: 4%; border-bottom: none;"></div>
+												<div class="cell" style="width: 4%; border-bottom: none;"></div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -2514,7 +2514,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="section overflow-x-auto">
+						<div class="section">
 							<h4>Outstanding Loans</h4>
 							<div class="table data" id="outstandingLoansTable">
 								<div class="table-header">
@@ -2543,13 +2543,13 @@
 					</div>
 					<div class="vertical-group oilCanvasRightGroup">
 					<!--  new loan -->
-						<div class="section overflow-x-auto">
+						<div class="section">
 							<h4>Fuel Consumption History
 								<span class="tooltip">
 									<img src='@routes.Assets.versioned("images/icons/information.png")'>
-									<span class="tooltiptext below" style="width: 400px;">
+									<p class="tooltiptext below" style="width: 400px;">
 										Fuel consumption details of previous week
-									</span>
+									</p>
 								</span>
 							</h4>
 							<div class="table data" id="oilConsumptionHistoryTable">
@@ -2562,13 +2562,13 @@
 							<h4 class="pt-4">Inventory Policy
 								<span class="tooltip">
 									<img src='@routes.Assets.versioned("images/icons/information.png")'>
-									<span class="tooltiptext below" style="width: 400px;">
+									<p class="tooltiptext below" style="width: 400px;">
 										Airline keeps an inventory of fuel to buffer oil price fluctuations<br/>
 										<br/>
 										Oil from inventory still fluctuates with the market price but to a smaller degree depending on the policy type<br/>
 										<br/>
 										In order to completely fix fuel price, Oil Contract should be signed
-									</span>
+									</p>
 								</span>
 							</h4>
 							<div class="table" style="width: 100%; margin-bottom: 15px">
@@ -2599,11 +2599,11 @@
 							<h4 class="pt-4">New Oil Contract
 								<span class="tooltip">
 									<img src='@routes.Assets.versioned("images/icons/information.png")'>
-									<span class="tooltiptext"  style="width: 400px;">
+									<p class="tooltiptext"  style="width: 400px;">
 										Sign long term Oil Contract with fixed price.<br/>
 										<br/>
 										The price offered depends on current market price and the contract duration
-									</span>
+									</p>
 								</span>
 							</h4>
 							<div class="table" style="width: 100%; margin-bottom: 15px">
@@ -2644,7 +2644,7 @@
 							</div>
 						</div>
 
-						<div class="section overflow-x-auto">
+						<div class="section">
 							<h4 class="pt-4">Active Oil Contracts</h4>
 							<div class="table data" id="existingContractsTable">
 								<div class="table-header">
@@ -2833,7 +2833,7 @@
 									<img src='@routes.Assets.versioned("images/icons/clock-frame.png")'>
 								</span>
 							</div>
-							<div class="table-container" style="min-width: 500px;">
+							<div class="table-container-x">
 								<div id="rivalsTableSortHeader" class="table data" style="width: 100%; height: 20px; min-width: 500px;">
 									<div class="table-header">
 										<div class="cell clickable" style="width: 5%" data-sort-property="loginStatus" data-sort-order="ascending" onclick="toggleRivalsTableSortOrder($(this))">&nbsp;</div>
@@ -2843,13 +2843,15 @@
 										<div class="cell clickable" style="width: 15%" align="right" data-sort-property="baseCount" data-sort-order="descending" onclick="toggleRivalsTableSortOrder($(this))">Bases</div>
 									</div>
 								</div>
-								<div id="rivalsTable" class="table data table-data-container" style="min-width: 500px;">
-									<div class="table-header">
-										<div class="cell" style="width: 5%; border-bottom: none;"></div>
-										<div class="cell" style="width: 35%; border-bottom: none;"></div>
-										<div class="cell" style="width: 30%; border-bottom: none;"></div>
-										<div class="cell" style="width: 15%; border-bottom: none;"></div>
-										<div class="cell" style="width: 15%; border-bottom: none;"></div>
+								<div class="table-container-y" style="min-width: 500px;">
+									<div id="rivalsTable" class="table data">
+										<div class="table-header">
+											<div class="cell" style="width: 5%; border-bottom: none;"></div>
+											<div class="cell" style="width: 35%; border-bottom: none;"></div>
+											<div class="cell" style="width: 30%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+											<div class="cell" style="width: 15%; border-bottom: none;"></div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -3095,7 +3097,7 @@
 										<div class="cell">
 											<div class="tooltip">
 												<img src='@routes.Assets.versioned("images/icons/information.png")'>
-												<span class="tooltiptext below" style="width: 350px;">
+												<p class="tooltiptext below" style="width: 350px;">
 													<div class="table data allianceChampionAirportSummary" style="width: 100%;">
 														<div class="table-header">
 															<div class="cell" style="width: 28%;">Scale</div>
@@ -3105,7 +3107,7 @@
 															<div class="cell" style="width: 20%;">Other</div>
 														</div>
 													</div>
-												</span>
+												</p>
 											</div>
 											<span class="championedAirports value" style="display: inline-block;"></span>
 										</div>
@@ -4067,7 +4069,7 @@
     <div id="genericTransitModal" class="modal facility">
 	  <div class="modal-content"  style="width : 500px;">
 		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
-		  <h4>Transit options to nearby airports</h4>
+		  <h4>Nearby metro connected airports</h4>
 
 		  <div class="data table genericTransits" style="width: 100%">
 			  <div class="table-header">
@@ -4481,37 +4483,37 @@
 		  <div style="clear:both; margin-bottom:10px;"></div>
 		  <div style="width: 100%;" class="existingLink table data">
 			  <div class='table-header'>
-				  <div class="cell" style="width: 40%;"></div>
-				  <div class="cell" style="width: 30%;"><h5>Existing Settings</h5></div>
+				  <div class="cell" style="width: 40%;">Attribute</div>
+				  <div class="cell" style="width: 30%;"><h5>Existing</h5></div>
 				  <div class="cell" style="width: 30%;"><h5>New Settings</h5></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="cell"><h5>Airplane Model:</h5></div>
+				  <div class="cell"><p>Airplane Model:</p></div>
 				  <div class="cell existing model"></div>
 				  <div class="cell updating model"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="cell"><h5>Flight Duration:</h5></div>
+				  <div class="cell"><p>Flight Duration:</p></div>
 				  <div class="cell existing duration"></div>
 				  <div class="cell updating duration"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="cell"><h5>Assigned Airplanes:</h5></div>
+				  <div class="cell"><p>Assigned Airplanes:</p></div>
 				  <div class="cell existing airplanes"></div>
 				  <div class="cell updating airplanes"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="cell"><h5>Flight Frequency:</h5></div>
+				  <div class="cell"><p>Flight Frequency:</p></div>
 				  <div class="cell existing frequency"></div>
 				  <div class="cell updating frequency"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="cell"><h5>Capacity (Y/J/F):</h5></div>
+				  <div class="cell"><p>Capacity (Y/J/F):</p></div>
 				  <div class="cell existing capacity"></div>
 				  <div class="cell updating capacity"></div>
 			  </div>
 			  <div class="table-row">
-				  <div class="cell"><h5>Price (Y/J/F):</h5></div>
+				  <div class="cell"><p>Price (Y/J/F):</p></div>
 				  <div class="cell existing price"></div>
 				  <div class="cell updating price"></div>
 			  </div>
@@ -4591,7 +4593,7 @@
                   <div style="clear: both;"></div>
               </div>
               <!-- requirements total-->
-              <div>
+              <div class="pt-2">
                   <div style="width: 48%; float:left" class="negotiationRequirementsTotal table fromAirport">
                       <div class="table-header">
                           <div class="cell" style="width: 80%"></div>
@@ -4638,7 +4640,7 @@
                   <div style="clear: both;"></div>
               </div>
               <!-- discounts total-->
-              <div>
+              <div class="pt-2">
                   <div style="width: 48%; float:left" class="negotiationDiscountTotal table fromAirport">
                       <div class="table-header">
                           <div class="cell" style="width: 80%"></div>

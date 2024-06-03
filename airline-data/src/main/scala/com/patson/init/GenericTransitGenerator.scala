@@ -17,47 +17,55 @@ import scala.util.Random
 
 object GenericTransitGenerator {
 
+  //larger airport goes first
   val TRANSIT_MANUAL_LINKS = Map(
     "HND" -> "NRT",
-    "PKK" -> "PEK",
-    "PKK" -> "TSN",
+    "PEK" -> "PKX",
+    "PKX" -> "TSN",
     "CTU" -> "TFU",
     "IST" -> "SAW",
-    "EWR" -> "PHL",
-    "EWR" -> "HVN",
+    "EWR" -> "TTN",
+    "HPN" -> "EWR",
+    "HVN" -> "HPN",
+    "TTN" -> "PHL",
+    "PHL" -> "ACY",
     "JFK" -> "ISP",
     "ORH" -> "BOS",
-    "PVD" -> "BOS",
-    "PBI" -> "MIA",
-    "PBI" -> "FLL",
+    "BOS" -> "PVD",
+    "MIA" -> "PBI",
+    "FLL" -> "PBI",
     "LAX" -> "ONT",
     "SNA" -> "ONT",
     "STL" -> "BLV",
-    "SEA" -> "PEI",
+    "SEA" -> "PAE",
     "KOA" -> "ITO",
-    "YKF" -> "YYZ",
+    "YYZ" -> "YKF",
+    "YYZ" -> "YHM",
     "YVR" -> "YXX",
+    "FAI" -> "CKX",
     "MEX" -> "TLC",
-    "VCP" -> "GRU",
-    "VCP" -> "CGH",
+    "GRU" -> "VCP",
+    "CGH" -> "VCP",
     "AMS" -> "EIN",
     "EIN" -> "MST",
-    "EIN" -> "RTM",
+    "RTM" -> "EIN",
     "DUS" -> "CGN",
     "HAM" -> "LBC",
-    "TRF" -> "OSL",
+    "OSL" -> "TRF",
     "ARN" -> "NYO",
-    "LTN" -> "LGW",
+    "LGW" -> "LTN",
     "CDG" -> "BVA",
     "BCN" -> "REU",
-    "BRN" -> "ZRH",
-    "BRN" -> "GVA",
-    "BRN" -> "BSL",
+    "ZRH" -> "BRN",
+    "GVA" -> "BRN",
+    "BSL" -> "BRN",
     "ZRH" -> "BSL",
-    "MEL" -> "AVV"
+    "MEL" -> "AVV",
+    "ZIA" -> "SVO",
+    "DME" -> "SVO"
   )
   val ISLANDS = List(
-    "MVY", "ACK", "ISP", "FRD", "ESD", "MKK", "LNY", "GST", "VQS", "CPX", "STT", "EIS", "AXA", "PLS", "GDT", "SVD", "HID", "APW", "PPT"
+    "MVY", "ACK", "ISP", "FRD", "ESD", "MKK", "LNY", "GST", "VQS", "CPX", "STT", "EIS", "AXA", "PLS", "GDT", "SVD", "HID", "APW", "PPT", "TCB", "JIK", "ESD", "HHH", "SAQ", "TIQ", "HOR", "PIX", "KOI", "HTI"
   )
 
   def main(args : Array[String]) : Unit = {
@@ -68,7 +76,7 @@ object GenericTransitGenerator {
     //purge existing generic transit
     LinkSource.deleteLinksByCriteria(List(("transport_type", TransportType.GENERIC_TRANSIT.id)))
 
-    val airports = AirportSource.loadAllAirports(true).filter(_.size >= 2).sortBy { _.power }.takeRight(airportCount)
+    val airports = AirportSource.loadAllAirports(true).filter(_.size >= 2).filter { airport => !ISLANDS.contains(airport.iata) }.sortBy { _.power }
 
     var counter = 0;
     var progressCount = 0;
@@ -80,9 +88,14 @@ object GenericTransitGenerator {
       val boundaryLongitude = calculateLongitudeBoundary(airport.latitude, airport.longitude, range)
       val airportsInRange = scala.collection.mutable.ListBuffer[(Airport, Double)]()
       for (targetAirport <- airports) {
-        if (airport.id != targetAirport.id &&
+        if (!processed.contains((targetAirport.id, airport.id)) && //check the swap pairs are not processed already to avoid duplicates
+          (TRANSIT_MANUAL_LINKS.get(airport.iata).contains(targetAirport.iata) || TRANSIT_MANUAL_LINKS.get(targetAirport.iata).contains(airport.iata))
+        ) {
+          val distance = Util.calculateDistance(airport.latitude, airport.longitude, targetAirport.latitude, targetAirport.longitude).toInt
+          airportsInRange += Tuple2(targetAirport, distance)
+        } else if (airport.id != targetAirport.id &&
+            airport.popMiddleIncome > 500 && targetAirport.popMiddleIncome > 500 &&
             !processed.contains((targetAirport.id, airport.id)) && //check the swap pairs are not processed already to avoid duplicates
-            !ISLANDS.contains(targetAirport.iata) &&
             airport.longitude >= boundaryLongitude._1 && airport.longitude <= boundaryLongitude._2 &&
             countryRelationships.getOrElse((airport.countryCode, targetAirport.countryCode), 0) >= 2
         ) {
@@ -90,11 +103,7 @@ object GenericTransitGenerator {
           if (range >= distance) {
             airportsInRange += Tuple2(targetAirport, distance)
           }
-        } else if (TRANSIT_MANUAL_LINKS.get(airport.iata).contains(targetAirport.iata)) {
-          val distance = Util.calculateDistance(airport.latitude, airport.longitude, targetAirport.latitude, targetAirport.longitude).toInt
-          airportsInRange += Tuple2(targetAirport, distance)
         }
-
         processed.add((airport.id, targetAirport.id))
       }
 
@@ -103,12 +112,12 @@ object GenericTransitGenerator {
 
       airportsInRange.foreach { case (targetAirport, distance) =>
         val domesticAirportBonus = if(targetAirport.isDomesticAirport() || airport.isDomesticAirport()){
-          40000
+          30000
         } else {
           0
         }
         val minSize = Math.min(airport.size, targetAirport.size)
-        val capacity = minSize * 12000 + 10000 + domesticAirportBonus //kinda random
+        val capacity = minSize * 8000 + domesticAirportBonus //kinda random
         val genericTransit = GenericTransit(from = airport, to = targetAirport, distance = distance.toInt, capacity = LinkClassValues.getInstance(economy = capacity))
         LinkSource.saveLink(genericTransit)
         println(genericTransit)

@@ -21,8 +21,12 @@ object IsolatedAirportPatcher {
       //carribean
       "PVA", "ADZ", "CYB", "RTB", "UII", "GJA",
       //europe
-      "IDY", "ACI", "ISC"
-      //add greek, usa, japan, australia
+      "IDY", "ACI", "ISC",
+      //USA
+      "FRD", "ESD", "ACK", "MVY",
+      //oceania
+      "WSZ"
+      //add more greek, usa, japan, australia?
     )
     val ISOLATED_COUNTRIES = Array("FO", "BS", "KY", "TC", "VC", "GD", "DM", "AG", "MS", "BQ", "BL", "MF", "SX", "AI", "VI", "VG", "MU", "MV", "CC", "CK") //always add 1 level, because island countries and islands are inherently isolated
 
