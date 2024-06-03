@@ -287,6 +287,7 @@ html[data-theme="dark"] :is(.gm-fullscreen-control img, .gmnoprint div button im
 	box-sizing: border-box;
 	pointer-events: none;
 	border-radius: 8px !important;
+	position: absolute;
 	right: 0;
 	top: 12px;
 }
