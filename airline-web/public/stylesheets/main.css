@@ -868,7 +868,7 @@ li.row, div.table-row {
 .table-container-y {
     max-height: calc(100vh - 120px);
     overflow-y: scroll;
-    scrollbar-gutter: stable;
+    padding-right: 20px;
 }
 
 .table-container-x {
