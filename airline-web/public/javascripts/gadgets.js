@@ -240,7 +240,7 @@ function getCountryFlagUrl(countryCode) {
 }
 
 function getAirlineLogoImg(airlineId) {
-	return "<img class='logo' src='" + "/airlines/" + airlineId + "/logo'/>"
+	return "<img class='logo' loading='lazy' width='24px' height='12px' src='" + "/airlines/" + airlineId + "/logo'/>"
 }
 
 
