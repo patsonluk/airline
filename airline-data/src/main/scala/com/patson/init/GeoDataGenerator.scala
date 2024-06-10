@@ -4,7 +4,7 @@ import java.nio.file.Paths
 import akka.NotUsed
 
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Random, Success}
 import akka.actor.ActorSystem
 import akka.stream.IOResult
 
@@ -55,7 +55,7 @@ object GeoDataGenerator extends App {
 
     GenericTransitGenerator.generateGenericTransit()
 
-    AssetBlueprintGenerator.generateAssets(airports)
+//    AssetBlueprintGenerator.generateAssets(airports)
 
     Await.result(actorSystem.terminate(), Duration.Inf)
   }
@@ -323,49 +323,67 @@ object GeoDataGenerator extends App {
         val nominalToRealRatio = nominalToRealRatioMap.getOrElse(airport.countryCode, 1.2)
         val normalizedIncome = Math.max(1000, (power / population * nominalToRealRatio).toInt)
         /**
-         * Cities have more inequality, so adding it both in the function and awkwardly adding more here to poor countries, except IN & ZA to create peaks in key cities
-         * Ideally, would create in the city objects, calculating the density of each city object, then outpu a "gini" depending on national gini + local density
+         * Inelegantly adding more inequality here to poor countries (except IN & ZA output is already very high) to create peaks in key cities
+         * Ideally, would create in the "cities" calculating the density of each city, then output a "gini" depending on national gini + local density
          *
-         * Starting with small airports, then larger ones, in arbitary income bands
+         * Starting with small airports, then larger ones, in arbitrary income bands
          */
-        val gini = if (normalizedIncome <= 4000 && population <= 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" ) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 20 //need to account for global inequality?
+
+        val gini = if (normalizedIncome <= 4000 && airport.countryCode != "IN" && airport.countryCode != "ZA") {
+            giniMap.getOrElse(airport.countryCode, 69.0) + 14 //need to account for global inequality? output is better this way
           } else if (normalizedIncome <= 9000 && population <= 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" ) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 14
-          } else if (normalizedIncome < 3000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" || List("DEL","BOM").contains(airport.iata)) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 24 //cities have much more inequality, but can't spike rich cities
-          } else if (normalizedIncome < 6000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" || List("CCU","BLR").contains(airport.iata)) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 18
-          } else if (normalizedIncome < 9000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" || List("HYD","MAA","JAI","IXC","GOI","CAI").contains(airport.iata)) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 14
+            giniMap.getOrElse(airport.countryCode, 69.0) + 8
+          } else if (normalizedIncome < 6000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA") {
+            giniMap.getOrElse(airport.countryCode, 69.0) + 9
+          } else if (normalizedIncome < 9000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA") {
+            giniMap.getOrElse(airport.countryCode, 69.0) + 7
           } else if (normalizedIncome < 15000 && population > 8_000_000 && airport.countryCode != "IN" && airport.countryCode != "ZA" && airport.countryCode != "BR" ) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 11
-          /**
-           * Because wealthy countries have more airports you get less of a tail of wealthy folk, so have to increase inequality to get elites
-           * Having "density" in the city objects would fix this
-           */
-          } else if (List("AMS","BRU","GVA","LHR","LTN","LCY","ARN","OSL","CPH","HEL","ATH","YYZ","YVR","YUL","YYC","SYD","MEL","BNE","CNS","PER","AKL","ICN","PEK","PVG").contains(airport.iata)) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 13
-          } else if (population > 3_000_000 && List("ES", "PT", "GB", "FR", "DE", "AT", "HU", "PL", "IT", "CH", "UA", "CA", "JP").contains(airport.countryCode)) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 12
-          } else if (List("VKO","TSN","NKG","HGH","SZX","CAN","CTU","TFN","CKG","CSX","PKX","SHA","SIN","THR","PNQ","DED","AGR","AMD","COK").contains(airport.iata)) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 9
-          } else if (List("DME","SVO","LED","SJC","HNL","MIA","MSY","PBI","XNA","CLE","CVG","ISP","HPN","MEX","NLU").contains(airport.iata)) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 7
-          } else if (List("SGN","BKK","CGK","MNL","KUL","TLV","CPT","SLC","EWR","BDL","PHL","BWI","IAD","BOS","BNA","TPA","IAH","DFW","SNA","BUR","SFO","OAK","SEA").contains(airport.iata)) {
-            giniMap.getOrElse(airport.countryCode, 39.0) + 2.5
+            giniMap.getOrElse(airport.countryCode, 69.0) + 5
+          } else if (List("ALA","TAS","IKA","KHI","DEL","BOM","PEK","PVG","FNJ","ICN","GMP","HND","NRT","KIX","ITM","MNL","KUL","BKK","SGN","YYZ","YVR","SFO","MIA","FLL","PBI","MEX","LIS","LHR","LGW","LTN","EDI","CDG","ORY","CPH","ARN","FCO","MXP","BGY","LIN","KGL").contains(airport.iata)) {
+            giniMap.getOrElse(airport.countryCode, 69.0) + 6 //more inequality in national centers
+          } else if (List("BLR", "MAA", "PKX", "SHA", "CAN", "SZX", "SJC", "JFK", "EWR", "LGA", "IAD").contains(airport.iata)) {
+            giniMap.getOrElse(airport.countryCode, 69.0) + 2.5
           } else {
-            giniMap.getOrElse(airport.countryCode, 39.0)
+            giniMap.getOrElse(airport.countryCode, 69.0)
           }
-        val elitePop = Computation.populationAboveThreshold(normalizedIncome, population.toInt, gini, 750_000) //more than 20x "middle income"
-        val elitePopAdjusted = if(elitePop >= 4 && elitePop < 10) {
-          10
-        } else if(elitePop <= 4) {
-          0
+        //https://en.wikipedia.org/wiki/List_of_countries_by_number_of_millionaires
+        val underRepresentedRichCountries = List("ES", "PT", "FR", "BE", "NL", "LU", "CH", "DE", "AT", "DK", "NO", "SE", "FI", "IT", "GR", "MT", "CA", "AU", "NZ", "CN", "HK", "TW", "KR", "SG", "JP")
+
+        val threshold = if (airport.countryCode == "US") {
+          3_500_000 //USA is just OP, also compared to real world data
+        } else if (underRepresentedRichCountries.contains(airport.countryCode)) {
+          2_225_000
+        } else if (List("GB", "AE", "IL", "AO", "ZA").contains(airport.countryCode)) {
+          3_000_000
         } else {
-          elitePop
+          3_225_000
         }
-        val middleIncomePop = Math.max(0, -1 * elitePopAdjusted + Computation.populationAboveThreshold(normalizedIncome, population.toInt, gini, 30_000))
+
+        val elitePop = Computation.populationAboveThreshold(normalizedIncome, population.toInt, gini, threshold)
+        /**
+         * inelegantly adding more elites here to get the distribution closer to real
+         *
+         * Having "density" in the cities would help a lot
+         */
+        val elitePopAdjusted : Int = if (List("GVA", "BRN", "NCE", "LCY", "SZG", "ACH", "LUG", "INN", "MIA", "SYD", "MEL", "BNE", "OOL").contains(airport.iata)) {
+            ((elitePop + 249) * 4.9).toInt
+          } else if (List("ZRH", "BSL", "VCE", "BZO", "TRN", "AKL", "CNS", "SJC", "PBI", "ASE", "JAC", "XNA", "PSP", "HTO", "PBI", "HNL", "OGG", "KOA", "YYZ", "YVR", "CPT").contains(airport.iata)) {
+            (elitePop + 199) * 3
+          } else if (List("HND", "NRT", "ITM", "KIX", "FUK", "SEA", "IAH", "LHR", "BRU", "ARN").contains(airport.iata)) {
+            ((elitePop + 149) * 2.25).toInt
+          } else if (List("HGH", "PEK", "PVG", "MXP", "CDG", "LGW", "LTN", "STN", "BOS", "HOU", "SFO", "STS", "SNA", "BUR", "ISP", "HPN", "HVN", "BDL").contains(airport.iata)) {
+          ((elitePop + 99) * 1.5).toInt
+          } else if (elitePop > 0 && elitePop < 100 && underRepresentedRichCountries.contains(airport.countryCode)) {
+            Math.max(Random.nextInt(10) * 10, elitePop * 5)
+          } else if (elitePop > 0 && elitePop < 10) {
+            10
+          } else if(elitePop <= 1) {
+            0
+          } else {
+            elitePop
+          }
+
+        val middleIncomePop = Math.max(0, -1 * elitePopAdjusted + Computation.populationAboveThreshold(normalizedIncome, population.toInt, gini, 32_000))
         val airportCopy = airport.copy(baseIncome = normalizedIncome , basePopulation = population, popMiddleIncome = middleIncomePop, popElite = elitePopAdjusted)
         //YIKE copy here does not copy everything, we need to manually look up what does updateAirport/saveAirport do and clone stuff here...
         airportCopy.setRunways(airport.getRunways())
@@ -471,18 +489,9 @@ object GeoDataGenerator extends App {
       (countryCode, name)
     }.toMap
 
-
-    val nominalToRealRatioMap = scala.io.Source.fromFile("country-data-2022.csv").getLines().map(_.split(",", -1)).map { tokens =>
-      (tokens(0), if(tokens(4).isEmpty) 1.1 else tokens(2).toDouble)
-    }.toMap
-
     val giniMap = scala.io.Source.fromFile("country-data-2022.csv").getLines().map(_.split(",", -1)).map { tokens =>
       (tokens(0), if(tokens(3).isEmpty) 39.0 else tokens(3).toDouble)
     }.toMap
-
-//    val nominalToRealRatioMap = scala.io.Source.fromFile("gini-coefficient-2022.csv").getLines().map(_.split(",", -1)).map { tokens =>
-//      (tokens(2), tokens(1))
-//    }.toMap.withDefaultValue(1.5)
 
     val opennessMap = scala.io.Source.fromFile("country-data-2022.csv").getLines().map(_.split(",", -1)).map { tokens =>
       (tokens(0), if(tokens(2).isEmpty) 4 else tokens(2).toInt)

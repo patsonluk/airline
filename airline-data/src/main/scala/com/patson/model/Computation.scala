@@ -20,7 +20,6 @@ object Computation {
 
   lazy val MAX_VALUES = getMaxValues()
   lazy val MODEL_AIRPORT_POWER = MAX_VALUES._1
-  lazy val MAX_INCOME_LEVEL = MAX_VALUES._2
   lazy val MAX_POPULATION = MAX_VALUES._3
   lazy val MAX_INCOME = MAX_VALUES._4
 
@@ -39,8 +38,6 @@ object Computation {
     (allAirports.maxBy(_.basePower).basePower, allAirports.maxBy(_.baseIncomeLevel).baseIncomeLevel, allAirports.maxBy(_.basePopulation).basePopulation, allAirports.maxBy(_.baseIncome).baseIncome)
   }
 
-  //distance vs max speed
-  val speedLimits = List((300, 350), (400, 500), (400, 700))  
   def calculateDuration(airplaneModel: Model, distance : Int) : Int = {
     val speed =
       if (airplaneModel.category == com.patson.model.airplane.Model.Category.SUPERSONIC) {
@@ -48,9 +45,14 @@ object Computation {
       } else {
         airplaneModel.speed
       }
-    calculateDuration(speed, distance)
+    val speedLimits = if (airplaneModel.category == com.patson.model.airplane.Model.Category.PROPELLER) {
+      List((250, 400), (350, 525))
+    } else {
+      List((300, 350), (400, 500), (400, 700))
+    }
+    calculateDuration(speed, distance, speedLimits)
   }
-  def calculateDuration(airplaneSpeed : Int, distance : Int) = {
+  def calculateDuration(airplaneSpeed : Int, distance : Int, speedLimits : List[(Int, Int)] = List((300, 350), (400, 500), (400, 700))) = {
     var remainDistance = distance
     var duration = 0;
     for ((distanceBucket, maxSpeed) <- speedLimits if (remainDistance > 0)) {
@@ -89,7 +91,6 @@ object Computation {
   val SELL_RATE = 0.8
   
   def calculateAirplaneSellValue(airplane : Airplane) : Int = {
-    val currentNewMarketPrice = airplane.model.applyDiscount(ModelDiscount.getBlanketModelDiscounts(airplane.model.id)).price
     val value = airplane.value * airplane.purchaseRate * SELL_RATE //airplane.purchase < 1 means it was bought with a discount, selling should be lower price
     if (value < 0) 0 else value.toInt
   }
@@ -106,7 +107,7 @@ object Computation {
   //not passing relationship in getRouteRejection()
   def getFlightType(fromAirport : Airport, toAirport : Airport, distance : Int, relationship : Int = 0) = {
     import FlightType._
-    //hard-coding some home markets into the computation functon to allow for independent relation values
+    //hard-coding some home markets into the computation function to allow for independent relation values
     //https://en.wikipedia.org/wiki/European_Common_Aviation_Area
     val ECAA = List("AL", "AM", "AT", "BA", "BE", "BG", "CH", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GE", "GR", "HR", "HU", "IE", "IS", "IT", "LT", "LU", "MD", "ME", "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS", "SI", "SK", "ES", "SE", "UA", "XK")
     val ANZAC = List("AU", "NZ", "CX", "CK", "NU", "CC")
@@ -273,18 +274,22 @@ def constructAffinityText(fromZone : String, toZone : String, fromCountry : Stri
 
   import org.apache.commons.math3.distribution.{LogNormalDistribution, NormalDistribution}
 
-  def populationAboveThreshold(meanIncome: Double, population: Int, gini: Double, threshold: Int = 34000): Int = {
+  def populationAboveThreshold(meanIncome: Double, population: Int, gini: Double, threshold: Int): Int = {
 //    val normalDistribution = new NormalDistribution(meanIncome, meanIncome * gini / 100)
 
     //larger urban areas have much more inequality
-    val urbanInequalityModifier = if (population > 8000000){
-      1.9
-    } else if (population > 2000000){
-      1.7
-    } else if (population > 1000000){
+    val urbanInequalityModifier = if (population > 16000000) {
+      1.6
+    } else if (population > 8000000){
       1.5
+    } else if (population > 4000000) {
+      1.4
+    } else if (population > 2000000){
+      1.3
+    } else if (population > 1000000){
+      1.1
     } else if (population > 100000){
-      1.2
+      0.9
     } else {
       0.7
     }
