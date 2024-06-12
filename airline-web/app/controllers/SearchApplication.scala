@@ -429,11 +429,12 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     val toAirport = AirportCache.getAirport(toAirportId, true).get
     val distance = Computation.calculateDistance(fromAirport, toAirport)
     val relationship = CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode)
+    val flightType = Computation.getFlightType(fromAirport, toAirport, distance, relationship)
     val affinity = Computation.calculateAffinityValue(fromAirport.zone, toAirport.zone, relationship)
     val affinityText = Computation.constructAffinityText(fromAirport.zone, toAirport.zone, fromAirport.countryCode, toAirport.countryCode, relationship, affinity)
 
-    val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, relationship, distance)
-    val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, relationship, distance)
+    val fromDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, affinity, relationship, distance)
+    val toDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, affinity, relationship, distance)
 
     val directFromAirportTravelerDemand = fromDemand.travelerDemand
     val directToAirportTravelerDemand = toDemand.travelerDemand
@@ -457,7 +458,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       "toAirport" -> toAirport,
       "toAirportText" -> toAirport.displayText,
       "distance" -> distance,
-      "flightType" -> FlightType.label(Computation.getFlightType(fromAirport, toAirport, relationship, distance)),
+      "flightType" -> FlightType.label(flightType),
       "directDemand" -> directDemand,
       "mutualRelationship" -> relationship,
       "affinity" -> affinityText,
