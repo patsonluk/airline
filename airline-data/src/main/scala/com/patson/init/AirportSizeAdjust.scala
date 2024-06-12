@@ -284,7 +284,7 @@ object AirportSizeAdjust {
         "GNB" -> 3,
         "XCR" -> 3,
         "TLN" -> 3,
-        "CMF" -> 3,
+        "CMF" -> 4,
         "LTT" -> 2,
         //ethiopia
         "MQX" -> 3,

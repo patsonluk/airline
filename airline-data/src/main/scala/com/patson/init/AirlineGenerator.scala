@@ -55,16 +55,14 @@ object AirlineGenerator extends App {
     val topAirports = airportsWithoutDomestic.takeRight(count)
 
     val modelsShort = ModelSource.loadAllModels().filter { model => 
-      model.family == "Boeing 737"
+      model.family == "Airbus A320"
     }
-    val modelsLong = ModelSource.loadAllModels().filter { model => 
-      model.family == "Boeing 777"
-    }
+    val modelsLong = ModelSource.loadAllModels()
     for (i <- 0 until count) {
       val baseAirport = topAirports(i)
       val user = User(userName = baseAirport.iata, email = "bot", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
       UserSource.saveUser(user)
-      Authentication.createUserSecret(baseAirport.iata, "gidding")
+      Authentication.createUserSecret(baseAirport.iata, Random.nextInt(5000).toString)
       
       val newAirline = Airline("Rats Global " + baseAirport.iata, isGenerated = true)
       newAirline.setBalance(1000000000)
@@ -93,8 +91,8 @@ object AirlineGenerator extends App {
       val farAwayAirports = airportsWithoutDomestic.filter(toAirport => {
         toAirport.id != baseAirport.id && Computation.calculateDistance(baseAirport, toAirport) >= 3000 && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 0
       })
-      generateLinks("near 18", newAirline, baseAirport, nearbyAirports, poolSize = nearbyPoolSize, 15, modelsShort, false, 40)
-      generateLinks("international 8", newAirline, baseAirport, farAwayAirports, poolSize = 300, 8, modelsLong, false, 60)
+      generateLinks("near 18", newAirline, baseAirport, nearbyAirports, poolSize = nearbyPoolSize, 15, modelsShort, 40)
+      generateLinks("international 8", newAirline, baseAirport, farAwayAirports, poolSize = 300, 8, modelsLong, 60)
     }
     
     Patchers.patchFlightNumber()
@@ -102,22 +100,21 @@ object AirlineGenerator extends App {
 
   def generateMegaAirlines(count: Int) : Unit = {
     val countryRelationships = CountrySource.getCountryMutualRelationships()
-    val groupedAirports: Map[String, List[Airport]] = AirportSource.loadAllAirports(false).groupBy(_.countryCode)
+    val groupedAirports: Map[String, List[Airport]] = AirportSource.loadAllAirports().groupBy(_.countryCode)
     val uniqueAirportsWithHighestPower: List[Airport] = groupedAirports.values.map { airportList =>
       airportList.maxBy(_.power)
     }.toList
     val sortedAirports = uniqueAirportsWithHighestPower.sortBy(_.power)
     val topAirports = sortedAirports.takeRight(count)
     val models = ModelSource.loadAllModels().filter { model => 
-      model.family == "Boeing 747" || model.family == "Comac C929"
+      model.family == "Boeing 777" || model.family == "Airbus A220"
     }
     
-    val airportsByZone = topAirports.groupBy { _.zone }
     for (i <- 0 until count) {
       val baseAirport = topAirports(i)
       val user = User(userName = "M" + baseAirport.iata, email = "bot", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
       UserSource.saveUser(user)
-      Authentication.createUserSecret("M" + baseAirport.iata, "gidding")
+      Authentication.createUserSecret("M" + baseAirport.iata, Random.nextInt(5000).toString)
       
       val newAirline = Airline("Rats Auto MOUP " + baseAirport.countryCode, isGenerated = true)
       newAirline.setBalance(200000000)
@@ -144,8 +141,8 @@ object AirlineGenerator extends App {
       val farAwayAirports = sortedAirports.filter(toAirport => {
         toAirport.id != baseAirport.id && Computation.calculateDistance(baseAirport, toAirport) >= 3000 && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 0
       })
-      generateLinks("near 12", newAirline, baseAirport, nearbyAirports, poolSize = nearbyPoolSize, 12, models, false, 40)
-      generateLinks("international 20", newAirline, baseAirport, farAwayAirports, farAwayAirports.length, 20, models, false, 60)
+      generateLinks("near 12", newAirline, baseAirport, nearbyAirports, poolSize = nearbyPoolSize, 12, models, 40)
+      generateLinks("international 20", newAirline, baseAirport, farAwayAirports, farAwayAirports.length, 20, models, 60)
     }
     
     Patchers.patchFlightNumber()
@@ -153,7 +150,7 @@ object AirlineGenerator extends App {
 
   def generateLocalAirlines(count: Int) : Unit = {
     val countryRelationships = CountrySource.getCountryMutualRelationships()
-    val airports = AirportSource.loadAllAirports(true).sortBy { _.popMiddleIncome }
+    val airports = AirportSource.loadAllAirports(fullLoad = true).sortBy { _.popMiddleIncome }
     val baseAirports = airports.filter { airport =>
       airport.countryCode == "US" || airport.countryCode == "MX" || airport.countryCode == "CA"
     }.filter ( _.size <= 4 ).sortBy { _.popMiddleIncome }.takeRight(count)
@@ -165,7 +162,7 @@ object AirlineGenerator extends App {
       val baseAirport = baseAirports(i)
       val user = User(userName = "B" + baseAirport.iata, email = "bot", Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
       UserSource.saveUser(user)
-      Authentication.createUserSecret("B" + baseAirport.iata, "gidding")
+      Authentication.createUserSecret("B" + baseAirport.iata, Random.nextInt(5000).toString)
       
       val newAirline = Airline("Rats Bark Fly " + baseAirport.iata, isGenerated = true)
       newAirline.setBalance(200000000)
@@ -188,15 +185,15 @@ object AirlineGenerator extends App {
       val destinationAirports = airports.filter(toAirport => {
         toAirport.id != baseAirport.id && Computation.calculateDistance(baseAirport, toAirport) <= 3000 && countryRelationships.getOrElse((baseAirport.countryCode, toAirport.countryCode), 0) >= 0
       })
-      generateLinks("local 35", newAirline, baseAirport, destinationAirports, destinationAirports.length, 30, models, false, 40)
+      generateLinks("local 35", newAirline, baseAirport, destinationAirports, destinationAirports.length, 30, models, 40)
     }
     
     Patchers.patchFlightNumber()
   }
   
-  def generateLinks(descripton: String, airline : Airline, fromAirport : Airport,  toAirports : List[Airport], poolSize: Int, linkCount : Int, airplaneModels : List[Model], legacyConfig : Boolean, rawQuality : Int): Unit = {
+  private def generateLinks(description: String, airline: Airline, fromAirport: Airport, toAirports: List[Airport], poolSize: Int, linkCount: Int, airplaneModels: List[Model], rawQuality: Int): Unit = {
     val countryRelationships = CountrySource.getCountryMutualRelationships()
-    //only try to goto the top poolSize of airprots
+    //only try to goto the top poolSize of airports
     val topToAirports = toAirports.takeRight(poolSize)
 
     val pickedToAirports = drawFromPool(topToAirports.reverse, poolSize)
@@ -231,13 +228,12 @@ object AirlineGenerator extends App {
               var airplanesRequired = Math.max(1, frequency / maxFrequencyPerAirplane)
 
               val flightMinutesRequired = Computation.calculateFlightMinutesRequired(model, distance)
-              var capacity = LinkClassValues(model.capacity, model.capacity, model.capacity)
+              var capacity = LinkClassValues(0, 0, 0)
               //make airplanes :)
               var remainingFrequency = frequency
               for (i <- 0 until airplanesRequired) {
-                //case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, var purchasedCycle : Int, condition : Double, depreciationRate : Int, value : Int, var isSold : Boolean = false, var dealerRatio : Double = Airplane.DEFAULT_DEALER_RATIO, var configuration : AirplaneConfiguration = AirplaneConfiguration.empty, var home : Airport = Airport.fromId(0), isReady : Boolean = true, var purchaseRate : Double = 1, version : Int = 0,var id : Int = 0) extends IdObject {
-                val newAirplane = Airplane(model = model, owner = airline, constructedCycle = 0 , purchasedCycle = 0, condition =  Airplane.MAX_CONDITION, depreciationRate = 0, value = model.price, isSold = false, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, configuration = AirplaneConfiguration.empty, home = fromAirport)
-                newAirplane.assignDefaultConfiguration(legacyConfig)
+                val newAirplane = Airplane(model = model, owner = airline, constructedCycle = 0 , purchasedCycle = 0, condition =  Airplane.MAX_CONDITION, depreciationRate = 0, value = model.price, home = fromAirport, configuration = AirplaneConfiguration.empty)
+                newAirplane.assignDefaultConfiguration()
                 AirplaneSource.saveAirplanes(List(newAirplane))
                 val frequencyForThis = if (remainingFrequency > maxFrequencyPerAirplane) maxFrequencyPerAirplane else remainingFrequency
                 val flightMinutesForThis = frequencyForThis * flightMinutesRequired
@@ -247,7 +243,7 @@ object AirlineGenerator extends App {
               }
               
               val flightType = Computation.getFlightType(fromAirport, toAirport, distance, relationship)
-              val price = Pricing.computeStandardPriceForAllClass(distance, flightType)
+              val price = Pricing.computeStandardPriceForAllClass((distance * 1.05).toInt, flightType) //markup prices 5%
               
               val duration = Computation.calculateDuration(model, distance)
               val newLink = Link(fromAirport, toAirport, airline, price, distance, capacity, rawQuality, duration = duration, frequency = frequency, flightType = flightType)
@@ -264,15 +260,14 @@ object AirlineGenerator extends App {
         }
       }
     }
-    if(newLinks.length>0){
+    if(newLinks.nonEmpty){
       LinkSource.saveLinks(newLinks.toList)
     } else {
-      println(s"No links on $descripton from ${fromAirport.iata} !!!")
+      println(s"No links on ${description} from ${fromAirport.iata} !!!")
     }
-    //newLinks.foreach { link => LinkSource.saveLink(link) }
   }
   
-  def drawFromPool(poolTopFirst : Seq[Airport], drawSize : Int) : Seq[Airport] = {
+  private def drawFromPool(poolTopFirst : Seq[Airport], drawSize : Int) : Seq[Airport] = {
     if (drawSize >= poolTopFirst.length) {
       poolTopFirst
     } else {

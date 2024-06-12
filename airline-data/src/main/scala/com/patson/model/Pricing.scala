@@ -5,12 +5,12 @@ import FlightType._
  * Cost base model
  */
 object Pricing {
-  //base 100
-  //200 km = 100 + 50
-  //1000 km = 150 + 100 = 250  (800 * 0.125) 
-  //2000 km = 250 + 100 = 350  (1000 * 0.1)
-  //10000 km = 350 + 400 = 750 (8000 * 0.05)
-  val modifierBrackets = List((200, 0.25),(800, 0.125),(1000, 0.1),(Int.MaxValue, 0.05))
+  //base 10
+  //200 km = 10 + 40
+  //1000 km = 50 + 100 = 150  (800 * 0.125) // 250
+  //2000 km = 150 + 100 = 250  (1000 * 0.1) // 350
+  //10000 km = 150 + 900 = 1050  (9000 * 0.1) // 750
+  val modifierBrackets = List((200, 0.2),(800, 0.125),(Int.MaxValue, 0.1))
   val INTERNATIONAL_PRICE_MULTIPLIER = 1.05
 
   def computeStandardPrice(link : Link, linkClass : LinkClass) : Int = {
@@ -18,7 +18,7 @@ object Pricing {
   }
   def computeStandardPrice(distance : Int, flightType : FlightType, linkClass : LinkClass) : Int = {
     var remainDistance = distance
-    var price = 100.0
+    var price = 10.0
     for (priceBracket <- modifierBrackets if(remainDistance > 0)) {
       if (priceBracket._1 >= remainDistance) {
         price += remainDistance * priceBracket._2
@@ -32,7 +32,10 @@ object Pricing {
       case _ => price
     }) * linkClass.priceMultiplier).toInt
     
-    (price * 1.5).toInt //increase the standard price by 50%
+    (price * 1.20).toInt //increase the standard price by 20%
+    // 150 * 1.2 = 180    250 * 1.5 = 375 | 57%
+    // 250 * 1.2 = 300    350 * 1.5 = 525
+    // 1050 * 1.2 = 1260  750 * 1.5 = 1125
   }
   
 //  def computeStandardPriceForAllClass(distance : Int, fromAirport : Airport, toAirport : Airport) : LinkClassValues = {
