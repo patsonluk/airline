@@ -498,7 +498,7 @@ object AirlineGradeStockPrice {
 object AirlineGradeElites {
   val grades = List(
     10 -> "None",
-    25 -> "Deforemed Plastic",
+    25 -> "Deformed Plastic",
     50 -> "Chunky Plastic",
     75 -> "Plywood",
     100 -> "Rusted Iron",
