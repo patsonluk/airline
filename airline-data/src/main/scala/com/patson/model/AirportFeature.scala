@@ -106,7 +106,7 @@ sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBo
        * based off Disney World, which has 13.6m domestic visitors or 4% of USA population, so at 100 strength charm 4% want to visit or a 1 charm 0.04%
        * (strengthFactor is already a percent)
        */
-      val charmStrength = 0.0004 * strengthFactor
+      val charmStrength = 0.00045 * strengthFactor
       val distanceModifier = if (distance < 400) {
         (distance - 25).toDouble / 400
       } else if (distance < 4000) {
