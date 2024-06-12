@@ -21,9 +21,13 @@ object IsolatedAirportPatcher {
       //carribean
       "PVA", "ADZ", "CYB", "RTB", "UII", "GJA",
       //europe
-      "IDY", "ACI", "ISC",
+      "IDY", "ACI", "ISC", "OUI",
+      "EGH", //Tresco Heliport
+      "BYR", //DK
+      "HGL", //DE
+      "IOR","INQ","IIA", //IE
       //USA
-      "FRD", "ESD", "ACK", "MVY",
+      "FRD", "ESD", "ACK", "MVY", "BID",
       //oceania
       "WSZ"
       //add more greek, usa, japan, australia?
