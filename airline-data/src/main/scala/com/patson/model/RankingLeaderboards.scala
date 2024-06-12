@@ -45,7 +45,7 @@ object RankingLeaderboards {
     val airlinesSource = AirlineSource.loadAllAirlines(fullLoad = true)
     val generatedAirlinesIds = airlinesSource.filter(_.isGenerated).map(airline => (airline.id)).toList
     val airlinesById = airlinesSource.filter(!_.isGenerated).map(airline => (airline.id, airline)).toMap
-    val flightConsumptions = LinkSource.loadLinkConsumptions().filter(_.link.transportType == TransportType.FLIGHT).filterNot(consumption => generatedAirlinesIds.contains(consumption.link.airline.id))
+    val flightConsumptions = LinkSource.loadLinkConsumptions().filter(_.link.transportType == TransportType.FLIGHT).filter(_.link.soldSeats.total.toLong > 0).filterNot(consumption => generatedAirlinesIds.contains(consumption.link.airline.id))
     val flightConsumptionsByAirline = flightConsumptions.groupBy(_.link.airline.id)
     val airlineStats = AirlineStatisticsSource.loadAirlineStatsByCycle(currentCycle).filterNot(stat => generatedAirlinesIds.contains(stat.airlineId))
     println(s"airline stats for cycle ${currentCycle}:")
