@@ -186,7 +186,7 @@ Model("Antonov An-158",	"Antonov An",	102,	102,	4,	322,	835,	3500,	24030000,	104
 Model("Antonov An-72",	"Antonov An",	52,	52,	3,	140,	700,	4325,	8550000,	1040,	0,	Manufacturer("Antonov",	countryCode="UA"),	700,	imageUrl =""),
 Model("ATR 42-400",	"ATR-Regional",	48,	48,	4,	58,	484,	1326,	12600000,	1040,	0,	Manufacturer("ATR",	countryCode="FR"),	1050,	imageUrl =""),
 Model("ATR 42-600S",	"ATR-Regional",	48,	48,	5,	58,	535,	1260,	14940000,	1040,	0,	Manufacturer("ATR",	countryCode="FR"),	750,	imageUrl =""),
-Model("ATR 72-200",	"ATR-Regional",	66,	66,	,	82,	517,	1464,	14400000,	1040,	0,	Manufacturer("ATR",	countryCode="FR"),	1211,	imageUrl =""),
+Model("ATR 72-200",	"ATR-Regional",	66,	66,	5,	82,	517,	1464,	18810000,	1040,	0,	Manufacturer("ATR",	countryCode="FR"),	1211,	imageUrl =""),
 Model("ATR 72-600",	"ATR-Regional",	72,	72,	5,	88,	510,	1403,	23040000,	1040,	6,	Manufacturer("ATR",	countryCode="FR"),	1279,	imageUrl ="https://www.norebbo.com/2017/04/atr-72-blank-illustration-templates/"),
 Model("Aurora D8",	"Aurora D",	229,	180,	9,	530,	937,	5600,	322020000,	1820,	42,	Manufacturer("Aurora Flight Sciences",	countryCode="US"),	2300,	imageUrl =""),
 Model("BAe 146-100",	"BAe 146",	82,	82,	5,	249,	789,	3650,	25020000,	1560,	12,	Manufacturer("BAe",	countryCode="GB"),	1195,	imageUrl ="https://www.norebbo.com/2018/11/british-aerospace-bae-146-200-avro-rj85-blank-illustration-templates/"),
@@ -343,9 +343,9 @@ Model("Vickers VC10",	"Vickers",	150,	150,	3,	545,	930,	9410,	53550000,	1560,	18
 Model("Xi'an MA600",	"Xi'an Turboprops",	60,	60,	4,	99,	514,	1600,	21870000,	1300,	9,	Manufacturer("Xi'an Aircraft Industrial Corporation",	countryCode="CN"),	750,	imageUrl =""),
 Model("Xi'an MA700",	"Xi'an Turboprops",	86,	86,	4,	175,	637,	1500,	32670000,	1300,	15,	Manufacturer("Xi'an Aircraft Industrial Corporation",	countryCode="CN"),	630,	imageUrl =""),
 Model("Yakovlev MC-21-100",	"Yakovlev MC-21",	132,	132,	6,	465,	870,	6140,	53640000,	1300,	30,	Manufacturer("Irkut",	countryCode="RU"),	1322,	imageUrl ="https://www.norebbo.com/irkut-mc-21-300/"),
-Model("Yakovlev MC-21-200",	"Yakovlev MC-21",	165,	165,	6,	625,	870,	6400,	,	1300,	36,	Manufacturer("Irkut",	countryCode="RU"),	1350,	imageUrl ="https://www.norebbo.com/irkut-mc-21-300/"),
-Model("Yakovlev MC-21-300",	"Yakovlev MC-21",	211,	211,	6,	865,	870,	6000,	,	1300,	45,	Manufacturer("Irkut",	countryCode="RU"),	1644,	imageUrl ="https://www.norebbo.com/irkut-mc-21-300/"),
-Model("Yakovlev MC-21-400",	"Yakovlev MC-21",	230,	230,	6,	937,	870,	5500,	,	1300,	54,	Manufacturer("Irkut",	countryCode="RU"),	1500,	imageUrl ="https://www.norebbo.com/irkut-mc-21-300/")
+Model("Yakovlev MC-21-200",	"Yakovlev MC-21",	165,	165,	6,	625,	870,	6400,	73170000,	1300,	36,	Manufacturer("Irkut",	countryCode="RU"),	1350,	imageUrl ="https://www.norebbo.com/irkut-mc-21-300/"),
+Model("Yakovlev MC-21-300",	"Yakovlev MC-21",	211,	211,	6,	865,	870,	6000,	87300000,	1300,	45,	Manufacturer("Irkut",	countryCode="RU"),	1644,	imageUrl ="https://www.norebbo.com/irkut-mc-21-300/"),
+Model("Yakovlev MC-21-400",	"Yakovlev MC-21",	230,	230,	6,	937,	870,	5500,	102150000,	1300,	54,	Manufacturer("Irkut",	countryCode="RU"),	1500,	imageUrl ="https://www.norebbo.com/irkut-mc-21-300/"),
   )
   val modelByName = models.map { model => (model.name, model) }.toMap
 }
