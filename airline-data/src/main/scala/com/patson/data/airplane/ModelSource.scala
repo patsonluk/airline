@@ -109,15 +109,15 @@ object ModelSource {
   def updateModels(models : List[Model]) = {
     val connection = Meta.getConnection()
         
-    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, SET max_seats = ?, SET quality = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ?, lifespan = ?, construction_time = ?, country_code = ?, manufacturer = ?, image_url = ?, family = ?, runway_requirement = ? WHERE name = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, max_seats = ?, quality = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ?, lifespan = ?, construction_time = ?, country_code = ?, manufacturer = ?, image_url = ?, family = ?, runway_requirement = ? WHERE name = ?")
 
     connection.setAutoCommit(false)
     models.foreach { 
       model =>
-        preparedStatement.setString(14, model.name)
+        preparedStatement.setString(15, model.name)
         preparedStatement.setInt(1, model.capacity)
         preparedStatement.setInt(2, model.maxSeats)
-        preparedStatement.setInt(3, (model.quality).toInt)
+        preparedStatement.setInt(3, model.quality.toInt)
         preparedStatement.setInt(4, model.fuelBurn)
         preparedStatement.setInt(5, model.speed)
         preparedStatement.setInt(6, model.range)

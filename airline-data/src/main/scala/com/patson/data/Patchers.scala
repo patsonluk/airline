@@ -46,7 +46,7 @@ object Patchers extends App {
           if (existingModel.capacity != model.capacity) { //adjust configuration and then actual capacity
             AirplaneSource.loadAirplaneConfigurationsByCriteria(List(("model", existingModel.id))).foreach { configuration =>
               val factor = model.capacity.toDouble / existingModel.capacity
-              var newCapacity = ((configuration.economyVal * factor).toInt, (configuration.businessVal * factor).toInt , (configuration.firstVal * factor).toInt)
+              val newCapacity = ((configuration.economyVal * factor).toInt, (configuration.businessVal * factor).toInt , (configuration.firstVal * factor).toInt)
               val adjustmentDelta : Int = model.capacity - Math.ceil(newCapacity._1 * ECONOMY.spaceMultiplier + newCapacity._2 * BUSINESS.spaceMultiplier + newCapacity._3 * FIRST.spaceMultiplier).toInt
               val newConfiguration = configuration.copy(economyVal = newCapacity._1 + adjustmentDelta, businessVal = newCapacity._2, firstVal = newCapacity._3)
               AirplaneSource.updateAirplaneConfiguration(newConfiguration)
