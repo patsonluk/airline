@@ -324,7 +324,7 @@ object GeoDataGenerator extends App {
       }
 
       if (popOverrideMap.contains(airport.iata)) {
-        val airportCopy = airport.copy(baseIncome = popOverrideMap.getOrElse(airport.iata, (0, 0, 0))._2, basePopulation = popOverrideMap.getOrElse(airport.iata, (0, 0, 0))._1, popMiddleIncome = popOverrideMap.getOrElse(airport.iata, (0, 0, 0))._1, popElite = popOverrideMap.getOrElse(airport.iata, (0, 0, 0))._2)
+        val airportCopy = airport.copy(baseIncome = popOverrideMap.getOrElse(airport.iata, (0, 0, 0))._3, basePopulation = popOverrideMap.getOrElse(airport.iata, (0, 0, 0))._1, popMiddleIncome = popOverrideMap.getOrElse(airport.iata, (0, 0, 0))._1, popElite = popOverrideMap.getOrElse(airport.iata, (0, 0, 0))._2)
         airportCopy.setRunways(airport.getRunways())
         airportCopy
       } else if (population == 0) {
@@ -376,7 +376,7 @@ object GeoDataGenerator extends App {
          * Having "density" in the cities would help a lot
          */
         val elitePopAdjusted : Int = if (List("GVA", "NCE", "LCY", "SYD", "MEL", "AVV").contains(airport.iata)) {
-            ((elitePop + 349) * 7.9).toInt
+            ((elitePop + 349) * 9.9).toInt
           } else if (List("SZG", "ACH", "BRN", "LUG", "INN", "MIA", "PER", "BNE", "OOL", "YYZ", "YVR").contains(airport.iata)) {
             ((elitePop + 279) * 4.9).toInt
           } else if (List("NRT", "ITM", "KIX", "FUK", "CTS", "BSL", "VCE", "BZO", "TRN", "FLO", "BRU", "AKL", "CNS", "SJC", "SBA", "PBI", "XNA", "PSP", "HTO", "PBI", "HNL", "OGG", "KOA", "CPT", "SIN").contains(airport.iata)) {
