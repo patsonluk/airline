@@ -12,7 +12,7 @@ object CountryMutualRelationshipGenerator extends App {
    *
    * Some relations set in the computation function!
    */
-  lazy val OECDish = List("CA","US","FR","DE","AT","CH","IT","GB","ES","NL","BE","PL","DK","SE","IE","JP","KR","AU","SG")
+  lazy val OECDish = List("CA","US","FR","DE","AT","CH","IT","GB","ES","NL","BE","PL","DK","SE","TR","IE","JP","KR","AU","SG")
 
   lazy val AFFILIATIONS = List(
 
