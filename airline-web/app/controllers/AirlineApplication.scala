@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.AirlineSimulation
+import com.patson.{AirlineSimulation, LinkSimulation}
 import com.patson.data._
 import com.patson.model.Computation.ResetAmountInfo
 import com.patson.model._
@@ -581,11 +581,21 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                          BadRequest("airport id " +  inputBase.airport.id + " not found!")
                     } { airport =>
                       val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
-                      AirlineSource.saveAirlineBase(newBase)
-                      AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
-                      AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
-                      Created(Json.toJson(newBase))
+                      newBase.allowAirline(airline) match {
+                        case Left(requiredTitle) =>
+                          if (airport.isGateway()) {
+                            BadRequest(s"Can only build hub in this gateway airport when your airline attains ${Title.description(requiredTitle)} with this country")
+                          } else {
+                            BadRequest(s"Can only build hub in this non-gateway airport when your airline attains ${Title.description(requiredTitle)} with this country")
+                          }
+                        case Right(_) =>
+                          AirlineSource.saveAirlineBase(newBase)
+                          AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                          AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
+                          Created(Json.toJson(newBase))
+                      }
                     }
+
                 }
             }
           }
@@ -776,12 +786,23 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
 
   def getServiceFundingProjection(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-     val targetQuality = request.user.getTargetServiceQuality()
+    val targetQuality = request.user.getTargetServiceQuality()
+    val targetQualityCost = Math.pow(targetQuality.toDouble / 40, 2.5)
+    val links = LinkSource.loadFlightLinksByAirlineId(airlineId)
+    var crewCost = 0
 
-     val funding = AirlineSimulation.getServiceFunding(targetQuality, LinkSource.loadFlightLinksByAirlineId(airlineId))
+    links.foreach {
+      case flightLink: Link =>
+        if (flightLink.capacity.total > 0) {
+          crewCost += LinkSimulation.CREW_BASE_COST
+          LinkClass.values.foreach { linkClass =>
+            val capacity = flightLink.capacity(linkClass)
+            crewCost += (targetQualityCost * capacity * linkClass.resourceMultiplier * flightLink.duration / 60 * LinkSimulation.CREW_UNIT_COST).toInt
+          }
+        }
+    }
 
-
-     Ok(JsObject(List("fundingProjection" -> JsNumber(funding))))
+     Ok(JsObject(List("fundingProjection" -> JsNumber(crewCost))))
   }
 
   def getChampionedCountries(airlineId : Int) = Authenticated { implicit request =>
