@@ -142,8 +142,10 @@ sealed case class FinancialHubFeature(baseStrength : Int, boosts : List[AirportB
           fromAirport.hasFeature(AirportFeatureType.FINANCIAL_HUB) && toAirport.hasFeature(AirportFeatureType.FINANCIAL_HUB)
         ) {
           0.00008 * strengthFactor
-        } else {
+        } else if (toAirport.population >= 100_000) {
           0.00001 * strengthFactor
+        } else {
+          0
         }
       val distanceModifier = if (distance < 275) {
         (distance - 25).toDouble / 275
@@ -231,13 +233,17 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
   import IsolatedTownFeature._
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, affinity : Int, distance : Int) : Int = {
     val mod = if (distance <= boostRange && affinity >= 3) {
-      if (rawDemand < 0.01) { //up to 30
-        5 + rawDemand / 0.01 * 25
-      } else if (rawDemand <= 0.1) { //up to 60
-        30 + rawDemand / 0.1 * 30
-      } else { //up to 100
-        60 + rawDemand * 0.1
+      if (rawDemand < 0.01) { //up to 25
+        rawDemand / 0.01 * 25
+      } else if (rawDemand <= 0.1) { //up to 55
+        25 + rawDemand / 0.1 * 30
+      } else if (rawDemand <= 700) { //up to 125
+        55 + rawDemand * 0.1
+      } else {
+        125
       }
+    } else if (toAirport.isGateway() && affinity >= 3){
+      rawDemand * 0.05
     } else {
       0
     }
