@@ -391,11 +391,15 @@ body.christmas {
 
 .table .cell {
 	display: table-cell;
-	/* vertical-align: middle; */
+	vertical-align: middle;
 }
 
 .table.frequencyDetail .cell, .table.frequencyDetailTotal .cell{
    padding: 4px 2px;
+}
+
+.text-hint {
+    opacity: 0.8;
 }
 
 .table .table-row {
@@ -868,7 +872,6 @@ li.row, div.table-row {
 .table-container-y {
     max-height: calc(100vh - 120px);
     overflow-y: scroll;
-    padding-right: 20px;
 }
 
 .table-container-x {
@@ -1307,9 +1310,6 @@ li.dot {
     align-items: center;
     margin: 4px 0;
 }
-li.dot:before, span.dot:before, div.remarks:before {
-    content: url('/assets/images/markers/dot.png');
-}
 
 div.remarks {
     font-style : italic;
@@ -1522,12 +1522,16 @@ i, .italic {
 .w-full { width: 100% !important; }
 .max-w-32 {max-width: 8rem;}
 .gap-2 { gap: 0.5rem; }
-.gap-4 { gap: 1rem; }
+.gap-4 { gap: 1rem !important; }
 .text-left { text-align: left; }
 .text-right { text-align: right; }
 .text-center { text-align: center; }
 .rounded-none { border-radius: 0px !important; }
 .overflow-x-auto { overflow-x: auto !important; }
+.flex-align-center {
+    display: flex;
+    align-items: center;
+}
 .flex-row {
     display: flex;
     width: 100%;
