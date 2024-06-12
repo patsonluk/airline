@@ -555,6 +555,7 @@ object Meta {
       "name VARCHAR(256), " +
       "family VARCHAR(256), " +
       "capacity INTEGER, " +
+      "max_seats INTEGER, " +
       "quality INTEGER, " +
       "fuel_burn INTEGER, " +
       "speed INTEGER, " +

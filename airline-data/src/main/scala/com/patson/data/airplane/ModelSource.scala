@@ -57,6 +57,7 @@ object ModelSource {
           resultSet.getString("name"),
           resultSet.getString("family"),
           resultSet.getInt("capacity"),
+          resultSet.getInt("max_seats"),
           resultSet.getInt("quality").toDouble / 2.0,
           resultSet.getInt("fuel_burn"),
           resultSet.getInt("speed"),
@@ -108,25 +109,26 @@ object ModelSource {
   def updateModels(models : List[Model]) = {
     val connection = Meta.getConnection()
         
-    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, SET quality = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ?, lifespan = ?, construction_time = ?, country_code = ?, manufacturer = ?, image_url = ?, family = ?, runway_requirement = ? WHERE name = ?")
+    val preparedStatement = connection.prepareStatement("UPDATE " + AIRPLANE_MODEL_TABLE + " SET capacity = ?, SET max_seats = ?, SET quality = ?, fuel_burn = ?, speed = ?, fly_range = ?, price = ?, lifespan = ?, construction_time = ?, country_code = ?, manufacturer = ?, image_url = ?, family = ?, runway_requirement = ? WHERE name = ?")
 
     connection.setAutoCommit(false)
     models.foreach { 
       model =>
         preparedStatement.setString(14, model.name)
         preparedStatement.setInt(1, model.capacity)
-        preparedStatement.setInt(2, (model.quality).toInt)
-        preparedStatement.setInt(3, model.fuelBurn)
-        preparedStatement.setInt(4, model.speed)
-        preparedStatement.setInt(5, model.range)
-        preparedStatement.setInt(6, model.price)
-        preparedStatement.setInt(7, model.lifespan)
-        preparedStatement.setInt(8, model.constructionTime)
-        preparedStatement.setString(9, model.manufacturer.countryCode)
-        preparedStatement.setString(10, model.manufacturer.name)
-        preparedStatement.setString(11, model.imageUrl)
-        preparedStatement.setString(12, model.family)
-        preparedStatement.setInt(13, model.runwayRequirement)
+        preparedStatement.setInt(2, model.maxSeats)
+        preparedStatement.setInt(3, (model.quality).toInt)
+        preparedStatement.setInt(4, model.fuelBurn)
+        preparedStatement.setInt(5, model.speed)
+        preparedStatement.setInt(6, model.range)
+        preparedStatement.setInt(7, model.price)
+        preparedStatement.setInt(8, model.lifespan)
+        preparedStatement.setInt(9, model.constructionTime)
+        preparedStatement.setString(10, model.manufacturer.countryCode)
+        preparedStatement.setString(11, model.manufacturer.name)
+        preparedStatement.setString(12, model.imageUrl)
+        preparedStatement.setString(13, model.family)
+        preparedStatement.setInt(14, model.runwayRequirement)
         preparedStatement.executeUpdate()
     }
     preparedStatement.close()
@@ -139,25 +141,26 @@ object ModelSource {
   def saveModels(models : List[Model]) = {
     val connection = Meta.getConnection()
         
-        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_MODEL_TABLE + "(name, capacity, quality, fuel_burn, speed, fly_range, price, lifespan, construction_time, country_code, manufacturer, image_url, family, runway_requirement) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPLANE_MODEL_TABLE + "(name, capacity, max_seats, quality, fuel_burn, speed, fly_range, price, lifespan, construction_time, country_code, manufacturer, image_url, family, runway_requirement) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
 
         connection.setAutoCommit(false)
         models.foreach { 
           model =>
             preparedStatement.setString(1, model.name)
             preparedStatement.setInt(2, model.capacity)
-            preparedStatement.setInt(3, (model.quality).toInt)
-            preparedStatement.setInt(4, model.fuelBurn)
-            preparedStatement.setInt(5, model.speed)
-            preparedStatement.setInt(6, model.range)
-            preparedStatement.setInt(7, model.price)
-            preparedStatement.setInt(8, model.lifespan)
-            preparedStatement.setInt(9, model.constructionTime)
-            preparedStatement.setString(10, model.manufacturer.countryCode)
-            preparedStatement.setString(11, model.manufacturer.name)
-            preparedStatement.setString(12, model.imageUrl)
-            preparedStatement.setString(13, model.family)
-            preparedStatement.setInt(14, model.runwayRequirement)
+            preparedStatement.setInt(3, model.maxSeats)
+            preparedStatement.setInt(4, (model.quality).toInt)
+            preparedStatement.setInt(5, model.fuelBurn)
+            preparedStatement.setInt(6, model.speed)
+            preparedStatement.setInt(7, model.range)
+            preparedStatement.setInt(8, model.price)
+            preparedStatement.setInt(9, model.lifespan)
+            preparedStatement.setInt(10, model.constructionTime)
+            preparedStatement.setString(11, model.manufacturer.countryCode)
+            preparedStatement.setString(12, model.manufacturer.name)
+            preparedStatement.setString(13, model.imageUrl)
+            preparedStatement.setString(14, model.family)
+            preparedStatement.setInt(15, model.runwayRequirement)
             preparedStatement.executeUpdate()
         }
         preparedStatement.close()

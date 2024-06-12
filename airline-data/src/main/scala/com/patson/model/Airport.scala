@@ -404,32 +404,31 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   def slotFee(airplaneModel : Model, airline : Airline) : Int = {
     val baseSlotFee = size match {
-      case 1 => 1 //small airport
-      case 2 => 2
+      case 1 => 2 //small airport
+      case 2 => 4
       case 3 => 8
-      case 4 => 32
-      case 5 => 64
-      case 6 => 128
-      case 7 => 256
-      case _ => 512 //mega
+      case 4 => 16
+      case 5 => 32
+      case 6 => 64
+      case 7 => 128
+      case _ => 256 //mega
     }
 
     import Model.Type._
     val multiplier = airplaneModel.airplaneType match {
-      case LIGHT => 2
-      case SMALL => 2
       case REGIONAL => 3
       case MEDIUM => 6
       case LARGE => 12
       case X_LARGE => 24
       case JUMBO => 36
-      case SUPERSONIC => 16
+      case SUPERSONIC => 18
+      case _ => 2
     }
 
     //apply discount if it's a base
     val discount = getAirlineBase(airline.id) match {
       case Some(airlineBase) =>
-        if (airlineBase.headquarter) 0.7 else 0.9 //headquarter 30% off, base 10% off
+        if (airlineBase.headquarter) 0.8 else 0.9 //headquarter 20% off, base 10% off
       case None =>
         1 //no discount
     }
@@ -468,10 +467,10 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     size match {
       case 1 => 200
       case 2 => 200
-      case 6 => 275
-      case 7 => 300
-      case n if (n >= 8) => 350
-      case _ => 225
+      case 6 => 280
+      case 7 => 320
+      case n if (n >= 8) => 360
+      case _ => 240
     }
   }
 
@@ -543,7 +542,7 @@ object Airport {
   }
 
   val MAJOR_AIRPORT_LOWER_THRESHOLD = 5
-  val MIN_RUNWAY_LENGTH = 750
+  val MIN_RUNWAY_LENGTH = 10
 
   import FlightType._
   val qualityExpectationFlightTypeAdjust =

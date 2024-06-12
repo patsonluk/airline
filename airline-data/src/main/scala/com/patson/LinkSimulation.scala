@@ -20,7 +20,8 @@ object LinkSimulation {
 
 
   private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
-  private val CREW_UNIT_COST = 16 //for now...
+  val CREW_UNIT_COST = 12
+  val CREW_BASE_COST = 600
 
 
   def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], immutable.Map[(PassengerGroup, Airport, Route), Int], List[AirlineStat]) = {
@@ -205,16 +206,20 @@ object LinkSimulation {
 
   def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int, allAirplaneAssignments : immutable.Map[Int, LinkAssignments], passengerCostEntries : List[PassengerCost]) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
     val flightLink = link.asInstanceOf[Link]
-    val loadFactor = flightLink.getTotalSoldSeats.toDouble / flightLink.getTotalCapacity
 
     val fuelCost = flightLink.getAssignedModel() match {
       case Some(model) =>
-        (if (flightLink.duration <= 90) {
-          val ascendTime, descendTime = (flightLink.duration / 2)
-          (model.fuelBurn * 10 * ascendTime + model.fuelBurn * descendTime) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount)
+        val distanceFactor = 0.8 + flightLink.duration.toDouble / 60.0 * 0.11
+        val loadFactor = 0.6 + 0.4 * flightLink.getTotalSoldSeats.toDouble / flightLink.getTotalCapacity
+        val ascendTime = if (model.airplaneType == com.patson.model.airplane.Model.Type.PROPELLER) {
+          18
+        } else if (model.airplaneType == com.patson.model.airplane.Model.Type.HELICOPTER) {
+          0
         } else {
-          (model.fuelBurn * 10 * 45 + model.fuelBurn * (flightLink.duration - 45)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) //first 45 minutes huge burn, then cruising at 1/10 the cost
-        } * (0.7 + 0.3 * loadFactor)).toInt //at 0 LF, 70% fuel cost
+          Math.min(60, flightLink.duration.toDouble / 3 * 2)
+        }
+
+        ((ascendTime * model.fuelBurn * 2.5 + (flightLink.duration - ascendTime) * model.fuelBurn) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) * (0.5 + 0.5 * loadFactor) * distanceFactor).toInt
       case None => 0
     }
 
@@ -255,14 +260,14 @@ object LinkSimulation {
     }
 
     val targetQualityCost = Math.pow(flightLink.airline.getTargetServiceQuality().toDouble / 40, 2.5)
-    var crewCost = 1500 + (CREW_UNIT_COST * flightLink.getTotalCapacity * flightLink.duration / 60).toInt //baseline
+    var crewCost = CREW_BASE_COST
     var inflightCost, revenue = 0
     LinkClass.values.foreach { linkClass =>
       val capacity = flightLink.capacity(linkClass)
       val soldSeats = flightLink.soldSeats(linkClass)
 
       inflightCost += computeInflightCost(linkClass.resourceMultiplier, flightLink, soldSeats)
-      crewCost += (targetQualityCost * capacity * linkClass.resourceMultiplier * flightLink.duration / 30).toInt
+      crewCost += (targetQualityCost * capacity * linkClass.resourceMultiplier * flightLink.duration / 60 * CREW_UNIT_COST).toInt
       revenue += soldSeats * flightLink.price(linkClass)
     }
 
@@ -322,8 +327,8 @@ object LinkSimulation {
   val computeInflightCost = (classMultiplier : Double, link : Link, soldSeats : Int) => {
     val star = link.rawQuality / 20
     val durationCostPerHour =
-      if (star <= 1) {
-        0
+      if (star == 1) {
+        -1 //selling food & credit cards :)
       } else if (star == 2) {
         1
       } else if (star == 3) {
@@ -331,7 +336,7 @@ object LinkSimulation {
       } else if (star == 4) {
         6
       } else {
-        10
+        9
       }
 
     val costPerPassenger = classMultiplier * durationCostPerHour * link.duration.toDouble / 60

@@ -677,7 +677,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         val availableModelsAndCustoms = if (FlightType.getCategory(flightType) == FlightCategory.INTERNATIONAL && fromAirport.isDomesticAirport() || FlightType.getCategory(flightType) == FlightCategory.INTERNATIONAL && toAirport.isDomesticAirport()) {
           import Model.Category._
-          availableModels.filter(_.category == LIGHT)
+          availableModels.filter(_.capacity <= 115)
         } else {
           availableModels
         }
@@ -776,8 +776,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 //        }
 
 
-        val fromDemand = DemandGenerator.computeBaseDemandBetweenAirports(fromAirport, toAirport, affinity, relationship, distance)
-        val toDemand = DemandGenerator.computeBaseDemandBetweenAirports(toAirport, fromAirport, affinity, relationship, distance)
+        val fromDemand = DemandGenerator.computeDemandBetweenAirports(fromAirport, toAirport, affinity, relationship, distance)
+        val toDemand = DemandGenerator.computeDemandBetweenAirports(toAirport, fromAirport, affinity, relationship, distance)
 
         val directFromAirportTravelerDemand = fromDemand.travelerDemand
         val directToAirportTravelerDemand = toDemand.travelerDemand
@@ -950,8 +950,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
         //check distance
         val distance = Computation.calculateDistance(fromAirport, toAirport)
-        if (distance <= DemandGenerator.MIN_DISTANCE) {
-          return Some("Route must be longer than " + DemandGenerator.MIN_DISTANCE + " km", DISTANCE)
+        if (distance <= 15) {
+          return Some("Route must be longer than 15 km", DISTANCE)
         }
 
         //check balance

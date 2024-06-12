@@ -614,17 +614,6 @@ object AirlineSimulation {
     (totalLoanPayment, totalLoanInterest)
   }
 
-  //a.k.a. labor quality
-  def getServiceFunding(targetQuality: Int, links: List[Link]): Long = {
-    val totalPassengerDurationCapacity = links.map { link => link.frequency * link.getAssignedModel().fold(0L)(_.capacity.toLong) * link.duration }.sum
-    getServiceFunding(targetQuality, totalPassengerDurationCapacity)
-  }
-
-  val getServiceFunding: (Int, Long) => Long = (targetQuality: Int, totalPassengerDurationCapacity: Long) => {
-    val funding = Math.pow(targetQuality.toDouble / 40, 2.5) * (totalPassengerDurationCapacity / 13)
-    funding.toLong
-  }
-  
   val getNewQuality : (Double, Double) => Double = (currentQuality, targetQuality) =>  {
     val delta = targetQuality - currentQuality
     val adjustment = 

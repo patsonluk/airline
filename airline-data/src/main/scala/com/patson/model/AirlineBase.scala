@@ -17,11 +17,11 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     }
   }
 
-  val COST_EXPONENTIAL_BASE = 1.7
+  val COST_EXPONENTIAL_BASE = 1.68
 
   lazy val getUpkeep : Long = {
     val adjustedScale = if (scale == 0) 1 else scale //for non-existing base, calculate as if the base is 1
-    var baseUpkeep = (5000 + airport.rating.overallRating * 150).toLong
+    var baseUpkeep = (3000 + airport.rating.overallRating * 150).toLong
 
     (baseUpkeep * airportTypeMultiplier * airportSizeRatio * Math.pow(COST_EXPONENTIAL_BASE, adjustedScale - 1)).toInt
   }

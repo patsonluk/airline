@@ -114,6 +114,8 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 	$.each(loadedModelsOwnerInfo, function(index, modelOwnerInfo) {
 		var row = $("<div class='table-row clickable' data-model-id='" + modelOwnerInfo.id + "' onclick='selectAirplaneModel(loadedModelsById[" + modelOwnerInfo.id + "])'></div>")
 		var stars = $("<div class='cell' align='right'>").append(getGradeStarsImgs(modelOwnerInfo.quality * 2)).append("</div>")
+		var capacity = modelOwnerInfo.capacity === modelOwnerInfo.maxSeats ? modelOwnerInfo.capacity : modelOwnerInfo.capacity + "<br><i class='text-hint'>" + modelOwnerInfo.maxSeats + "</i>";
+
 		if (modelOwnerInfo.isFavorite) {
 		    row.append("<div class='cell'>" + modelOwnerInfo.name + "<img src='assets/images/icons/heart.png' height='10px'></div>")
         } else {
@@ -121,7 +123,7 @@ function updateAirplaneModelTable(sortProperty, sortOrder) {
 		}
 		row.append("<div class='cell'>" + modelOwnerInfo.family + "</div>")
 		row.append("<div class='cell' align='right'>$" + commaSeparateNumber(modelOwnerInfo.price) + "</div>")
-		row.append("<div class='cell' align='right'>" + modelOwnerInfo.capacity + "</div>")
+		row.append("<div class='cell' align='right'>" + capacity + "</div>")
 		row.append(stars)
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.range + " km</div>")
 		row.append("<div class='cell' align='right'>" + modelOwnerInfo.fuelPerPax + "</div>")
@@ -518,6 +520,7 @@ function updateModelInfo(modelId) {
 	$('#airplaneModelDetails #modelName').text(model.name)
 	$('#airplaneModelDetails .modelFamily').text(model.family)
 	$('#airplaneModelDetails #capacity').text(model.capacity)
+	$('#airplaneModelDetails #maxCapacity').text(model.maxCapacity)
 	$('#airplaneModelDetails #airplaneTypeQuality').empty()
 	$('#airplaneModelDetails #airplaneTypeQuality').append($stars)
 	$('#airplaneModelDetails #airplaneType').text(model.airplaneType)
@@ -1419,7 +1422,7 @@ function populatePreferredSuppliers() {
             $.each(result, function(category, info) {
                 var $categorySection = $container.find('.' + category)
                 if ($categorySection.length > 0) { //Super sonic has no section for now...
-                    $categorySection.find('.capacityRange').text(info.minCapacity + " - " + info.maxCapacity)
+                    $categorySection.find('.capacityRange').text(info.minCapacity + " - " + info.maxCapacity + " capacity; " + info.minSpeed + " - " + info.maxSpeed + "kph")
                     var $supplierList = $categorySection.find('.supplierList')
                     var $discount =  $categorySection.find('.discount')
                     $supplierList.empty()

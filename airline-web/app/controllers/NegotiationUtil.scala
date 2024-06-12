@@ -215,7 +215,7 @@ object NegotiationUtil {
 
     newLink.to.getFeatures().find(_.featureType == AirportFeatureType.GATEWAY_AIRPORT) match {
       case Some(_) =>
-        val gatewayCost = 1.0
+        val gatewayCost = 0.75
         requirements.append(NegotiationRequirement(GATEWAY, gatewayCost, "Tough Gateway Airport Negotiation"))
       case None =>
     }

@@ -60,6 +60,8 @@ class AirplaneConfigurationApplication @Inject()(cc: ControllerComponents) exten
         case Some(model) =>
           if (economy * ECONOMY.spaceMultiplier + business * BUSINESS.spaceMultiplier + first * FIRST.spaceMultiplier > model.capacity) {
             BadRequest("configuration is not within capacity limit!")
+          } else if (economy + business + first > model.maxSeats) {
+            BadRequest("configuration has too many seats for this model!")
           } else {
             val existingConfigurations: Map[Int, AirplaneConfiguration] = AirplaneSource.loadAirplaneConfigurationsByCriteria(List(("airline", airlineId), ("model", modelId))).map(config => (config.id, config)).toMap
             if (configurationId == 0) { // new config, check if there's still space

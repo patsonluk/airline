@@ -233,8 +233,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   }
   
   def getRejection(model: Model, quantity : Int, relationship : AirlineCountryRelationship, ownedModels : Set[Model], airline : Airline) : Option[String]= {
-    if (quantity > 10) {
-      return Some("Cannot order more than 10 planes in one order")
+    if (quantity > 12) {
+      return Some("Cannot order more than 12 planes in one order")
     }
 
     if (airline.getHeadQuarter().isEmpty) { //no HQ
@@ -741,7 +741,8 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         val categoryDiscount = supplierDiscountInfo(category)
         categoryInfoJson = categoryInfoJson + ("discount" -> JsString(categoryDiscount.description))
         val (minCapacity, maxCapacity) = Category.getCapacityRange(category)
-        categoryInfoJson = categoryInfoJson + ("minCapacity" -> JsNumber(minCapacity)) + ("maxCapacity" -> JsNumber(maxCapacity))
+        val (minSpeed, maxSpeed) = Category.getSpeedRange(category)
+        categoryInfoJson = categoryInfoJson + ("minCapacity" -> JsNumber(minCapacity)) + ("maxCapacity" -> JsNumber(maxCapacity)) + ("minSpeed" -> JsNumber(minSpeed)) + ("maxSpeed" -> JsNumber(maxSpeed))
 
         categoryJson = categoryJson + (category.toString -> categoryInfoJson)
     }
