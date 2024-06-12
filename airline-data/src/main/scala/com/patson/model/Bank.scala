@@ -64,7 +64,7 @@ object Bank {
   }
 
   def getLoanOptions(principal : Long, annualRate : BigDecimal, currentCycle : Int) = {
-      val rateIncrementPerYear = 0.005 //0.5% more every extra year
+      val rateIncrementPerYear = 0.004 //0.5% more every extra year
       LOAN_TERMS.map { term =>
         //Payment = P x (r / n) x (1 + r / n)^n(t)] / ((1 + r / n)^n(t) - 1)
         val years = term / WEEKS_PER_YEAR
