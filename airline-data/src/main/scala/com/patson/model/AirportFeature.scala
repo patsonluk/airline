@@ -233,20 +233,22 @@ sealed case class IsolatedTownFeature(strength : Int) extends AirportFeature {
   import IsolatedTownFeature._
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, affinity : Int, distance : Int) : Int = {
     val mod = if (distance <= boostRange && affinity >= 3) {
+      val affinityMod = if(affinity > 5) 12 else 0
       if (rawDemand < 0.01) { //up to 29
-        4 + rawDemand / 0.01 * 25
+        affinityMod + 4 + rawDemand / 0.01 * 25
       } else if (rawDemand <= 0.1) { //up to 59
-        29 + rawDemand / 0.1 * 30
+        affinityMod + 29 + rawDemand / 0.1 * 30
       } else if (rawDemand <= 100) { //up to 100
-        59 + rawDemand * 0.1
+        affinityMod + 59 + rawDemand * 0.1
       } else {
-        100
+        affinityMod + 100
       }
     } else if (toAirport.isGateway() && affinity >= 3){
       rawDemand * 0.05
     } else {
       0
     }
+
     mod.toInt
   }
 }
