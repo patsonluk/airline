@@ -20,7 +20,7 @@ object LinkSimulation {
 
 
   private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
-  val CREW_UNIT_COST = 12
+  val CREW_UNIT_COST = 9
   val CREW_BASE_COST = 600
 
 

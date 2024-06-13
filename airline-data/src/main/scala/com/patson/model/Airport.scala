@@ -10,8 +10,8 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._
-
 import AirportFeatureType._
+import com.patson.model.airplane.Model.Type.HELICOPTER
 
 case class Airport(iata : String, icao : String, name : String, latitude : Double, longitude : Double, countryCode : String, city : String, zone : String, var size : Int, baseIncome : Int, basePopulation : Long, popMiddleIncome : Int, popElite : Int, var runwayLength : Int = Airport.MIN_RUNWAY_LENGTH, var id : Int = 0) extends IdObject {
   var shouldLoadCities = false
@@ -403,25 +403,28 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   }
 
   def slotFee(airplaneModel : Model, airline : Airline) : Int = {
-    val baseSlotFee = size match {
-      case 1 => 2 //small airport
-      case 2 => 4
-      case 3 => 8
-      case 4 => 16
-      case 5 => 32
-      case 6 => 64
-      case 7 => 128
-      case _ => 256 //mega
+    val baseSlotFee = if (airplaneModel.airplaneType == HELICOPTER) {
+      32
+    } else {
+      size match {
+        case 1 => 2 //small airport
+        case 2 => 4
+        case 3 => 8
+        case 4 => 16
+        case 5 => 32
+        case 6 => 64
+        case 7 => 128
+        case _ => 256 //mega
+      }
     }
 
     import Model.Type._
     val multiplier = airplaneModel.airplaneType match {
-      case REGIONAL => 3
-      case MEDIUM => 6
-      case LARGE => 12
-      case X_LARGE => 24
-      case JUMBO => 36
-      case SUPERSONIC => 18
+      case MEDIUM => 5
+      case LARGE => 10
+      case X_LARGE => 18
+      case JUMBO => 24
+      case SUPERSONIC => 12
       case _ => 2
     }
 
