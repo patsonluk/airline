@@ -153,7 +153,18 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
                             specializationList.append($('<img src="assets/images/icons/specialization/' + specialization.id + '.png" title="' + specialization.label + '" style="vertical-align: middle;">'))
                         })
                     }
-                    document.getElementById('airportBaseDetailsHeading').innerHTML = `${activeAirline.name} ${baseType} <small class='text-underline'>Scale ${airportBase.scale}</small>${specializationList}`
+                    const smallTextUnderLine = document.createElement("small")
+                    smallTextUnderLine.classList.add('text-underline',"pl-2")
+                    smallTextUnderLine.innerText = `Scale ${airportBase.scale}`;
+
+                    const airportBaseDetailsHeadingELM = document.getElementById('airportBaseDetailsHeading')
+                    airportBaseDetailsHeadingELM.innerText = `${activeAirline.name} ${baseType}`
+                    airportBaseDetailsHeadingELM.appendChild(smallTextUnderLine)
+                    if (specializationList) {
+                        const specializationListELM = document.createElement('span');
+                        specializationListELM.innerHTML = specializationList;
+                        airportBaseDetailsHeadingELM.appendChild(specializationListELM);
+                    }
 
 	    			if (airportBase.delegatesRequired == 0) {
 	    			    $('#airportDetailsBaseDelegatesRequired').text('None')
