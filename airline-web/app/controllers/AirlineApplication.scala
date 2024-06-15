@@ -797,7 +797,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           crewCost += LinkSimulation.CREW_BASE_COST
           LinkClass.values.foreach { linkClass =>
             val capacity = flightLink.capacity(linkClass)
-            crewCost += (targetQualityCost * capacity * linkClass.resourceMultiplier * flightLink.duration / 60 * LinkSimulation.CREW_UNIT_COST).toInt
+            crewCost += (targetQualityCost * capacity * linkClass.resourceMultiplier * flightLink.duration / 60).toInt + (LinkSimulation.CREW_UNIT_COST * capacity * linkClass.resourceMultiplier * flightLink.duration / 60).toInt
           }
         }
     }

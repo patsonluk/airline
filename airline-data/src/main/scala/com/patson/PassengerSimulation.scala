@@ -667,14 +667,14 @@ object PassengerSimulation {
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
               connectionCost = 12
             } else {
-              connectionCost += 10 //base cost for connection
+              connectionCost += 15 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
               val frequency = Math.max(predecessorLink.frequencyByClass(predecessorLinkConsideration.linkClass), linkConsideration.link.frequencyByClass(linkConsideration.linkClass))
               //if the bigger of the 2 is less than 21, impose extra layover time (if either one is frequent enough, then consider that as ok)
               if (frequency < 7) {
-                connectionCost += (7 * 24 * 6) / frequency //possible overnight connection
+                connectionCost += (7 * 24 * 4.5) / frequency //possible overnight connection
               } else if (frequency < 28) {
-                connectionCost += (7 * 24 * 3) / frequency //$18 per hour wait
+                connectionCost += (7 * 24 * 2.5) / frequency //$2.50 per hour wait; $15.5
               }
 
               if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost

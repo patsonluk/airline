@@ -209,17 +209,18 @@ object LinkSimulation {
 
     val fuelCost = flightLink.getAssignedModel() match {
       case Some(model) =>
-        val distanceFactor = 0.8 + flightLink.duration.toDouble / 60.0 * 0.11
+        val distanceFactor = 0.5 + 0.012 * Math.pow(flightLink.duration.toDouble / 60, 2)
         val loadFactor = 0.6 + 0.4 * flightLink.getTotalSoldSeats.toDouble / flightLink.getTotalCapacity
         val ascendTime = if (model.airplaneType == com.patson.model.airplane.Model.Type.PROPELLER) {
           18
         } else if (model.airplaneType == com.patson.model.airplane.Model.Type.HELICOPTER) {
           0
         } else {
-          Math.min(60, flightLink.duration.toDouble / 3 * 2)
+          Math.min(50, flightLink.duration.toDouble / 3 * 2)
         }
+        val fuelBurn = ascendTime * model.fuelBurn * 5 + (flightLink.duration - ascendTime) * model.fuelBurn
 
-        ((ascendTime * model.fuelBurn * 2.5 + (flightLink.duration - ascendTime) * model.fuelBurn) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) * (0.5 + 0.5 * loadFactor) * distanceFactor).toInt
+        (fuelBurn * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) * loadFactor * distanceFactor).toInt
       case None => 0
     }
 
@@ -267,7 +268,7 @@ object LinkSimulation {
       val soldSeats = flightLink.soldSeats(linkClass)
 
       inflightCost += computeInflightCost(linkClass.resourceMultiplier, flightLink, soldSeats)
-      crewCost += (targetQualityCost * capacity * linkClass.resourceMultiplier * flightLink.duration / 60 * CREW_UNIT_COST).toInt
+      crewCost += (targetQualityCost * capacity * linkClass.resourceMultiplier * flightLink.duration / 60).toInt + (CREW_UNIT_COST * capacity * linkClass.resourceMultiplier * flightLink.duration / 60).toInt
       revenue += soldSeats * flightLink.price(linkClass)
     }
 
@@ -328,15 +329,15 @@ object LinkSimulation {
     val star = link.rawQuality / 20
     val durationCostPerHour =
       if (star == 1) {
-        -1 //selling food & credit cards :)
+        -2 //selling food & credit cards :)
       } else if (star == 2) {
         1
       } else if (star == 3) {
-        3
+        2
       } else if (star == 4) {
-        6
+        5
       } else {
-        9
+        10
       }
 
     val costPerPassenger = classMultiplier * durationCostPerHour * link.duration.toDouble / 60
