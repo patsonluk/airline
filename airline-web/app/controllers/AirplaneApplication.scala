@@ -597,7 +597,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
                   AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BUY_AIRPLANE, amount))
 
                   if (originalModel.price != model.price) { //if discounted, count as capital gain
-                    AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = originalModel.price - model.price))
+                    AirlineSource.saveTransaction(AirlineTransaction(airlineId = airline.id, transactionType = TransactionType.CAPITAL_GAIN, amount = (originalModel.price - model.price) * updateCount))
                   }
                   Accepted(Json.obj("updateCount" -> updateCount))
                 } else {
