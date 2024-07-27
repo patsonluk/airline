@@ -3,6 +3,8 @@ var loadedModelsOwnerInfo = []
 var loadedUsedAirplanes = []
 var selectedModelId
 var selectedModel
+var closedAirplaneModals = []
+var currentAirplaneLoadCall
 
 function loadAirplaneModels() {
 	loadedModelsById = {}
@@ -1086,6 +1088,10 @@ function onAirplaneDragStart(event, airplaneId, isAssigned) {
   }
 }
 
+function closeAllAndStoreAirplaneModals() {
+    closedAirplaneModals = closeAllModals() //in case we want to restore the modals when clicking "back" button
+}
+
 function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disableChangeHome) {
 	//highlight the selected model
 //	if (selectedItem) {
@@ -1110,157 +1116,159 @@ function loadOwnedAirplaneDetails(airplaneId, selectedItem, closeCallback, disab
         }
     });
 
-
-	$.ajax({
-		type: 'GET',
-		url: "airlines/" + airlineId + "/airplanes/" + airplaneId,
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(airplane) {
-	        var model = loadedModelsById[airplane.modelId]
-            if (model.imageUrl) {
-                var imageLocation = 'assets/images/airplanes/' + model.name.replace(/\s+/g, '-').toLowerCase() + '.png'
-                $('#ownedAirplaneDetail .modelIllustration img').attr('src', imageLocation)
-                $('#ownedAirplaneDetail .modelIllustration a').attr('href', model.imageUrl)
-                $('#ownedAirplaneDetail .modelIllustration').show()
-            } else {
-                $('#ownedAirplaneDetail .modelIllustration').hide()
-            }
-
-	    	$("#airplaneDetailsId").text(airplane.id)
-    		$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
-    		$("#airplaneDetailsCondition").removeClass("warning fatal")
-    		if (airplane.condition < airplane.criticalConditionThreshold) {
-    			$("#airplaneDetailsCondition").addClass("fatal")
-    		} else if (airplane.condition < airplane.badConditionThreshold) {
-    			$("#airplaneDetailsCondition").addClass("warning")
-    		}
-    		var age = currentCycle - airplane.constructedCycle
-
-    		if (age >= 0) {
-    			$("#airplaneDetailsAge").text(getYearMonthText(age))
-    			$("#airplaneDetailsAgeRow").show()
-    			$("#airplaneDetailsDeliveryRow").hide()
-    		} else {
-    			$("#airplaneDetailsDelivery").text(age * -1 + "week(s)")
-    			$("#airplaneDetailsAgeRow").hide()
-    			$("#airplaneDetailsDeliveryRow").show()
-    		}
-	    	$("#airplaneDetailsSellValue").text("$" + commaSeparateNumber(airplane.sellValue))
-	    	var replaceCost = model.price - airplane.sellValue
-            $("#airplaneDetailsReplaceCost").text("$" + commaSeparateNumber(replaceCost))
-	    	$("#airplaneDetailsLink").empty()
-	    	if (airplane.links.length > 0) {
-	    	    $.each(airplane.links, function(index, linkEntry) {
-	    	        var link = linkEntry.link
-	    	        var linkDescription = "<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "<img src='assets/images/icons/arrow.png'>" + getAirportText(link.toAirportCity, link.toAirportCode) + " " + linkEntry.frequency + " flight(s) per week</div>"
-	    	        $("#airplaneDetailsLink").append("<div><a href='javascript:void(0)' onclick='closeAllModals(); showWorldMap(); selectLinkFromMap(" + link.id + ", true)'>" + linkDescription + "</a></div>" )
-	    	    })
-	    		disableButton("#sellAirplaneButton", "Cannot sell airplanes with route assigned")
-	    	} else {
-	    		$("#airplaneDetailsLink").text("-")
-	    		if (age >= 0) {
-	    		    enableButton("#sellAirplaneButton")
-	    		} else {
-	    			disableButton("#sellAirplaneButton", "Cannot sell airplanes that are still under construction")
-	    		}
-
-	    	}
-	    	$("#ownedAirplaneDetail .availableFlightMinutes").text(airplane.availableFlightMinutes)
-	    	populateAirplaneHome(airplane, disableChangeHome)
-
-            var weeksRemainingBeforeReplacement = airplane.constructionTime - (currentCycle - airplane.purchasedCycle)
-	    	if (weeksRemainingBeforeReplacement <= 0) {
-	    	    if (activeAirline.balance < replaceCost) {
-            	    disableButton("#replaceAirplaneButton", "Not enough cash to replace this airplane")
-            	} else {
-	    	        enableButton("#replaceAirplaneButton")
+    currentAirplaneLoadCall =
+    {
+    		type: 'GET',
+    		url: "airlines/" + airlineId + "/airplanes/" + airplaneId,
+    	    contentType: 'application/json; charset=utf-8',
+    	    dataType: 'json',
+    	    success: function(airplane) {
+    	        var model = loadedModelsById[airplane.modelId]
+                if (model.imageUrl) {
+                    var imageLocation = 'assets/images/airplanes/' + model.name.replace(/\s+/g, '-').toLowerCase() + '.png'
+                    $('#ownedAirplaneDetail .modelIllustration img').attr('src', imageLocation)
+                    $('#ownedAirplaneDetail .modelIllustration a').attr('href', model.imageUrl)
+                    $('#ownedAirplaneDetail .modelIllustration').show()
+                } else {
+                    $('#ownedAirplaneDetail .modelIllustration').hide()
                 }
-	    	} else {
-                disableButton("#replaceAirplaneButton", "Can only replace this airplane " + weeksRemainingBeforeReplacement + " week(s) from now")
-	    	}
 
-	    	$("#ownedAirplaneDetail").data("airplane", airplane)
+    	    	$("#airplaneDetailsId").text(airplane.id)
+        		$("#airplaneDetailsCondition").text(airplane.condition.toFixed(2) + "%")
+        		$("#airplaneDetailsCondition").removeClass("warning fatal")
+        		if (airplane.condition < airplane.criticalConditionThreshold) {
+        			$("#airplaneDetailsCondition").addClass("fatal")
+        		} else if (airplane.condition < airplane.badConditionThreshold) {
+        			$("#airplaneDetailsCondition").addClass("warning")
+        		}
+        		var age = currentCycle - airplane.constructedCycle
 
-            $.ajax({
-                type: 'GET',
-                url: "airlines/" + airlineId + "/configurations?modelId=" + airplane.modelId,
-                contentType: 'application/json; charset=utf-8',
-                dataType: 'json',
-                success: function(result) {
-                    var configuration
-                    var matchingIndex
-                    $.each(result.configurations, function(index, option) {
-                        if (option.id == airplane.configurationId) {
-                            configuration = option
-                            matchingIndex = index
-                        }
-                    })
+        		if (age >= 0) {
+        			$("#airplaneDetailsAge").text(getYearMonthText(age))
+        			$("#airplaneDetailsAgeRow").show()
+        			$("#airplaneDetailsDeliveryRow").hide()
+        		} else {
+        			$("#airplaneDetailsDelivery").text(age * -1 + "week(s)")
+        			$("#airplaneDetailsAgeRow").hide()
+        			$("#airplaneDetailsDeliveryRow").show()
+        		}
+    	    	$("#airplaneDetailsSellValue").text("$" + commaSeparateNumber(airplane.sellValue))
+    	    	var replaceCost = model.price - airplane.sellValue
+                $("#airplaneDetailsReplaceCost").text("$" + commaSeparateNumber(replaceCost))
+    	    	$("#airplaneDetailsLink").empty()
+    	    	if (airplane.links.length > 0) {
+    	    	    $.each(airplane.links, function(index, linkEntry) {
+    	    	        var link = linkEntry.link
+    	    	        var linkDescription = "<div style='display: flex; align-items: center;'>" + getAirportText(link.fromAirportCity, link.fromAirportCode) + "<img src='assets/images/icons/arrow.png'>" + getAirportText(link.toAirportCity, link.toAirportCode) + " " + linkEntry.frequency + " flight(s) per week</div>"
+    	    	        $("#airplaneDetailsLink").append("<div><a data-link='show-link-from-airplane' href='javascript:void(0)' onclick='closeAllAndStoreAirplaneModals(); showWorldMap(); selectLinkFromMap(" + link.id + ", true)'>" + linkDescription + "</a></div>" )
+    	    	        populateNavigation($("#airplaneDetailsLink"))
+    	    	    })
+    	    		disableButton("#sellAirplaneButton", "Cannot sell airplanes with route assigned")
+    	    	} else {
+    	    		$("#airplaneDetailsLink").text("-")
+    	    		if (age >= 0) {
+    	    		    enableButton("#sellAirplaneButton")
+    	    		} else {
+    	    			disableButton("#sellAirplaneButton", "Cannot sell airplanes that are still under construction")
+    	    		}
 
-                    //just in case, sometimes it comes to a stale state
-                    if (configuration == null && result.configurations) {
-                        configuration = result.configurations[0]
-                        matchingIndex = 0
+    	    	}
+    	    	$("#ownedAirplaneDetail .availableFlightMinutes").text(airplane.availableFlightMinutes)
+    	    	populateAirplaneHome(airplane, disableChangeHome)
+
+                var weeksRemainingBeforeReplacement = airplane.constructionTime - (currentCycle - airplane.purchasedCycle)
+    	    	if (weeksRemainingBeforeReplacement <= 0) {
+    	    	    if (activeAirline.balance < replaceCost) {
+                	    disableButton("#replaceAirplaneButton", "Not enough cash to replace this airplane")
+                	} else {
+    	    	        enableButton("#replaceAirplaneButton")
                     }
+    	    	} else {
+                    disableButton("#replaceAirplaneButton", "Can only replace this airplane " + weeksRemainingBeforeReplacement + " week(s) from now")
+    	    	}
 
-                    plotSeatConfigurationBar($('#ownedAirplaneDetailModal .configurationBar'), configuration, airplane.capacity, result.spaceMultipliers)
+    	    	$("#ownedAirplaneDetail").data("airplane", airplane)
 
-                    if (result.configurations.length <= 1) { //then cannot change
-                        $("#ownedAirplaneDetail .configuration-view .edit").hide()
-                        $("#ownedAirplaneDetail .configuration-view .editDisabled").show()
-                    } else {
-                        $("#ownedAirplaneDetail .configuration-view .show").hide()
-
-                        //populateConfigurationOptionsFunction = function() { //delay this as the div is not visible and fusionchart would not render it
-                            $("#ownedAirplaneDetail .configuration-options").empty()
-                            $("#ownedAirplaneDetail .configuration-options").data("selectedIndex", 0)
-                            $("#ownedAirplaneDetail .configuration-options").data("optionCount", result.configurations.length)
-                            for (i = 0 ; i < result.configurations.length; i ++) {
-                                //start from the matching one
-                                var index = (i + matchingIndex) % result.configurations.length
-                                var option = result.configurations[index]
-                                var barDiv = $("<div style='width : 100%' class='configuration-option'></div>")
-                                $("#ownedAirplaneDetail .configuration-options").append(barDiv)
-                                barDiv.data("configurationId", option.id)
-                                if (i != 0) { //if not the matching one, hide by default
-                                    barDiv.hide()
-                                }
-                                plotSeatConfigurationBar(barDiv, option, airplane.capacity, result.spaceMultipliers)
-                            }
-                        //}
-                        $("#ownedAirplaneDetail .configuration-view .edit").show()
-                        $("#ownedAirplaneDetail .configuration-view .editDisabled").hide()
-                    }
-                    $("#ownedAirplaneDetail .configuration-view").show()
-                    $("#ownedAirplaneDetail .configuration-edit").hide()
-
-                    if (closeCallback) {
-                        $("#ownedAirplaneDetailModal").data("closeCallback", function() {
-                            if ($("#ownedAirplaneDetailModal").data("hasChange")) { //only trigger close callback if there are changes
-                                closeCallback()
-                                $("#ownedAirplaneDetailModal").removeData("hasChange")
+                $.ajax({
+                    type: 'GET',
+                    url: "airlines/" + airlineId + "/configurations?modelId=" + airplane.modelId,
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(result) {
+                        var configuration
+                        var matchingIndex
+                        $.each(result.configurations, function(index, option) {
+                            if (option.id == airplane.configurationId) {
+                                configuration = option
+                                matchingIndex = index
                             }
                         })
-                    } else {
-                        $("#ownedAirplaneDetailModal").removeData("closeCallback")
-                    }
-                    $("#ownedAirplaneDetailModal").fadeIn(200)
-                },
-                 error: function(jqXHR, textStatus, errorThrown) {
-                	            console.log(JSON.stringify(jqXHR));
-                	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-                	    }
-            });
+
+                        //just in case, sometimes it comes to a stale state
+                        if (configuration == null && result.configurations) {
+                            configuration = result.configurations[0]
+                            matchingIndex = 0
+                        }
+
+                        plotSeatConfigurationBar($('#ownedAirplaneDetailModal .configurationBar'), configuration, airplane.capacity, result.spaceMultipliers)
+
+                        if (result.configurations.length <= 1) { //then cannot change
+                            $("#ownedAirplaneDetail .configuration-view .edit").hide()
+                            $("#ownedAirplaneDetail .configuration-view .editDisabled").show()
+                        } else {
+                            $("#ownedAirplaneDetail .configuration-view .show").hide()
+
+                            //populateConfigurationOptionsFunction = function() { //delay this as the div is not visible and fusionchart would not render it
+                                $("#ownedAirplaneDetail .configuration-options").empty()
+                                $("#ownedAirplaneDetail .configuration-options").data("selectedIndex", 0)
+                                $("#ownedAirplaneDetail .configuration-options").data("optionCount", result.configurations.length)
+                                for (i = 0 ; i < result.configurations.length; i ++) {
+                                    //start from the matching one
+                                    var index = (i + matchingIndex) % result.configurations.length
+                                    var option = result.configurations[index]
+                                    var barDiv = $("<div style='width : 100%' class='configuration-option'></div>")
+                                    $("#ownedAirplaneDetail .configuration-options").append(barDiv)
+                                    barDiv.data("configurationId", option.id)
+                                    if (i != 0) { //if not the matching one, hide by default
+                                        barDiv.hide()
+                                    }
+                                    plotSeatConfigurationBar(barDiv, option, airplane.capacity, result.spaceMultipliers)
+                                }
+                            //}
+                            $("#ownedAirplaneDetail .configuration-view .edit").show()
+                            $("#ownedAirplaneDetail .configuration-view .editDisabled").hide()
+                        }
+                        $("#ownedAirplaneDetail .configuration-view").show()
+                        $("#ownedAirplaneDetail .configuration-edit").hide()
+
+                        if (closeCallback) {
+                            $("#ownedAirplaneDetailModal").data("closeCallback", function() {
+                                if ($("#ownedAirplaneDetailModal").data("hasChange")) { //only trigger close callback if there are changes
+                                    closeCallback()
+                                    $("#ownedAirplaneDetailModal").removeData("hasChange")
+                                }
+                            })
+                        } else {
+                            $("#ownedAirplaneDetailModal").removeData("closeCallback")
+                        }
+                        $("#ownedAirplaneDetailModal").fadeIn(200)
+                    },
+                     error: function(jqXHR, textStatus, errorThrown) {
+                    	            console.log(JSON.stringify(jqXHR));
+                    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                    	    }
+                });
 
 
 
-	    	
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    }
-	});
+
+    	    },
+            error: function(jqXHR, textStatus, errorThrown) {
+    	            console.log(JSON.stringify(jqXHR));
+    	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+    	    }
+    	}
+	$.ajax(currentAirplaneLoadCall);
 }
 
 function populateAirplaneHome(airplane, disableChangeHome) {
@@ -1314,12 +1322,28 @@ function toggleAirplaneHome() {
     $("#ownedAirplaneDetail .homeEdit").show()
 }
 
-function showAirplaneCanvas() {
+function showAirplaneCanvas(restoreClosedModals) {
 	setActiveDiv($("#airplaneCanvas"))
 	highlightTab($('.airplaneCanvasTab'))
 
     var $selectedTab = $("#airplaneCanvas .detailsSelection.selected")
     selectAirplaneTab($selectedTab)
+
+    $("#ownedAirplaneDetailModal").data("reloadFunction", function() {
+        $("#ownedAirplaneDetailModal").data("hasChange", true) //so closing this modal always force update. it's hard to detect whether there was any change before the reload...
+        $.ajax(currentAirplaneLoadCall)
+    })
+    if (restoreClosedModals) {
+        $.each(closedAirplaneModals, function(index, modal) {
+            var reloadFunction = $(modal).data("reloadFunction");
+            if (typeof reloadFunction === 'function') {
+                reloadFunction();
+            } else {
+                $(modal).show();
+            }
+        });
+        closedAirplaneModals = []
+    }
 }
 
 function showAirplaneMarket() {
