@@ -601,11 +601,14 @@ function closeModal(modal) {
 }
 
 function closeAllModals() {
+    var closedModals = []
     $.each($(".modal"), function(index, modal) {
         if ($(modal).is(":visible")) {
             closeModal($(modal))
+             closedModals.push(modal);  // Add the closed modal to the array
         }
     });
+    return closedModals
 }
 
 function disableButton(button, reason) {

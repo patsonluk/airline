@@ -3,6 +3,9 @@ var historyFlightMarkers = []
 var historyPaths = {}
 
 function showLinkHistoryView() {
+    fromLinkCanvas = $('#linksCanvas').is(":visible")
+    $('.exitPaxMap').data("fromLinkCanvas", fromLinkCanvas)
+
 	if (!$('#worldMapCanvas').is(":visible")) {
 		showWorldMap()
 	}
@@ -126,7 +129,7 @@ function loadLinkHistory(linkId) {
                 })
 
             }
-            showLinkHistory()
+            showLinkHistory(fromLinkCanvas)
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
@@ -160,6 +163,10 @@ function hideLinkHistoryView() {
 	updateLinksInfo() //redraw all flight paths
 
 	$("#linkHistoryControlPanel").hide()
+
+	if ($('.exitPaxMap').data("fromLinkCanvas")) {
+	    showLinksDetails()
+	}
 }
 
 function drawLinkHistoryPath(link, inverted, watchedLinkId, step) {

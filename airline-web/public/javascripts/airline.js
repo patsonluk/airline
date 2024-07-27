@@ -1759,11 +1759,13 @@ function removeTempPath() {
 }
 
 function showLinksDetails() {
-	selectedLink = undefined
-	loadLinksTable()
+//    selectedLink = undefined
+    loadLinksTable()
 	setActiveDiv($('#linksCanvas'));
 	highlightTab($('.linksCanvasTab'))
-	$('#sidePanel').fadeOut(200);
+	if (selectedLink === undefined) {
+	    $('#sidePanel').fadeOut(200);
+    }
 	$('#sidePanel').appendTo($('#linksCanvas'))
 }
 
