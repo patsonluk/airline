@@ -7,7 +7,10 @@ $( document ).ready(function() {
 })
 
 function showAllianceCanvas(selectedAllianceId) {
-	setActiveDiv($("#allianceCanvas"))
+    //not the most ideal point to recheck (since current pending actions could include other canvas irrelevant to this). but this is the easiest for now
+    checkPendingActions()
+
+    setActiveDiv($("#allianceCanvas"))
 	highlightTab($('.allianceCanvasTab'))
 	if (!selectedAllianceId) {
         if (activeAirline) {
@@ -295,6 +298,7 @@ function loadAllianceDetails(allianceId) {
 function updateAllianceBasicsDetails(allianceId) {
 	var alliance = loadedAlliancesById[allianceId]
 	selectedAlliance = alliance
+
 	$("#allianceDetails .allianceName").text(alliance.name)
 	if (alliance.status == 'Forming') {
 		$("#allianceDetails .allianceStatus").text(alliance.status + " - need 3 approved members")
@@ -601,8 +605,8 @@ function formAlliance(allianceName) {
 	    	} else {
 	    		$('#formAllianceWarning').text(newAlliance.rejection)
 	    		$('#formAllianceWarning').show()
-	    		activeUser.allianceId = newAlliance.id
-	    		activeUser.allianceName = newAlliance.name
+	    		activeAirline.allianceId = newAlliance.id
+	    		activeAirline.allianceName = newAlliance.name
 	    		updateChatTabs()
 	    	}
 	    	
@@ -624,8 +628,8 @@ function removeAllianceMember(removeAirlineId) {
 	    success: function(result) {
 	    	showAllianceCanvas()
 	    	if (activeAirline.id == removeAirlineId) { //leaving alliance
-	    	    activeUser.allianceId = undefined
-	    	    activeUser.allianceName = undefined
+	    	    activeAirline.allianceId = undefined
+	    	    activeAirline.allianceName = undefined
 	    	    updateChatTabs()
 	    	}
 	    },
@@ -694,9 +698,9 @@ function applyForAlliance() {
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function(result) {
+	        activeAirline.allianceId = result.allianceId
 	    	showAllianceCanvas()
-	    	activeUser.allianceId = result.allianceId
-	    	//activeUser.allianceName = result.allianceName //not yet a member
+	    	//activeAirline.allianceName = result.allianceName //not yet a member
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));
