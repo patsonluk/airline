@@ -7,6 +7,7 @@ case class PendingAction(airline : Airline, category : PendingActionCategory.Val
 object PendingActionCategory extends Enumeration {
   type AlertCategory = Value
   val OLYMPICS_VOTE = Value
+  val ALLIANCE_PENDING_APPLICATION = Value
 }
 
 
