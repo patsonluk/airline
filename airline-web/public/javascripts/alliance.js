@@ -318,26 +318,41 @@ function updateAllianceBasicsDetails(allianceId) {
         }
 	})
 
-	$.each(alliance.members, function(index, member) {
-		var row = $("<div class='table-row clickable' style='height: 20px;' onclick='showAllianceMemberDetails($(this).data(\"member\"))'></div>")
-		row.data("member", member)
-		row.attr("data-airline-id", member.airlineId)
-		row.append("<div class='cell' style='vertical-align: middle;'>" + getAirlineSpan(member.airlineId, member.airlineName) + "</div>")
-		if (member.allianceRole == "Applicant") {
-			row.append("<div class='cell warning' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
-		} else {
-			row.append("<div class='cell' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
-		}
-		if (activeAirline) {
-		    var $actionCell = $("<div class='cell action' style='vertical-align: middle;'></div>")
 
-			row.append($actionCell)
+    $.ajax({
+        type: 'GET',
+        url: "alliances/" + allianceId + "/member-login-status",
+        contentType: 'application/json; charset=utf-8',
+        dataType: 'json',
+        success: function(loginStatusByAirlineId) {
+            $.each(alliance.members, function(index, member) {
+                var row = $("<div class='table-row clickable' style='height: 20px;' onclick='showAllianceMemberDetails($(this).data(\"member\"))'></div>")
+                row.data("member", member)
+                row.attr("data-airline-id", member.airlineId)
+                let loginStatus = loginStatusByAirlineId[member.airlineId]
+                row.append("<div class='cell' style='vertical-align:middle; width: 10px;'><img src='" + getStatusLogo(loginStatus) + "' title='" + getStatusTitle(loginStatus) + "' style='vertical-align:middle;'/>")
+                row.append("<div class='cell' style='vertical-align: middle;'>" + getAirlineSpan(member.airlineId, member.airlineName) + "</div>")
+                if (member.allianceRole == "Applicant") {
+                    row.append("<div class='cell warning' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
+                } else {
+                    row.append("<div class='cell' style='vertical-align: middle;'>" + member.allianceRole + "</div>")
+                }
+                if (activeAirline) {
+                    var $actionCell = $("<div class='cell action' style='vertical-align: middle;'></div>")
 
-		}
-		$("#allianceMemberList").append(row)
-	});
-	
-	
+                    row.append($actionCell)
+
+                }
+                $("#allianceMemberList").append(row)
+            });
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+                console.log(JSON.stringify(jqXHR));
+                console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+
+
 	if (activeAirline && selectedAlliance) {
 		$.ajax({
 			type: 'GET',

@@ -108,6 +108,7 @@ GET		 /airlines/:airlineId/alliance-details  controllers.AllianceApplication.get
 GET      /airlines/:airlineId/fleet			  controllers.AirlineApplication.getFleet(airlineId : Int)
 GET		 /alliances  controllers.AllianceApplication.getAlliances(airlineId : Option[Int])
 GET		 /alliances/:allianceId/details  controllers.AllianceApplication.getAllAllianceDetails(allianceId : Int)
+GET		 /alliances/:allianceId/member-login-status  controllers.AllianceApplication.getMemberLoginStatus(allianceId : Int)
 GET		 /alliances/:allianceId/championed-airports	controllers.AllianceApplication.getAllianceAirportChampions(allianceId : Int)
 GET		 /alliances/:allianceId/championed-countries	controllers.AllianceApplication.getAllianceCountryChampions(allianceId : Int)
 POST	 /airlines/:airlineId/form-alliance  controllers.AllianceApplication.formAlliance(airlineId : Int)

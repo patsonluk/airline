@@ -46,11 +46,6 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  object LoginStatus extends Enumeration {
-    type LoginStatus = Value
-    val ONLINE, ACTIVE_7_DAYS, ACTIVE_30_DAYS, INACTIVE = Value
-  }
-  
   implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], Boolean)] {
     def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], Boolean)): JsValue = {
       val (airline, user, loginStatus, alliance, airlineModifiers, isCurrentUserAdmin) = entry

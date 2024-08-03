@@ -2,13 +2,13 @@ package controllers
 
 import com.patson.AllianceSimulation
 import com.patson.AllianceMissionSimulation
-import com.patson.data.{AirlineSource, AllianceMissionSource, AllianceSource, CycleSource, LinkSource}
+import com.patson.data.{AirlineSource, AllianceMissionSource, AllianceSource, CycleSource, LinkSource, UserSource}
 import com.patson.model.AllianceEvent._
 import com.patson.model.AllianceRole._
 import com.patson.model.AllianceStatus._
 import com.patson.model.{AllianceHistory, AllianceMember, _}
 import com.patson.model.alliance.{AirportRankingCount, AllianceMission, AllianceMissionReward, AllianceMissionStatus, AllianceStats, CountryRankingCount}
-import com.patson.util.{AirlineCache, AirportChampionInfo, AllianceCache, AllianceRankingUtil, ChampionUtil, CountryChampionInfo}
+import com.patson.util.{AirlineCache, AirportChampionInfo, AllianceCache, AllianceRankingUtil, ChampionUtil, CountryChampionInfo, UserCache}
 import controllers.AuthenticationObject.AuthenticatedAirline
 
 import javax.inject.Inject
@@ -16,8 +16,10 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json._
 import play.api.mvc._
+import websocket.chat.ChatControllerActor
 
-import scala.collection.MapView
+import java.util.Calendar
+import scala.collection.{MapView, mutable}
 import scala.math.BigDecimal.{RoundingMode, int2bigDecimal}
 
 
@@ -329,6 +331,43 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
         Ok(Json.obj("links" -> Json.toJson(links)(SimpleLinkWrites),
           "members" -> Json.toJson(alliance.members.map(member => (member.airline, member.role)))(AllianceAirlinesWrites)))
+      }
+    }
+  }
+
+  def getMemberLoginStatus(allianceId : Int) = Action { request =>
+    AllianceCache.getAlliance(allianceId, true) match {
+      case None => NotFound("Alliance with " + allianceId + " is not found")
+      case Some(alliance) => {
+        val userByAirlineId = mutable.HashMap[Int, User]()
+        alliance.members.foreach { allianceMember =>
+          UserSource.loadUserByAirlineId(allianceMember.airline.id).foreach { user =>
+            userByAirlineId.put(allianceMember.airline.id, user)
+          }
+        }
+
+        val onlineUserIds = ChatControllerActor.getActiveUsers().map(_.id)
+        val sevenDaysAgo = Calendar.getInstance();
+        sevenDaysAgo.add(Calendar.DATE, -7)
+        val thirtyDaysAgo = Calendar.getInstance()
+        thirtyDaysAgo.add(Calendar.DATE, -30)
+
+        val loginStatusIdByAirlineId = userByAirlineId.map {
+          case (airlineId, user) =>
+            val loginStatus =
+              if (onlineUserIds.contains(user.id)) {
+                LoginStatus.ONLINE
+              } else if (user.lastActiveTime.after(sevenDaysAgo)) {
+                LoginStatus.ACTIVE_7_DAYS
+              } else if (user.lastActiveTime.after(thirtyDaysAgo)) {
+                LoginStatus.ACTIVE_30_DAYS
+              } else {
+                LoginStatus.INACTIVE
+              }
+            (airlineId.toString, loginStatus.id)
+        }.toMap
+
+        Ok(Json.toJson(loginStatusIdByAirlineId))
       }
     }
   }
