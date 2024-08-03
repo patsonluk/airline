@@ -265,7 +265,18 @@ function updateAirportChampionDetails(airport) {
 	    		row.append("<div class='cell'>" + icon + "</div>")
                 row.append("<div class='cell'>" + getAirlineSpan(championDetails.airlineId, championDetails.airlineName) + "</div>")
 	    		row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
-	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.loyalty + "</div>")
+	    		var $loyaltyCell = $("<div class='cell' style='text-align: right'>" + championDetails.loyalty + "</div>")
+	    		$loyaltyCell.hover(
+                    function() {
+                        if (airport.bonusList[championDetails.airlineId]) {
+                            showAppealBreakdown($(this), airport.bonusList[championDetails.airlineId].loyaltyBreakdown)
+                        }
+                    },
+                    function() {
+                        hideAppealBreakdown()
+                    }
+	    		)
+	    		row.append($loyaltyCell)
 	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
 	    		$('#airportDetailsChampionList').append(row)
 	    	})
@@ -895,7 +906,7 @@ function refreshAirportExtendedDetails(airport) {
                     if (airport.bonusList[airlineId].loyalty > 0) {
                         $(".airportLoyaltyBonus").text("(+" + airport.bonusList[airlineId].loyalty + ")")
                         $(".airportLoyaltyBonus").show()
-                        $('#appealBonusDetailsTooltip').data('loyaltyBreakdown', airport.bonusList[airlineId].loyaltyBreakdown)
+                        $('#airportDetailsLoyalty').data('loyaltyBreakdown', airport.bonusList[airlineId].loyaltyBreakdown)
                         $('.airportLoyaltyBonusTrigger').show()
                     } else {
                         $(".airportLoyaltyBonus").hide()
