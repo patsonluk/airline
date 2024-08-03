@@ -230,6 +230,8 @@ GET     /event/:eventId/airline/:airlineId/reward/olympics-passenger  controller
 
 GET     /banner    controllers.BannerApplication.getBanner()
 
+GET     /broadcaster-direct/trigger-prompts-check/:airlineId  controllers.BroadcasterDirectApplication.triggerPromptsCheck(airlineId : Int)
+
 # Admin
 PUT		 /admin-action/:action/:targetUserId		controllers.AdminApplication.adminAction(action : String, targetUserId : Int)
 PUT		 /admin-multi-action/:action	            controllers.AdminApplication.adminMultiAction(action : String)

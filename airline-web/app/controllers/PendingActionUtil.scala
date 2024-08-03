@@ -1,8 +1,9 @@
 package controllers
 
 import com.patson.data.{CycleSource, EventSource}
-import com.patson.model.Airline
+import com.patson.model.{Airline, AllianceRole}
 import com.patson.model.event.{EventType, Olympics, OlympicsStatus}
+import com.patson.util.AllianceCache
 import models.{PendingAction, PendingActionCategory}
 
 import scala.collection.mutable.ListBuffer
@@ -11,6 +12,7 @@ object PendingActionUtil {
   def getPendingActions(airline : Airline) : List[PendingAction] = {
     val result = ListBuffer[PendingAction]()
     result.appendAll(getOlympicsPendingActions(airline))
+    result.appendAll(getAlliancePendingActions(airline))
     result.toList
   }
 
@@ -34,6 +36,23 @@ object PendingActionUtil {
       List.empty
     }
 
+  }
+
+  private def getAlliancePendingActions(airline : Airline) = {
+    val actions = ListBuffer[PendingAction]()
+    airline.getAllianceId().foreach {
+      allianceId => AllianceCache.getAlliance(allianceId).foreach {
+        alliance => {
+          val isAdminOption = alliance.members.find(_.airline.id == airline.id).map(thisAirlineMember => AllianceRole.isAdmin(thisAirlineMember.role))
+          if (isAdminOption.getOrElse(false)) {
+            if (alliance.members.find(_.role == AllianceRole.APPLICANT).isDefined) {
+              actions.append(PendingAction(airline, PendingActionCategory.ALLIANCE_PENDING_APPLICATION))
+            }
+          }
+        }
+      }
+    }
+    actions.toList
   }
 
 

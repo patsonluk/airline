@@ -167,7 +167,7 @@
 				<span style="width: 95px;"><span class="cycleDeltaText"></span>&nbsp;week(s) ago</span>
 				<img class="clickable next" title="View passenger map of next week" src='@routes.Assets.versioned("images/icons/arrow.png")'/>
 			</div>
-			<div class="button glow" onclick="hideLinkHistoryView()" style="margin-top : 10px">Exit Passenger Map</div>
+			<div class="button glow exitPaxMap" onclick="hideLinkHistoryView()" style="margin-top : 10px">Exit Passenger Map</div>
 		</div>
 	</div>
 	  <div id="heatmapControlPanel" class="section mapControlPanel" style="display: none; width: 250px; flex-direction: column; align-items:center">
@@ -415,7 +415,7 @@
                     </li>
                     <li class="button left-tab user-specific-tab airplaneCanvasTab">
                         <div style="display:flex; align-items: center;">
-                            <div class="tab-icon" data-link="airplane" onclick="showAirplaneCanvas();">
+                            <div class="tab-icon" data-link="airplane" onclick="showAirplaneCanvas();" onback="showAirplaneCanvas(true)">
                                 <img src='@routes.Assets.versioned("images/icons/airplane-gear.png")' style="margin: auto;">
                             </div>
                             <span class="label floatLabel">Airplane</span>
