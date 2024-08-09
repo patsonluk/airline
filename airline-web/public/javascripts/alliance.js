@@ -349,88 +349,85 @@ function updateAllianceBasicsDetails(allianceId) {
                 }
                 $("#allianceMemberList").append(row)
             });
+            if (activeAirline && selectedAlliance) {
+                $.ajax({
+                    type: 'GET',
+                    url: "airlines/" + activeAirline.id + "/evaluate-alliance/" + selectedAlliance.id,
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function(result) {
+                        if (!result.isMember && !result.rejection) {
+                            $('#applyForAllianceButton').show()
+                            $('#applyForAllianceRejectionSpan').hide();
+                        } else {
+                            $('#applyForAllianceButton').hide();
+                            if (result.rejection) {
+                                $('#applyForAllianceRejection').text(result.rejection)
+                                $('#applyForAllianceRejectionSpan').show()
+                            } else if (result.isMember){
+                                $('#applyForAllianceButton').hide();
+                                $('#applyForAllianceRejectionSpan').hide();
+                            }
+                        }
+
+                        if (result.memberActions) {
+                            $.each(result.memberActions, function(index, entry) {
+                                var $cell = $("#allianceMemberList .table-row[data-airline-id='" + entry.airlineId + "'] .action")
+
+
+                                if (entry.acceptRejection) {
+                                    $cell.append("<img src='assets/images/icons/exclamation-circle.png' class='button disabled' title='Cannot accept member : " + entry.rejection + "'>")
+                                } else if (entry.acceptPrompt) {
+                                    var $icon = $("<img src='assets/images/icons/tick.png' class='button' title='Accept Member'>")
+                                    $icon.click(function(event) {
+                                        event.stopPropagation()
+                                        promptConfirm(entry.acceptPrompt, acceptAllianceMember, entry.airlineId)
+                                    })
+                                    $cell.append($icon)
+                                }
+
+                                if (!entry.promoteRejection && entry.promotePrompt) {
+                                    var $icon = $("<img src='assets/images/icons/user-promote.png' class='button' title='Promote Member'>")
+                                    $icon.click(function(event) {
+                                        event.stopPropagation()
+                                        promptConfirm(entry.promotePrompt, promoteAllianceMember, entry.airlineId)
+                                    })
+                                    $cell.append($icon)
+                                }
+                                if (!entry.demoteRejection && entry.demotePrompt) {
+                                    var $icon = $("<img src='assets/images/icons/user-demote.png' class='button' title='Demote Member'>")
+                                    $icon.click(function(event) {
+                                        event.stopPropagation()
+                                        promptConfirm(entry.demotePrompt, demoteAllianceMember, entry.airlineId)
+                                    })
+                                    $cell.append($icon)
+                                }
+                                if (!entry.removeRejection && entry.removePrompt) {
+                                    var $icon = $("<img src='assets/images/icons/cross.png' class='button' title='Remove Member'>")
+                                    $icon.click(function(event) {
+                                        event.stopPropagation()
+                                        promptConfirm(entry.removePrompt, removeAllianceMember, entry.airlineId)
+                                    })
+                                    $cell.append($icon)
+                                }
+                            })
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(JSON.stringify(jqXHR));
+                            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+                    }
+                });
+            } else {
+                $('#applyForAllianceButton').hide()
+                $('#applyForAllianceRejectionSpan').hide();
+            }
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));
                 console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
         }
     });
-
-
-	if (activeAirline && selectedAlliance) {
-		$.ajax({
-			type: 'GET',
-			url: "airlines/" + activeAirline.id + "/evaluate-alliance/" + selectedAlliance.id,
-		    contentType: 'application/json; charset=utf-8',
-		    dataType: 'json',
-		    success: function(result) {
-		    	if (!result.isMember && !result.rejection) {
-		    		$('#applyForAllianceButton').show()
-		    		$('#applyForAllianceRejectionSpan').hide();
-		    	} else {
-		    		$('#applyForAllianceButton').hide();
-		    		if (result.rejection) {
-		    			$('#applyForAllianceRejection').text(result.rejection)
-			    		$('#applyForAllianceRejectionSpan').show()
-		    		} else if (result.isMember){
-		    			$('#applyForAllianceButton').hide();
-			    		$('#applyForAllianceRejectionSpan').hide();
-		    		}
-		    	}
-
-		    	if (result.memberActions) {
-		    	    $.each(result.memberActions, function(index, entry) {
-		    	        var $cell = $("#allianceMemberList .table-row[data-airline-id='" + entry.airlineId + "'] .action")
-
-
-                        if (entry.acceptRejection) {
-                            $cell.append("<img src='assets/images/icons/exclamation-circle.png' class='button disabled' title='Cannot accept member : " + entry.rejection + "'>")
-                        } else if (entry.acceptPrompt) {
-                            var $icon = $("<img src='assets/images/icons/tick.png' class='button' title='Accept Member'>")
-                            $icon.click(function(event) {
-                                event.stopPropagation()
-                                promptConfirm(entry.acceptPrompt, acceptAllianceMember, entry.airlineId)
-                            })
-                            $cell.append($icon)
-                        }
-
-		    	        if (!entry.promoteRejection && entry.promotePrompt) {
-		    	            var $icon = $("<img src='assets/images/icons/user-promote.png' class='button' title='Promote Member'>")
-                            $icon.click(function(event) {
-                                event.stopPropagation()
-                                promptConfirm(entry.promotePrompt, promoteAllianceMember, entry.airlineId)
-                            })
-		    	            $cell.append($icon)
-		    	        }
-                        if (!entry.demoteRejection && entry.demotePrompt) {
-                            var $icon = $("<img src='assets/images/icons/user-demote.png' class='button' title='Demote Member'>")
-                            $icon.click(function(event) {
-                                event.stopPropagation()
-                                promptConfirm(entry.demotePrompt, demoteAllianceMember, entry.airlineId)
-                            })
-                            $cell.append($icon)
-                        }
-                        if (!entry.removeRejection && entry.removePrompt) {
-                            var $icon = $("<img src='assets/images/icons/cross.png' class='button' title='Remove Member'>")
-                            $icon.click(function(event) {
-                                event.stopPropagation()
-                                promptConfirm(entry.removePrompt, removeAllianceMember, entry.airlineId)
-                            })
-                            $cell.append($icon)
-                        }
-                    })
-		    	}
-		    },
-		    error: function(jqXHR, textStatus, errorThrown) {
-		            console.log(JSON.stringify(jqXHR));
-		            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-		    }
-		});
-	} else {
-		$('#applyForAllianceButton').hide()
-		$('#applyForAllianceRejectionSpan').hide();
-	}
-		
 }
 
 function updateAllianceBonus(allianceId) {
