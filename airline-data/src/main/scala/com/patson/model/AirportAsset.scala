@@ -729,7 +729,7 @@ case class AirportHotelAsset(override val blueprint : AirportAssetBlueprint, ove
     override val initialCapacity = 500
 
     override def computeTransitFreqDiscount(arrivalLinkFreq : Int, departureLinkFreq : Int, paxGroup : PassengerGroup) : Double = {
-        var discountPercentage = level * 1.0 / AirportAsset.MAX_LEVEL * 0.15 //base 15% off
+        var discountPercentage = 0.1 + level * 1.0 / AirportAsset.MAX_LEVEL * 0.1 //base 10-20% off
 
         if (paxGroup.preference.preferredLinkClass.level >= BUSINESS.level) { //extra max 20% off
             discountPercentage +=  (level * 1.0 / AirportAsset.MAX_LEVEL) * 0.2
