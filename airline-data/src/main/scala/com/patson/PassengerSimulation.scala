@@ -681,12 +681,11 @@ object PassengerSimulation {
             connectionCost *= passengerGroup.preference.connectionCostRatio * passengerGroup.preference.preferredLinkClass.priceMultiplier //connection cost should take into consideration of preferred link class too
 
             if (flightTransit) {
-              val waitTimeDiscount = linkConsideration.from.computeTransitDiscount(
+              val waitTimeDiscount = Math.min(0.5, linkConsideration.from.computeTransitDiscount(
                 predecessorLinkConsideration,
                 linkConsideration,
-                passengerGroup)
-
-              connectionCost = (1 - waitTimeDiscount) * connectionCost
+                passengerGroup))
+              connectionCost *= (1 - waitTimeDiscount)
             }
 
           }
