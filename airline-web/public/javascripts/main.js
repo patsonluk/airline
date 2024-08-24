@@ -758,16 +758,14 @@ function initTabGroup() {
     //$("#tabGroup").mouseenter(() => showTabGroup()).mouseleave(() => { console.log('out'); hideTabGroup() })
 
 
-    $("#tabGroup .tab-icon").on('mouseenter touchstart',
-        function() {
-            $(this).closest('.left-tab').find('.label').fadeIn(200)
-        }
-    )
-    $("#tabGroup .tab-icon").on('mouseleave touchend',
-        function() {
-            $(this).closest('.left-tab').find('.label').hide()
-        }
-    )
+    $("#tabGroup .tab-icon").on('mouseenter touchstart', function() {
+        $(this).closest('.left-tab').find('.label').show();
+    });
+
+    $("#tabGroup .tab-icon").on('mouseleave touchend', function() {
+        $(this).closest('.left-tab').find('.label').hide();
+    });
+
 
 //    $("#canvas").on( "swiperight", function( e ) {
 //        if ($('#canvas')[0].scrollLeft == 0) {
