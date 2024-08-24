@@ -394,7 +394,7 @@ function getOpennessSpan(openness) {
 		description = "No Foreign Airline"
 		icon = "prohibition.png"
 	}*/
-	return "<span>" + description + "(" + openness + ")&nbsp;<img src='assets/images/icons/" + icon + "'/></span>"
+	return "<span>" + description + "(" + openness + ")&nbsp;" + getOpennessIcon(openness) + "</span>"
 	
 }
 
@@ -408,7 +408,8 @@ function getOpennessIcon(openness) {
 	} else {
 		description = "No International Connection"
 		icon = "globe--exclamation.png"
-	return "<img src='assets/images/icons/" + icon + "' title='" + description + "'/>"
+    }
+	return "<img src='assets/images/icons/" + icon + "' title='" + description + "' style='vertical-align: middle;'/>"
 }
 
 
