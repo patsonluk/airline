@@ -1900,7 +1900,7 @@ object Meta {
       "airport INTEGER, " +
       "airline INTEGER, " +
       "update_cycle INTEGER, " +
-      "PRIMARY KEY (airport, airline, update_cycle)," +
+      "PRIMARY KEY (airport, airline)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")

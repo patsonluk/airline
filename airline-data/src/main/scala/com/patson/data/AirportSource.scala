@@ -401,7 +401,7 @@ object AirportSource {
   def updateAirportBaseSpecializations(airportId : Int, airlineId : Int, airlineBaseSpecializationTypes : List[AirlineBaseSpecialization.Value]) = {
     val connection = Meta.getConnection()
     try {
-      val purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_BASE_SPECIALIZATION_TABLE WHERE airport = ? AND airline = ?")
+      var purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_BASE_SPECIALIZATION_TABLE WHERE airport = ? AND airline = ?")
       purgeStatement.setInt(1, airportId)
       purgeStatement.setInt(2, airlineId)
       purgeStatement.executeUpdate()
@@ -416,6 +416,14 @@ object AirportSource {
       }
 
       preparedStatement.close()
+
+
+      //in theory we should just use REPLACE, however, we made a mistake that update_cycle was included in the key too...so...we will just purge it before updating
+      purgeStatement = connection.prepareStatement(s"DELETE FROM $AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE WHERE airport = ? AND airline = ?")
+      purgeStatement.setInt(1, airportId)
+      purgeStatement.setInt(2, airlineId)
+      purgeStatement.executeUpdate()
+      purgeStatement.close()
 
       preparedStatement = connection.prepareStatement(s"REPLACE INTO $AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE  (airport, airline, update_cycle) VALUES(?,?,?)")
       preparedStatement.setInt(1, airportId)
