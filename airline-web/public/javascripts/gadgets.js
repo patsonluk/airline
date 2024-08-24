@@ -398,6 +398,20 @@ function getOpennessSpan(openness) {
 	
 }
 
+
+function getOpennessIcon(openness) {
+	var description
+	var icon
+	if (openness >= 7) {
+		description = "Opened Market"
+		icon = "globe--plus.png"
+	} else {
+		description = "No International Connection"
+		icon = "globe--exclamation.png"
+	return "<img src='assets/images/icons/" + icon + "' title='" + description + "'/>"
+}
+
+
 function scrollToRow($matchingRow, $container) {
     var row = $matchingRow[0]
     var baseOffset = $container.find(".table-row")[0].offsetTop //somehow first row is not 0...
