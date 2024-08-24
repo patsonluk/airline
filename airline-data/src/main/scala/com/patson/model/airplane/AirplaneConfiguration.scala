@@ -1,8 +1,14 @@
 package com.patson.model.airplane
 
-import com.patson.model.{AbstractLinkClassValues, Airline}
+import com.patson.model.{AbstractLinkClassValues, Airline, BUSINESS, FIRST, LinkClassValues}
 
 case class AirplaneConfiguration(economyVal : Int, businessVal : Int, firstVal : Int, airline : Airline, model : Model, isDefault : Boolean, var id : Int = 0) extends AbstractLinkClassValues(economyVal, businessVal, firstVal) {
+  lazy val minimized : AirplaneConfiguration = { //config that has least capacity
+    val minimizedFirst = (model.capacity / FIRST.spaceMultiplier).toInt
+    val minimizedBusiness = ((model.capacity - minimizedFirst * FIRST.spaceMultiplier) / BUSINESS.spaceMultiplier).toInt
+    //no eco as user can lock econ to zero
+    AirplaneConfiguration(0, minimizedBusiness, minimizedFirst, airline, model, isDefault)
+  }
 }
 
 object AirplaneConfiguration {

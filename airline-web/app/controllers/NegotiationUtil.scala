@@ -96,15 +96,15 @@ object NegotiationUtil {
 
     val officeStaffCount : Int = baseOption.map(_.getOfficeStaffCapacity).getOrElse(0)
     val airlineLinksFromThisAirport = airlineLinks.filter(link => link.from.id == airport.id && (isNewLink || link.id != existingLinkOption.get.id))
-    val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getFutureOfficeStaffRequired).sum
-    val newOfficeStaffRequired = newLink.getFutureOfficeStaffRequired
+    val currentOfficeStaffUsed = airlineLinksFromThisAirport.map(_.getFutureOfficeStaffMinimizedRequired).sum
+    val newOfficeStaffRequired = newLink.getFutureOfficeStaffMinimizedRequired
     val newTotal = currentOfficeStaffUsed + newOfficeStaffRequired
 
     if (newTotal < officeStaffCount) {
-      requirements.append(NegotiationRequirement(STAFF_CAP, 0, s"Requires ${newOfficeStaffRequired} office staff, within your base capacity : ${newTotal} / ${officeStaffCount}"))
+      requirements.append(NegotiationRequirement(STAFF_CAP, 0, s"Requires ${newOfficeStaffRequired} office staff (minimized), within your base capacity : ${newTotal} / ${officeStaffCount}"))
     } else {
       val requirement = (newTotal - officeStaffCount).toDouble / 10
-      requirements.append(NegotiationRequirement(STAFF_CAP, requirement, s"Requires ${newOfficeStaffRequired} office staff, over your base capacity : ${newTotal} / ${officeStaffCount}"))
+      requirements.append(NegotiationRequirement(STAFF_CAP, requirement, s"Requires ${newOfficeStaffRequired} office staff (minimized), over your base capacity : ${newTotal} / ${officeStaffCount}"))
     }
 
     val mutualRelationship = CountrySource.getCountryMutualRelationship(newLink.from.countryCode, newLink.to.countryCode)
