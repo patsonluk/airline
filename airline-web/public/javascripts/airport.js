@@ -266,16 +266,18 @@ function updateAirportChampionDetails(airport) {
                 row.append("<div class='cell'>" + getAirlineSpan(championDetails.airlineId, championDetails.airlineName) + "</div>")
 	    		row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
 	    		var $loyaltyCell = $("<div class='cell' style='text-align: right'>" + championDetails.loyalty + "</div>")
-	    		$loyaltyCell.hover(
-                    function() {
-                        if (airport.bonusList[championDetails.airlineId]) {
-                            showAppealBreakdown($(this), airport.bonusList[championDetails.airlineId].loyaltyBreakdown)
+	    		if (!isMobileDevice()) {
+                    $loyaltyCell.hover(
+                        function() {
+                            if (airport.bonusList[championDetails.airlineId]) {
+                                showAppealBreakdown($(this), airport.bonusList[championDetails.airlineId].loyaltyBreakdown)
+                            }
+                        },
+                        function() {
+                            hideAppealBreakdown()
                         }
-                    },
-                    function() {
-                        hideAppealBreakdown()
-                    }
-	    		)
+                    )
+                }
 	    		row.append($loyaltyCell)
 	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
 	    		$('#airportDetailsChampionList').append(row)
@@ -286,7 +288,22 @@ function updateAirportChampionDetails(airport) {
                 row.append("<div class='cell'>" + result.currentAirline.ranking + "</div>")
                 row.append("<div class='cell'>" + getAirlineSpan(result.currentAirline.airlineId, result.currentAirline.airlineName) + "</div>")
                 row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(result.currentAirline.amount) + "</div>")
-                row.append("<div class='cell' style='text-align: right'>" + result.currentAirline.loyalty + "</div>")
+
+                var $loyaltyCell = $("<div class='cell' style='text-align: right'>" + result.currentAirline.loyalty + "</div>")
+
+                if (!isMobileDevice()) {
+                    $loyaltyCell.hover(
+                        function() {
+                            if (airport.bonusList[result.currentAirline.airlineId]) {
+                                showAppealBreakdown($(this), airport.bonusList[result.currentAirline.airlineId].loyaltyBreakdown)
+                            }
+                        },
+                        function() {
+                            hideAppealBreakdown()
+                        }
+                    )
+                }
+	    		row.append($loyaltyCell)
                 row.append("<div class='cell' style='text-align: right'>-</div>")
                 $('#airportDetailsChampionList').append(row)
 	    	}
