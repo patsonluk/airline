@@ -677,6 +677,7 @@ function addMarkers(airports) {
 				  updateBaseInfo(this.airport.id)
 			  }
 			  $("#airportPopupName").text(this.airport.name)
+			  $("#airportPopupCustomsIcon").html(getOpennessIcon(loadedCountriesByCode[this.airport.countryCode].openness))
 			  $("#airportPopupIata").text(this.airport.iata)
 			  $("#airportPopupCity").html(this.airport.city + "&nbsp;" + getCountryFlagImg(this.airport.countryCode))
 			  $("#airportPopupZone").text(zoneById[this.airport.zone])
