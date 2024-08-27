@@ -465,28 +465,31 @@ function updateTime(cycle, fraction, cycleDurationEstimation) {
 	    clearInterval(currentTickTimer)
 	}
 
+
+    var updateTimerFunction = function() {
+        var currentWallClock = new Date()
+        var wallClockDurationSinceStart = currentWallClock.getTime() - wallClockStart.getTime()
+
+        var durationTillNextTick = initialDurationTillNextTick - wallClockDurationSinceStart
+
+        var currentGameTime = gameTimeStart + wallClockDurationSinceStart * timeMultiplier
+        var currentGameDate = new Date(currentGameTime)
+        $(".currentTime").text("(" + days[currentGameDate.getDay()] + ") " + padBefore(currentGameDate.getMonth() + 1, "0", 2) + '/' + padBefore(currentGameDate.getDate(), "0", 2) +  " " + padBefore(currentGameDate.getHours(), "0", 2) + ":00")
+
+        if (hasTickEstimation) {
+          var minutesLeft = Math.round(durationTillNextTick / 1000 / 60)
+          if (minutesLeft <= 0) {
+              $(".nextTickEstimation").text("Very soon")
+          } else if (minutesLeft == 1) {
+              $(".nextTickEstimation").text("1 minute")
+          } else {
+              $(".nextTickEstimation").text(minutesLeft + " minutes")
+          }
+        }
+    }
     tickTimerCreator = function() {
-        var newTimer = setInterval( function() {
-            var currentWallClock = new Date()
-            var wallClockDurationSinceStart = currentWallClock.getTime() - wallClockStart.getTime()
-
-            var durationTillNextTick = initialDurationTillNextTick - wallClockDurationSinceStart
-
-            var currentGameTime = gameTimeStart + wallClockDurationSinceStart * timeMultiplier
-            var currentGameDate = new Date(currentGameTime)
-            $(".currentTime").text("(" + days[currentGameDate.getDay()] + ") " + padBefore(currentGameDate.getMonth() + 1, "0", 2) + '/' + padBefore(currentGameDate.getDate(), "0", 2) +  " " + padBefore(currentGameDate.getHours(), "0", 2) + ":00")
-
-            if (hasTickEstimation) {
-                var minutesLeft = Math.round(durationTillNextTick / 1000 / 60)
-                if (minutesLeft <= 0) {
-                    $(".nextTickEstimation").text("Very soon")
-                } else if (minutesLeft == 1) {
-                    $(".nextTickEstimation").text("1 minute")
-                } else {
-                    $(".nextTickEstimation").text(minutesLeft + " minutes")
-                }
-            }
-        }, refreshInterval);
+        updateTimerFunction()
+        var newTimer = setInterval(updateTimerFunction, refreshInterval);
         return newTimer
     }
 
