@@ -437,49 +437,71 @@ function refreshPanels(airlineId) {
 
 var totalmillisecPerWeek = 7 * 24 * 60 * 60 * 1000
 var refreshInterval = 5000 //every 5 second
-var incrementPerInterval = totalmillisecPerWeek / (15 * 60 * 1000) * refreshInterval //by default 15 minutes per week
-var durationTillNextTick
 var hasTickEstimation = false
-var refreshIntervalTimer
 var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+var currentTickTimer
+var tickTimerCreator
 
 function updateTime(cycle, fraction, cycleDurationEstimation) {
 	$(".currentTime").attr("title", "Current Cycle: " + cycle)
-	currrentCycle = cycle
-	currentTime = (cycle + fraction) * totalmillisecPerWeek 
-	if (refreshIntervalTimer) {
-	    //cancel old timer
-	    clearInterval(refreshIntervalTimer)
-	 }
+	gameTimeStart = (cycle + fraction) * totalmillisecPerWeek
 
-	 if (cycleDurationEstimation > 0) { //update incrementPerInterval
-	    incrementPerInterval = totalmillisecPerWeek / cycleDurationEstimation * refreshInterval
-	    durationTillNextTick = cycleDurationEstimation * (1 - fraction)
+    var initialDurationTillNextTick
+	if (cycleDurationEstimation > 0) { //update incrementPerInterval
+	    initialDurationTillNextTick = cycleDurationEstimation * (1 - fraction)
 	    hasTickEstimation = true
-	 }
-	 //start incrementing
-	refreshIntervalTimer = setInterval( function() {
-			currentTime += incrementPerInterval
-			if (hasTickEstimation) {
-			    durationTillNextTick -= refreshInterval
-			}
-			var date = new Date(currentTime)
-			$(".currentTime").text("(" + days[date.getDay()] + ") " + padBefore(date.getMonth() + 1, "0", 2) + '/' + padBefore(date.getDate(), "0", 2) +  " " + padBefore(date.getHours(), "0", 2) + ":00")
+	}
 
-			if (hasTickEstimation) {
-			    var minutesLeft = Math.round(durationTillNextTick / 1000 / 60)
-			    if (minutesLeft <= 0) {
-			        $(".nextTickEstimation").text("Very soon")
-			    } else if (minutesLeft == 1) {
-			        $(".nextTickEstimation").text("1 minute")
-			    } else {
-			        $(".nextTickEstimation").text(minutesLeft + " minutes")
-			    }
+	var wallClockStart = new Date()
+
+	//how much wall clock duration should be multiplied as game time duration
+	var timeMultiplier = cycleDurationEstimation > 0 ?
+	    totalmillisecPerWeek / cycleDurationEstimation :
+		totalmillisecPerWeek / (30 * 60 * 1000) //by default 30 minutes per week
+
+
+	if (currentTickTimer) {
+	    clearInterval(currentTickTimer)
+	}
+
+    tickTimerCreator = function() {
+        var newTimer = setInterval( function() {
+            var currentWallClock = new Date()
+            var wallClockDurationSinceStart = currentWallClock.getTime() - wallClockStart.getTime()
+
+            var durationTillNextTick = initialDurationTillNextTick - wallClockDurationSinceStart
+
+            var currentGameTime = gameTimeStart + wallClockDurationSinceStart * timeMultiplier
+            var currentGameDate = new Date(currentGameTime)
+            $(".currentTime").text("(" + days[currentGameDate.getDay()] + ") " + padBefore(currentGameDate.getMonth() + 1, "0", 2) + '/' + padBefore(currentGameDate.getDate(), "0", 2) +  " " + padBefore(currentGameDate.getHours(), "0", 2) + ":00")
+
+            if (hasTickEstimation) {
+                var minutesLeft = Math.round(durationTillNextTick / 1000 / 60)
+                if (minutesLeft <= 0) {
+                    $(".nextTickEstimation").text("Very soon")
+                } else if (minutesLeft == 1) {
+                    $(".nextTickEstimation").text("1 minute")
+                } else {
+                    $(".nextTickEstimation").text(minutesLeft + " minutes")
+                }
             }
-		}, refreshInterval);
+        }, refreshInterval);
+        return newTimer
+    }
 
+	currentTickTimer = tickTimerCreator()
 }
+
+
+// Handle tab visibility change
+document.addEventListener('visibilitychange', function () {
+    clearInterval(currentTickTimer);
+    if (!document.hidden && tickTimerCreator) {
+        console.log("Recreating tick timer!")
+        currentTickTimer = tickTimerCreator()
+    }
+});
 
 
 //function printConsole(message, messageLevel, activateConsole, persistMessage) {
