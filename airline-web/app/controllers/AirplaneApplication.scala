@@ -34,7 +34,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       result
     }
   }
-  
+
   implicit object AirplaneWithAssignedLinkWrites extends Writes[(Airplane, LinkAssignments)] {
     def writes(airplaneWithAssignedLink : (Airplane, LinkAssignments)): JsValue = {
       val airplane = airplaneWithAssignedLink._1
@@ -76,7 +76,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
   case class ModelWithDiscounts(originalModel : Model, discounts : List[ModelDiscount])
 
   sealed case class AirplanesByModel(model : Model, assignedAirplanes : List[Airplane], availableAirplanes : List[Airplane], constructingAirplanes: List[Airplane])
-  
+
   object AirplanesByModelWrites extends Writes[List[AirplanesByModel]] {
     def writes(airplanesByModelList: List[AirplanesByModel]): JsValue = {
       var result = Json.obj()
@@ -158,7 +158,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
     result
   }
-  
+
   def getAirplaneModelsByAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val originalModels = ModelSource.loadAllModels()
     val originalModelsById = originalModels.map(model => (model.id, model)).toMap
@@ -204,7 +204,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 
     Ok(result)
   }
-  
+
   def getRejections(models : List[Model], airline : Airline) : Map[Model, Option[String]] = {
     val allManufacturingCountries = models.map(_.countryCode).toSet
 
@@ -218,16 +218,16 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     models.map { model =>
       (model, getRejection(model, 1, countryRelations(model.countryCode), ownedModels, airline))
     }.toMap
-    
+
   }
-  
+
   def getRejection(model: Model, quantity : Int, airline : Airline) : Option[String] = {
     val relationship = AirlineCountryRelationship.getAirlineCountryRelationship(model.countryCode, airline)
 
     val ownedModels = AirplaneOwnershipCache.getOwnership(airline.id).map(_.model).toSet
     getRejection(model, quantity, relationship, ownedModels, airline)
   }
-  
+
   def getRejection(model: Model, quantity : Int, relationship : AirlineCountryRelationship, ownedModels : Set[Model], airline : Airline) : Option[String]= {
     if (airline.getHeadQuarter().isEmpty) { //no HQ
       return Some("Must build HQs before purchasing any airplanes")
@@ -248,10 +248,10 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     if (cost > airline.getBalance()) {
       return Some("Not enough cash to purchase this airplane model")
     }
-    
+
     return None
   }
-  
+
   def getUsedRejections(usedAirplanes : List[Airplane], model : Model, airline : Airline) : Map[Airplane, String] = {
     if (airline.getHeadQuarter().isEmpty) { //no HQ
       return usedAirplanes.map((_, "Must build HQs before purchasing any airplanes")).toMap
@@ -267,7 +267,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       val rejection = s"Cannot buy used airplane of " + model.name + s" until your relationship with ${CountryCache.getCountry(model.countryCode).get.name} is improved to at least ${Model.BUY_RELATIONSHIP_THRESHOLD}"
       return usedAirplanes.map((_, rejection)).toMap
     }
-    
+
     val ownedModels = AirplaneOwnershipCache.getOwnership(airline.id).map(_.model).toSet
     val ownedModelFamilies = ownedModels.map(_.family)
     if (!ownedModelFamilies.contains(model.family) && ownedModelFamilies.size >= airline.airlineGrade.getModelFamilyLimit) {
@@ -275,11 +275,11 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       val rejection = "Can only own up to " + airline.airlineGrade.getModelFamilyLimit + " different airplane " + familyToken + " at current airline grade"
       return usedAirplanes.map((_, rejection)).toMap
     }
-    
+
     val rejections = scala.collection.mutable.Map[Airplane, String]()
     usedAirplanes.foreach { airplane =>
       if (airplane.dealerValue > airline.getBalance()) {
-         rejections.put(airplane, "Not enough cash to purchase this airplane")  
+         rejections.put(airplane, "Not enough cash to purchase this airplane")
       }
     }
     return rejections.toMap
@@ -362,12 +362,12 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
 
-  
+
   def getUsedAirplanes(airlineId : Int, modelId : Int) = AuthenticatedAirline(airlineId) { request =>
       ModelSource.loadModelById(modelId) match {
-        case Some(model) => 
+        case Some(model) =>
           val usedAirplanes = AirplaneSource.loadAirplanesCriteria(List(("a.model", modelId), ("is_sold", true)))
-          
+
           val rejections = getUsedRejections(usedAirplanes, model, request.user)
           var result = Json.arr()
           usedAirplanes.foreach { airplane =>
@@ -381,7 +381,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         case None => BadRequest("model not found")
       }
   }
-  
+
   def buyUsedAirplane(airlineId : Int, airplaneId : Int, homeAirportId : Int, configurationId : Int) = AuthenticatedAirline(airlineId) { request =>
       this.synchronized {
         AirplaneSource.loadAirplaneById(airplaneId) match {
@@ -435,9 +435,9 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         }
       }
   }
-  
-  
-  
+
+
+
   def getAirplane(airlineId : Int, airplaneId : Int) =  AuthenticatedAirline(airlineId) {
     AirplaneSource.loadAirplaneById(airplaneId) match {
       case Some(airplane) =>
@@ -452,7 +452,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         BadRequest("airplane not found")
     }
   }
-  
+
   def sellAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) {
     AirplaneSource.loadAirplaneById(airplaneId) match {
       case Some(airplane) =>
@@ -492,12 +492,12 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         BadRequest("airplane not found")
     }
   }
-  
+
   def replaceAirplane(airlineId : Int, airplaneId : Int) = AuthenticatedAirline(airlineId) { request =>
     AirplaneSource.loadAirplaneById(airplaneId) match {
       case Some(airplane) =>
         if (airplane.owner.id == airlineId) {
-          val currentCycle = CycleSource.loadCycle
+          val currentCycle = CycleSource.loadCycle()
           if (!airplane.isReady) {
             BadRequest("airplane is not yet constructed")
           } else if (airplane.purchasedCycle > (currentCycle - airplane.model.constructionTime)) {
@@ -544,7 +544,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         BadRequest("airplane not found")
     }
   }
-  
+
   def addAirplane(airlineId : Int, modelId : Int, quantity : Int, homeAirportId : Int, configurationId : Int) = AuthenticatedAirline(airlineId) { request =>
     ModelSource.loadModelById(modelId) match {
       case None =>

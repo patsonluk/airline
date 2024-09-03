@@ -40,14 +40,14 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
    * validation, submission, errors, redisplaying, ...
    */
   val signupForm: Form[NewUser] = Form(
-    
+
     // Define a mapping that will handle User values
     mapping(
       "username" -> text(minLength = 4, maxLength = 20).verifying(
         "username can only contain alphanumeric characters",
         userName => userName.forall(char => char.isLetterOrDigit && char <= 'z')).verifying(
         "This username is not available",
-        userName => !UserSource.loadUsersByCriteria(List.empty).map { _.userName.toLowerCase() }.contains(userName.toLowerCase())    
+        userName => !UserSource.loadUsersByCriteria(List.empty).map { _.userName.toLowerCase() }.contains(userName.toLowerCase())
       ),
       "email" -> email,
       // Create a tuple mapping for the password/confirm
@@ -71,25 +71,25 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
     {
       // Binding: Create a User from the mapping result (ignore the second password and the accept field)
       (username, email, passwords, recaptureToken, airlineName) => NewUser(username.trim, passwords._1, email.trim, recaptureToken, airlineName.trim)
-    } 
+    }
     {
       // Unbinding: Create the mapping values from an existing User value
       user => Some(user.username, user.email, (user.password, ""), "", user.airlineName)
     }
   )
-  
+
   /**
    * Display an empty form.
    */
   def form = Action { implicit request =>
     Ok(html.signup(signupForm))
   }
-  
+
   /**
    * Display a form pre-filled with an existing User.
    */
 //  def editForm = Action {
-//    val existingUser = NewUser("fakeuser", "secret", "fake@gmail.com") 
+//    val existingUser = NewUser("fakeuser", "secret", "fake@gmail.com")
 //    Ok(html.signup(signupForm.fill(existingUser)))
 //  }
 
@@ -110,16 +110,16 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
    * Handle form submission.
    */
   def submit = Action { implicit request =>
-    signupForm.bindFromRequest.fold(
+    signupForm.bindFromRequest().fold(
       // Form has errors, redisplay it
       errors => BadRequest(html.signup(errors)), { userInput =>
-        
+
         if (isValidRecaptcha(userInput.recaptchaToken)) {
           // We got a valid User value, display the summary
           val user = User(userInput.username, userInput.email, Calendar.getInstance, Calendar.getInstance, UserStatus.ACTIVE, level = 0, None, List.empty)
           UserSource.saveUser(user)
           Authentication.createUserSecret(userInput.username, userInput.password)
-          
+
           val newAirline = Airline(userInput.airlineName)
 //          newAirline.setBalance(50000000) //initial balance 50 million
           newAirline.setMaintenanceQuality(100)
@@ -128,7 +128,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
           UserSource.setUserAirline(user, newAirline)
 
           SearchUtil.addAirline(newAirline)
-          
+
 //          val profile = StartupProfile.profilesById(userInput.profileId)
 //          profile.initializeAirline(newAirline)
           Redirect("/").withCookies(Cookie("sessionActive", "true", httpOnly = false)).withSession("userToken" -> SessionUtil.addUserId(user.id))
@@ -139,25 +139,25 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
       }
     )
   }
-  
+
   def isValidRecaptcha(recaptchaToken: String) : Boolean = {
     println("checking token " + recaptchaToken)
     val request = ws.url(recaptchaUrl).withQueryStringParameters("secret" -> recaptchaSecret, "response" -> recaptchaToken)
-    
+
     val (successJs, scoreJs, actionJs, responseBody) = Await.result(request.get().map { response =>
       ((response.json \ "success"), (response.json \ "score"), (response.json \ "action"), response.body)
     }, Duration(10, TimeUnit.SECONDS))
-    
+
     if (!successJs.as[Boolean]) {
       println("recaptcha response with success as false")
-      return false;  
+      return false;
     }
-    
+
     val score = scoreJs.as[Double]
     val action = actionJs.as[String]
-    
+
     println("recaptcha score " + score + " action " + action)
-    
+
     return action == recaptchaAction && score >= recaptchaScoreThreshold
   }
 }

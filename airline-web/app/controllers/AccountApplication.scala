@@ -31,7 +31,7 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
    * validation, submission, errors, redisplaying, ...
    */
   val form: Form[PasswordReset] = Form(
-    
+
     // Define a mapping that will handle User values
     mapping(
       "resetToken" -> text,
@@ -47,20 +47,20 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     // so we have to define custom binding/unbinding functions
     {
       // Binding: Create a User from the mapping result (ignore the second password and the accept field)
-      (token, passwords) => PasswordReset(token, passwords._1) 
-    } 
+      (token, passwords) => PasswordReset(token, passwords._1)
+    }
     {
       // Unbinding: Create the mapping values from an existing User value
       passwordReset => Some(passwordReset.token, (passwordReset.password, ""))
     }
   )
-  
+
   val forgotIdForm : Form[ForgotId] = Form(
-    
+
     // Define a mapping that will handle User values
     mapping(
       "email" -> text/*.verifying(
-        "Email address is not found",  
+        "Email address is not found",
         email => !(UserSource.loadUsersByCriteria(List(("email", email))).isEmpty)
       )*/
     )
@@ -68,20 +68,20 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     // so we have to define custom binding/unbinding functions
     {
       // Binding: Create a User from the mapping result (ignore the second password and the accept field)
-      (email) => ForgotId(email) 
-    } 
+      (email) => ForgotId(email)
+    }
     {
       // Unbinding: Create the mapping values from an existing User value
       forgotId => Some(forgotId.email)
     }
   )
-  
+
   val forgotPasswordForm : Form[ForgotPassword] = Form(
-    
+
     // Define a mapping that will handle User values
     mapping(
       "userName" -> text.verifying(
-        "User Name is not found",  
+        "User Name is not found",
         userName => UserSource.loadUserByUserName(userName).isDefined
       ),
       "email" -> text
@@ -90,14 +90,14 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     // so we have to define custom binding/unbinding functions
     {
       // Binding: Create a User from the mapping result (ignore the second password and the accept field)
-      (userName, email) => ForgotPassword(userName, email) 
-    } 
+      (userName, email) => ForgotPassword(userName, email)
+    }
     {
       // Unbinding: Create the mapping values from an existing User value
       forgotPassword => Some(forgotPassword.userName, forgotPassword.email)
     }
   )
-  
+
   /**
    * Display an empty form.
    */
@@ -109,35 +109,35 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
       case None => Forbidden
     }
-    
-    
+
+
   }
-  
+
   def forgotId() = Action { implicit request =>
     Ok(html.forgotId(forgotIdForm.fill(ForgotId(""))))
   }
-  
+
   def forgotPassword() = Action { implicit request =>
     Ok(html.forgotPassword(forgotPasswordForm.fill(ForgotPassword("", ""))))
   }
-  
+
 //  def sendEmail() = Action {
 //    EmailUtil.sendEmail("patson_luk@hotmail.com", "info@airline-club.com", "testing", "testing");
 //    Ok(Json.obj())
 //  }
-  
-  
-  
+
+
+
   /**
    * Handle form submission.
    */
   def passwordResetSubmit = Action { implicit request =>
-    form.bindFromRequest.fold(
+    form.bindFromRequest().fold(
       // Form has errors, redisplay it
       errors => {
         println(errors)
         BadRequest(html.passwordReset(errors))
-      }, 
+      },
       userInput => {
           UserSource.loadResetUser(userInput.token) match {
             case Some(username) => {
@@ -154,17 +154,17 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
     )
   }
-  
+
   /**
    * Handle form submission.
    */
   def forgotIdSubmit = Action { implicit request =>
-    forgotIdForm.bindFromRequest.fold(
+    forgotIdForm.bindFromRequest().fold(
       // Form has errors, redisplay it
       errors => {
         println(errors)
         BadRequest(html.forgotId(errors))
-      }, 
+      },
       userInput => {
           val users = UserSource.loadUsersByCriteria(List(("email", userInput.email)))
           if (users.size > 0) {
@@ -177,14 +177,14 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
     )
   }
-  
+
    def forgotPasswordSubmit = Action { implicit request =>
-    forgotPasswordForm.bindFromRequest.fold(
+    forgotPasswordForm.bindFromRequest().fold(
       // Form has errors, redisplay it
       errors => {
         println(errors)
         BadRequest(html.forgotPassword(errors))
-      }, 
+      },
       userInput => {
           val user = UserSource.loadUserByUserName(userInput.userName).get
           if (user.email == userInput.email) {
@@ -200,7 +200,7 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
           } else {
             println("Want to reset password for " + user.userName + " but email does not match!")
           }
-          
+
           Ok(html.checkEmail())
       }
     )
@@ -211,18 +211,18 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
      users.foreach { user =>
        message ++= (user.userName + "\r\n")
      }
-    
+
     message.toString()
   }
-  
+
   def getResetPasswordMessage(user : User, baseUrl: String) = {
     val resetLink = generateResetLink(user, baseUrl)
     "Please follow this link \r\n" + resetLink + "\r\nto reset your password."
   }
-  
+
   def generateResetLink(user : User, baseUrl : String) = {
     val resetToken = UUID.randomUUID().toString()
-    
+
     UserSource.saveResetUser(user.userName, resetToken)
 
     s"$baseUrl?resetToken=" + resetToken

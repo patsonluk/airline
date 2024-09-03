@@ -152,7 +152,7 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
       case None =>
     }
 
-    val currentCycle = CycleSource.loadCycle ()
+    val currentCycle = CycleSource.loadCycle()
     EventSource.loadEventById(eventId) match {
       case Some(olympics : Olympics) =>
 
@@ -416,5 +416,3 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
 }
-
-

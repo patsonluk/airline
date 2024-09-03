@@ -11,19 +11,19 @@ import com.patson.util.{AirlineCache, AirplaneModelCache, AirportCache}
 
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, HashSet, ListBuffer, Set}
- 
+
 
 
 object LinkSource {
   val FULL_LOAD = Map(DetailType.AIRLINE -> true, DetailType.AIRPORT -> true, DetailType.AIRPLANE -> true)
   val SIMPLE_LOAD = Map(DetailType.AIRLINE -> false, DetailType.AIRPORT -> false, DetailType.AIRPLANE -> false)
   val ID_LOAD : Map[DetailType.Type, Boolean] = Map.empty
-  
+
   private[this]val BASE_QUERY = "SELECT * FROM " + LINK_TABLE
-  
+
   def loadLinksByCriteria(criteria : List[(String, Any)], loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
-    var queryString = BASE_QUERY 
-      
+    var queryString = BASE_QUERY
+
     if (!criteria.isEmpty) {
       queryString += " WHERE "
       for (i <- 0 until criteria.size - 1) {
@@ -31,7 +31,7 @@ object LinkSource {
       }
       queryString += criteria.last._1 + " = ?"
     }
-    
+
     loadLinksByQueryString(queryString, criteria.map(_._2), loadDetails)
   }
 
@@ -46,7 +46,7 @@ object LinkSource {
 
     loadLinksByQueryString(queryString, criteria.map(_._2), loadDetails).map(_.asInstanceOf[Link])
   }
-  
+
   def loadLinksByIds(ids : List[Int], loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
     if (ids.isEmpty) {
       List.empty
@@ -55,35 +55,35 @@ object LinkSource {
       for (i <- 0 until ids.size - 1) {
             queryString.append("?,")
       }
-      
+
       queryString.append("?)")
       loadLinksByQueryString(queryString.toString(), ids, loadDetails)
     }
   }
-  
+
   def loadLinksByQueryString(queryString : String, parameters : List[Any], loadDetails : Map[DetailType.Value, Boolean] = SIMPLE_LOAD) = {
     val connection = Meta.getConnection()
-    
-    try {  
+
+    try {
       val preparedStatement = connection.prepareStatement(queryString)
-      
+
       for (i <- 0 until parameters.size) {
         preparedStatement.setObject(i + 1, parameters(i))
       }
-      
+
       val resultSet = preparedStatement.executeQuery()
-      
+
       val links = new ListBuffer[Transport]()
-      
+
       val linkIds : Set[Int] = new HashSet[Int]
       val airportIds : Set[Int] = new HashSet[Int]
-      
+
       while (resultSet.next()) {
         airportIds += resultSet.getInt("from_airport")
         airportIds += resultSet.getInt("to_airport")
         linkIds += resultSet.getInt("id")
       }
-      
+
       val assignedAirplaneCache : Map[Int, Map[Airplane, LinkAssignment]] = loadDetails.get(DetailType.AIRPLANE) match {
         case Some(fullLoad) => loadAssignedAirplanesByLinks(connection, linkIds.toList)
         case None => Map.empty
@@ -95,20 +95,20 @@ object LinkSource {
         }
         case None => airportIds.map(id => (id, Airport.fromId(id))).toMap
       }
-      
+
       resultSet.beforeFirst()
       while (resultSet.next()) {
         val fromAirportId = resultSet.getInt("from_airport")
         val toAirportId = resultSet.getInt("to_airport")
         val airlineId = resultSet.getInt("airline")
-        
+
         val fromAirport = airportCache.get(fromAirportId) //Do not use AirportCache as fullLoad will be slow
         val toAirport = airportCache.get(toAirportId) //Do not use AirportCache as fullLoad will be slow
         val airline = loadDetails.get(DetailType.AIRLINE) match {
           case Some(fullLoad) => AirlineCache.getAirline(airlineId, fullLoad).orElse(Some(Airline.fromId(airlineId)))
           case None => Some(Airline.fromId(airlineId))
         }
-        
+
         if (fromAirport.isDefined && toAirport.isDefined && airline.isDefined) {
           val transportType = TransportType(resultSet.getInt("transport_type"))
           val link = {
@@ -151,13 +151,13 @@ object LinkSource {
               }
             }
           }
-          
-          links += link          
+
+          links += link
         } else {
           println("Failed loading link [" + resultSet.getInt("id") + "] as some details cannot be loaded " + fromAirport + toAirport + airline)
         }
       }
-      
+
       resultSet.close()
       preparedStatement.close()
       links.toList
@@ -207,21 +207,21 @@ object LinkSource {
       }
     }
   }
-  
+
   def loadFlightNumbers(airlineId : Int) : List[Int] = {
     val connection = Meta.getConnection()
-    
-    try {  
+
+    try {
       val preparedStatement = connection.prepareStatement("SELECT flight_number FROM " + LINK_TABLE + " WHERE airline = ?")
-      
+
       preparedStatement.setInt(1, airlineId)
-      
+
       val resultSet = preparedStatement.executeQuery()
-      
-      val flightNumbers = ListBuffer[Int]() 
+
+      val flightNumbers = ListBuffer[Int]()
       while (resultSet.next()) {
         flightNumbers.append(resultSet.getInt("flight_number"))
-      } 
+      }
       resultSet.close()
       preparedStatement.close()
       flightNumbers.toList
@@ -229,7 +229,7 @@ object LinkSource {
       connection.close()
     }
   }
-  
+
   def loadAssignedAirplanesByLinks(connection : Connection, linkIds : List[Int]) : Map[Int, Map[Airplane, LinkAssignment]] = {
     if (linkIds.isEmpty) {
       Map.empty
@@ -238,23 +238,23 @@ object LinkSource {
       for (i <- 0 until linkIds.size - 1) {
             queryString.append("?,")
       }
-      
+
       queryString.append("?)")
       val linkAssignmentStatement = connection.prepareStatement(queryString.toString)
       for (i <- 0 until linkIds.size) {
         linkAssignmentStatement.setInt(i + 1, linkIds(i))
       }
-      
+
       val assignmentResultSet = linkAssignmentStatement.executeQuery
-      
+
       val airplaneIds = new HashSet[Int]
       while (assignmentResultSet.next()) {
           airplaneIds += assignmentResultSet.getInt("airplane")
       }
-      
+
       val airplaneCache = AirplaneSource.loadAirplanesByIds(airplaneIds.toList).map { airplane => (airplane.id, airplane) }.toMap
       assignmentResultSet.beforeFirst()
-      
+
       val assignments = new HashMap[Int, HashMap[Airplane, LinkAssignment]]()
       while (assignmentResultSet.next()) {
         val link = assignmentResultSet.getInt("link")
@@ -269,18 +269,18 @@ object LinkSource {
           assignments.put(linkId, HashMap.empty)
         }
       }
-      
+
       assignmentResultSet.close()
       linkAssignmentStatement.close()
-      
+
       val assignedPlanesByLinkId = assignments.toList.map {
         case (linkId, mutableMap) => (linkId, mutableMap.toMap)
       }.toMap
-      
+
       assignedPlanesByLinkId
     }
   }
-  
+
   def loadFlightLinkById(linkId : Int, loadDetails : Map[DetailType.Value, Boolean] = FULL_LOAD) : Option[Link] = {
     val result = loadFlightLinksByCriteria(List(("id", linkId)), loadDetails)
     if (result.isEmpty) {
@@ -505,7 +505,7 @@ object LinkSource {
       }
       preparedStatement.setTimestamp(13, new java.sql.Timestamp(new Date().getTime()))
       preparedStatement.setInt(14, link.id)
-      
+
       val updateCount = preparedStatement.executeUpdate()
       println("Updated " + updateCount + " link!")
 
@@ -564,7 +564,7 @@ object LinkSource {
           }
         }
       }
-      
+
       preparedStatement.executeBatch()
 
       ChangeHistorySource.saveLinkChanges(changeEntries.toList)
@@ -573,7 +573,7 @@ object LinkSource {
       preparedStatement.close()
       connection.close()
     }
-    
+
   }
 
   def hasChange(existingLink : Transport, newLink : Transport) : Boolean = {
@@ -584,13 +584,13 @@ object LinkSource {
     newLink.price.businessVal != existingLink.price.businessVal ||
     newLink.price.firstVal != existingLink.price.firstVal
   }
-  
-  
+
+
   def updateAssignedPlanes(linkId : Int, assignedAirplanes : Map[Airplane, LinkAssignment]) = {
     val connection = Meta.getConnection()
     try {
       connection.setAutoCommit(false)
-      
+
       //remove all the existing ones assigned to this link
       val removeStatement = connection.prepareStatement("DELETE FROM " + LINK_ASSIGNMENT_TABLE + " WHERE link = ?")
       removeStatement.setInt(1, linkId)
@@ -608,8 +608,8 @@ object LinkSource {
           insertStatement.executeUpdate()
           insertStatement.close
         }
-      }    
-      
+      }
+
       connection.commit()
     } finally {
       connection.close()
@@ -656,7 +656,7 @@ object LinkSource {
   def deleteLink(linkId : Int) = {
     deleteLinksByCriteria(List(("id", linkId)))
   }
-  
+
   def deleteAllLinks() = {
     deleteLinksByCriteria(List.empty)
   }
@@ -664,7 +664,7 @@ object LinkSource {
   def deleteLinksByAirlineId(airlineId : Int) = {
     deleteLinksByCriteria(List(("airline", airlineId)))
   }
-  
+
   def deleteLinksByCriteria(criteria : List[(String, Any)]) = {
       //open the hsqldb
     val connection = Meta.getConnection()
@@ -672,7 +672,7 @@ object LinkSource {
       val purgingLinks = loadLinksByCriteria(criteria, Map(DetailType.AIRLINE -> true, DetailType.AIRPORT -> false, DetailType.AIRPLANE -> false)).map(link => (link.id, link)).toMap
 
       var queryString = "DELETE FROM link "
-      
+
       if (!criteria.isEmpty) {
         queryString += " WHERE "
         for (i <- 0 until criteria.size - 1) {
@@ -680,15 +680,15 @@ object LinkSource {
         }
         queryString += criteria.last._1 + " = ?"
       }
-      
+
       val preparedStatement = connection.prepareStatement(queryString)
-      
+
       for (i <- 0 until criteria.size) {
         preparedStatement.setObject(i + 1, criteria(i)._2)
       }
 
       val deletedCount = preparedStatement.executeUpdate()
-      
+
       preparedStatement.close()
 
       println("Deleted " + deletedCount + " link records")
@@ -764,7 +764,7 @@ object LinkSource {
 
     entry
   }
-  
+
   def saveLinkConsumptions(linkConsumptions: List[LinkConsumptionDetails]) = {
      //open the hsqldb
     val connection = Meta.getConnection()
@@ -783,7 +783,7 @@ object LinkSource {
           preparedStatement.setInt(8, linkConsumption.link.soldSeats(ECONOMY))
           preparedStatement.setInt(9, linkConsumption.link.soldSeats(BUSINESS))
           preparedStatement.setInt(10, linkConsumption.link.soldSeats(FIRST))
-          preparedStatement.setInt(11, linkConsumption.link.computedQuality)
+          preparedStatement.setInt(11, linkConsumption.link.computedQuality())
           preparedStatement.setInt(12, linkConsumption.fuelCost)
           preparedStatement.setInt(13, linkConsumption.crewCost)
           preparedStatement.setInt(14, linkConsumption.airportFees)
@@ -831,10 +831,10 @@ object LinkSource {
       val latestCycleStatement = connection.prepareStatement("SELECT MAX(cycle) FROM " + LINK_CONSUMPTION_TABLE)
       val resultSet = latestCycleStatement.executeQuery()
       val latestCycle = if (resultSet.next()) { resultSet.getInt(1) } else 0
-      latestCycleStatement.close()  
-      
-      val deleteFrom = if (latestCycle - cyclesFromLatest < 0) 0 else latestCycle - cyclesFromLatest 
-      
+      latestCycleStatement.close()
+
+      val deleteFrom = if (latestCycle - cyclesFromLatest < 0) 0 else latestCycle - cyclesFromLatest
+
       val deleteStatement = connection.prepareStatement("DELETE FROM " + LINK_CONSUMPTION_TABLE + " WHERE cycle <= ?")
       deleteStatement.setInt(1, deleteFrom)
       val deletedConsumption = deleteStatement.executeUpdate()
@@ -844,17 +844,17 @@ object LinkSource {
       connection.close()
     }
   }
-  
+
   def loadLinkConsumptions(cycleCount : Int = 1) = {
     loadLinkConsumptionsByCriteria(List.empty, cycleCount)
   }
-  
+
   def loadLinkConsumptionsByLinkId(linkId : Int, cycleCount : Int = 1) = {
     loadLinkConsumptionsByCriteria(List(("link", linkId)), cycleCount)
   }
-  
+
   def loadLinkConsumptionsByLinksId(linkIds : List[Int], cycleCount : Int = 1) = {
-    
+
     if (linkIds.isEmpty) {
       List.empty
     } else {
@@ -862,19 +862,19 @@ object LinkSource {
       for (i <- 0 until linkIds.size - 1) {
             queryString.append("?,")
       }
-      
+
       queryString.append("?)")
       loadLinkConsumptionsByQuery(queryString.toString(), linkIds, cycleCount)
     }
   }
-  
+
   def loadLinkConsumptionsByAirline(airlineId : Int, cycleCount : Int = 1) = {
     loadLinkConsumptionsByCriteria(List(("airline", airlineId)), cycleCount)
   }
-  
+
    def loadLinkConsumptionsByCriteria(criteria : List[(String, Any)], cycleCount : Int) = {
-    var queryString = "SELECT * FROM link_consumption WHERE cycle > ?" 
-      
+    var queryString = "SELECT * FROM link_consumption WHERE cycle > ?"
+
     if (!criteria.isEmpty) {
       queryString += " AND "
       for (i <- 0 until criteria.size - 1) {
@@ -883,30 +883,30 @@ object LinkSource {
       queryString += criteria.last._1 + " = ?"
     }
     queryString += " ORDER BY cycle DESC"
-    
+
     loadLinkConsumptionsByQuery(queryString, criteria.map(_._2), cycleCount)
   }
-  
+
   def loadLinkConsumptionsByQuery(queryString: String, parameters : List[Any], cycleCount : Int) = {
     val connection = Meta.getConnection()
-      
+
     try {
       val latestCycleStatement = connection.prepareStatement("SELECT MAX(cycle) FROM " + LINK_CONSUMPTION_TABLE)
       val latestCycleResultSet = latestCycleStatement.executeQuery()
       val latestCycle = if (latestCycleResultSet.next()) { latestCycleResultSet.getInt(1) } else 0
       latestCycleStatement.close()
-      
+
       val preparedStatement = connection.prepareStatement(queryString)
-      
+
       preparedStatement.setInt(1, latestCycle - cycleCount)
       for (i <- 0 until parameters.size) {
         preparedStatement.setObject(i + 2, parameters(i))
       }
-      
+
       val resultSet = preparedStatement.executeQuery()
-      
+
       val linkConsumptions = new ListBuffer[LinkConsumptionDetails]()
-      
+
       resultSet.beforeFirst()
       while (resultSet.next()) {
         val linkId = resultSet.getInt("link")

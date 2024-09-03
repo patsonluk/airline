@@ -22,17 +22,17 @@ object Application extends Controller {
       val airport = Airport.fromId((json \ "id").as[Int])
       JsSuccess(airport)
     }
-    
+
     def writes(airport: Airport): JsValue = {
       val averageIncome = airport.power / airport.population
       val incomeLevel = (Math.log(averageIncome / 1000) / Math.log(1.1)).toInt
-//      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) { 
-//        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)  
+//      val appealMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
+//        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.loyalty)
 //      }
-//      val awarenessMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) { 
-//        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.awareness)  
+//      val awarenessMap = airport.airlineAppeals.foldRight(Map[Airline, Int]()) {
+//        case(Tuple2(airline, appeal), foldMap) => foldMap + Tuple2(airline, appeal.awareness)
 //      }
-      
+
       var airportObject = JsObject(List(
       "id" -> JsNumber(airport.id),
       "name" -> JsString(airport.name),
@@ -46,25 +46,25 @@ object Application extends Controller {
       "slots" -> JsNumber(airport.slots),
       "availableSlots" -> JsNumber(airport.availableSlots),
       "incomeLevel" -> JsNumber(if (incomeLevel < 0) 0 else incomeLevel)))
-      
-      
+
+
       if (airport.isSlotAssignmentsInitialized) {
-        airportObject = airportObject + ("slotAssignmentList" -> JsArray(airport.getAirlineSlotAssignments().toList.map {  
+        airportObject = airportObject + ("slotAssignmentList" -> JsArray(airport.getAirlineSlotAssignments().toList.map {
           case (airlineId, slotAssignment) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "slotAssignment" -> slotAssignment)
           }
         ))
       }
       if (airport.isAirlineAppealsInitialized) {
-        airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAppeals().toList.map {  
+        airportObject = airportObject + ("appealList" -> JsArray(airport.getAirlineAppeals().toList.map {
           case (airlineId, appeal) => Json.obj("airlineId" -> airlineId, "airlineName" -> AirlineSource.loadAirlineById(airlineId).fold("<unknown>")(_.name), "loyalty" -> BigDecimal(appeal.loyalty).setScale(2, BigDecimal.RoundingMode.HALF_EVEN), "awareness" -> BigDecimal(appeal.awareness).setScale(2,  BigDecimal.RoundingMode.HALF_EVEN))
           }
         ))
       }
-      
+
       airportObject
     }
   }
-  
+
   case class AirportSlotData(airlineId: Int, slotCount: Int)
   val airportSlotForm = Form(
     mapping(
@@ -72,7 +72,7 @@ object Application extends Controller {
       "slotCount" -> number
     )(AirportSlotData.apply)(AirportSlotData.unapply)
   )
-  
+
   def getAirports(count : Int) = Action {
     val airports = AirportSource.loadAllAirports()
     val selectedAirports = airports.takeRight(count)
@@ -80,7 +80,7 @@ object Application extends Controller {
       ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
     )
   }
-  
+
   def getAirport(airportId : Int) = Action {
      AirportSource.loadAirportById(airportId, true) match {
        case Some(airport) =>  Ok(Json.toJson(airport)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
@@ -88,30 +88,30 @@ object Application extends Controller {
      }
   }
   def getAirportSlots(airportId : Int, airlineId : Int) = Action {
-    AirportSource.loadAirportById(airportId, true) match {  
-       case Some(airport) =>  
+    AirportSource.loadAirportById(airportId, true) match {
+       case Some(airport) =>
          val maxSlots = airport.getMaxSlotAssignment(airlineId)
          val assignedSlots = airport.getAirlineSlotAssignment(airlineId)
          Ok(Json.obj("assignedSlots" -> JsNumber(assignedSlots), "maxSlots" -> JsNumber(maxSlots))).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
        case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
      }
   }
-  
+
   def postAirportSlots(airportId : Int) = Action { implicit request =>
-     AirportSource.loadAirportById(airportId, true) match {  
-       case Some(airport) =>  
-         val AirportSlotData(airlineId, slotCount) = airportSlotForm.bindFromRequest.get
+     AirportSource.loadAirportById(airportId, true) match {
+       case Some(airport) =>
+         val AirportSlotData(airlineId, slotCount) = airportSlotForm.bindFromRequest().get
          try {
            airport.setAirlineSlotAssignment(airlineId, slotCount)
            Ok(Json.toJson(airport)).withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
          } catch {
-           case e:IllegalArgumentException  => 
+           case e:IllegalArgumentException  =>
              BadRequest("Not allowed to allocate this amount of slots").withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
          }
        case None => NotFound.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN -> "*")
      }
   }
-  
+
   def options(path: String) = Action {
   Ok("").withHeaders(
     "Access-Control-Allow-Origin" -> "*",
@@ -122,5 +122,5 @@ object Application extends Controller {
   )
   }
 
-  case class LinkInfo(fromId : Int, toId : Int, price : Double, capacity : Int)  
+  case class LinkInfo(fromId : Int, toId : Int, price : Double, capacity : Int)
 }
