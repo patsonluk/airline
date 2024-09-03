@@ -20,9 +20,8 @@ object Computation {
 
   lazy val MAX_VALUES = getMaxValues()
   lazy val MODEL_AIRPORT_POWER = MAX_VALUES._1
-  lazy val MAX_INCOME_LEVEL = MAX_VALUES._2
-  lazy val MAX_POPULATION = MAX_VALUES._3
-  lazy val MAX_INCOME = MAX_VALUES._4
+  lazy val MAX_POPULATION = MAX_VALUES._2
+  lazy val MAX_INCOME = MAX_VALUES._3
 
   val MAX_COMPUTED_DISTANCE = 20000
   lazy val standardFlightDurationCache : Array[Int] = {
@@ -33,10 +32,10 @@ object Computation {
     result
   }
 
-  def getMaxValues(): (Long, Double, Long, Long) = {
+  def getMaxValues(): (Long, Long, Long) = {
     val allAirports = AirportSource.loadAllAirports()
     //take note that below should NOT use boosted values, should use base, otherwise it will incorrectly load some lazy vals of the Airport that is MAX
-    (allAirports.maxBy(_.basePower).basePower, allAirports.maxBy(_.baseIncomeLevel).baseIncomeLevel, allAirports.maxBy(_.basePopulation).basePopulation, allAirports.maxBy(_.baseIncome).baseIncome)
+    (allAirports.maxBy(_.basePower).basePower, allAirports.maxBy(_.basePopulation).basePopulation, allAirports.maxBy(_.baseIncome).baseIncome)
   }
 
   //distance vs max speed
@@ -151,14 +150,6 @@ object Computation {
     (Math.pow(Math.E, incomeLevel * Math.log(1.1)) * 500).toInt
   }
 
-  def computeIncomeLevelBoostFromPercentage(baseIncome : Int, minIncomeBoost : Int, boostPercentage : Int) = {
-    val incomeIncrement = baseIncome * boostPercentage / 100
-    val incomeBoost = Math.max(minIncomeBoost, incomeIncrement)
-
-    //10% would always be 1, but cannot make assumption of our income level calculation tho...
-    val baseIncomeLevel = getIncomeLevel(baseIncome)
-    BigDecimal(Computation.getIncomeLevel(baseIncome + incomeBoost) - baseIncomeLevel).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
-  }
 
   /**
     * For low income base, use the boost level (which is MAX boost). For higher income base, down adjust it to certain
@@ -167,21 +158,21 @@ object Computation {
     * @param boostLevel
     * @return
     */
-  def computeIncomeLevelBoostFromLevel(baseIncome : Int, boostLevel : Double) = {
+  def computeIncomeBoostFromLevel(baseIncome : Int, boostLevel : Double) = {
     val newIncomeLevel = getIncomeLevel(baseIncome) + boostLevel
     val incomeIncrement = fromIncomeLevel(newIncomeLevel) - baseIncome
     val maxIncomeBoost = (boostLevel * 10_000).toInt //a bit arbitrary
     val minIncomeBoost = (boostLevel * 2_500).toInt
-    val finalBoostLevel =
+    val finalBoost =
       if (incomeIncrement < minIncomeBoost) {
-        getIncomeLevel(baseIncome + minIncomeBoost) - getIncomeLevel(baseIncome)
+        minIncomeBoost
       } else if (incomeIncrement <= maxIncomeBoost) {
-        boostLevel
+        incomeIncrement
       } else {
-        getIncomeLevel(baseIncome + maxIncomeBoost) - getIncomeLevel(baseIncome)
+        maxIncomeBoost
       }
 
-    BigDecimal(finalBoostLevel).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
+    finalBoost
   }
 
   

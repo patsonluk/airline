@@ -43,12 +43,20 @@ object DemandGenerator {
 
 
 
-  def computeDemand(cycle: Int) = {
-    println("Loading airports")
-    //val allAirports = AirportSource.loadAllAirports(true)
-    val airports: List[Airport] = AirportSource.loadAllAirports(true).filter { airport => airport.iata != "" && airport.power > 0 }
-    println("Loaded " + airports.size + " airports")
-    
+  def computeDemand(cycle: Int, sourceAirports : List[Airport], plainDemand : Boolean = false) : List[(PassengerGroup, Airport, Int)] = {
+    val airports =
+      if (plainDemand) {
+        sourceAirports.map(airport => {
+          val clone = airport.copy()
+          clone.initAssets(List.empty)
+          clone.initFeatures(airport.features.filter(_.featureType != AirportFeatureType.AVIATION_HUB))
+          clone.initAirlineBases(List.empty)
+          clone
+        })
+      } else {
+        sourceAirports
+      }
+
     val allDemands = new ArrayList[(Airport, List[(Airport, (PassengerType.Value, LinkClassValues))])]()
 	  
 	  val countryRelationships = CountrySource.getCountryMutualRelationships()
@@ -73,7 +81,9 @@ object DemandGenerator {
 
     val allDemandsAsScala = allDemands.asScala
 
-    allDemandsAsScala.appendAll(generateEventDemand(cycle, airports))
+    if (!plainDemand) {
+      allDemandsAsScala.appendAll(generateEventDemand(cycle, airports))
+    }
 
 	  val baseDemandChunkSize = 10
 	  

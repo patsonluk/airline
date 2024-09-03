@@ -83,7 +83,7 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
     var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, $('#populationDetailsTooltip'))
     $("#airportDetailsPopulation").html($populationSpan)
 
-    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, $('#incomeDetailsTooltip'))
+    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost, $('#incomeDetailsTooltip'), '$')
     $("#airportDetailsIncomeLevel").html($incomeLevelSpan)
 
 	$("#airportDetailsCountry").attr("onclick", "showCountryView('" + airport.countryCode + "')")
@@ -960,7 +960,7 @@ function refreshAirportExtendedDetails(airport) {
     var $populationSpan = getBoostSpan(airport.population, airport.populationBoost, $('#populationDetailsTooltip'))
     $("#airportPopupPopulation").html($populationSpan)
 
-    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , $('#incomeDetailsTooltip'))
+    var $incomeLevelSpan = getBoostSpan(airport.incomeLevel, airport.incomeLevelBoost , $('#incomeDetailsTooltip'), '$')
     $("#airportPopupIncomeLevel").html($incomeLevelSpan)
 
     $(".airportFeatures .feature").remove()
