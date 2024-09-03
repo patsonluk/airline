@@ -424,14 +424,14 @@ function scrollToRow($matchingRow, $container) {
 /*
 Get a span with value and a tool tip of breakdown
 */
-function getBoostSpan(finalValue, boosts, $tooltip) {
+function getBoostSpan(finalValue, boosts, $tooltip, prefix) {
     var $valueSpan = $('<span>' + commaSeparateNumber(finalValue) + '</span>')
     if (boosts) {
         $valueSpan.css('color', '#41A14D')
         $tooltip.find('.table .table-row').remove()
         var $table = $tooltip.find('.table')
         $.each(boosts, function(index, entry) {
-            var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 30%; text-align:right;">+' + commaSeparateNumber(entry.boost) + '</div></div>')
+            var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 30%; text-align:right;">+' + (prefix ? prefix : '') + commaSeparateNumber(entry.boost) + '</div></div>')
             $row.css('color', 'white')
             $table.append($row)
         })

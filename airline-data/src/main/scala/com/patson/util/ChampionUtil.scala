@@ -75,7 +75,7 @@ object ChampionUtil {
     * @param ranking
     * @return
     */
-  def computeFullReputationBoost(airport : Airport, ranking : Int) : Double = {
+  def computeFullReputationBoost(airport : Airport, airline : Airline, ranking : Int) : Double = {
     val ratioToModelAirportPower = airport.power.toDouble / Computation.MODEL_AIRPORT_POWER
     var boost = BASE_BOOST
     //val economicPowerRating = Math.max(0, math.log10(ratioToModelAirportPower * 100) / 2) //0 to 1
@@ -89,6 +89,7 @@ object ChampionUtil {
         case INTERNATIONAL_HUB => feature.strengthFactor * 25
         case FINANCIAL_HUB => feature.strengthFactor * 15
         case VACATION_HUB => feature.strengthFactor * 10
+        case AVIATION_HUB => feature.strengthFactor * 25
         case _ => 0
       }
 
@@ -99,6 +100,7 @@ object ChampionUtil {
       case x if (x >= 3) => airport.size - 2
       case _ => 0
     })
+
 
     boost * reputationBoostBrackets(ranking)
   }
@@ -128,7 +130,7 @@ object ChampionUtil {
         val championInfoForThisAirport = topAirlineWithSortedIndex.map {
           case(loyalist, index) => {
               val ranking = index + 1
-              val reputationBoost = computeFullReputationBoost(airport, ranking) * loyalistToPopRatio
+              val reputationBoost = computeFullReputationBoost(airport, loyalist.airline, ranking) * loyalistToPopRatio
               Some(AirportChampionInfo(loyalist, ranking, reputationBoost))
           }
         }

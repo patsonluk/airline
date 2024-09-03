@@ -48,11 +48,12 @@ object AirlineBaseSpecialization extends Enumeration {
     private[this] val minIncomeBoost = 3000 //should at least boost income by $3000
     private[this] val percentageBoost = 20 //20% if lower than minIncomeBoost then minIncomeBoost
 
-    def incomeLevelBoost(airport : Airport) = {
-      Computation.computeIncomeLevelBoostFromPercentage(airport.baseIncome, minIncomeBoost, percentageBoost)
+    def incomeBoost(airport : Airport) = {
+      val incomeIncrement = airport.baseIncome * percentageBoost / 100
+      Math.max(minIncomeBoost, incomeIncrement)
     }
     override def descriptions(airport : Airport) =  {
-      List(s"Increase population by $populationBoost", s"Increase income level by ${incomeLevelBoost(airport)}")
+      List(s"Increase population by $populationBoost", s"Increase income by $$${incomeBoost(airport)}")
     }
     override def apply(airline: Airline, airport : Airport) = {
       AirportCache.invalidateAirport(airport.id)
