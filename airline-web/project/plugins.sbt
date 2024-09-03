@@ -1,7 +1,7 @@
 // The Play plugin
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.22")
+addSbtPlugin("org.playframework" % "sbt-plugin" % "3.0.5")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.2")
+addSbtPlugin("com.github.sbt" % "sbt-less" % "2.0.1")
 
 // Resolves similar issue to https://stackoverflow.com/questions/76693403/scala-play-dependency-issue
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always

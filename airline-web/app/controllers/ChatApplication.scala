@@ -1,8 +1,8 @@
 package controllers
 
 import javax.inject._
-import akka.actor._
-import akka.stream.Materializer
+import org.apache.pekko.actor._
+import org.apache.pekko.stream.Materializer
 import play.api._
 import play.api.mvc._
 
@@ -25,7 +25,7 @@ class ChatApplication @Inject()(cc: ControllerComponents)(implicit actorSystem: 
  //   (request: RequestHeader) =>
  //   (out: ActorRef) =>
  //   Props(new ClientActor(out, chat))
- //  }	 
+ //  }
    def chatSocket = WebSocket.acceptOrResult[String, String] { request =>
     Future.successful(request.session.get("userToken").flatMap(SessionUtil.getUserId(_)) match {
       case None =>

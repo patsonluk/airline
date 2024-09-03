@@ -3,8 +3,8 @@ package websocket.chat
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
-import akka.actor._
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor._
+import org.apache.pekko.stream.ActorMaterializer
 import com.patson.data.{AllianceSource, ChatSource}
 import com.patson.model.chat.ChatMessage
 import com.patson.model.{Airline, AllianceRole, User}
@@ -128,7 +128,7 @@ class ChatControllerActor extends Actor {
 
       clientActors += sender()
       context.watch(sender())
-      ChatControllerActor.addActiveUser(sender, user)
+      ChatControllerActor.addActiveUser(sender(), user)
       //You can turn these loggers off if needed
       logger.info("Chat socket connected " + sender() + " for user " + user.userName + " current active sessions : " + clientActors.size + " unique users : " + ChatControllerActor.getActiveUsers().size)
 

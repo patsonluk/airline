@@ -657,7 +657,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
 
 
-    val allAllianceHeadquarters = approvedMembers.flatMap(_.airline.getHeadQuarter).map(_.airport)
+    val allAllianceHeadquarters = approvedMembers.flatMap(_.airline.getHeadQuarter()).map(_.airport)
 
     val airlineHeadquarters = airline.getHeadQuarter().get.airport
 
