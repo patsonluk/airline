@@ -354,6 +354,7 @@ function populateOlympicsCityMap(map, candidateInfo) {
                 airport: airport,
                 content: createMapsMarkerImage(icon)
               });
+              marker.icon = icon;
 
             var infowindow
            	marker.addListener('mouseover', function(event) {

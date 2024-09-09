@@ -490,7 +490,8 @@ function drawFlightMarker(line, link) {
 		var from = line.getPath().getAt(0)
 		var to = line.getPath().getAt(1)
 
-		const image = createMapsMarkerImage("assets/images/markers/dot.png");
+		const icon = "assets/images/markers/dot.png";
+		const image = createMapsMarkerImage(icon);
 
 		var frequency = link.frequency
 //		var airplaneCount = link.assignedAirplanes.length
@@ -521,6 +522,14 @@ function drawFlightMarker(line, link) {
 			    //isActive: false,
 			    //clickable: false,
 			});
+			marker.icon = icon;
+			marker.totalDuration = link.duration * 2; //round trip
+			marker.elapsedDuration = 0;
+			marker.nextDepartureFrame = Math.floor((i + 0.1) * totalIntervalsPerWeek / frequency) % totalIntervalsPerWeek; //i + 0.1 so they wont all depart at the same time
+			marker.departureInterval = Math.floor(totalIntervalsPerWeek / markersRequired);
+			marker.status = "forward";
+			marker.isActive = false;
+			marker.clickable = false;
 
 			//flightMarkers.push(marker)
 			markersOfThisLink.push(marker)

@@ -364,7 +364,7 @@ function populateAirportDetails(airport) {
 
 	// cleanup first
 	for (var i = 0; i < airportMapMarkers.length; i++) {
-		airportMapMarkers[i].setMap(null);
+		airportMapMarkers[i].map = null;
 	}
 	airportMapMarkers = [];
 
@@ -388,7 +388,7 @@ function populateAirportDetails(airport) {
 			map: airportMap,
 			title: airport.name,
 			content: airportMarkerIconImage,
-			//zIndex: 999
+			zIndex: 999
 		});
 		airportMarker.icon = airportMarkerIcon;
 		airportMarker.originalIcon = airportMarkerIcon;

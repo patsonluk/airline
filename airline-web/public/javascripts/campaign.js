@@ -273,9 +273,10 @@ function populateCampaignAirportMarkers(campaignMap, airports, hasCoverage) {
         var marker = new google.maps.marker.AdvancedMarkerElement({
                 position: position,
                 map: campaignMap,
-                airport: airport,
                 content: createMapsMarkerImage(icon)
               });
+        marker.airport = airport;
+        marker.icon = icon;
 
             var infowindow
            	marker.addListener('mouseover', function(event) {
