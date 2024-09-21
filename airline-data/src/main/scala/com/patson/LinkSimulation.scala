@@ -26,14 +26,15 @@ object LinkSimulation {
 
 
 
-  def linkSimulation(cycle: Int) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
+  def linkSimulation(cycle: Int, srcAirports : List[Airport]) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("Loading all links")
     val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
     val flightLinks = links.filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link])
     println("Finished loading all links")
 
-    //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)'
-    val demand = DemandGenerator.computeDemand(cycle)
+    val airports = srcAirports.filter(airport => airport.iata != "" && airport.power > 0)
+
+    val demand : immutable.List[(PassengerGroup, Airport, Int)] = DemandGenerator.computeDemand(cycle, airports)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
       case(holder, (_, _, demandValue)) =>  
         holder + demandValue

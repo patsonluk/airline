@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import akka.actor.Props
 import akka.actor.Actor
 import com.patson.data._
+import com.patson.model.Airport
 import com.patson.stream.{CycleCompleted, CycleStart, SimulationEventStream}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirplaneOwnershipInfo, AirportCache}
 
@@ -49,13 +50,17 @@ object MainSimulation extends App {
       SimulationEventStream.publish(CycleStart(cycle, cycleStartTime), None)
       invalidateCaches()
 
+      println("Loading airports")
+      val airports: List[Airport] = AirportSource.loadAllAirports(true)
+      println("Loaded " + airports.size + " airports")
+
       UserSimulation.simulate(cycle)
       println("Event simulation")
-      EventSimulation.simulate(cycle)
+      EventSimulation.simulate(cycle, airports)
 
-      val (flightLinkResult, loungeResult, linkRidershipDetails) = LinkSimulation.linkSimulation(cycle)
+      val (flightLinkResult, loungeResult, linkRidershipDetails) = LinkSimulation.linkSimulation(cycle, airports)
       println("Airport simulation")
-      val airportChampionInfo = AirportSimulation.airportSimulation(cycle, flightLinkResult, linkRidershipDetails)
+      val airportChampionInfo = AirportSimulation.airportSimulation(cycle, airports, flightLinkResult, linkRidershipDetails)
 
       println("Airport assets simulation")
       AirportAssetSimulation.simulate(cycle, linkRidershipDetails)
