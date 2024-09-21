@@ -10,7 +10,7 @@ import scala.collection.mutable.ListBuffer
 
 object Computation {
   val MODEL_COUNTRY_CODE = "US"
-  val MODEL_COUNTRY_POWER : Double = CountrySource.loadCountryByCode(MODEL_COUNTRY_CODE) match {
+  lazy val MODEL_COUNTRY_POWER : Double = CountrySource.loadCountryByCode(MODEL_COUNTRY_CODE) match {
     case Some(country) =>
       country.airportPopulation.toDouble * country.income
     case None =>
