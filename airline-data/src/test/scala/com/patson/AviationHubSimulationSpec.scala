@@ -11,6 +11,8 @@ class AviationHubSimulationSpec extends WordSpecLike with Matchers {
   val airport1 = Airport("", "", "Test Airport 1", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 10000L, 0, id = 1)
   val airport2 = Airport("", "", "Test Airport 2", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 100000L, 0, id = 2)
   val airport3 = Airport("", "", "Test Airport 3", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 100000L, 0, id = 3)
+  val airport4 = Airport("", "", "Test Airport 4", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 100000L, 0, id = 4)
+  val airport5 = Airport("", "", "Test Airport 5", 0, 0 , "", "", "", size = 1, baseIncome = 10, basePopulation = 100000L, 0, id = 5)
   val airline1 = Airline.fromId(1)
   val airline2 = Airline.fromId(2)
   val airline3 = Airline.fromId(3)
@@ -27,10 +29,8 @@ class AviationHubSimulationSpec extends WordSpecLike with Matchers {
   val allAirports = List(airport1, airport2, airport3)
 
 
-  "navigationHubSimulation should accurately update paxByAirport based on link ridership details" in {
+  "getPaxByAirport should accurately get pax stats" in {
     // Create mock data for Airport and Route
-
-//    val airline1Link1 = Link(airport1, airport2, airline1, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1)
     val linkConsideration1 = LinkConsideration.getExplicit(Link(airport1, airport2, airline1, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1), 0, ECONOMY, false, 0)
     val linkConsideration2 = LinkConsideration.getExplicit(Link(airport2, airport3, airline2, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1), 0, ECONOMY, false, 0)
     val linkConsideration3 = LinkConsideration.getExplicit(Link(airport3, airport2, airline1, LinkClassValues.getInstance(), 1000, LinkClassValues.getInstance(), 0, 0, 0, FlightType.SHORT_HAUL_DOMESTIC, 0, 1), 0, ECONOMY, true, 0)
@@ -46,23 +46,49 @@ class AviationHubSimulationSpec extends WordSpecLike with Matchers {
     )
 
 
-    // Call the method
-    val airportDirectDemand = mutable.HashMap[Airport, Long]()
+    val result = AviationHubSimulation.getPaxByAirport(linkRidershipDetails)
 
-    DemandGenerator.computeDemand(1, allAirports, plainDemand = true).foreach {
-      case (group, toAirport, pax) =>
-        airportDirectDemand.put(group.fromAirport, airportDirectDemand.getOrElse(group.fromAirport, 0L) + pax)
-        airportDirectDemand.put(toAirport, airportDirectDemand.getOrElse(toAirport, 0L) + pax)
-    }
+//     Validate results
+    result should contain allOf(
+      (airport1 -> 250L),
+      (airport2 -> 500L), //transit is double
+      (airport3 -> 250L)
+    )
+  }
 
-    AviationHubSimulation.computeUpdatingAirports(airportDirectDemand.toMap, linkRidershipDetails, 1)
+  "computeUpdatingAirports should accurately update paxByAirport based on link ridership details" in {
+    val airport5 = airport4.copy(id=5)
+    airport5.initFeatures(List(AviationHubFeature(10)))
+    val airportDirectDemand = Map[Airport, Long] (
+      airport1 -> 0,
+      airport2 -> 100_000,
+      airport3 -> 1_000_000,
+      airport4 -> 1_000_000,
+      airport5 -> 1_000_000,
+    )
 
-    // Validate results
-//    result should contain allOf(
-//      (airport1 -> 100L),
-//      (airport2 -> 250L),
-//      (airport3 -> 150L)
-//    )
+
+    val linkRidershipDetails = Map[Airport, Long] (
+      airport1 -> 100_000,
+      airport2 -> 500_000,
+      airport3 -> 2_000_000,
+      airport4 -> 4_000_000,
+      airport5 -> 100_000,
+    )
+
+
+    val result = AviationHubSimulation.computeUpdatingAirports(airportDirectDemand, linkRidershipDetails)
+
+//     Validate results
+    result should equal(
+         Map[Airport, Int] (
+            airport1 -> 27,
+            airport2 -> 51,
+// no airport3 since there's no change
+            airport4 -> 41,
+           airport5 -> 0 //remove ranking. too few pax
+         ))
+
   }
 
 
