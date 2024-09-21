@@ -1103,7 +1103,7 @@ object AirportSource {
         queryBonusString += " WHERE " + criteria.map(criterion => s"$criterion._1 = ?").mkString(" AND ")
       }
 
-      val preparedBonusStatement = connection.prepareStatement(queryString)
+      val preparedBonusStatement = connection.prepareStatement(queryBonusString)
 
       for (i <- 0 until criteria.size) {
         preparedBonusStatement.setObject(i + 1, criteria(i)._2)
