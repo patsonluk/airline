@@ -87,7 +87,7 @@ object AviationHubSimulation {
     //YVR has roughly
     val strength = Math.ceil(strengthRatio * Math.min(500_000, pax) / 75_000).toInt
 
-    println(s"!!!!${airport.iata} demand $directDemand pax $pax ratio $strengthRatio final $strength")
+//    println(s"!!!!${airport.iata} demand $directDemand pax $pax ratio $strengthRatio final $strength")
 
     Math.min(AVIATION_HUB_MAX_STRENGTH, strength)
   }
