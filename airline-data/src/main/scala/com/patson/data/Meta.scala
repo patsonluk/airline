@@ -1838,7 +1838,11 @@ object Meta {
   }
 
   def createAirportChampion(connection : Connection) {
-    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_CHAMPION_TABLE)
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_CHAMPION_BONUS_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRPORT_CHAMPION_TABLE)
     statement.execute()
     statement.close()
 
@@ -1850,6 +1854,17 @@ object Meta {
       "ranking INTEGER," +
       "reputation_boost DECIMAL(5,2)," +
       "PRIMARY KEY (airport, airline)" +
+      ")")
+
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRPORT_CHAMPION_BONUS_TABLE + "(" +
+      "id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
+      "airport INTEGER, " +
+      "airline INTEGER, " +
+      "description VARCHAR(256), " +
+      "FOREIGN KEY (airport, airline) REFERENCES " + AIRPORT_CHAMPION_TABLE + "(airport, airline) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
 
     statement.execute()
