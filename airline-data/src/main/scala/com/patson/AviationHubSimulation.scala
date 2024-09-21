@@ -23,7 +23,7 @@ object AviationHubSimulation {
         airportDirectDemand.put(toAirport, airportDirectDemand.getOrElse(toAirport, 0L) + pax)
     }
 
-    val updatingAirports = computeUpdatingAirports(airportDirectDemand.toMap, linkRidershipDetails, cycle)
+    val updatingAirports = computeUpdatingAirports(airportDirectDemand.toMap, getPaxByAirport(linkRidershipDetails))
 
     updatingAirports.foreach {
       case (airport, strength) =>
@@ -35,21 +35,7 @@ object AviationHubSimulation {
     }
   }
 
-  def computeUpdatingAirports(airportDirectDemand : immutable.Map[Airport, Long], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : immutable.Map[Airport, Int] = {
-    val paxByAirport = mutable.HashMap[Airport, Long]()
-
-    linkRidershipDetails.foreach {
-      case ((passengerGroup, toAirport, route), count) => route.links.foreach { link =>
-        if (link.link.transportType == TransportType.FLIGHT) {
-          paxByAirport.updateWith(link.from)(existingOption => Some(existingOption.map(_ + count).getOrElse(count)))
-          paxByAirport.updateWith(link.to)(existingOption => Some(existingOption.map(_ + count).getOrElse(count)))
-        }
-      }
-    }
-
-    paxByAirport.foreach(println)
-
-
+  def computeUpdatingAirports(airportDirectDemand : Map[Airport, Long], paxByAirport: Map[Airport, Long]) : Map[Airport, Int] = {
     val updatingAirports = mutable.HashMap[Airport, Int]() //key is strength
     airportDirectDemand.foreach {
       case (airport, demand) =>
@@ -63,6 +49,20 @@ object AviationHubSimulation {
     updatingAirports.toMap
   }
 
+  def getPaxByAirport(linkRidershipDetails : Map[(PassengerGroup, Airport, Route), Int]) : Map[Airport, Long] = {
+    val paxByAirport = mutable.HashMap[Airport, Long]()
+
+    linkRidershipDetails.foreach {
+      case ((passengerGroup, toAirport, route), count) => route.links.foreach { link =>
+        if (link.link.transportType == TransportType.FLIGHT) {
+          paxByAirport.updateWith(link.from)(existingOption => Some(existingOption.map(_ + count).getOrElse(count)))
+          paxByAirport.updateWith(link.to)(existingOption => Some(existingOption.map(_ + count).getOrElse(count)))
+        }
+      }
+    }
+
+    paxByAirport.toMap
+  }
 
   def computeAviationHubStrength(airport : Airport, directDemand : Long, pax : Long) : Int = {
     if (pax < AVIATION_HUB_PAX_THRESHOLD) {
