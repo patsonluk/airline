@@ -1301,7 +1301,7 @@
 										<span style="display: flex; align-items: center;">
 											<span class="airportLoyalty" id="airportDetailsLoyalty" style="display: flex; align-items: center;"></span>
 											<span class="airportLoyaltyBonus"></span>
-											<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#airportDetailsLoyalty').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
+											<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:text-bottom" onmouseover="showAppealBreakdown($(this), $('#airportDetailsLoyalty').data('loyaltyBreakdown'))" onmouseout="hideInfoTooltip()">
 										</span>
 									</div>
 								</div>
@@ -3609,7 +3609,7 @@
 					<img title="Loyalty" src='@routes.Assets.versioned("images/icons/heart.png")' style="margin-right: 5px;">
 					<span class="airportLoyalty" id="airportPopupLoyalty"></span>
 					<span class="airportLoyaltyBonus"></span>
-					<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#appealBonusDetailsTooltip').data('loyaltyBreakdown'))" onmouseout="hideAppealBreakdown()">
+					<img src='@routes.Assets.versioned("images/icons/information.png")' class="clickable airportLoyaltyBonusTrigger" style="vertical-align:bottom" onmouseover="showAppealBreakdown($(this), $('#airportDetailsLoyalty').data('loyaltyBreakdown'))" onmouseout="hideInfoTooltip()">
 				</span>
 			</div>
 		</div>
@@ -3620,13 +3620,14 @@
 			<div class="button" id="toggleDeparturesButton" data-link="departure" onclick="showDeparturesCanvas()">Departures</div>
 		</div>
     </div>
-    <div id="appealBonusDetailsTooltip" class="customTooltip" style="display: none; position: fixed;">
+    <div id="extraInfoTooltip" class="customTooltip" style="display: none; position: fixed;">
         <div class="tooltiptext below">
             <div class="table" style="min-width: 150px;">
 
             </div>
         </div>
     </div>
+
 	  <div id="incomeDetailsTooltip" class="customTooltip" style="display: none; position: fixed;">
 		  <div class="tooltiptext below">
 			  <div class="table" style="min-width: 150px;">

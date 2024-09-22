@@ -2459,7 +2459,7 @@ function getSatisfactionIcon(satisfaction) {
 
 function showSatisfactionBreakdown($icon, positiveComments, negativeComments, satisfactionValue) {
     var yPos = $icon.offset().top - $(window).scrollTop() + $icon.height() + 5
-    var xPos = $icon.offset().left - $(window).scrollLeft() + $icon.width() - $('#appealBonusDetailsTooltip').width() / 2
+    var xPos = $icon.offset().left - $(window).scrollLeft() + $icon.width() - $('#satisfactionDetailsTooltip').width() / 2
     $('#satisfactionDetailsTooltip .satisfactionValue').text(Math.round(satisfactionValue * 100) + '%')
 
     $('#satisfactionDetailsTooltip .table .table-row').remove()
