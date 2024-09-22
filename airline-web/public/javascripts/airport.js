@@ -244,6 +244,46 @@ function updateAirportDetails(airport, cityImageUrl, airportImageUrl) {
 	populateNavigation($('#airportCanvas'))
 }
 
+function buildChampionDetailRow(airport, championDetails) {
+	var row = $("<div class='table-row clickable' data-link='rival' onclick=\"showRivalsCanvas('" + championDetails.airlineId + "');\"></div>")
+    var icon = getRankingImg(championDetails.ranking)
+    row.append("<div class='cell'>" + icon + "</div>")
+    row.append("<div class='cell'>" + getAirlineSpan(championDetails.airlineId, championDetails.airlineName) + "</div>")
+    row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
+    var $loyaltyCell = $("<div class='cell' style='text-align: right'>" + championDetails.loyalty + "</div>")
+    var $reputationCell = $("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
+    if (!isMobileDevice()) {
+        $loyaltyCell.hover(
+            function() {
+                if (airport.bonusList[championDetails.airlineId]) {
+                    showAppealBreakdown($(this), airport.bonusList[championDetails.airlineId].loyaltyBreakdown)
+                }
+            },
+            function() {
+                hideInfoTooltip()
+            }
+        )
+        if (championDetails.bonuses.length > 0) {
+            $reputationCell.hover(
+                function() {
+                    var rows = []
+                    $.each(championDetails.bonuses, function(index, entry) {
+                        var $row = $('<div class="table-row"><div class="cell" style="width: 100%;">' + entry + '</div>')
+                        $row.css('color', 'white')
+                        rows.push($row)
+                    })
+                    showInfoTooltip($(this), rows)
+                },
+                function() {
+                    hideInfoTooltip()
+                }
+            )
+        }
+    }
+    row.append($loyaltyCell)
+    row.append($reputationCell)
+	return row
+}
 
 function updateAirportChampionDetails(airport) {
 	$('#airportDetailsChampionList').children('div.table-row').remove()
@@ -260,54 +300,14 @@ function updateAirportChampionDetails(airport) {
 	    success: function(result) {
 	        var champions = result.champions
 	    	$(champions).each(function(index, championDetails) {
-	    		var row = $("<div class='table-row clickable' data-link='rival' onclick=\"showRivalsCanvas('" + championDetails.airlineId + "');\"></div>")
-	    		var icon = getRankingImg(championDetails.ranking)
-	    		row.append("<div class='cell'>" + icon + "</div>")
-                row.append("<div class='cell'>" + getAirlineSpan(championDetails.airlineId, championDetails.airlineName) + "</div>")
-	    		row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
-	    		var $loyaltyCell = $("<div class='cell' style='text-align: right'>" + championDetails.loyalty + "</div>")
-	    		if (!isMobileDevice()) {
-                    $loyaltyCell.hover(
-                        function() {
-                            if (airport.bonusList[championDetails.airlineId]) {
-                                showAppealBreakdown($(this), airport.bonusList[championDetails.airlineId].loyaltyBreakdown)
-                            }
-                        },
-                        function() {
-                            hideAppealBreakdown()
-                        }
-                    )
-                }
-	    		row.append($loyaltyCell)
-	    		row.append("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
+	    	    row = buildChampionDetailRow(airport, championDetails)
 	    		$('#airportDetailsChampionList').append(row)
 	    	})
 
 	    	if (result.currentAirline) {
-	    	    var row = $("<div class='table-row clickable' data-link='rival' onclick=\"showRivalsCanvas('" + result.currentAirline.airlineId + "');\"></div>")
-                row.append("<div class='cell'>" + result.currentAirline.ranking + "</div>")
-                row.append("<div class='cell'>" + getAirlineSpan(result.currentAirline.airlineId, result.currentAirline.airlineName) + "</div>")
-                row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(result.currentAirline.amount) + "</div>")
-
-                var $loyaltyCell = $("<div class='cell' style='text-align: right'>" + result.currentAirline.loyalty + "</div>")
-
-                if (!isMobileDevice()) {
-                    $loyaltyCell.hover(
-                        function() {
-                            if (airport.bonusList[result.currentAirline.airlineId]) {
-                                showAppealBreakdown($(this), airport.bonusList[result.currentAirline.airlineId].loyaltyBreakdown)
-                            }
-                        },
-                        function() {
-                            hideAppealBreakdown()
-                        }
-                    )
-                }
-	    		row.append($loyaltyCell)
-                row.append("<div class='cell' style='text-align: right'>-</div>")
+	    	    row = buildChampionDetailRow(airport, currentAirline)
                 $('#airportDetailsChampionList').append(row)
-	    	}
-
+            }
 	    	populateNavigation($('#airportDetailsChampionList'))
 
 	    	if ($(champions).length == 0) {
@@ -1374,25 +1374,32 @@ function getAirportIcon(airportInfo) {
     }
     return icon
 }
-function hideAppealBreakdown() {
-    $('#appealBonusDetailsTooltip').hide()
+function hideInfoTooltip() {
+    $('#extraInfoTooltip').hide()
 }
 
-function showAppealBreakdown($icon, bonusDetails) {
-    var yPos = $icon.offset().top - $(window).scrollTop() + $icon.height()
-    var xPos = $icon.offset().left - $(window).scrollLeft() + $icon.width() - $('#appealBonusDetailsTooltip').width() / 2
-
-    $('#appealBonusDetailsTooltip').css('top', yPos + 'px')
-    $('#appealBonusDetailsTooltip').css('left', xPos + 'px')
-    $('#appealBonusDetailsTooltip').show()
-
-
-    $('#appealBonusDetailsTooltip .table .table-row').remove()
+function showAppealBreakdown($parent, bonusDetails) {
+    var rows = []
     $.each(bonusDetails, function(index, entry) {
         var $row = $('<div class="table-row"><div class="cell" style="width: 70%;">' + entry.description + '</div><div class="cell" style="width: 30%; text-align: right;">+' + entry.value + '</div></div>')
         $row.css('color', 'white')
-        $('#appealBonusDetailsTooltip .table').append($row)
+        rows.push($row)
     })
+    showInfoTooltip($parent, rows)
+}
+
+function showInfoTooltip($parent, infoRows) {
+    var yPos = $parent.offset().top - $(window).scrollTop() + $parent.height()
+    var xPos = $parent.offset().left - $(window).scrollLeft() + $parent.width() - $('#extraInfoTooltip').width() / 2
+
+    $('#extraInfoTooltip .table .table-row').remove()
+    $.each(infoRows, function(index, $row) {
+        $('#extraInfoTooltip .table').append($row)
+    })
+
+    $('#extraInfoTooltip').css('top', yPos + 'px')
+    $('#extraInfoTooltip').css('left', xPos + 'px')
+    $('#extraInfoTooltip').show()
 }
 
 function showSpecializationModal() {
