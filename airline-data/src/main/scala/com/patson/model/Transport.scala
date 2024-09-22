@@ -80,7 +80,7 @@ abstract class Transport extends IdObject{
       } else  {
         if (targetLinkClass.level > ECONOMY.level) {
           val classDiff = flightType match {
-            case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERCONTINENTAL | SHORT_HAUL_INTERNATIONAL => targetLinkClass.level - 1//accept all classes
+            case ULTRA_SHORT_HAUL_DOMESTIC | ULTRA_SHORT_HAUL_INTERNATIONAL | ULTRA_SHORT_HAUL_INTERCONTINENTAL | SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERCONTINENTAL | SHORT_HAUL_INTERNATIONAL => targetLinkClass.level - 1//accept all classes
             case _ => 1
           }
           val lowestAcceptableLevel = targetLinkClass.level - classDiff

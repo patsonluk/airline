@@ -11,11 +11,14 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.collection.parallel.CollectionConverters._
 import scala.util.Random
+import FlightType._
 
 
 object DemandGenerator {
   def main(args : Array[String]) : Unit = {
+    println("Loading airports")
     val airports = AirportSource.loadAllAirports(true, true)
+    println(s"Loaded ${airports.length} airports")
     val demand = computeDemand(0, airports)
     println(s"Demand chunks ${demand.length}. Demand total pax ${demand.map(_._3).sum}")
   }
@@ -30,7 +33,22 @@ object DemandGenerator {
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.3, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
-  
+
+  private val DROP_DEMAND_THRESHOLDS = new Array[Int](FlightType.values.size)
+  FlightType.values.foreach {  flightType =>
+    val threshold = flightType match {
+      case ULTRA_SHORT_HAUL_DOMESTIC => 5
+      case SHORT_HAUL_DOMESTIC => 5
+      case MEDIUM_HAUL_DOMESTIC => 5
+      case LONG_HAUL_DOMESTIC => 5
+      case ULTRA_SHORT_HAUL_INTERNATIONAL | ULTRA_SHORT_HAUL_INTERCONTINENTAL => 5
+      case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 5
+
+      case _ => 0
+    }
+    DROP_DEMAND_THRESHOLDS(flightType.id) = threshold
+  }
+
   val MIN_DISTANCE = 50
   
 //  val defaultTotalWorldPower = {
@@ -127,7 +145,6 @@ object DemandGenerator {
     if (fromAirport == toAirport || fromAirport.population == 0 || toAirport.population == 0 || distance <= MIN_DISTANCE) {
       LinkClassValues.getInstance(0, 0, 0)
     } else {
-      import FlightType._
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
 
       //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
@@ -155,30 +172,29 @@ object DemandGenerator {
         case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
       }) * ADJUST_FACTOR
       
-      if (fromAirport.countryCode != toAirport.countryCode) {
-        //baseDemand = baseDemand *
-        val multiplier =
-            if (relationship <= -3) 0 
-            else if (relationship == -2) 0.1
-            else if (relationship == -1) 0.2
-            else if (relationship == 0) 0.5
-            else if (relationship == 1) 0.8
-            else if (relationship == 2) 1.2
-            else if (relationship == 3) 1.8
-            else 2 // >= 4
-        baseDemand = baseDemand * multiplier
+
+      //baseDemand = baseDemand *
+      val multiplier = {
+          if (relationship <= -3) 0
+          else if (relationship == -2) 0.1
+          else if (relationship == -1) 0.2
+          else if (relationship == 0) 0.5
+          else if (relationship == 1) 0.8
+          else if (relationship == 2) 1.2
+          else if (relationship == 3) 1.8
+          else if (relationship == 4) 2.5
+          else 4 //domestic
       }
-          
-      
-      
+      baseDemand = baseDemand * multiplier
+
       var adjustedDemand = baseDemand
       
       //bonus for domestic and short-haul flight
       adjustedDemand += baseDemand * (flightType match {
-        case SHORT_HAUL_DOMESTIC => 6.0 //people would just drive or take other transit
-        case MEDIUM_HAUL_DOMESTIC  => 7.0
-        case LONG_HAUL_DOMESTIC  => 5.0
-        case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 2.5
+        case ULTRA_SHORT_HAUL_DOMESTIC | ULTRA_SHORT_HAUL_INTERNATIONAL | ULTRA_SHORT_HAUL_INTERCONTINENTAL => -0.5 //too easy to find other forms of transportation
+        case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 1.5
+        case MEDIUM_HAUL_DOMESTIC  => 1.0
+        case LONG_HAUL_DOMESTIC  => 0.7
         case MEDIUM_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => 0
         case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.7
         case ULTRA_LONG_HAUL_INTERCONTINENTAL => -0.75
@@ -237,7 +253,7 @@ object DemandGenerator {
          0 
         }
       val businessClassPercentage : Double =
-        if (flightType != SHORT_HAUL_DOMESTIC) {
+        if (flightType != SHORT_HAUL_DOMESTIC && flightType != ULTRA_SHORT_HAUL_DOMESTIC) {
           if (income <= BUSINESS_CLASS_INCOME_MIN) {
             0 
           } else if (income >= BUSINESS_CLASS_INCOME_MAX) {
@@ -257,8 +273,16 @@ object DemandGenerator {
         firstClassDemand = (firstClassDemand * 2.5).toInt
         businessClassDemand = (businessClassDemand * 2.5).toInt
       }
-      
-      LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
+
+      val demand = LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
+
+      //drop tiny demand to speed up sim
+      if (demand.total < DROP_DEMAND_THRESHOLDS(flightType.id)) {
+        LinkClassValues.getInstance(0, 0, 0)
+      } else {
+        demand
+      }
+
     }
   }
 

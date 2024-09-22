@@ -80,11 +80,11 @@ sealed case class VacationHubFeature(baseStrength : Int, boosts : List[AirportBo
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     if (toAirport.id == airportId && passengerType == PassengerType.TOURIST) { //only affect if as a destination and tourists
       val goFactor = { //out of how many people, will there be 1 going to this spot per year
-        if (flightType == SHORT_HAUL_DOMESTIC) {
+        if (flightType == SHORT_HAUL_DOMESTIC || flightType == ULTRA_SHORT_HAUL_DOMESTIC) {
           50
         } else if (flightType == LONG_HAUL_DOMESTIC || flightType == MEDIUM_HAUL_DOMESTIC) {
           150  
-        } else if (flightType == SHORT_HAUL_INTERNATIONAL) {
+        } else if (flightType == ULTRA_SHORT_HAUL_INTERNATIONAL || flightType == ULTRA_SHORT_HAUL_INTERCONTINENTAL || flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL) {
           100
         } else {
           250

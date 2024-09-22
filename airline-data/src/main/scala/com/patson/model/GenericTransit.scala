@@ -8,9 +8,9 @@ case class GenericTransit(from : Airport, to : Airport, distance : Int, var capa
   override val price : LinkClassValues = LinkClassValues.getInstance()
   //override val price : LinkClassValues = LinkClassValues.getInstance() //has to have some hidden price? otherwise it will be too strong?
 
-  override val flightType : FlightType.Value = FlightType.SHORT_HAUL_DOMESTIC
+  override val flightType : FlightType.Value = Computation.getFlightType(from, to, distance)
 
-  override val cost = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) * 0.25 //hidden cost of general transit
+  override val cost = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, flightType, ECONOMY)) * 0.25 //hidden cost of general transit
 
   val upkeep = 0
   override var minorDelayCount : Int = 0
