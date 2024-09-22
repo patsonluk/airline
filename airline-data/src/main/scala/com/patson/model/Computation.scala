@@ -106,9 +106,7 @@ object Computation {
     
     import FlightType._
     if (fromAirport.countryCode == toAirport.countryCode) { //domestic
-      if (distance <= 200) {
-        ULTRA_SHORT_HAUL_DOMESTIC
-      } else if (distance <= 1000) {
+      if (distance <= 1000) {
         SHORT_HAUL_DOMESTIC
       } else if (distance <= 3000) {
         MEDIUM_HAUL_DOMESTIC
@@ -116,9 +114,7 @@ object Computation {
         LONG_HAUL_DOMESTIC
       }
     } else if (fromAirport.zone == toAirport.zone) { //international but same continent
-      if (distance <= 200) {
-        ULTRA_SHORT_HAUL_INTERNATIONAL
-      } else if (distance <= 2000) {
+      if (distance <= 2000) {
         SHORT_HAUL_INTERNATIONAL
       } else if (distance <= 4000) {
         MEDIUM_HAUL_INTERNATIONAL
@@ -126,9 +122,7 @@ object Computation {
         LONG_HAUL_INTERNATIONAL
       }
     } else {
-      if (distance <= 200) {
-        ULTRA_SHORT_HAUL_INTERCONTINENTAL
-      } else if (distance <= 2000) {
+      if (distance <= 2000) {
         SHORT_HAUL_INTERCONTINENTAL
       } else if (distance <= 5000) {
         MEDIUM_HAUL_INTERCONTINENTAL

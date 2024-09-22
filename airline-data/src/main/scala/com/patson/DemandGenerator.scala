@@ -37,11 +37,9 @@ object DemandGenerator {
   private val DROP_DEMAND_THRESHOLDS = new Array[Int](FlightType.values.size)
   FlightType.values.foreach {  flightType =>
     val threshold = flightType match {
-      case ULTRA_SHORT_HAUL_DOMESTIC => 5
       case SHORT_HAUL_DOMESTIC => 5
       case MEDIUM_HAUL_DOMESTIC => 5
       case LONG_HAUL_DOMESTIC => 5
-      case ULTRA_SHORT_HAUL_INTERNATIONAL | ULTRA_SHORT_HAUL_INTERCONTINENTAL => 5
       case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 5
 
       case _ => 0
@@ -189,7 +187,6 @@ object DemandGenerator {
 
       //bonus for domestic and short-haul flight
       var adjustedDemand = baseDemand * (flightType match {
-        case ULTRA_SHORT_HAUL_DOMESTIC | ULTRA_SHORT_HAUL_INTERNATIONAL | ULTRA_SHORT_HAUL_INTERCONTINENTAL => 0.5 //too easy to find other forms of transportation
         case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 2.5
         case MEDIUM_HAUL_DOMESTIC  => 2.0
         case LONG_HAUL_DOMESTIC  => 1.7
@@ -221,8 +218,8 @@ object DemandGenerator {
         adjustedDemand *= 0.6
       }
 
-      if (adjustedDemand >= 100 && distance < 200) { //diminished demand for close short routes
-        adjustedDemand = 100 + Math.pow(adjustedDemand - 100, 0.6)
+      if (adjustedDemand >= 100 && distance < 200) { //diminished demand for ultra short routes
+        adjustedDemand = 100 + Math.pow(adjustedDemand - 100, (distance - MIN_DISTANCE) / (200 - MIN_DISTANCE))
       }
 
       //adjust by features
@@ -251,7 +248,7 @@ object DemandGenerator {
          0 
         }
       val businessClassPercentage : Double =
-        if (flightType != SHORT_HAUL_DOMESTIC && flightType != ULTRA_SHORT_HAUL_DOMESTIC) {
+        if (flightType != SHORT_HAUL_DOMESTIC) {
           if (income <= BUSINESS_CLASS_INCOME_MIN) {
             0 
           } else if (income >= BUSINESS_CLASS_INCOME_MAX) {

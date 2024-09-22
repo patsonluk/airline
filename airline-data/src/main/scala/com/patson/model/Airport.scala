@@ -543,11 +543,7 @@ object Airport {
 
   import FlightType._
   val qualityExpectationFlightTypeAdjust =
-  Map(
-        ULTRA_SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
-        ULTRA_SHORT_HAUL_INTERNATIONAL -> LinkClassValues.getInstance(-10, 0, 10),
-        ULTRA_SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-10, 0, 10),
-        SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
+  Map(SHORT_HAUL_DOMESTIC -> LinkClassValues.getInstance(-15, -5, 5),
         SHORT_HAUL_INTERNATIONAL ->  LinkClassValues.getInstance(-10, 0, 10),
         SHORT_HAUL_INTERCONTINENTAL -> LinkClassValues.getInstance(-5, 5, 15),
         MEDIUM_HAUL_DOMESTIC -> LinkClassValues.getInstance(-5, 5, 15),
