@@ -103,19 +103,20 @@ object ChampionUtil {
     })
 
     //multiplier for HQ
-    airline.getHeadQuarter().foreach { hq =>
-      if (airport.id == hq.airport.id) {
-        val boostMultiplier = airport.size match {
-          case x if x <= 7 => 1 + (8 - airport.size) * 0.5
-          case _ => 0
-        }
+    AirlineCache.getAirline(airline.id, fullLoad = true).foreach { airline =>
+      airline.getHeadQuarter().foreach { hq =>
+        if (airport.id == hq.airport.id) {
+          val boostMultiplier = airport.size match {
+            case x if x <= 7 => 1 + (8 - airport.size) * 0.5
+            case _ => 0
+          }
 
-        if (boostMultiplier > 1) {
-          boost *= boostMultiplier
-          bonuses.append(ReputationBonus(s"Multiplied by $boostMultiplier as HQ in smaller airport"))
+          if (boostMultiplier > 1) {
+            boost *= boostMultiplier
+            bonuses.append(ReputationBonus(s"Multiplied by $boostMultiplier as HQ in smaller airport"))
+          }
         }
       }
-
     }
 
 
