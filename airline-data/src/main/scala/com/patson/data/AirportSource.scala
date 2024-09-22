@@ -1100,7 +1100,7 @@ object AirportSource {
       var queryBonusString = "SELECT * FROM " + AIRPORT_CHAMPION_BONUS_TABLE
 
       if (criteria.nonEmpty) {
-        queryBonusString += " WHERE " + criteria.map(criterion => s"$criterion._1 = ?").mkString(" AND ")
+        queryBonusString += " WHERE " + criteria.map(criterion => s"${criterion._1} = ?").mkString(" AND ")
       }
 
       val preparedBonusStatement = connection.prepareStatement(queryBonusString)
