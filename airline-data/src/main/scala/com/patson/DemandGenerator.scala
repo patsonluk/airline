@@ -187,17 +187,15 @@ object DemandGenerator {
       }
       baseDemand = baseDemand * multiplier
 
-      var adjustedDemand = baseDemand
-      
       //bonus for domestic and short-haul flight
-      adjustedDemand += baseDemand * (flightType match {
-        case ULTRA_SHORT_HAUL_DOMESTIC | ULTRA_SHORT_HAUL_INTERNATIONAL | ULTRA_SHORT_HAUL_INTERCONTINENTAL => -0.5 //too easy to find other forms of transportation
-        case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 1.5
-        case MEDIUM_HAUL_DOMESTIC  => 1.0
-        case LONG_HAUL_DOMESTIC  => 0.7
-        case MEDIUM_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => 0
-        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.7
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -0.75
+      var adjustedDemand = baseDemand * (flightType match {
+        case ULTRA_SHORT_HAUL_DOMESTIC | ULTRA_SHORT_HAUL_INTERNATIONAL | ULTRA_SHORT_HAUL_INTERCONTINENTAL => 0.5 //too easy to find other forms of transportation
+        case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 2.5
+        case MEDIUM_HAUL_DOMESTIC  => 2.0
+        case LONG_HAUL_DOMESTIC  => 1.7
+        case MEDIUM_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => 1.0
+        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => 0.3
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL => 0.25
       })
       
       
