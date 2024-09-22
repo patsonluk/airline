@@ -23,18 +23,31 @@ object DemandGenerator {
     val demand = computeDemand(0, airports)
     println(s"Demand chunks ${demand.length}. Demand total pax ${demand.map(_._3).sum}")
 
-    var d = 0
-    val a1 = "LHR"
-    val a2 = "CDG"
-    demand.foreach {
-      case(group, toAirport, pax) =>
-      if (group.fromAirport.iata == a1 && toAirport.iata == a2) {
-        d += pax
-      } else if (group.fromAirport.iata == a2 && toAirport.iata == a1) {
-        d += pax
-      }
+
+    val pairs : List[(String, String)] = List("NRT" -> "HND" , "LHR" -> "BHX", "LHR" -> "EDI", "LHR" -> "CDG", "SIN" -> "KUL", "SGN" -> "DAD", "ICN" -> "CJU")
+
+
+    pairs.foreach {
+      case (a1, a2) =>
+        var y = 0
+        var j = 0
+        var f = 0
+        demand.foreach {
+          case(group, toAirport, pax) =>
+            if ((group.fromAirport.iata == a1 && toAirport.iata == a2) || (group.fromAirport.iata == a2 && toAirport.iata == a1)) {
+              if (group.preference.preferredLinkClass == FIRST) {
+                f += pax
+              } else if (group.preference.preferredLinkClass == BUSINESS) {
+                j += pax
+              } else {
+                y += pax
+              }
+            }
+        }
+        println(s"$a1 -> $a2 $y/$j/$f")
     }
-    println("FINAL " + d)
+
+
   }
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 //
@@ -62,7 +75,7 @@ object DemandGenerator {
   }
 
   val MIN_DISTANCE = 50
-  val DIMINISHED_DEMAND_THRESHOLD = 500 //distance within this range will be diminished
+  val DIMINISHED_DEMAND_THRESHOLD = 300 //distance within this range will be diminished
   
 //  val defaultTotalWorldPower = {
 //    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
@@ -180,28 +193,28 @@ object DemandGenerator {
 
       val ADJUST_FACTOR = 0.35
 
-      var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
+      val baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
         case PassengerType.BUSINESS => 6
         case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
       }) * ADJUST_FACTOR
-      
 
-      //baseDemand = baseDemand *
+      var adjustedDemand = baseDemand
+
       val multiplier = {
-          if (relationship <= -3) 0
-          else if (relationship == -2) 0.1
-          else if (relationship == -1) 0.2
-          else if (relationship == 0) 0.5
-          else if (relationship == 1) 0.8
-          else if (relationship == 2) 1.2
-          else if (relationship == 3) 1.8
-          else if (relationship == 4) 2.5
-          else 4 //domestic
+        if (relationship <= -3) 0
+        else if (relationship == -2) 0.1
+        else if (relationship == -1) 0.2
+        else if (relationship == 0) 0.5
+        else if (relationship == 1) 0.8
+        else if (relationship == 2) 1.2
+        else if (relationship == 3) 1.8
+        else if (relationship == 4) 2.5
+        else 4 //domestic
       }
-      baseDemand = baseDemand * multiplier
+      adjustedDemand = adjustedDemand * multiplier
 
       //bonus for domestic and short-haul flight
-      var adjustedDemand = baseDemand * (flightType match {
+      adjustedDemand = adjustedDemand * (flightType match {
         case SHORT_HAUL_DOMESTIC | SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 2.5
         case MEDIUM_HAUL_DOMESTIC  => 2.0
         case LONG_HAUL_DOMESTIC  => 1.7
