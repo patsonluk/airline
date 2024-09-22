@@ -153,16 +153,16 @@ object DemandGenerator {
       
       if (fromAirport.countryCode != toAirport.countryCode) {
         //baseDemand = baseDemand *
-        val mutliplier = 
+        val multiplier =
             if (relationship <= -3) 0 
             else if (relationship == -2) 0.1
             else if (relationship == -1) 0.2
             else if (relationship == 0) 0.5
             else if (relationship == 1) 0.8
-            else if (relationship == 2) 1
-            else if (relationship == 3) 1.5
+            else if (relationship == 2) 1.2
+            else if (relationship == 3) 1.8
             else 2 // >= 4
-        baseDemand = baseDemand * mutliplier
+        baseDemand = baseDemand * multiplier
       }
           
       
@@ -171,10 +171,12 @@ object DemandGenerator {
       
       //bonus for domestic and short-haul flight
       adjustedDemand += baseDemand * (flightType match {
-        case SHORT_HAUL_DOMESTIC => 4.0 //people would just drive or take other transit
-        case MEDIUM_HAUL_DOMESTIC | LONG_HAUL_DOMESTIC => 7.0
-        case SHORT_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL | MEDIUM_HAUL_INTERCONTINENTAL => 0
-        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.5
+        case SHORT_HAUL_DOMESTIC => 6.0 //people would just drive or take other transit
+        case MEDIUM_HAUL_DOMESTIC  => 7.0
+        case LONG_HAUL_DOMESTIC  => 5.0
+        case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 2.5
+        case MEDIUM_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => 0
+        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.7
         case ULTRA_LONG_HAUL_INTERCONTINENTAL => -0.75
       })
       
