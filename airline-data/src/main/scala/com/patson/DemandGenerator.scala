@@ -14,7 +14,11 @@ import scala.util.Random
 
 
 object DemandGenerator {
-
+  def main(args : Array[String]) : Unit = {
+    val airports = AirportSource.loadAllAirports(true, true)
+    val demand = computeDemand(0, airports)
+    println(s"Demand chunks ${demand.length}. Demand total pax ${demand.map(_._3).sum}")
+  }
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 //
 //  import actorSystem.dispatcher
