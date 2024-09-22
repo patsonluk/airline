@@ -18,9 +18,23 @@ object DemandGenerator {
   def main(args : Array[String]) : Unit = {
     println("Loading airports")
     val airports = AirportSource.loadAllAirports(true, true)
+    val airportsByIata = airports.map(a => (a.iata, a)).toMap
     println(s"Loaded ${airports.length} airports")
     val demand = computeDemand(0, airports)
     println(s"Demand chunks ${demand.length}. Demand total pax ${demand.map(_._3).sum}")
+
+    var d = 0
+    val a1 = "LHR"
+    val a2 = "CDG"
+    demand.foreach {
+      case(group, toAirport, pax) =>
+      if (group.fromAirport.iata == a1 && toAirport.iata == a2) {
+        d += pax
+      } else if (group.fromAirport.iata == a2 && toAirport.iata == a1) {
+        d += pax
+      }
+    }
+    println("FINAL " + d)
   }
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 //
@@ -48,6 +62,7 @@ object DemandGenerator {
   }
 
   val MIN_DISTANCE = 50
+  val DIMINISHED_DEMAND_THRESHOLD = 500 //distance within this range will be diminished
   
 //  val defaultTotalWorldPower = {
 //    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
@@ -218,10 +233,6 @@ object DemandGenerator {
         adjustedDemand *= 0.6
       }
 
-      if (adjustedDemand >= 100 && distance < 200) { //diminished demand for ultra short routes
-        adjustedDemand = 100 + Math.pow(adjustedDemand - 100, (distance - MIN_DISTANCE) / (200 - MIN_DISTANCE))
-      }
-
       //adjust by features
       fromAirport.getFeatures().foreach { feature =>
         val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, relationship)
@@ -230,6 +241,10 @@ object DemandGenerator {
       toAirport.getFeatures().foreach { feature => 
         val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType, relationship)
         adjustedDemand += adjustment
+      }
+
+      if (adjustedDemand >= 100 && distance < DIMINISHED_DEMAND_THRESHOLD) { //diminished demand for ultra short routes
+        adjustedDemand = 100 + (adjustedDemand - 100) * (distance - MIN_DISTANCE) / (DIMINISHED_DEMAND_THRESHOLD - MIN_DISTANCE)
       }
       
       //compute demand composition. depends on from airport income
