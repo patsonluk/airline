@@ -64,17 +64,17 @@ object DemandGenerator {
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.3, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
 
   private val DROP_DEMAND_THRESHOLDS = new Array[Int](FlightType.values.size)
-  FlightType.values.foreach {  flightType =>
-    val threshold = flightType match {
-      case SHORT_HAUL_DOMESTIC => 5
-      case MEDIUM_HAUL_DOMESTIC => 5
-      case LONG_HAUL_DOMESTIC => 5
-      case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 5
-
-      case _ => 0
-    }
-    DROP_DEMAND_THRESHOLDS(flightType.id) = threshold
-  }
+//  FlightType.values.foreach {  flightType =>
+//    val threshold = flightType match {
+//      case SHORT_HAUL_DOMESTIC => 5
+//      case MEDIUM_HAUL_DOMESTIC => 5
+//      case LONG_HAUL_DOMESTIC => 5
+//      case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 5
+//
+//      case _ => 0
+//    }
+//    DROP_DEMAND_THRESHOLDS(flightType.id) = threshold
+//  }
 
   val MIN_DISTANCE = 50
   val DIMINISHED_DEMAND_THRESHOLD = 400 //distance within this range will be diminished
@@ -197,7 +197,12 @@ object DemandGenerator {
 
       var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
         case PassengerType.BUSINESS => 6
-        case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
+        case PassengerType.TOURIST | PassengerType.OLYMPICS =>
+          if (fromAirport.incomeLevel > 25) {
+            1 + (fromAirport.incomeLevel - 25) / 10
+          } else {
+            1
+          }
       }) * ADJUST_FACTOR
 
       if (fromAirport.countryCode != toAirport.countryCode) {
@@ -215,8 +220,11 @@ object DemandGenerator {
         baseDemand = baseDemand * multiplier //keep using baseDemand here, otherwise it would change too many existing calculations later on
       }
 
+      var adjustedDemand = baseDemand
+      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 20 income level increment
+
       //bonus for domestic and short-haul flight
-      var adjustedDemand = baseDemand * (flightType match {
+      adjustedDemand = adjustedDemand * (flightType match {
         case SHORT_HAUL_DOMESTIC => 10
         case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 2.5
         case MEDIUM_HAUL_DOMESTIC  => 8
@@ -226,12 +234,6 @@ object DemandGenerator {
         case ULTRA_LONG_HAUL_INTERCONTINENTAL => 0.25
       })
       
-      
-      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
-
-      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
-        adjustedDemand += baseDemand * (((fromAirport.incomeLevel - 25).toDouble / 10) * 2)
-      }
       
       //adjustments : these zones do not have good ground transport
       if (fromAirport.zone == toAirport.zone) {
@@ -303,11 +305,13 @@ object DemandGenerator {
       val demand = LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
 
       //drop tiny demand to speed up sim
-      if (demand.total < DROP_DEMAND_THRESHOLDS(flightType.id)) {
-        LinkClassValues.getInstance(0, 0, 0)
-      } else {
-        demand
-      }
+//      if (demand.total < DROP_DEMAND_THRESHOLDS(flightType.id)) {
+//        LinkClassValues.getInstance(0, 0, 0)
+//      } else {
+//        demand
+//      }
+
+      demand
 
     }
   }
