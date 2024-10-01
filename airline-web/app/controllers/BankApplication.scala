@@ -34,7 +34,7 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   )
 
   def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request : AuthenticatedRequest[Any, Airline] =>
-    Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id))(Writes.traversableWrites(new LoanWrites(CycleSource.loadCycle()))))
+    Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id))(Writes.list(new LoanWrites(CycleSource.loadCycle()))))
   }
   
   def takeOutLoan(airlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
@@ -64,7 +64,7 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     val loanReply = Bank.getMaxLoan(request.user.id)
     if (loanAmount <= loanReply.maxLoan) {
       val options = Bank.getLoanOptions(loanAmount)
-      Ok(Json.toJson(options)(Writes.traversableWrites(new LoanWrites(CycleSource.loadCycle()))))
+      Ok(Json.toJson(options)(Writes.list(new LoanWrites(CycleSource.loadCycle()))))
     } else {
       BadRequest("Borrowing [" + loanAmount + "] which is above limit [" + loanReply.maxLoan + "]")
     }

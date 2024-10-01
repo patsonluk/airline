@@ -1,8 +1,8 @@
 package controllers
 
 import javax.inject._
-import akka.actor._
-import akka.stream.Materializer
+import org.apache.pekko.actor._
+import org.apache.pekko.stream.Materializer
 import play.api._
 import play.api.mvc._
 

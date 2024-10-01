@@ -278,7 +278,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       if (result.isEmpty) {
         Ok(Json.obj("message" -> "No match"))
       } else {
-        Ok(Json.obj("entries" -> Json.toJson(result)(Writes.traversableWrites(new AirlineSearchResultWrites(input)))))
+        Ok(Json.obj("entries" -> Json.toJson(result)(Writes.list(new AirlineSearchResultWrites(input)))))
       }
     }
   }
@@ -466,7 +466,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 
 
 
-    result = result + ("consumptions" -> Json.toJson(consumptions)(Writes.traversableWrites(MinimumLinkConsumptionWrite)))
+    result = result + ("consumptions" -> Json.toJson(consumptions)(Writes.list(MinimumLinkConsumptionWrite)))
     Ok(result)
   }
 
@@ -486,5 +486,3 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
   case class LinkDetail(link : Link, timeslot : TimeSlot)
 
 }
-
-

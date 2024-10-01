@@ -3,8 +3,8 @@ package websocket.chat
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
-import akka.actor._
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor._
+import org.apache.pekko.stream.ActorMaterializer
 import com.patson.data.{AllianceSource, ChatSource}
 import com.patson.model.chat.ChatMessage
 import com.patson.model.{Airline, AllianceRole, User}

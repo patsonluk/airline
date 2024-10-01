@@ -1195,7 +1195,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
       var overlappingLinksJson = Json.arr()
       overlappingLinks.filter(_.capacity.total > 0).foreach { overlappingLink => //only work on links that have capacity
-        overlappingLinksJson = overlappingLinksJson.append(Json.toJson(LinkSource.loadLinkConsumptionsByLinkId(overlappingLink.id, cycleCount))(Writes.traversableWrites(MinimumLinkConsumptionWrite)))
+        overlappingLinksJson = overlappingLinksJson.append(Json.toJson(LinkSource.loadLinkConsumptionsByLinkId(overlappingLink.id, cycleCount))(Writes.list(MinimumLinkConsumptionWrite)))
         rivals += overlappingLink.airline
       }
 
@@ -1391,19 +1391,19 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         }
       }
 
-      val linkChangesJson = Json.toJson(linkChanges)(Writes.traversableWrites(new LinkChangeToEventWrites(currentCycle, link))).as[JsArray]
+      val linkChangesJson = Json.toJson(linkChanges)(Writes.list(new LinkChangeToEventWrites(currentCycle, link))).as[JsArray]
       result = result ++ linkChangesJson
     }
 
     //self alliance history
-    result = result ++ Json.toJson(AllianceSource.loadAllianceHistoryByAirline(airlineId).filter(_.cycle >= fromCycle).filter(entry => isRelevantAllianceHistoryEvent(entry.event)))(Writes.traversableWrites(new AllianceHistoryToEventWrites(currentCycle))).as[JsArray]
+    result = result ++ Json.toJson(AllianceSource.loadAllianceHistoryByAirline(airlineId).filter(_.cycle >= fromCycle).filter(entry => isRelevantAllianceHistoryEvent(entry.event)))(Writes.list(new AllianceHistoryToEventWrites(currentCycle))).as[JsArray]
     //other airline alliance history (complicate if current airline left/joined during the period, for now just get the history of current alliance
     request.user.getAllianceId().foreach { allianceId =>
       AllianceSource.loadAllianceById(allianceId).foreach { alliance =>
         result = result ++
           Json.toJson(AllianceSource.loadAllianceHistoryByAllianceName(alliance.name).filter {
             entry => entry.cycle >= fromCycle && entry.airline.id != airlineId && isRelevantAllianceHistoryEvent(entry.event)
-          })(Writes.traversableWrites(new AllianceHistoryToEventWrites(currentCycle))).as[JsArray]
+          })(Writes.list(new AllianceHistoryToEventWrites(currentCycle))).as[JsArray]
       }
     }
 
