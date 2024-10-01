@@ -1,8 +1,8 @@
 package websocket
 
 import java.util.concurrent.TimeUnit
-import akka.actor._
-import akka.util.Timeout
+import org.apache.pekko.actor._
+import org.apache.pekko.util.Timeout
 import com.patson.data.{CycleSource, UserSource}
 import com.patson.model.{UserModifier, UserStatus}
 import com.patson.model.notice.{AirlineNotice, LoyalistNotice, NoticeCategory}
@@ -75,7 +75,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
         case _ : NumberFormatException => println("Received websocket message " +  airlineId + " which is not numeric!")
       }
     case any =>
-      println("received " + any + " not handled")  
+      println("received " + any + " not handled")
   }
 
   override def postStop() = {
@@ -94,4 +94,3 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
     }
   }
 }
-

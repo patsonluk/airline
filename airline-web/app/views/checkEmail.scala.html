@@ -1,6 +1,4 @@
 @import helper._
-@import play.api.Play.current
-@import play.api.i18n.Messages.Implicits._
 <!DOCTYPE html>
 <html>
   <head>
@@ -10,7 +8,7 @@
       #map { height: 100%; }
     </style>
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("css-templates/treviso/css/style.css")">
-    
+
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/main.css")">
     <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("stylesheets/new-style.css")">
     <script src="@routes.Assets.versioned("javascripts/libs/jquery-2.1.4.js")"></script>
@@ -22,6 +20,6 @@
             <h1>Email sent!</h1>
             <div class="label">Help Instructions have been sent to the registered email address! Please make sure info@@airline-club.com is not blocked by your spam filter.</div>
         </div>
-	</div>        
-</body>    
+	</div>
+</body>
 </html>

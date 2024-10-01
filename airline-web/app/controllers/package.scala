@@ -1,5 +1,5 @@
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.ActorMaterializer
 import com.patson.{AllianceMissionSimulation, Util}
 import com.patson.data._
 import com.patson.data.airplane._
@@ -41,8 +41,8 @@ package object controllers {
         "isGenerated" -> airline.isGenerated
       )
 
-      if (airline.getCountryCode.isDefined) {
-        result = result + ("countryCode" -> JsString(airline.getCountryCode.get))
+      if (airline.getCountryCode().isDefined) {
+        result = result + ("countryCode" -> JsString(airline.getCountryCode().get))
       }
       airline.getHeadQuarter().foreach { headquarters =>
         result = result +
@@ -182,7 +182,7 @@ package object controllers {
       link.setAssignedAirplanes(airplaneAssignments.toList.map {
         case(airplane, frequency) => (airplane, LinkAssignment(frequency, frequency * flightMinutesRequiredPerFlight))
       }.toMap)
-      //(json \ "id").asOpt[Int].foreach { link.id = _ } 
+      //(json \ "id").asOpt[Int].foreach { link.id = _ }
       JsSuccess(link)
     }
 
@@ -206,7 +206,7 @@ package object controllers {
       "flightType" -> JsString(FlightType.label(link.flightType)),
       "capacity" -> Json.toJson(link.capacity),
       "rawQuality" -> JsNumber(link.rawQuality),
-      "computedQuality" -> JsNumber(link.computedQuality),
+      "computedQuality" -> JsNumber(link.computedQuality()),
       "duration" -> JsNumber(link.duration),
       "frequency" -> JsNumber(link.frequency),
       "availableSeat" -> Json.toJson(link.availableSeats),
@@ -257,7 +257,7 @@ package object controllers {
         "capacity" -> Json.toJson(linkConsumption.link.capacity),
         "frequency" -> JsNumber(linkConsumption.link.frequency),
         "soldSeats" -> JsNumber(linkConsumption.link.soldSeats.total),
-        "quality" -> JsNumber(linkConsumption.link.computedQuality)))
+        "quality" -> JsNumber(linkConsumption.link.computedQuality())))
     }
   }
 
@@ -574,7 +574,7 @@ package object controllers {
         ))
 
         var bonusJson = Json.obj()
-        airport.getAllAirlineBonuses.toList.foreach {
+        airport.getAllAirlineBonuses().toList.foreach {
           case (airlineId, bonuses) => {
             var totalLoyaltyBonus = 0.0
             var loyaltyBreakdownJson = Json.arr(Json.obj("description" -> "Basic", "value" -> BigDecimal(airport.getAirlineBaseAppeal(airlineId).loyalty).setScale(2, RoundingMode.HALF_EVEN)))

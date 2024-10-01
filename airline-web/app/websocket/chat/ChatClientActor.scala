@@ -1,6 +1,6 @@
 package websocket.chat
 
-import akka.actor._
+import org.apache.pekko.actor._
 
 import java.util.Calendar
 import java.text.SimpleDateFormat
@@ -25,9 +25,9 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
   override def postStop() = {
     logger.info("Stopping chat client on user " + user.userName + " id " + user.id)
   }
-  
+
   val allianceIdOption = getAllianceId(user)
-  
+
   val sdf = new SimpleDateFormat("HH:mm:ss")
 
 
@@ -82,8 +82,8 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
           }
 
 	    }
-		  
-  	  
+
+
   	// handles message writes to websocket
     case OutgoingMessage(chatMessage, latest) => {
       if (chatMessage.roomId == GENERAL_ROOM_ID || (Some(chatMessage.roomId) == allianceIdOption)) {
@@ -120,7 +120,7 @@ class ChatClientActor(out: ActorRef, chatControllerActor: ActorRef, val user : U
       out ! "ping"
     }
   }
-  
+
   def getAllianceId(user : User) : Option[Int] = {
     if (user.getAccessibleAirlines().isEmpty) {
       None

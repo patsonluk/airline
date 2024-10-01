@@ -3,8 +3,8 @@ package websocket.chat
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{ConcurrentHashMap, Executors, TimeUnit}
-import akka.actor._
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor._
+import org.apache.pekko.stream.ActorMaterializer
 import com.patson.data.{AllianceSource, ChatSource}
 import com.patson.model.chat.ChatMessage
 import com.patson.model.{Airline, AllianceRole, User}
@@ -35,7 +35,7 @@ final case class PreviousMessagesResponse(previousMessages : List[ChatMessage])
 
 /**
  *  a single actor that handles when a ClientActor joins or leaves
- *  
+ *
  *  When a message is received from a ClientActor it would notify this actor, and this actor will send it out to all the corresponding subscribers (ClientActors)
  */
 
@@ -126,11 +126,11 @@ class ChatControllerActor extends Actor {
 
       val lastMessageIdOption = ChatSource.getLastChatId(user.id)
 
-      clientActors += sender
-      context.watch(sender)
-      ChatControllerActor.addActiveUser(sender, user)
+      clientActors += sender()
+      context.watch(sender())
+      ChatControllerActor.addActiveUser(sender(), user)
       //You can turn these loggers off if needed
-      logger.info("Chat socket connected " + sender + " for user " + user.userName + " current active sessions : " + clientActors.size + " unique users : " + ChatControllerActor.getActiveUsers().size)
+      logger.info("Chat socket connected " + sender() + " for user " + user.userName + " current active sessions : " + clientActors.size + " unique users : " + ChatControllerActor.getActiveUsers().size)
 
       // resend the Archived Message
       val allianceArchivedMessages =
@@ -146,13 +146,13 @@ class ChatControllerActor extends Actor {
 
       val generalMessageSource = if (user.isChatBanned) penaltyBoxMessageHistory else generalMessageHistory
       val sessionStart = getSessionStartMessage(generalMessageSource, allianceArchivedMessages, lastMessageIdOption)
-      sender ! sessionStart
+      sender() ! sessionStart
     }
 
 
 
     case PreviousMessagesRequest(airline, previousFirstMessageId, roomId) =>
-      sender ! buildPreviousMessagesResponse(airline, previousFirstMessageId, roomId)
+      sender() ! buildPreviousMessagesResponse(airline, previousFirstMessageId, roomId)
 
     //    case Leave => {
     //      context become process(subscribers - sender)

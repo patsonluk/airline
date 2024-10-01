@@ -25,13 +25,13 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
       "properties" -> Json.toJson(log.properties)
       ))
   }
-  
-  
+
+
   val LOG_RANGE = 100 //load 100 weeks worth of logs
-  
-  
+
+
   def getLogs(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val cycle = CycleSource.loadCycle
+    val cycle = CycleSource.loadCycle()
     implicit val logWrites = LogWrites(cycle)
     Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, cycle - Log.RETENTION_CYCLE).sortBy(_.cycle)(Ordering[Int].reverse)))
   }
@@ -39,7 +39,7 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
   val MAX_NOTE_LENGTH : Int = 100
 
   def putSelfNote(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
-    val cycle = CycleSource.loadCycle
+    val cycle = CycleSource.loadCycle()
     val json = request.body.asInstanceOf[AnyContentAsJson].json
     json.\("note").asOpt[String] match {
       case Some(note) =>
@@ -58,8 +58,8 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
     }
 
   }
-  
-  
 
-  
+
+
+
 }

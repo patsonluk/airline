@@ -34,11 +34,11 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   )
 
   def viewLoans(airlineId : Int) = AuthenticatedAirline(airlineId) { request : AuthenticatedRequest[Any, Airline] =>
-    Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id))(Writes.traversableWrites(new LoanWrites(CycleSource.loadCycle()))))
+    Ok(Json.toJson(BankSource.loadLoansByAirline(request.user.id))(Writes.list(new LoanWrites(CycleSource.loadCycle()))))
   }
-  
+
   def takeOutLoan(airlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
-    val LoanRequest(requestedAmount, requestedTerm) = loanForm.bindFromRequest.get
+    val LoanRequest(requestedAmount, requestedTerm) = loanForm.bindFromRequest().get
     val loanReply = Bank.getMaxLoan(airlineId)
     val currentCycle = CycleSource.loadCycle()
     if (loanReply.rejectionOption.isDefined) {
@@ -59,18 +59,18 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
     }
   }
-  
+
   def getLoanOptions(airlineId : Int, loanAmount : Long) = AuthenticatedAirline(airlineId) { request =>
     val loanReply = Bank.getMaxLoan(request.user.id)
     if (loanAmount <= loanReply.maxLoan) {
       val options = Bank.getLoanOptions(loanAmount)
-      Ok(Json.toJson(options)(Writes.traversableWrites(new LoanWrites(CycleSource.loadCycle()))))
+      Ok(Json.toJson(options)(Writes.list(new LoanWrites(CycleSource.loadCycle()))))
     } else {
       BadRequest("Borrowing [" + loanAmount + "] which is above limit [" + loanReply.maxLoan + "]")
     }
-    
+
   }
-  
+
   def getMaxLoan(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val loanReply = Bank.getMaxLoan(request.user.id)
     var result = Json.obj("maxAmount" -> JsNumber(loanReply.maxLoan)).asInstanceOf[JsObject]
@@ -79,15 +79,15 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
     Ok(result)
   }
-  
+
   def repayLoan(airlineId : Int, loanId : Int) = AuthenticatedAirline(airlineId) { request =>
     val currentCycle = CycleSource.loadCycle()
     BankSource.loadLoanById(loanId) match {
-      case Some(loan) => { 
+      case Some(loan) => {
         if (loan.airlineId != request.user.id) {
-          BadRequest("Cannot repay loan not owned by this airline") 
+          BadRequest("Cannot repay loan not owned by this airline")
         } else {
-          val balance = request.user.getBalance 
+          val balance = request.user.getBalance()
           if (balance < loan.earlyRepayment(currentCycle)) {
             BadRequest("Not enough cash to repay this loan")
           } else {

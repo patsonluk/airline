@@ -10,10 +10,11 @@ $( document ).ready(function() {
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
+	mapId: GOOGLE_MAPS_DARK_STYLE_MAP_ID,
 	center: {lat: 20, lng: 150.644},
    	zoom : 2
   });
-  
+
   getAirports()
   refreshLinks()
 }
@@ -22,14 +23,14 @@ function addMarkers(airports) {
 	for (i = 0; i < airports.length; i++) {
 		  var airportInfo = airports[i]
 		  var position = {lat: airportInfo.latitude, lng: airportInfo.longitude};
-		  var marker = new google.maps.Marker({
+		var marker = new google.maps.marker.AdvancedMarkerElement({
 			    position: position,
 			    map: map,
 			    title: airportInfo.name,
 		  		airportCode: airportInfo.iata,
 		  		airportId: airportInfo.id
 			  });
-		  
+
 		  marker.addListener('click', function() {
 			  var airportId = this.airportId
 			  if (activeInput.is($("#fromAirport"))) {
@@ -51,7 +52,7 @@ function loadAirlines() {
 	    dataType: 'json',
 	    success: function(airlines) {
 	    	$.each(airlines, function( key, airline ) {
-	    		$("#airlineOption").append($("<option></option>").attr("value", airline.id).text(airline.name)); 
+	    		$("#airlineOption").append($("<option></option>").attr("value", airline.id).text(airline.name));
 	  		});
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -70,7 +71,7 @@ function loadConsumptions() {
 	    dataType: 'json',
 	    success: function(consumptions) {
 	    	$.each(consumptions, function( key, consumption ) {
-	    		$("#consumptions").append($("<div></div>").text(consumption.airlineName + " - " + consumption.fromAirportCode + "=>" + consumption.toAirportCode + " : " + consumption.consumption)); 
+	    		$("#consumptions").append($("<div></div>").text(consumption.airlineName + " - " + consumption.fromAirportCode + "=>" + consumption.toAirportCode + " : " + consumption.consumption));
 	  		});
 	    },
         error: function(jqXHR, textStatus, errorThrown) {
@@ -83,11 +84,11 @@ function loadConsumptions() {
 function insertTestLink() {
 	if ($("#fromAirport").val() && $("#toAirport").val()) {
 		var url = "test-links"
-		var airportData = { 
-			"fromAirportId" : parseInt($("#fromAirport").val()), 
+		var airportData = {
+			"fromAirportId" : parseInt($("#fromAirport").val()),
 			"toAirportId" : parseInt($("#toAirport").val()),
 			"airlineId" : parseInt($("#airlineOption").val()),
-			"capacity" : parseInt($("#capacity").val()), 
+			"capacity" : parseInt($("#capacity").val()),
 			"quality" : parseInt($("#quality").val()),
 			"price" : parseFloat($("#price").val()) }
 		$.ajax({
@@ -119,8 +120,8 @@ function removeAllLinks() {
 	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
 	    }
 	});
-	
-	
+
+
 }
 
 function refreshLinks() {
@@ -129,7 +130,7 @@ function refreshLinks() {
 		  value.setMap(null)
 		});
 	flightPaths = []
-	
+
 	$.ajax({
 		type: 'GET',
 		url: "links",
@@ -149,13 +150,13 @@ function refreshLinks() {
 
 function drawFlightPath(link) {
    var flightPath = new google.maps.Polyline({
-     path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}], 
+     path: [{lat: link.fromLatitude, lng: link.fromLongitude}, {lat: link.toLatitude, lng: link.toLongitude}],
      geodesic: true,
      strokeColor: '#F2B022',
      strokeOpacity: 1.0,
      strokeWeight: 2
                            });
-   
+
    flightPath.setMap(map)
    flightPaths.push(flightPath)
 }
@@ -169,9 +170,3 @@ function getAirports() {
 		  addMarkers(data)
 		});
 }
-	
-	
-	
-	
-	
-	

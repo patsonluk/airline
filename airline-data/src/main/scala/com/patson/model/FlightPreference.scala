@@ -8,8 +8,8 @@ import com.patson.Util
 import java.util.concurrent.ThreadLocalRandom
 /**
  * Flight preference has a computeCost method that convert the existing price of a link to a "perceived price". The "perceived price" will be refer to "cost" here
- * 
- * When a link contains certain properties that the "Flight preference" likes/hates, it might reduce (if like) or increase (if hate) the "perceived price"  
+ *
+ * When a link contains certain properties that the "Flight preference" likes/hates, it might reduce (if like) or increase (if hate) the "perceived price"
  */
 abstract class FlightPreference(homeAirport : Airport) {
   def computeCost(baseCost : Double, link : Transport, linkClass : LinkClass) : Double
@@ -127,7 +127,7 @@ abstract class FlightPreference(homeAirport : Airport) {
 
   def qualityAdjustRatio(homeAirport : Airport, link : Transport, linkClass : LinkClass) : Double = {
     val qualityExpectation = homeAirport.expectedQuality(link.flightType, linkClass)
-    val qualityDelta = link.computedQuality - qualityExpectation
+    val qualityDelta = link.computedQuality() - qualityExpectation
     val GOOD_QUALITY_DELTA = 20
     val priceAdjust =
       if (qualityDelta < 0) {
@@ -185,8 +185,8 @@ abstract class FlightPreference(homeAirport : Airport) {
     if (loungeSensitivity == 0 || linkClass.level < BUSINESS.level) {
       1.0
     } else {
-      val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
-      val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)
+      val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId(), activeOnly = true)
+      val toLounge = link.to.getLounge(link.airline.id, link.airline.getAllianceId(), activeOnly = true)
 
       val fromLoungeLevel = fromLounge.map(_.level).getOrElse(0)
       val toLoungeLevel = toLounge.map(_.level).getOrElse(0)
@@ -224,39 +224,39 @@ abstract class FlightPreference(homeAirport : Airport) {
 
 object FlightPreferenceType extends Enumeration {
   type FlightType = Value
-  
-  
-  protected case class Val(title : String, description : String) extends super.Val { 
-    
-  } 
-  implicit def valueToFlightPreferenceTypeVal(x: Value) = x.asInstanceOf[Val] 
 
-  val BUDGET = Val("Budget", "") 
+
+  protected case class Val(title : String, description : String) extends super.Val {
+
+  }
+  implicit def valueToFlightPreferenceTypeVal(x: Value) = x.asInstanceOf[Val]
+
+  val BUDGET = Val("Budget", "")
   val SIMPLE  = Val("Carefree", "")
   val SPEED = Val("Swift", "")
-  val APPEAL   = Val("Comprehensive", "") 
+  val APPEAL   = Val("Comprehensive", "")
   val LOYAL   = Val("Brand Conscious", "")
-  val ELITE    = Val("Elite", "") 
+  val ELITE    = Val("Elite", "")
 }
 
 import FlightPreferenceType._
 /**
  * priceSensitivity : how sensitive to the price, base value is 1 (100%)
- * 
+ *
  * 1 : cost is the same as price no adjustment
- * > 1 : more sensitive to price, a price that is deviated from "standard price" will have its effect amplified, for example a 2 (200%) would mean a $$150 ticket with suggested price of $$100, will be perceived as $$200                      
+ * > 1 : more sensitive to price, a price that is deviated from "standard price" will have its effect amplified, for example a 2 (200%) would mean a $$150 ticket with suggested price of $$100, will be perceived as $$200
  * < 1 : less sensitive to price, a price that is deviated from "standard price" will have its effect weakened, for example a 0.5 (50%) would mean a $$150 ticket with suggested price of $$100, will be perceived as $$125
- * 
+ *
  * Take note that 0 would means a preference that totally ignore the price difference (could be dangerous as very expensive ticket will get through)
  */
 case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, preferredLinkClass: LinkClass) extends FlightPreference(homeAirport : Airport) {
   def computeCost(baseCost : Double, link : Transport, linkClass : LinkClass) = {
     val noise = 0.8 + getFlatTopBellRandom(0.2, 0.1)
-    
+
     val finalCost = baseCost * noise
 
     if (finalCost >= 0) {
-      finalCost  
+      finalCost
     } else { //just to play safe - do NOT allow negative cost link
       0
     }
@@ -277,9 +277,9 @@ case class SimplePreference(homeAirport : Airport, priceSensitivity : Double, pr
       SIMPLE
     }
   }
-  
+
   override val connectionCostRatio = 0.5 //more okay with taking connection
-  
+
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
 }
 
@@ -296,16 +296,16 @@ case class SpeedPreference(homeAirport : Airport, preferredLinkClass: LinkClass)
 
     //NOISE?
     val finalCost = baseCost * noise
-    
-    finalCost 
+
+    finalCost
   }
-  
+
   val getPreferenceType = {
     SPEED
   }
-  
+
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = true
-  
+
   override val connectionCostRatio = 2.0
 
 }
@@ -337,9 +337,9 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
 
     //NOISE?
     val finalCost = perceivedPrice * noise
-    
+
     if (finalCost >= 0) {
-      return finalCost  
+      return finalCost
     } else { //just to play safe - do NOT allow negative cost link
       return 0
     }
@@ -356,7 +356,7 @@ case class AppealPreference(homeAirport : Airport, preferredLinkClass : LinkClas
       }
     }
   }
-  
+
   def isApplicable(fromAirport : Airport, toAirport : Airport) : Boolean = {
     if (loungeLevelRequired > 0) {
       fromAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT && toAirport.size >= Lounge.LOUNGE_PASSENGER_AIRPORT_SIZE_REQUIREMENT
@@ -372,7 +372,7 @@ object AppealPreference {
     count += 1
     AppealPreference(homeAirport, linkClass, loungeLevelRequired = loungeLevelRequired, loyaltyRatio = loyaltyRatio, count)
   }
-  
+
 }
 
 
@@ -399,25 +399,21 @@ class FlightPreferencePool(preferencesWithWeight : List[(FlightPreference, Int)]
   }.view.mapValues {
     _.flatMap {
       case (flightPreference, weight) => (0 until weight).foldRight(List[FlightPreference]()) { (_, foldList) =>
-        flightPreference :: foldList 
+        flightPreference :: foldList
       }
     }
   }.toMap
-  
-  
-  
+
+
+
 //  val pool = preferencesWithWeight.foldRight(List[FlightPreference]()) {
-//    (entry, foldList) => 
+//    (entry, foldList) =>
 //      Range(0, entry._2, 1).foldRight(List[FlightPreference]())((_, childFoldList) => entry._1 :: childFoldList) ::: foldList
 //  }
-  
+
   def draw(linkClass: LinkClass, fromAirport : Airport, toAirport : Airport) : FlightPreference = {
     //Random.shuffle(pool).apply(0)
     val poolForClass = pool(linkClass).filter(_.isApplicable(fromAirport, toAirport))
     poolForClass(ThreadLocalRandom.current().nextInt(poolForClass.length))
   }
 }
-
-
-
-

@@ -11,12 +11,12 @@ function showCampaignModal() {
 
     if (!campaignMap) {
      campaignMap = new google.maps.Map($('#campaignModal .campaignMap')[0], {
+                                              mapId: GOOGLE_MAPS_DARK_STYLE_MAP_ID,
                                               //gestureHandling: 'none',
                                               disableDefaultUI: true,
                                               scrollwheel: false,
                                               draggable: true,
                                               panControl: true,
-                                              styles: getMapStyles()
                                           })
     }
 
@@ -270,12 +270,13 @@ function populateCampaignAirportMarkers(campaignMap, airports, hasCoverage) {
             icon = $("#map").data("disabledAirportMarker")
         }
         var position = {lat: airport.latitude, lng: airport.longitude};
-          var marker = new google.maps.Marker({
+        var marker = new google.maps.marker.AdvancedMarkerElement({
                 position: position,
                 map: campaignMap,
-                airport: airport,
-                icon : icon
+                content: createMapsMarkerImage(icon)
               });
+        marker.airport = airport;
+        marker.icon = icon;
 
             var infowindow
            	marker.addListener('mouseover', function(event) {

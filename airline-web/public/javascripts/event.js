@@ -10,7 +10,7 @@ function showEventCanvas() {
 
 function loadAllOlympics() {
 	var url = "event/olympics"
-	
+
 	loadedOlympicsEvents = []
 
 	$.ajax({
@@ -33,12 +33,12 @@ function loadAllOlympics() {
 
 function updateOlympicTable(sortProperty, sortOrder) {
 	var olympicsTable = $("#eventCanvas #olympicsTable")
-	
+
 	olympicsTable.children("div.table-row").remove()
-	
+
 	//sort the list
 	loadedOlympicsEvents.sort(sortByProperty(sortProperty, sortOrder == "ascending"))
-	
+
 	$.each(loadedOlympicsEvents, function(index, event) {
 		var row = $("<div class='table-row clickable'></div>")
 		row.append("<div class='cell'>" + event.startCycle + "</div>")
@@ -348,12 +348,13 @@ function populateOlympicsCityMap(map, candidateInfo) {
     $.each(candidateInfo.affectedAirports, function(index, airport) {
         var icon = getAirportIcon(airport)
         var position = {lat: airport.latitude, lng: airport.longitude};
-          var marker = new google.maps.Marker({
+        var marker = new google.maps.marker.AdvancedMarkerElement({
                 position: position,
                 map: map,
                 airport: airport,
-                icon : icon
+                content: createMapsMarkerImage(icon)
               });
+              marker.icon = icon;
 
             var infowindow
            	marker.addListener('mouseover', function(event) {
@@ -437,9 +438,9 @@ function initOlympicsVoteMaps(mapDivs) { //only called once, see https://stackov
     olympicsVoteMaps = []
     for (i = 0 ; i < mapDivs.length; i ++) {
         olympicsVoteMaps.push(new google.maps.Map(mapDivs[i][0], {
+                        mapId: GOOGLE_MAPS_DARK_STYLE_MAP_ID,
                         gestureHandling: 'none',
                         disableDefaultUI: true,
-                        styles: getMapStyles()
                     }))
     }
 
@@ -453,10 +454,10 @@ function toggleTableSortOrder(sortHeader, updateTableFunction) {
 	} else {
 		sortHeader.data("sort-order", "ascending")
 	}
-	
+
 	sortHeader.siblings().removeClass("selected")
 	sortHeader.addClass("selected")
-	
+
 	updateTableFunction(sortHeader.data("sort-property"), sortHeader.data("sort-order"))
 }
 
@@ -650,4 +651,3 @@ function getOlympicsCountryRankingRow(rank, entry) {
     row.append("<div class='cell' style='text-align: right;'>" + Math.round(entry.percentage) + "%</div>")
 	return row
 }
-

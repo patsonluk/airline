@@ -24,7 +24,7 @@ function generateImageBar(imageEmpty, imageFill, count, containerDiv, valueInput
 function generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv, valueInput, indexToValueFunction, valueToIndexFunction, rowSize, callback) {
 	containerDiv.empty()
 	var images = []
-	
+
 	if (!indexToValueFunction || !valueToIndexFunction) {
 		indexToValueFunction = function(index) { return index + 1 }
 		valueToIndexFunction = function(value) { return value - 1 }
@@ -37,7 +37,7 @@ function generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv,
 			valueInput.val(indexToValueFunction(count - 1))
 		}
 	}
-	
+
 
 	for (i = 0 ; i < count ; i ++) {
 		var image = $("<img class='button'>")
@@ -50,7 +50,7 @@ function generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv,
 		image.click(function () {
 			var newValue = indexToValueFunction($(this).data('index'))
 			var oldValue = parseInt(valueInput.val())
-			valueInput.val(newValue); 
+			valueInput.val(newValue);
 			if (callback) {
 				callback(oldValue, newValue)
 			}
@@ -59,17 +59,17 @@ function generateImageBarWithRowSize(imageEmpty, imageFill, count, containerDiv,
 
 		containerDiv.append(image)
 		images.push(image)
-		
+
 		if ((i + 1) % rowSize == 0) {
 			containerDiv.append("<br/>")
 		}
 	}
-	
+
 	if (valueInput.val()) {
 		//updateImageBarBySelectedIndex(valueInput.val())
 		updateImageBarBySelectedIndex(valueToIndexFunction(valueInput.val()))
 	}
-	
+
 	function updateImageBar(event) {
 		var index = $(this).data('index')
 		updateImageBarBySelectedIndex(index)
@@ -125,7 +125,7 @@ function fadeInMarker(marker) {
 }
 function fadeInMarkerRecursive(marker) {
 	if (marker.opacities.length > 0) {
-		marker.setOpacity(marker.opacities[0])
+		marker.opacity = marker.opacities[0];
     	marker.opacities.shift()
     	setTimeout(function() { fadeInMarkerRecursive(marker) }, 20)
 	}
@@ -155,11 +155,11 @@ function changeColoredElementValue(element, newValue) {
 	if ($.isNumeric(newValue)) {
 		element.data('numericValue', parseFloat(newValue))
 	}
-	
+
 	if (!element.is(':animated') && $.isNumeric(oldValue) && $.isNumeric(newValue)) { //only do coloring for numeric values
 		var originalColor = element.css("color")
 		var originalBackgroundColor = element.css("background-color")
-		
+
 		if (parseFloat(oldValue) < parseFloat(newValue)) {
 			element.animate({"background-color" : "#A1D490", "color" : "#248F00"}, 1000, function() {
 				element.animate({backgroundColor: originalBackgroundColor, color : originalColor }, 2000, function() {
@@ -256,7 +256,7 @@ function getAirlineLogoSpan(airlineId, airlineName) {
 function getUserLevelImg(level) {
 	if (level <= 0) {
 		return ""
-	} 
+	}
 	var levelTitle
 	var levelIcon
 	if (level == 1) {
@@ -269,12 +269,12 @@ function getUserLevelImg(level) {
 		levelIcon = "assets/images/icons/medal-red-premium.png"
 		levelTitle = "Patreon : Gold"
 	}
-	
+
 	if (levelIcon) {
 		return "<img src='" + levelIcon + "' title='" + levelTitle + "' style='vertical-align:middle;'/>"
 	} else {
 		return ""
-	} 
+	}
 }
 
 function getAdminImg(adminStatus) {
@@ -349,7 +349,7 @@ function getRankingImg(ranking) {
 		rankingIcon = "assets/images/icons/counter-" + ranking + ".png"
         rankingTitle = ranking + "th place"
 	}
-	
+
 	if (rankingIcon) {
 		return "<img src='" + rankingIcon + "' title='" + rankingTitle + "' style='vertical-align:middle;'/>"
 	} else {
@@ -395,7 +395,7 @@ function getOpennessSpan(openness) {
 		icon = "prohibition.png"
 	}*/
 	return "<span>" + description + "(" + openness + ")&nbsp;" + getOpennessIcon(openness) + "</span>"
-	
+
 }
 
 
@@ -467,11 +467,11 @@ function sortPreserveOrder(array, property, ascending) {
 		ascending = true
 	}
     var sortOrder = 1;
-    
+
     if(!ascending) {
         sortOrder = -1;
     }
-    
+
 	var sortArray = array.map(function(data, idx){
 	    return {idx:idx, data:data}
 	})
@@ -494,7 +494,7 @@ function sortPreserveOrder(array, property, ascending) {
 	var result = sortArray.map(function(val){
 	    return val.data
 	});
-	
+
 	return result;
 }
 
@@ -503,11 +503,11 @@ function sortByProperty(property, ascending) {
 		ascending = true
 	}
     var sortOrder = 1;
-    
+
     if(!ascending) {
         sortOrder = -1;
     }
-    
+
     return function (a,b) {
     	var aVal = a[property]
     	var bVal = b[property]
@@ -568,7 +568,7 @@ function setActiveDiv(activeDiv, callback) {
 		}
 	}
 
-	
+
 	activeDiv.parent().show()
 	return true;
 }
@@ -589,7 +589,7 @@ function toggleOnOff(element) {
 }
 
 /**
- * Performs UI change to highlighting a tab (and unhighlighting others) 
+ * Performs UI change to highlighting a tab (and unhighlighting others)
  * @param tab
  * @returns
  */

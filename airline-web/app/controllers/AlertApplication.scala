@@ -43,27 +43,27 @@ class AlertApplication @Inject()(cc: ControllerComponents) extends AbstractContr
       "duration" -> JsNumber(alert.duration),
       "cycleDelta" -> JsNumber(alert.cycle - currentCycle)
       ))
-      
+
       alert.targetId.foreach { targetId =>
         result = result + ("targetId" -> JsNumber(targetId))
       }
-      
+
       result
     }
   }
-  
-  
+
+
   val LOG_RANGE = 100 //load 100 weeks worth of alerts
-  
-  
+
+
   def getAlerts(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val alerts = AlertSource.loadAlertsByAirline(request.user.id).sortBy(_.cycle)(Ordering[Int].reverse)
     //Ok(Json.toJson(alerts)(Writes.traversableWrites(AlertWrites(CycleSource.loadCycle()))))
     implicit val alertWrites = AlertWrites(CycleSource.loadCycle())
     Ok(Json.toJson(alerts))
   }
-  
-  
 
-  
+
+
+
 }
