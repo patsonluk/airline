@@ -1,7 +1,7 @@
 package websocket
 
-import akka.actor.ActorRef
-import akka.event.{EventBus, LookupClassification}
+import org.apache.pekko.actor.ActorRef
+import org.apache.pekko.event.{EventBus, LookupClassification}
 import com.patson.model.Airline
 import com.patson.util.AirlineCache
 import controllers.{PendingActionUtil, PromptUtil}
