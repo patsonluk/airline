@@ -1,5 +1,5 @@
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.ActorMaterializer
 import com.patson.{AllianceMissionSimulation, Util}
 import com.patson.data._
 import com.patson.data.airplane._

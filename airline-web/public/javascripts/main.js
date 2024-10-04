@@ -80,8 +80,34 @@ function registerEscape() {
             } else {
                 closeAirportInfoPopup()
             }
+
+            var $topMapControlPanel = $(".mapControlPanel:visible").last();
+            if ($topMapControlPanel.length > 0) {
+                closeMapControlPanelById($topMapControlPanel[0].id);
+            }
         }
     });
+}
+
+/**
+ * Appropriately closes the mapControlPanel by element ID.
+ * @param {string} elementId HTML ID of an element with a 'mapControlPanel' class.
+ */
+function closeMapControlPanelById(elementId) {
+    switch (elementId) {
+        case "linkHistoryControlPanel":
+            hideLinkHistoryView();
+            return;
+        case "heatmapControlPanel":
+            closeHeatmap();
+            return;
+        case "topAirportLinksPanel":
+            hideAirportLinksView();
+            return;
+        default:
+            console.log("Escape closing not supported for:", elementId);
+            return;
+	}
 }
 
 

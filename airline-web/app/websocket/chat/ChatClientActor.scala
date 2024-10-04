@@ -1,6 +1,6 @@
 package websocket.chat
 
-import akka.actor._
+import org.apache.pekko.actor._
 
 import java.util.Calendar
 import java.text.SimpleDateFormat

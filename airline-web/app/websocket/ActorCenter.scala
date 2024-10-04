@@ -1,7 +1,7 @@
 package websocket
 
-import akka.actor.{Actor, ActorRef, ActorSelection, Props, Terminated}
-import akka.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
+import org.apache.pekko.actor.{Actor, ActorRef, ActorSelection, Props, Terminated}
+import org.apache.pekko.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import com.patson.model.Airline
 import com.patson.model.notice.{AirlineNotice, NoticeCategory, TrackingNotice}
 import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
@@ -219,11 +219,11 @@ object ActorCenter {
   implicit val system = actorSystem //ActorSystem("localWebsocketSystem")
 
   val configFactory = ConfigFactory.load()
-  val actorHost = if (configFactory.hasPath("airline.akka-actor.host")) configFactory.getString("airline.akka-actor.host") else "127.0.0.1:2552"
+  val actorHost = if (configFactory.hasPath("airline.pekko-actor.host")) configFactory.getString("airline.pekko-actor.host") else "127.0.0.1:2552"
   println("!!!!!!!!!!!!!!!AKK ACTOR HOST IS " + actorHost)
 
   val subscribers = mutable.HashSet[ActorRef]()
-  val remoteMainActor = system.actorSelection("akka.tcp://" + REMOTE_SYSTEM_NAME + "@" + actorHost + "/user/" + BRIDGE_ACTOR_NAME)
+  val remoteMainActor = system.actorSelection("pekko://" + REMOTE_SYSTEM_NAME + "@" + actorHost + "/user/" + BRIDGE_ACTOR_NAME)
   val localMainActor = system.actorOf(Props(classOf[LocalMainActor], remoteMainActor), "local-main-actor")
 
 
