@@ -1,10 +1,6 @@
 package websocket
 
-<<<<<<< HEAD
 import org.apache.pekko.actor.{Actor, ActorRef, ActorSelection, ActorSystem, Props, Terminated}
-=======
-import org.apache.pekko.actor.{Actor, ActorRef, ActorSelection, Props, Terminated}
->>>>>>> 352fe13e (Web:Play 3.x migration)
 import org.apache.pekko.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import com.patson.model.Airline
 import com.patson.model.notice.{AirlineNotice, NoticeCategory, TrackingNotice}
