@@ -1,7 +1,7 @@
 package com.patson
 
-import akka.actor.ActorSystem
-import akka.testkit.{ImplicitSender, TestKit}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.testkit.{ImplicitSender, TestKit}
 import com.patson.PassengerSimulation.RouteRejectionReason
 import com.patson.model.FlightType._
 import com.patson.model._

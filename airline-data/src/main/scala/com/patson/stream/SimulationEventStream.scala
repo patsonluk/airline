@@ -1,6 +1,6 @@
 package com.patson.stream
 
-import akka.actor._
+import org.apache.pekko.actor._
 import com.patson.MainSimulation
 import com.typesafe.config.ConfigFactory
 

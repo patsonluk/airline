@@ -1,7 +1,7 @@
 package com.patson
 
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.ActorMaterializer
 import scala.io.Codec
 
 package object init {

@@ -5,9 +5,9 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Finders
 import org.scalatest.Matchers
 import org.scalatest.WordSpecLike
-import akka.actor.ActorSystem
-import akka.testkit.ImplicitSender
-import akka.testkit.TestKit
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.testkit.ImplicitSender
+import org.apache.pekko.testkit.TestKit
 import com.patson.Util
 import scala.collection.mutable.ListBuffer
 import com.patson.OilSimulation
