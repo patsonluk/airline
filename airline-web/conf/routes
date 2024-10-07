@@ -209,7 +209,7 @@ GET     /research-link/:fromAirportId/:toAirportId  controllers.SearchApplicatio
 #GET		 /links							  controllers.LinkApplication.getAllLinks
 #GET		 /vip-routes					  controllers.LinkApplication.getVipRoutes
 #GET		 /link-consumptions				  controllers.LinkApplication.getAllLinkConsumptions
-GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels
+GET		 /airplane-models				  controllers.AirplaneApplication.getAirplaneModels()
 GET		 /airplane-models/:modelId/stats     controllers.AirplaneApplication.getAirplaneModelStats(modelId : Int)
 GET		 /rankings  		  		      controllers.RankingApplication.getRankings()
 GET		 /rankings/:airlineId  		      controllers.RankingApplication.getRankingsWithAirline(airlineId : Int)
@@ -257,12 +257,12 @@ GET     /signup/airline-name-check  controllers.SignUp.airlineNameCheck(airlineN
 # PasswordReset
 GET    /password-reset				controllers.AccountApplication.passwordResetForm(resetToken : String)
 POST   /password-reset				controllers.AccountApplication.passwordResetSubmit
-GET   /forgot-password				controllers.AccountApplication.forgotPassword
+GET   /forgot-password				controllers.AccountApplication.forgotPassword()
 POST   /forgot-password				controllers.AccountApplication.forgotPasswordSubmit
-GET   /forgot-id				controllers.AccountApplication.forgotId
+GET   /forgot-id				controllers.AccountApplication.forgotId()
 POST   /forgot-id				controllers.AccountApplication.forgotIdSubmit
 
-GET     /about      controllers.AboutApplication.about
+GET     /about      controllers.AboutApplication.about()
 
 OPTIONS    /*path     controllers.Application.options(path)
 

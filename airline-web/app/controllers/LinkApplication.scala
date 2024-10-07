@@ -229,7 +229,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     )(PlanLinkData.apply)(PlanLinkData.unapply)
   )
   
-  val countryByCode = CountrySource.loadAllCountries.map(country => (country.countryCode, country)).toMap
+  val countryByCode = CountrySource.loadAllCountries().map(country => (country.countryCode, country)).toMap
   
   def addTestLink() = Action { request =>
     if (request.body.isInstanceOf[AnyContentAsJson]) {
@@ -259,7 +259,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
     val airline = request.user
 
-    if (incomingLink.getAssignedAirplanes.isEmpty) {
+    if (incomingLink.getAssignedAirplanes().isEmpty) {
       return BadRequest("Cannot insert link - no airplane assigned")
     }
 
@@ -274,7 +274,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
 
     //validate slots
-    val airplanesForThisLink = incomingLink.getAssignedAirplanes
+    val airplanesForThisLink = incomingLink.getAssignedAirplanes()
     //validate all airplanes are same model
     val airplaneModels = airplanesForThisLink.foldLeft(Set[Model]())(_ + _._1.model) //should be just one element
     if (airplaneModels.size != 1) {
@@ -646,7 +646,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
   def planLink(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
-    val PlanLinkData(fromAirportId, toAirportId) = planLinkForm.bindFromRequest.get
+    val PlanLinkData(fromAirportId, toAirportId) = planLinkForm.bindFromRequest().get
     val airline = request.user
     preparePlanLink(airline, fromAirportId, toAirportId) match {
       case Right((fromAirport, toAirport)) => {
@@ -719,14 +719,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           Pricing.computeStandardPrice(distance, Computation.getFlightType(fromAirport, toAirport, distance), FIRST))
 
         //adjust suggestedPrice with Lounge
-        toAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
+        toAirport.getLounge(airline.id, airline.getAllianceId(), activeOnly = true).foreach { lounge =>
           suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY),
             (suggestedPrice(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
             (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
 
         }
 
-        fromAirport.getLounge(airline.id, airline.getAllianceId, activeOnly = true).foreach { lounge =>
+        fromAirport.getLounge(airline.id, airline.getAllianceId(), activeOnly = true).foreach { lounge =>
           suggestedPrice = LinkClassValues.getInstance(suggestedPrice(ECONOMY),
             (suggestedPrice(BUSINESS) / (1 + lounge.getPriceReduceFactor(distance))).toInt,
             (suggestedPrice(FIRST) / (1 + lounge.getPriceReduceFactor(distance))).toInt)
@@ -879,7 +879,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
   def getRejectionReason(airline : Airline, fromAirport: Airport, toAirport : Airport, existingLink : Option[Link]) : Option[(String, RejectionType.Value)]= {
     import RejectionType._
-    if (airline.getCountryCode.isEmpty) {
+    if (airline.getCountryCode().isEmpty) {
       return Some(("Airline has no HQ!", NO_BASE))
     }
     val toCountryCode = toAirport.countryCode
@@ -1570,7 +1570,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
 
 
     var result = Json.obj("negotiationInfo" -> Json.toJson(negotiationInfo)(NegotiationInfoWrites(incomingLink)),
-    "delegateInfo" -> Json.toJson(request.user.getDelegateInfo),
+    "delegateInfo" -> Json.toJson(request.user.getDelegateInfo()),
     "toAirport" -> Json.toJson(incomingLink.to),
     "fromAirport" -> Json.toJson(incomingLink.from))
 

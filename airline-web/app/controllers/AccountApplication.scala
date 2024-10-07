@@ -132,7 +132,7 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
    * Handle form submission.
    */
   def passwordResetSubmit = Action { implicit request =>
-    form.bindFromRequest.fold(
+    form.bindFromRequest().fold(
       // Form has errors, redisplay it
       errors => {
         println(errors)
@@ -159,7 +159,7 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
    * Handle form submission.
    */
   def forgotIdSubmit = Action { implicit request =>
-    forgotIdForm.bindFromRequest.fold(
+    forgotIdForm.bindFromRequest().fold(
       // Form has errors, redisplay it
       errors => {
         println(errors)
@@ -179,7 +179,7 @@ class AccountApplication @Inject()(cc: ControllerComponents) extends AbstractCon
   }
   
    def forgotPasswordSubmit = Action { implicit request =>
-    forgotPasswordForm.bindFromRequest.fold(
+    forgotPasswordForm.bindFromRequest().fold(
       // Form has errors, redisplay it
       errors => {
         println(errors)

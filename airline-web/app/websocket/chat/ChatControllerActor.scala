@@ -14,7 +14,7 @@ import play.api.libs.ws.ahc.StandaloneAhcWSClient
 import java.util.Date
 import scala.collection.mutable
 import scala.collection.mutable.{Map, Queue}
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutorService}
 
 // our domain message protocol
 case class Join(user : User)
@@ -60,8 +60,7 @@ class ChatControllerActor extends Actor {
 
   val messageIdCounter = new AtomicLong(0)
 
-  context.system.scheduler.schedule(Duration.ZERO, Duration.ofMinutes(1), self, TriggerPing, ec, self)
-
+  context.system.scheduler.scheduleAtFixedRate(Duration.ZERO, Duration.ofMinutes(1), self, TriggerPing, ec, self)
 
 
   def initMessages() = {
@@ -126,11 +125,11 @@ class ChatControllerActor extends Actor {
 
       val lastMessageIdOption = ChatSource.getLastChatId(user.id)
 
-      clientActors += sender
-      context.watch(sender)
-      ChatControllerActor.addActiveUser(sender, user)
+      clientActors += sender()
+      context.watch(sender())
+      ChatControllerActor.addActiveUser(sender(), user)
       //You can turn these loggers off if needed
-      logger.info("Chat socket connected " + sender + " for user " + user.userName + " current active sessions : " + clientActors.size + " unique users : " + ChatControllerActor.getActiveUsers().size)
+      logger.info("Chat socket connected " + sender() + " for user " + user.userName + " current active sessions : " + clientActors.size + " unique users : " + ChatControllerActor.getActiveUsers().size)
 
       // resend the Archived Message
       val allianceArchivedMessages =
@@ -146,13 +145,13 @@ class ChatControllerActor extends Actor {
 
       val generalMessageSource = if (user.isChatBanned) penaltyBoxMessageHistory else generalMessageHistory
       val sessionStart = getSessionStartMessage(generalMessageSource, allianceArchivedMessages, lastMessageIdOption)
-      sender ! sessionStart
+      sender() ! sessionStart
     }
 
 
 
     case PreviousMessagesRequest(airline, previousFirstMessageId, roomId) =>
-      sender ! buildPreviousMessagesResponse(airline, previousFirstMessageId, roomId)
+      sender() ! buildPreviousMessagesResponse(airline, previousFirstMessageId, roomId)
 
     //    case Leave => {
     //      context become process(subscribers - sender)
@@ -239,12 +238,11 @@ abstract class ChatCommand(val command : String) {
 
 
 object ImgCommand extends ChatCommand("img") {
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
+  implicit val system : ActorSystem = ActorSystem()
   val ws = StandaloneAhcWSClient()
   val MAX_MESSAGE_SIZE = 8 * 1024 * 1024 //8M
   val TIME_OUT = 5 //wait max 5 seconds
-  implicit val executionContext = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(1))
+  implicit val executionContext : ExecutionContextExecutorService = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(1))
   override def execute(message: ChatMessage): ChatMessage = {
     val commandIndex = message.text.indexOf(commandToken)
 
@@ -265,6 +263,8 @@ object ImgCommand extends ChatCommand("img") {
                   }
                   case None =>
                     message.copy(text = s"(Image length not defined) : $argument")
+                  case _ =>
+                    message
                 }
               } else {
                 message.copy(text = s"(Link is not an image) : $argument")
@@ -272,6 +272,8 @@ object ImgCommand extends ChatCommand("img") {
             }
             case None =>
               message.copy(text = s"(Link is not an image) : $argument")
+            case _ =>
+              message
           }
         } else {
           message.copy(text = s"(Image not found) : $argument")

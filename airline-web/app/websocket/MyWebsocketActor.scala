@@ -32,7 +32,7 @@ object MyWebSocketActor {
   startBackgroundPingTrigger()
 
   def startBackgroundPingTrigger(): Unit = {
-    actorSystem.scheduler.schedule(Duration.Zero, Duration(30, TimeUnit.SECONDS), new Runnable {
+    actorSystem.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(30, TimeUnit.SECONDS))(new Runnable {
       def run(): Unit = {
         actorSystem.eventStream.publish(TriggerPing())
       }
@@ -63,7 +63,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
   //this actor talks directly to the sim server
   val outActor = ActorCenter.remoteSystem.actorOf(Props(classOf[LocalActor], out, airlineId), nextSubscriberId(airlineId))
 
-  override def preStart = {
+  override def preStart() = {
     val airline = AirlineCache.getAirline(airlineId).get
     println(s"Starting websocket on airline $airline with remoteAddress $remoteAddress path ${self}. With output actor ${outActor.path}")
   }

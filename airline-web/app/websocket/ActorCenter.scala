@@ -149,7 +149,7 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
 
 
 
-  override def preStart = {
+  override def preStart() = {
     super.preStart()
     remoteActor ! "subscribe"
     timer.scheduleAtFixedRate(new TimerTask {
@@ -168,7 +168,7 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
 sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
   var disconnected = false
 
-  override def preStart = {
+  override def preStart() = {
     super.preStart()
     context.system.eventStream.subscribe(self, classOf[RemotingLifecycleEvent])
     remoteActor ! KeepAlivePing() //establish connection

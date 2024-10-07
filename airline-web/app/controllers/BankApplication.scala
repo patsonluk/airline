@@ -38,7 +38,7 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
   }
   
   def takeOutLoan(airlineId : Int) = AuthenticatedAirline(airlineId) { implicit request =>
-    val LoanRequest(requestedAmount, requestedTerm) = loanForm.bindFromRequest.get
+    val LoanRequest(requestedAmount, requestedTerm) = loanForm.bindFromRequest().get
     val loanReply = Bank.getMaxLoan(airlineId)
     val currentCycle = CycleSource.loadCycle()
     if (loanReply.rejectionOption.isDefined) {
@@ -87,7 +87,7 @@ class BankApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         if (loan.airlineId != request.user.id) {
           BadRequest("Cannot repay loan not owned by this airline") 
         } else {
-          val balance = request.user.getBalance 
+          val balance = request.user.getBalance()
           if (balance < loan.earlyRepayment(currentCycle)) {
             BadRequest("Not enough cash to repay this loan")
           } else {
