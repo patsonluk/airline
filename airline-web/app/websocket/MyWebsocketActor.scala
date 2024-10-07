@@ -59,7 +59,9 @@ object MyWebSocketActor {
  * @param remoteAddress
  */
 class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) extends Actor {
-  val outActor = actorSystem.actorOf(Props(classOf[LocalActor], out, airlineId), nextSubscriberId(airlineId)) //do NOT create as a child, otherwise it cannot receive message from remote actor...
+  //do NOT create as a child, otherwise it cannot receive message from remote actor...
+  //this actor talks directly to the sim server
+  val outActor = ActorCenter.remoteSystem.actorOf(Props(classOf[LocalActor], out, airlineId), nextSubscriberId(airlineId))
 
   override def preStart = {
     val airline = AirlineCache.getAirline(airlineId).get
