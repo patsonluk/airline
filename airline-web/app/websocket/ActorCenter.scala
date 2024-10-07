@@ -1,6 +1,6 @@
 package websocket
 
-import org.apache.pekko.actor.{Actor, ActorRef, ActorSelection, Props, Terminated}
+import org.apache.pekko.actor.{Actor, ActorRef, ActorSelection, ActorSystem, Props, Terminated}
 import org.apache.pekko.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import com.patson.model.Airline
 import com.patson.model.notice.{AirlineNotice, NoticeCategory, TrackingNotice}
@@ -216,18 +216,19 @@ sealed class ReconnectActor(remoteActor : ActorSelection) extends Actor {
 object ActorCenter {
   val REMOTE_SYSTEM_NAME = "websocketActorSystem"
   val BRIDGE_ACTOR_NAME = "bridgeActor"
-  implicit val system = actorSystem //ActorSystem("localWebsocketSystem")
-
   val configFactory = ConfigFactory.load()
-  val actorHost = if (configFactory.hasPath("airline.pekko-actor.host")) configFactory.getString("airline.pekko-actor.host") else "127.0.0.1:2552"
+  val remoteConfig = configFactory.getConfig(REMOTE_SYSTEM_NAME)
+  val remoteSystem = ActorSystem(REMOTE_SYSTEM_NAME, remoteConfig)
+
+  val actorHost = if (configFactory.hasPath("sim.pekko-actor.host")) configFactory.getString("sim.pekko-actor.host") else "127.0.0.1:7355"
   println("!!!!!!!!!!!!!!!AKK ACTOR HOST IS " + actorHost)
 
   val subscribers = mutable.HashSet[ActorRef]()
-  val remoteMainActor = system.actorSelection("pekko://" + REMOTE_SYSTEM_NAME + "@" + actorHost + "/user/" + BRIDGE_ACTOR_NAME)
-  val localMainActor = system.actorOf(Props(classOf[LocalMainActor], remoteMainActor), "local-main-actor")
+  val remoteMainActor = remoteSystem.actorSelection("pekko://" + REMOTE_SYSTEM_NAME + "@" + actorHost + "/user/" + BRIDGE_ACTOR_NAME)
+  val localMainActor = remoteSystem.actorOf(Props(classOf[LocalMainActor], remoteMainActor), "local-main-actor")
 
 
-  val reconnectActor = system.actorOf(Props(classOf[ReconnectActor], remoteMainActor), "reconnect-actor")
+  val reconnectActor = remoteSystem.actorOf(Props(classOf[ReconnectActor], remoteMainActor), "reconnect-actor")
   reconnectActor ! remoteMainActor //why?
 
 
