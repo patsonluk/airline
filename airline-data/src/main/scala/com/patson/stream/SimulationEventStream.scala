@@ -1,6 +1,6 @@
 package com.patson.stream
 
-import akka.actor._
+import org.apache.pekko.actor._
 import com.patson.MainSimulation
 import com.typesafe.config.ConfigFactory
 
@@ -9,7 +9,7 @@ import scala.collection.mutable.{ListBuffer, Set}
 
 object SimulationEventStream{
   val config = ConfigFactory.load()
-  implicit val system = ActorSystem(REMOTE_SYSTEM_NAME, config.getConfig(REMOTE_SYSTEM_NAME).withFallback(config))
+  implicit val system : ActorSystem = ActorSystem(REMOTE_SYSTEM_NAME, config.getConfig(REMOTE_SYSTEM_NAME).withFallback(config))
   
   //spin off a remote actor
   var registeredActor = Set[ActorRef]()

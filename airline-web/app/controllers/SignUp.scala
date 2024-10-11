@@ -110,7 +110,7 @@ class SignUp @Inject()(cc: ControllerComponents)(ws: WSClient) extends AbstractC
    * Handle form submission.
    */
   def submit = Action { implicit request =>
-    signupForm.bindFromRequest.fold(
+    signupForm.bindFromRequest().fold(
       // Form has errors, redisplay it
       errors => BadRequest(html.signup(errors)), { userInput =>
         

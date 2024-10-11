@@ -142,7 +142,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
 
   def getAirportAssetsWithAirline(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val assets = AirportAssetSource.loadAirportAssetsByAirline(airlineId)
-    Ok(Json.toJson(assets)(Writes.traversableWrites(OwnedAirportAssetWrites)))
+    Ok(Json.toJson(assets)(Writes.list(OwnedAirportAssetWrites)))
   }
 
   def getAirportAssetDetailsWithoutAirline(assetId : Int) = Action { request =>

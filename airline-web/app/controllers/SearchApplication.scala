@@ -200,7 +200,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
               detailedTransport.transportType match {
                 case TransportType.FLIGHT =>
                   val detailedLink = detailedTransport.asInstanceOf[Link]
-                  linkJson = linkJson + ("computedQuality" -> JsNumber(detailedLink.computedQuality))
+                  linkJson = linkJson + ("computedQuality" -> JsNumber(detailedLink.computedQuality()))
                   detailedLink.getAssignedModel().foreach { model =>
                     linkJson = linkJson + ("airplaneModelName" -> JsString(model.name))
                   }
@@ -278,7 +278,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
       if (result.isEmpty) {
         Ok(Json.obj("message" -> "No match"))
       } else {
-        Ok(Json.obj("entries" -> Json.toJson(result)(Writes.traversableWrites(new AirlineSearchResultWrites(input)))))
+        Ok(Json.obj("entries" -> Json.toJson(result)(Writes.list(new AirlineSearchResultWrites(input)))))
       }
     }
   }
@@ -359,7 +359,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
     val features = ListBuffer[LinkFeature.Value]()
 
     import LinkFeature._
-    val airlineServiceQuality = link.airline.getCurrentServiceQuality
+    val airlineServiceQuality = link.airline.getCurrentServiceQuality()
     if (link.duration <= 120) { //very short flight
       if (link.rawQuality >= 80) {
         features += BEVERAGE_SERVICE
@@ -466,7 +466,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 
 
 
-    result = result + ("consumptions" -> Json.toJson(consumptions)(Writes.traversableWrites(MinimumLinkConsumptionWrite)))
+    result = result + ("consumptions" -> Json.toJson(consumptions)(Writes.list(MinimumLinkConsumptionWrite)))
     Ok(result)
   }
 
@@ -486,5 +486,3 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
   case class LinkDetail(link : Link, timeslot : TimeSlot)
 
 }
-
-

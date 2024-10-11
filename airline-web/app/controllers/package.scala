@@ -1,11 +1,11 @@
-import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.ActorMaterializer
 import com.patson.{AllianceMissionSimulation, Util}
 import com.patson.data._
 import com.patson.data.airplane._
 import com.patson.model.{AirlineBaseSpecialization, AirlineCashFlow, AirlineIncome, Computation, _}
 import com.patson.model.airplane._
-import com.patson.model.alliance.{AllianceMission, AllianceMissionStatus, AllianceMissionReward}
+import com.patson.model.alliance.{AllianceMission, AllianceMissionReward, AllianceMissionStatus}
 import com.patson.model.event.EventReward
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo, ChampionUtil, CountryChampionInfo}
 import models.{AirportFacility, AirportWithChampion, FacilityType}
@@ -14,14 +14,14 @@ import play.api.libs.json._
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 import scala.math.BigDecimal.RoundingMode
+import scala.math.Ordering.Double
 
 
 
 package object controllers {
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val actorSystem = ActorSystem("patson-web-app-system")
-  implicit val materializer = ActorMaterializer()
-  implicit val order = Ordering.Double.IeeeOrdering
+  implicit val actorSystem : ActorSystem = ActorSystem("patson-web-app-system")
+  implicit val order : Double.IeeeOrdering.type = Ordering.Double.IeeeOrdering
 
   implicit object AirlineFormat extends Format[Airline] {
     def reads(json: JsValue): JsResult[Airline] = {
@@ -41,8 +41,8 @@ package object controllers {
         "isGenerated" -> airline.isGenerated
       )
 
-      if (airline.getCountryCode.isDefined) {
-        result = result + ("countryCode" -> JsString(airline.getCountryCode.get))
+      if (airline.getCountryCode().isDefined) {
+        result = result + ("countryCode" -> JsString(airline.getCountryCode().get))
       }
       airline.getHeadQuarter().foreach { headquarters =>
         result = result +
@@ -206,7 +206,7 @@ package object controllers {
       "flightType" -> JsString(FlightType.label(link.flightType)),
       "capacity" -> Json.toJson(link.capacity),
       "rawQuality" -> JsNumber(link.rawQuality),
-      "computedQuality" -> JsNumber(link.computedQuality),
+      "computedQuality" -> JsNumber(link.computedQuality()),
       "duration" -> JsNumber(link.duration),
       "frequency" -> JsNumber(link.frequency),
       "availableSeat" -> Json.toJson(link.availableSeats),
@@ -257,7 +257,7 @@ package object controllers {
         "capacity" -> Json.toJson(linkConsumption.link.capacity),
         "frequency" -> JsNumber(linkConsumption.link.frequency),
         "soldSeats" -> JsNumber(linkConsumption.link.soldSeats.total),
-        "quality" -> JsNumber(linkConsumption.link.computedQuality)))
+        "quality" -> JsNumber(linkConsumption.link.computedQuality())))
     }
   }
 
@@ -574,7 +574,7 @@ package object controllers {
         ))
 
         var bonusJson = Json.obj()
-        airport.getAllAirlineBonuses.toList.foreach {
+        airport.getAllAirlineBonuses().toList.foreach {
           case (airlineId, bonuses) => {
             var totalLoyaltyBonus = 0.0
             var loyaltyBreakdownJson = Json.arr(Json.obj("description" -> "Basic", "value" -> BigDecimal(airport.getAirlineBaseAppeal(airlineId).loyalty).setScale(2, RoundingMode.HALF_EVEN)))
