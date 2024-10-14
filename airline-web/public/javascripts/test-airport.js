@@ -10,6 +10,7 @@ $( document ).ready(function() {
 
 function initMap() {
   map = new google.maps.Map(document.getElementById('map'), {
+    mapId: GOOGLE_MAPS_DARK_STYLE_MAP_ID,
 	center: {lat: 20, lng: 150.644},
    	zoom : 2
   });
@@ -22,7 +23,7 @@ function addMarkers(airports) {
 	for (i = 0; i < airports.length; i++) {
 		  var airportInfo = airports[i]
 		  var position = {lat: airportInfo.latitude, lng: airportInfo.longitude};
-		  var marker = new google.maps.Marker({
+		  var marker = new google.maps.marker.AdvancedMarkerElement({
 			    position: position,
 			    map: map,
 			    title: airportInfo.name,

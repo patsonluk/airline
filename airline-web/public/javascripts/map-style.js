@@ -1,3 +1,19 @@
+/**
+ * Note on Map Styling:
+ * Google has deprecated Markers in favor of 'AdvancedMarkers', which require use of 'MapId'
+ * which is a cloud based way of controlling map styles. There is no way to dynamically
+ * change MapIDs of an existing map, thus to change styling you need to create a new map instance,
+ * which is billed. Hence, not continuing to support the feature of changing map styles.
+ * Polyline dynamic styling is still feasible, just not Map level.
+ *
+ * There is still a 'styles' setting on the Map, but this only works if you don't use a MapId,
+ * thus since we now have to use advanced markers, we can't use this.
+ *
+ * Tracking Google Feature Request: https://issuetracker.google.com/issues/161501609
+ */
+const GOOGLE_MAPS_DARK_STYLE_MAP_ID = "<YOUR_GOOGLE_MAPID_HERE>";
+const GOOGLE_MAPS_LIGHT_STYLE_MAP_ID = "<YOUR_GOOGLE_MAPID_HERE>";
+
 var currentStyles
 var currentTypes
 var pathOpacityByStyle = {
@@ -54,7 +70,7 @@ function toggleMapLight() {
 	$.cookie('currentMapStyles', currentStyles);
 	console.log($.cookie('currentMapStyles'))
 	
-	map.setOptions({styles: getMapStyles()});
+//	map.setOptions({styles: getMapStyles()});
 	refreshLinks(false)
 }
 

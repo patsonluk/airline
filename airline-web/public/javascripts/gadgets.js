@@ -125,7 +125,7 @@ function fadeInMarker(marker) {
 }
 function fadeInMarkerRecursive(marker) {
 	if (marker.opacities.length > 0) {
-		marker.setOpacity(marker.opacities[0])
+		marker.opacity = marker.opacities[0]
     	marker.opacities.shift()
     	setTimeout(function() { fadeInMarkerRecursive(marker) }, 20)
 	}
@@ -819,4 +819,21 @@ function toReadableDuration(duration) {
     result += " " + (hours == 1 ? "1 hour" : hours + " hours")
   }
   return result.trim()
+}
+
+/**
+ * Create and return a new image element.
+ * Note: Google Maps behavior is to *move* images if reused, so a new image is needed for each distinct marker.
+ * @param {*} imageSrc source of the image.
+ * @returns the created element
+ */
+function createMapsMarkerImage(imageSrc) {
+	const image = document.createElement("img");
+	image.src = imageSrc;
+	return image;
+}
+
+function setMarkerVisibility(marker, isVisible) {
+	// https://developers.google.com/maps/documentation/javascript/advanced-markers/collision-behavior#control_marker_visibility_by_map_zoom_level
+	marker.map = isVisible ? map : null;
 }

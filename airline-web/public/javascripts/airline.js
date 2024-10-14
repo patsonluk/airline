@@ -210,7 +210,7 @@ function clearMarkerEntry(markerEntry) {
 	
 	//remove all markers
 	$.each(markerEntry.markers, function(key, marker) {
-		marker.setMap(null)
+		marker.map = null
 	})
 }
 
@@ -515,9 +515,9 @@ function drawFlightMarker(line, link) {
 
 		var markersOfThisLink = []
 		for (i = 0; i < markersRequired; i ++) {
-			var marker = new google.maps.Marker({
+			var marker = new google.maps.marker.AdvancedMarkerElement({
 			    position: from,
-			    icon : image, 
+			    content : image,
 			    totalDuration : link.duration * 2, //round trip
 			    elapsedDuration : 0,
 			    nextDepartureFrame : Math.floor((i + 0.1) * totalIntervalsPerWeek / frequency) % totalIntervalsPerWeek, //i + 0.1 so they wont all depart at the same time
@@ -526,6 +526,15 @@ function drawFlightMarker(line, link) {
 			    isActive: false,
 			    clickable: false,
 			});
+
+			marker.icon = icon;
+            marker.totalDuration = link.duration * 2; //round trip
+            marker.elapsedDuration = 0;
+            marker.nextDepartureFrame = Math.floor((i + 0.1) * totalIntervalsPerWeek / frequency) % totalIntervalsPerWeek; //i + 0.1 so they wont all depart at the same time
+            marker.departureInterval = Math.floor(totalIntervalsPerWeek / markersRequired);
+            marker.status = "forward";
+            marker.isActive = false;
+            marker.clickable = false;
 			
 			//flightMarkers.push(marker)
 			markersOfThisLink.push(marker)
@@ -548,8 +557,8 @@ function drawFlightMarker(line, link) {
 					marker.status = "forward"
 					marker.isActive = true
 					marker.elapsedDuration = 0
-					marker.setPosition(from)
-					marker.setMap(map)
+					marker.position = from
+					marker.map = map
 				} else if (marker.isActive) {
 					marker.elapsedDuration += minsPerInterval
 					
@@ -565,7 +574,7 @@ function drawFlightMarker(line, link) {
                                 marker.status = "turnaround"
 					         } else {
 					            var newPosition = google.maps.geometry.spherical.interpolate(from, to, marker.elapsedDuration / marker.totalDuration / 0.45)
-                                marker.setPosition(newPosition)
+                                marker.position = newPosition
                              }
                         }
                         if (marker.status === "turnaround") {
@@ -575,7 +584,7 @@ function drawFlightMarker(line, link) {
                         }
                         if (marker.status === "backward") {
                             var newPosition = google.maps.geometry.spherical.interpolate(to, from, (marker.elapsedDuration / marker.totalDuration - 0.55) / 0.45)
-                            marker.setPosition(newPosition)
+                            marker.position = newPosition
                         }
 
 					}
@@ -847,11 +856,11 @@ function fadeOutMarker(marker, animationInterval) {
     var opacity = 1.0
     var animation = window.setInterval(function () {
         if (opacity <= 0) {
-            marker.setMap(null)
-            marker.setOpacity(1)
+            marker.map = null
+            marker.opacity = 1
             window.clearInterval(animation)
         } else {
-            marker.setOpacity(opacity)
+            marker.opacity = opacity
             opacity -= 0.1
         }
     }, animationInterval)

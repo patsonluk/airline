@@ -348,12 +348,13 @@ function populateOlympicsCityMap(map, candidateInfo) {
     $.each(candidateInfo.affectedAirports, function(index, airport) {
         var icon = getAirportIcon(airport)
         var position = {lat: airport.latitude, lng: airport.longitude};
-          var marker = new google.maps.Marker({
+          var marker = new google.maps.marker.AdvancedMarkerElement({
                 position: position,
                 map: map,
                 airport: airport,
-                icon : icon
+                content : createMapsMarkerImage(icon)
               });
+              marker.icon = icon
 
             var infowindow
            	marker.addListener('mouseover', function(event) {
@@ -437,9 +438,10 @@ function initOlympicsVoteMaps(mapDivs) { //only called once, see https://stackov
     olympicsVoteMaps = []
     for (i = 0 ; i < mapDivs.length; i ++) {
         olympicsVoteMaps.push(new google.maps.Map(mapDivs[i][0], {
+                        mapId: GOOGLE_MAPS_DARK_STYLE_MAP_ID,
                         gestureHandling: 'none',
                         disableDefaultUI: true,
-                        styles: getMapStyles()
+                        colorScheme: getMapColorScheme()
                     }))
     }
 

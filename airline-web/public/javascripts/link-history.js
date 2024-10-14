@@ -231,7 +231,7 @@ function clearHistoryFlightMarkers() {
     $.each(historyFlightMarkers, function(index, markersOnAStep) {
         $.each(markersOnAStep, function(index, marker) {
         //window.clearInterval(marker.animation)
-    	    marker.setMap(null)
+    	    marker.map = null
         })
     })
     historyFlightMarkers = []
@@ -252,8 +252,8 @@ function animateHistoryFlightMarkers(framesPerAnimation) {
             if (!marker.isActive) {
                 marker.isActive = true
                 marker.elapsedDuration = 0
-                marker.setPosition(marker.from)
-                marker.setMap(map)
+                marker.position = marker.from
+                marker.map = map
             } else  {
                 marker.elapsedDuration += 1
 
@@ -262,7 +262,7 @@ function animateHistoryFlightMarkers(framesPerAnimation) {
                     //console.log("next departure " + marker.nextDepartureFrame)
                 } else {
                     var newPosition = google.maps.geometry.spherical.interpolate(marker.from, marker.to, marker.elapsedDuration / marker.totalDuration)
-                    marker.setPosition(newPosition)
+                    marker.position = newPosition
                 }
             }
   		})
@@ -282,13 +282,13 @@ function fadeOutMarkers(markers, animationInterval) {
     var animation = window.setInterval(function () {
         if (opacity <= 0) {
             $.each(markers, function(index, marker) {
-                marker.setMap(null)
-                marker.setOpacity(1)
+                marker.map = null
+                marker.opacity = 1
             })
             window.clearInterval(animation)
         } else {
             $.each(markers, function(index, marker) {
-                marker.setOpacity(opacity)
+                marker.opacity = opacity
             })
             opacity -= 0.1
         }
@@ -319,16 +319,16 @@ function drawHistoryFlightMarker(line, framesPerAnimation, totalPassengers) {
 	        anchor: new google.maps.Point(6, 6),
 	    };
 
-        var marker = new google.maps.Marker({
+        var marker = new google.maps.marker.AdvancedMarkerElement({
             position: from,
-            from : from,
-            to : to,
-            icon : image,
-            elapsedDuration : 0,
-            totalDuration : framesPerAnimation,
-            isActive: false,
-            clickable: false
+            content : createMapsMarkerImage("assets/images/markers/" + icon),
         });
+        marker.from = from
+        marker.to = to
+        marker.elapsedDuration = 0
+        marker.totalDuration = framesPerAnimation
+        marker.isActive = false
+        marker.clickable = false
 
         //flightMarkers.push(marker)
         var step = line.step

@@ -312,12 +312,15 @@ function hideUserSpecificElements() {
 function initMap() {
 	initStyles()
   map = new google.maps.Map(document.getElementById('map'), {
+    mapId: GOOGLE_MAPS_DARK_STYLE_MAP_ID,
+  	colorScheme: getMapColorScheme(),
 	center: {lat: 20, lng: 150.644},
    	zoom : 2,
    	minZoom : 2,
+   	isFractionalZoomEnabled: true,
    	gestureHandling: 'greedy',
-   	styles: getMapStyles(),
-	mapTypeId: getMapTypes(),
+   	mapTypeId: getMapTypes(),
+   	streetViewControl: false,
    	restriction: {
                 latLngBounds: { north: 85, south: -85, west: -180, east: 180 },
               }
@@ -325,10 +328,10 @@ function initMap() {
 	
   google.maps.event.addListener(map, 'zoom_changed', function() {
 	    var zoom = map.getZoom();
-	    // iterate over markers and call setVisible
-	    $.each(markers, function( key, marker ) {
-	        marker.setVisible(isShowMarker(marker, zoom));
-	    })
+	    // iterate over markers and call setMarkerVisibility
+	    $.each(markers, function (key, marker) {
+            setMarkerVisibility(marker, isShowMarker(marker, zoom));
+        });
   });
   
   google.maps.event.addListener(map, 'maptypeid_changed', function() { 
