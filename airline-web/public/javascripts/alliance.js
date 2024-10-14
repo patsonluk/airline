@@ -179,7 +179,7 @@ function loadAllAlliances(selectedAllianceId) {
 		url: getUrl,
 	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
-	    async: false,
+	    async: true,
 	    success: function(alliances) {
 	    	loadedAlliances = alliances
 	    	$.each(alliances, function(index, alliance) {
