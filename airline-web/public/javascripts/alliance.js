@@ -18,11 +18,11 @@ function showAllianceCanvas(selectedAllianceId) {
         }
     }
 
-	loadAllAlliances(selectedAllianceId)
 	if (!activeAirline) {
+	    loadAllAlliances(selectedAllianceId)
 		$('#currentAirlineMemberDetails').hide()
 	} else {
-		loadCurrentAirlineMemberDetails()
+		loadAllAlliances(selectedAllianceId, true)
 		$('#currentAirlineMemberDetails').show()
 	}
 }
@@ -45,7 +45,7 @@ function loadCurrentAirlineAlliance(callback) {
 	});
 }
 
-function loadCurrentAirlineMemberDetails() {
+function loadCurrentAirlineMemberDetails(loadedAlliancesById) {
 	$('#currentAirlineMemberDetails .allianceName').show()
 	$('#toggleFormAllianceButton').hide()
 	$('#formAllianceSpan').hide()
@@ -166,7 +166,7 @@ function updateAllianceMission(current, previous, isAdmin) {
     }
 }
 
-function loadAllAlliances(selectedAllianceId) {
+function loadAllAlliances(selectedAllianceId, loadCurrentAirlineDetails) {
 	var getUrl = "alliances"
 	if (activeAirline) {
 	    getUrl += "?airlineId=" + activeAirline.id
@@ -213,6 +213,11 @@ function loadAllAlliances(selectedAllianceId) {
 			} else {
 				$('#allianceDetails').hide()
 			}
+
+			if (loadCurrentAirlineDetails) {
+			    loadCurrentAirlineMemberDetails(loadedAlliancesById)
+			}
+
 
 			if (selectedAllianceId) {
                 selectAlliance(selectedAllianceId, true)
@@ -1064,7 +1069,7 @@ function showAllianceMissionRewards(missionId, rewards, isSuccessful, phase) {
                         dataType: 'json',
                         success: function(result) {
                             updateAirlineInfo(activeAirline.id)
-                            loadCurrentAirlineMemberDetails()
+                            loadCurrentAirlineMemberDetails(loadedAlliancesById)
                             closeModal($("#allianceMissionModal"))
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
