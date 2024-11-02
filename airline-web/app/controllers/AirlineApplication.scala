@@ -836,15 +836,16 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         BadRequest("Should be 2 characters")
       } else if (airlineCode.filter(character => Character.isLetter(character) && character <= 'z').length != 2) {
         BadRequest("Should be all letters")
+      } else {
+
+        airlineCode = airlineCode.toUpperCase()
+
+        val airline = request.user
+        airline.setAirlineCode(airlineCode)
+        AirlineSource.saveAirlineCode(airlineId, airlineCode)
+        SearchUtil.updateAirline(AirlineCache.getAirline(airlineId).get)
+        Ok(Json.toJson(airline))
       }
-
-      airlineCode = airlineCode.toUpperCase()
-
-      val airline = request.user
-      airline.setAirlineCode(airlineCode)
-      AirlineSource.saveAirlineCode(airlineId, airlineCode)
-      SearchUtil.updateAirline(AirlineCache.getAirline(airlineId).get)
-      Ok(Json.toJson(airline))
     } else {
       BadRequest("Cannot Set airline Code")
     }
@@ -1102,11 +1103,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         }
 
         //check if the name is valid then
-        if (AirlineSource.loadAirlinesByCriteria(List(("name", newName))).isEmpty) {
-          return None
-        } else {
-          return Some(s"Airline name $newName is already taken")
-        }
+        return AirlineUtil.checkAirlineName(newName)
 
       case None => return Some(s"No user found for airline ${airline.name}")
     }
