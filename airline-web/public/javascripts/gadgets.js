@@ -369,7 +369,7 @@ function getDurationText(duration) {
 
 function getYearMonthText(weekDuration) {
 	var year = Math.floor(weekDuration / 52)
-	var month = Math.floor(weekDuration / 4) % 12
+	var month = Math.floor(weekDuration / (52/12)) % 12
 	if (year > 0) {
 		return year + " year(s) " + month + " month(s)"
 	} else {
