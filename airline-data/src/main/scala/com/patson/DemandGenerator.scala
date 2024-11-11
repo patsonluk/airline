@@ -267,8 +267,8 @@ object DemandGenerator {
       //compute demand composition. depends on from airport income
       val income = fromAirport.income
 
-      val firstClassPercentage : Double = 
-        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == SHORT_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_DOMESTIC || flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
+      var firstClassPercentage : Double =
+        if (flightType != SHORT_HAUL_DOMESTIC) {
           if (income >= FIRST_CLASS_INCOME_MAX) {
             FIRST_CLASS_PERCENTAGE_MAX(passengerType) 
           } else { 
@@ -277,20 +277,20 @@ object DemandGenerator {
         } else {
          0 
         }
-      val businessClassPercentage : Double = {
-        val percentage =
-          if (income >= BUSINESS_CLASS_INCOME_MAX) {
-            BUSINESS_CLASS_PERCENTAGE_MAX(passengerType)
-          } else {
-            BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * income / BUSINESS_CLASS_INCOME_MAX
-          }
-        if (flightType == SHORT_HAUL_DOMESTIC) {
-          percentage * 0.5
-        } else if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL) {
-          percentage * 0.75
+      var businessClassPercentage : Double = {
+        if (income >= BUSINESS_CLASS_INCOME_MAX) {
+          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType)
         } else {
-          percentage
+          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * income / BUSINESS_CLASS_INCOME_MAX
         }
+      }
+
+      if (flightType == SHORT_HAUL_DOMESTIC) {
+        firstClassPercentage *= 0.5
+        businessClassPercentage *= 0.5
+      } else if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL) {
+        firstClassPercentage *= 0.75
+        businessClassPercentage *= 0.75
       }
 
       var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
