@@ -26,7 +26,7 @@ object DemandGenerator {
 
     val pairs : List[(String, String)] = List(
       "NRT" -> "HND" , "LHR" -> "BHX", "LHR" -> "CDG", "SIN" -> "KUL", "LHR" -> "EDI", "SGN" -> "DAD", "ICN" -> "CJU", "LHR" -> "FCO",
-      "JFK" -> "LAX" , "JFK" -> "LHR", "IND" -> "SWF", "JFK" -> "OPO", "IND" -> "OPO",
+      "JFK" -> "LAX" , "JFK" -> "LHR", "IND" -> "SWF", "JFK" -> "OPO", "IND" -> "OPO", "BOM" -> "DEL"
     )
 
     pairs.foreach {
