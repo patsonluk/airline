@@ -11,13 +11,45 @@ import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.collection.parallel.CollectionConverters._
 import scala.util.Random
+import FlightType._
 
 
 object DemandGenerator {
   def main(args : Array[String]) : Unit = {
+    println("Loading airports")
     val airports = AirportSource.loadAllAirports(true, true)
+    val airportsByIata = airports.map(a => (a.iata, a)).toMap
+    println(s"Loaded ${airports.length} airports")
     val demand = computeDemand(0, airports)
     println(s"Demand chunks ${demand.length}. Demand total pax ${demand.map(_._3).sum}")
+
+
+    val pairs : List[(String, String)] = List(
+      "NRT" -> "HND" , "LHR" -> "BHX", "LHR" -> "CDG", "SIN" -> "KUL", "LHR" -> "EDI", "SGN" -> "DAD", "ICN" -> "CJU", "LHR" -> "FCO",
+      "JFK" -> "LAX" , "JFK" -> "LHR", "IND" -> "SWF", "JFK" -> "OPO", "IND" -> "OPO",
+    )
+
+    pairs.foreach {
+      case (a1, a2) =>
+        var y = 0
+        var j = 0
+        var f = 0
+        demand.foreach {
+          case(group, toAirport, pax) =>
+            if ((group.fromAirport.iata == a1 && toAirport.iata == a2) || (group.fromAirport.iata == a2 && toAirport.iata == a1)) {
+              if (group.preference.preferredLinkClass == FIRST) {
+                f += pax
+              } else if (group.preference.preferredLinkClass == BUSINESS) {
+                j += pax
+              } else {
+                y += pax
+              }
+            }
+        }
+        println(s"$a1 -> $a2 $y/$j/$f")
+    }
+
+
   }
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")
 //
@@ -30,8 +62,22 @@ object DemandGenerator {
   private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.3, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
-  
+
+  private val DROP_DEMAND_THRESHOLDS = new Array[Int](FlightType.values.size)
+//  FlightType.values.foreach {  flightType =>
+//    val threshold = flightType match {
+//      case SHORT_HAUL_DOMESTIC => 5
+//      case MEDIUM_HAUL_DOMESTIC => 5
+//      case LONG_HAUL_DOMESTIC => 5
+//      case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 5
+//
+//      case _ => 0
+//    }
+//    DROP_DEMAND_THRESHOLDS(flightType.id) = threshold
+//  }
+
   val MIN_DISTANCE = 50
+  val DIMINISHED_DEMAND_THRESHOLD = 400 //distance within this range will be diminished
   
 //  val defaultTotalWorldPower = {
 //    AirportSource.loadAllAirports(false).filter { _.iata != ""  }.map { _.power }.sum
@@ -127,7 +173,6 @@ object DemandGenerator {
     if (fromAirport == toAirport || fromAirport.population == 0 || toAirport.population == 0 || distance <= MIN_DISTANCE) {
       LinkClassValues.getInstance(0, 0, 0)
     } else {
-      import FlightType._
       val flightType = Computation.getFlightType(fromAirport, toAirport, distance)
 
       //assumption - 1 passenger each week from airport with 1 million pop and 50k income will want to travel to an airport with 1 million pop at income level 25 for business
@@ -152,42 +197,43 @@ object DemandGenerator {
 
       var baseDemand: Double = (fromAirportAdjustedPower.doubleValue() / 1000000 / 50000) * (toAirport.population.doubleValue() / 1000000 * toAirportIncomeLevel / 10) * (passengerType match {
         case PassengerType.BUSINESS => 6
-        case PassengerType.TOURIST | PassengerType.OLYMPICS => 1
+        case PassengerType.TOURIST | PassengerType.OLYMPICS =>
+          if (fromAirport.incomeLevel > 25) {
+            1 + (fromAirport.incomeLevel - 25) / 10
+          } else {
+            1
+          }
       }) * ADJUST_FACTOR
-      
+
       if (fromAirport.countryCode != toAirport.countryCode) {
-        //baseDemand = baseDemand *
-        val mutliplier = 
-            if (relationship <= -3) 0 
+        val multiplier = {
+            if (relationship <= -3) 0
             else if (relationship == -2) 0.1
             else if (relationship == -1) 0.2
             else if (relationship == 0) 0.5
             else if (relationship == 1) 0.8
-            else if (relationship == 2) 1
-            else if (relationship == 3) 1.5
-            else 2 // >= 4
-        baseDemand = baseDemand * mutliplier
+            else if (relationship == 2) 1.2
+            else if (relationship == 3) 2
+            else 3
+            //take note that we cannot add domestic here, otherwise it buffs domestic traffic with charms too much...
+        }
+        baseDemand = baseDemand * multiplier //keep using baseDemand here, otherwise it would change too many existing calculations later on
       }
-          
-      
-      
+
       var adjustedDemand = baseDemand
-      
+      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 20 income level increment
+
       //bonus for domestic and short-haul flight
-      adjustedDemand += baseDemand * (flightType match {
-        case SHORT_HAUL_DOMESTIC => 4.0 //people would just drive or take other transit
-        case MEDIUM_HAUL_DOMESTIC | LONG_HAUL_DOMESTIC => 7.0
-        case SHORT_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL | MEDIUM_HAUL_INTERCONTINENTAL => 0
-        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => -0.5
-        case ULTRA_LONG_HAUL_INTERCONTINENTAL => -0.75
+      adjustedDemand = adjustedDemand * (flightType match {
+        case SHORT_HAUL_DOMESTIC => 10
+        case SHORT_HAUL_INTERNATIONAL | SHORT_HAUL_INTERCONTINENTAL => 2.5
+        case MEDIUM_HAUL_DOMESTIC  => 8
+        case LONG_HAUL_DOMESTIC  => 6.5
+        case MEDIUM_HAUL_INTERNATIONAL | MEDIUM_HAUL_INTERCONTINENTAL => 1.0
+        case LONG_HAUL_INTERNATIONAL | LONG_HAUL_INTERCONTINENTAL => 0.3
+        case ULTRA_LONG_HAUL_INTERCONTINENTAL => 0.25
       })
       
-      
-      //adjustment : extra bonus to tourist supply for rich airports, up to double at every 10 income level increment
-
-      if ((passengerType == PassengerType.TOURIST || passengerType == PassengerType.OLYMPICS) && fromAirport.incomeLevel > 25) {
-        adjustedDemand += baseDemand * (((fromAirport.incomeLevel - 25).toDouble / 10) * 2)
-      }
       
       //adjustments : these zones do not have good ground transport
       if (fromAirport.zone == toAirport.zone) {
@@ -205,10 +251,6 @@ object DemandGenerator {
         adjustedDemand *= 0.6
       }
 
-      if (adjustedDemand >= 100 && distance < 200) { //diminished demand for close short routes
-        adjustedDemand = 100 + Math.pow(adjustedDemand - 100, 0.6)
-      }
-
       //adjust by features
       fromAirport.getFeatures().foreach { feature =>
         val adjustment = feature.demandAdjustment(baseDemand, passengerType, fromAirport.id, fromAirport, toAirport, flightType, relationship)
@@ -217,6 +259,10 @@ object DemandGenerator {
       toAirport.getFeatures().foreach { feature => 
         val adjustment = feature.demandAdjustment(baseDemand, passengerType, toAirport.id, fromAirport, toAirport, flightType, relationship)
         adjustedDemand += adjustment
+      }
+
+      if (adjustedDemand >= 100 && distance < DIMINISHED_DEMAND_THRESHOLD) { //diminished demand for ultra short routes
+        adjustedDemand = 100 + (adjustedDemand - 100) * (distance - MIN_DISTANCE) / (DIMINISHED_DEMAND_THRESHOLD - MIN_DISTANCE)
       }
       
       //compute demand composition. depends on from airport income
@@ -255,8 +301,18 @@ object DemandGenerator {
         firstClassDemand = (firstClassDemand * 2.5).toInt
         businessClassDemand = (businessClassDemand * 2.5).toInt
       }
-      
-      LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
+
+      val demand = LinkClassValues.getInstance(economyClassDemand, businessClassDemand, firstClassDemand)
+
+      //drop tiny demand to speed up sim
+//      if (demand.total < DROP_DEMAND_THRESHOLDS(flightType.id)) {
+//        LinkClassValues.getInstance(0, 0, 0)
+//      } else {
+//        demand
+//      }
+
+      demand
+
     }
   }
 
