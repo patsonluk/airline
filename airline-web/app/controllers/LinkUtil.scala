@@ -37,6 +37,6 @@ object LinkUtil {
   }
 
   def getFlightCode(airline : Airline, flightNumber : Int) = {
-    airline.getAirlineCode + " " + (1000 + flightNumber).toString.substring(1, 4)
+    airline.getAirlineCode() + " " + (1000 + flightNumber).toString.substring(1, 4)
   }
 }

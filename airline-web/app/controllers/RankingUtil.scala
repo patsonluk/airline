@@ -41,7 +41,7 @@ object RankingUtil {
     updatedRankings.put(RankingType.SERVICE_QUALITY, getServiceQualityRanking(airlinesById))
     updatedRankings.put(RankingType.LINK_COUNT, getLinkCountRanking(links, airlinesById))
     updatedRankings.put(RankingType.LINK_PROFIT, getLinkProfitRanking(flightConsumptions, airlinesById))
-    updatedRankings.put(RankingType.LOUNGE, getLoungeRanking(LoungeHistorySource.loadAll, airlinesById))
+    updatedRankings.put(RankingType.LOUNGE, getLoungeRanking(LoungeHistorySource.loadAll(), airlinesById))
 
     val (paxByAirport, paxByAirportPair) = getPaxStat(flightConsumptions)
 

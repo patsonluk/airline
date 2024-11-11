@@ -6,9 +6,9 @@ import org.scalatest.WordSpecLike
 import com.patson.model._
 import com.patson.model.FlightType._
 import com.patson.model.airplane.{Airplane, AirplaneMaintenanceUtil, Model}
-import akka.actor.ActorSystem
-import akka.testkit.ImplicitSender
-import akka.testkit.TestKit
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.testkit.ImplicitSender
+import org.apache.pekko.testkit.TestKit
 
 import scala.collection.mutable.ListBuffer
  
