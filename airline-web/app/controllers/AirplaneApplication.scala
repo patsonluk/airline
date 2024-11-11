@@ -497,7 +497,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     AirplaneSource.loadAirplaneById(airplaneId) match {
       case Some(airplane) =>
         if (airplane.owner.id == airlineId) {
-          val currentCycle = CycleSource.loadCycle
+          val currentCycle = CycleSource.loadCycle()
           if (!airplane.isReady) {
             BadRequest("airplane is not yet constructed")
           } else if (airplane.purchasedCycle > (currentCycle - airplane.model.constructionTime)) {

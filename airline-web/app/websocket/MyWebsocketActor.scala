@@ -1,8 +1,8 @@
 package websocket
 
 import java.util.concurrent.TimeUnit
-import akka.actor._
-import akka.util.Timeout
+import org.apache.pekko.actor._
+import org.apache.pekko.util.Timeout
 import com.patson.data.{CycleSource, UserSource}
 import com.patson.model.{UserModifier, UserStatus}
 import com.patson.model.notice.{AirlineNotice, LoyalistNotice, NoticeCategory}
@@ -32,7 +32,7 @@ object MyWebSocketActor {
   startBackgroundPingTrigger()
 
   def startBackgroundPingTrigger(): Unit = {
-    actorSystem.scheduler.schedule(Duration.Zero, Duration(30, TimeUnit.SECONDS), new Runnable {
+    actorSystem.scheduler.scheduleAtFixedRate(Duration.Zero, Duration(30, TimeUnit.SECONDS))(new Runnable {
       def run(): Unit = {
         actorSystem.eventStream.publish(TriggerPing())
       }
@@ -59,9 +59,11 @@ object MyWebSocketActor {
  * @param remoteAddress
  */
 class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) extends Actor {
-  val outActor = actorSystem.actorOf(Props(classOf[LocalActor], out, airlineId), nextSubscriberId(airlineId)) //do NOT create as a child, otherwise it cannot receive message from remote actor...
+  //do NOT create as a child, otherwise it cannot receive message from remote actor...
+  //this actor talks directly to the sim server
+  val outActor = ActorCenter.remoteSystem.actorOf(Props(classOf[LocalActor], out, airlineId), nextSubscriberId(airlineId))
 
-  override def preStart = {
+  override def preStart() = {
     val airline = AirlineCache.getAirline(airlineId).get
     println(s"Starting websocket on airline $airline with remoteAddress $remoteAddress path ${self}. With output actor ${outActor.path}")
   }

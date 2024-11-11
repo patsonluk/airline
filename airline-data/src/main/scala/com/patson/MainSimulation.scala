@@ -3,8 +3,8 @@
 package com.patson
 
 import java.util.concurrent.TimeUnit
-import akka.actor.Props
-import akka.actor.Actor
+import org.apache.pekko.actor.Props
+import org.apache.pekko.actor.Actor
 import com.patson.data._
 import com.patson.model.Airport
 import com.patson.stream.{CycleCompleted, CycleStart, SimulationEventStream}

@@ -1,19 +1,19 @@
 package com.patson.init
 
 import java.nio.file.Paths
-import akka.NotUsed
+import org.apache.pekko.NotUsed
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import akka.actor.ActorSystem
-import akka.stream.IOResult
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.stream.IOResult
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.sys.process.ProcessImpl
-//import akka.stream.scaladsl.{FileIO, Flow, Framing, RunnableGraph, Sink, Source}
+//import org.apache.pekko.stream.scaladsl.{FileIO, Flow, Framing, RunnableGraph, Sink, Source}
 import scala.io.Source
-import akka.util.ByteString
+import org.apache.pekko.util.ByteString
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.Await

@@ -2,7 +2,7 @@ An opensource airline game.
 
 Live at https://www.airline-club.com/
 
-Version 2 alpha at https://v2.airline-club.com
+Version 2.1 released at https://v2.airline-club.com
 
 
 ![Screenshot 1](https://user-images.githubusercontent.com/2895902/74759887-5a966380-522e-11ea-9e54-2252af63d5ea.gif)

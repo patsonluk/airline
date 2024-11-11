@@ -1,7 +1,7 @@
 package com.patson.model
 
-import akka.actor.ActorSystem
-import akka.testkit.{ImplicitSender, TestKit}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.testkit.{ImplicitSender, TestKit}
 import com.patson.Util
 import com.patson.model.airplane.{Airplane, AirplaneConfiguration, LinkAssignment, Model}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpecLike}

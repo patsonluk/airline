@@ -1,8 +1,8 @@
 package controllers
 
 import javax.inject._
-import akka.actor._
-import akka.stream.Materializer
+import org.apache.pekko.actor._
+import org.apache.pekko.stream.Materializer
 import play.api._
 import play.api.mvc._
 
@@ -15,7 +15,7 @@ import websocket.chat.ChatClientActor
 @Singleton
 class ChatApplication @Inject()(cc: ControllerComponents)(implicit actorSystem: ActorSystem, mat : Materializer) extends AbstractController(cc) {
   val logger = Logger(this.getClass)
-  val chatControllerActor = actorSystem.actorOf(Props[ChatControllerActor], "chatControllerActor")
+  val chatControllerActor = actorSystem.actorOf(Props[ChatControllerActor](), "chatControllerActor")
 
   /*
    Specifies how to wrap an out-actor that will represent

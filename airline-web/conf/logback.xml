@@ -15,6 +15,7 @@
   <logger name="play" level="INFO" />
   <logger name="application" level="DEBUG" />
   <logger name="controllers" level="INFO" />
+  <logger name="play.api.mvc.DefaultJWTCookieDataCodec" level="ERROR" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />
