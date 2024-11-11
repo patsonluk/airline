@@ -3,6 +3,7 @@ package com.patson
 import com.patson.data.{AirportSource, CycleSource, EventSource, LinkStatisticsSource}
 import com.patson.model.event.{EventType, Olympics, OlympicsAirlineVote, OlympicsAirlineVoteWithWeight, OlympicsVoteRound}
 import com.patson.model.{Airline, Airport, AirportFeatureType, Computation, OlympicsInProgressFeature, OlympicsPreparationsFeature}
+import com.patson.util.AirportCache
 
 import scala.collection.{MapView, mutable}
 import scala.collection.mutable.ListBuffer
@@ -11,16 +12,16 @@ import scala.util.Random
 
 object EventSimulation {
   val MAX_HISTORY_DURATION = 40 * Olympics.WEEKS_PER_YEAR //40 years
-  def simulate(cycle: Int): Unit = {
+  def simulate(cycle: Int, allAirports : List[Airport]): Unit = {
     //purge
     EventSource.deleteEventsBeforeCycle(CycleSource.loadCycle() - MAX_HISTORY_DURATION)
     val events = EventSource.loadEvents().sortBy(_.startCycle).reverse
 
     val currentOlympicsOption = events.find(_.eventType == EventType.OLYMPICS)map(_.asInstanceOf[Olympics])
-    simulateOlympics(cycle, currentOlympicsOption)
+    simulateOlympics(cycle, allAirports, currentOlympicsOption)
   }
 
-  def simulateOlympics(cycle: Int, currentOlympicsOption : Option[Olympics]): Unit = {
+  def simulateOlympics(cycle: Int, allAirports : List[Airport], currentOlympicsOption : Option[Olympics]): Unit = {
     currentOlympicsOption.foreach { currentOlympics =>
       if (!currentOlympics.isActive(cycle) && currentOlympics.isActive(cycle - 1)) { //just finished last turn
         simulateOlympicsEnding(currentOlympics)
@@ -43,7 +44,7 @@ object EventSimulation {
     if (olympics.isNewYear(cycle)) { //then action!
       olympics.currentYear(cycle) match {
         case 1 =>
-          val candidates = selectCandidates()
+          val candidates = selectCandidates(allAirports)
           EventSource.saveOlympicsCandidates(olympics.id, candidates)
 
           val affectedAirports = candidates.map { principalAirport =>
@@ -84,17 +85,13 @@ object EventSimulation {
 
   }
 
-  def simulateOlympicsCandidates() = {
-    selectCandidates()
-  }
+//  def simulateOlympicsCandidates(allAirports : List[Airport]) = {
+//    selectCandidates(allAirports)
+//  }
 
   val MAX_CANDIDATES_COUNT = 6
   val CANDIDATE_MIN_SIZE = 5
   val CANDIDATE_MIN_POPULATION = 1000000
-
-  def selectCandidates() : List[Airport] = {
-    selectCandidates(AirportSource.loadAllAirports())
-  }
 
   val HOST_COUNTRY_COOLDOWN = 4 //should not be hosting it in the last 4 times
   val HOST_ZONE_COOLDOWN = 2 //should not be hosting it in last 2 times
