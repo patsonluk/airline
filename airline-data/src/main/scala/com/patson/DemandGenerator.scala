@@ -26,7 +26,7 @@ object DemandGenerator {
 
     val pairs : List[(String, String)] = List(
       "NRT" -> "HND" , "LHR" -> "BHX", "LHR" -> "CDG", "SIN" -> "KUL", "LHR" -> "EDI", "SGN" -> "DAD", "ICN" -> "CJU", "LHR" -> "FCO",
-      "JFK" -> "LAX" , "JFK" -> "LHR", "IND" -> "SWF", "JFK" -> "OPO", "IND" -> "OPO",
+      "JFK" -> "LAX" , "JFK" -> "LHR", "IND" -> "SWF", "JFK" -> "OPO", "IND" -> "OPO", "BOM" -> "DEL"
     )
 
     pairs.foreach {
@@ -56,10 +56,9 @@ object DemandGenerator {
 //  import actorSystem.dispatcher
 //
 //  implicit val materializer = FlowMaterializer()
-  private[this] val FIRST_CLASS_INCOME_MIN = 15000
+//  private[this] val FIRST_CLASS_INCOME_MIN = 15000
   private[this] val FIRST_CLASS_INCOME_MAX = 100_000
   private[this] val FIRST_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.08, PassengerType.TOURIST -> 0.02, PassengerType.OLYMPICS -> 0.03) //max 8% first (Business passenger), 2% first (Tourist)
-  private[this] val BUSINESS_CLASS_INCOME_MIN = 5000
   private[this] val BUSINESS_CLASS_INCOME_MAX = 100_000
   private[this] val BUSINESS_CLASS_PERCENTAGE_MAX = Map(PassengerType.BUSINESS -> 0.3, PassengerType.TOURIST -> 0.10, PassengerType.OLYMPICS -> 0.15) //max 30% business (Business passenger), 10% business (Tourist)
 
@@ -268,30 +267,32 @@ object DemandGenerator {
       //compute demand composition. depends on from airport income
       val income = fromAirport.income
 
-      val firstClassPercentage : Double = 
-        if (flightType == LONG_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERCONTINENTAL || flightType == SHORT_HAUL_INTERCONTINENTAL || flightType == LONG_HAUL_INTERCONTINENTAL || flightType == ULTRA_LONG_HAUL_INTERCONTINENTAL || flightType == MEDIUM_HAUL_DOMESTIC || flightType == LONG_HAUL_DOMESTIC || flightType == SHORT_HAUL_INTERNATIONAL || flightType == MEDIUM_HAUL_INTERNATIONAL) {
-          if (income <= FIRST_CLASS_INCOME_MIN) {
-            0 
-          } else if (income >= FIRST_CLASS_INCOME_MAX) {
+      var firstClassPercentage : Double =
+        if (flightType != SHORT_HAUL_DOMESTIC) {
+          if (income >= FIRST_CLASS_INCOME_MAX) {
             FIRST_CLASS_PERCENTAGE_MAX(passengerType) 
           } else { 
-            FIRST_CLASS_PERCENTAGE_MAX(passengerType) * (income - FIRST_CLASS_INCOME_MIN) / (FIRST_CLASS_INCOME_MAX - FIRST_CLASS_INCOME_MIN)
+            FIRST_CLASS_PERCENTAGE_MAX(passengerType) * income / FIRST_CLASS_INCOME_MAX
           }
         } else {
          0 
         }
-      val businessClassPercentage : Double =
-        if (flightType != SHORT_HAUL_DOMESTIC) {
-          if (income <= BUSINESS_CLASS_INCOME_MIN) {
-            0 
-          } else if (income >= BUSINESS_CLASS_INCOME_MAX) {
-            BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) 
-          } else { 
-            BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * (income - BUSINESS_CLASS_INCOME_MIN) / (BUSINESS_CLASS_INCOME_MAX - BUSINESS_CLASS_INCOME_MIN)
-          }
+      var businessClassPercentage : Double = {
+        if (income >= BUSINESS_CLASS_INCOME_MAX) {
+          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType)
         } else {
-         0 
+          BUSINESS_CLASS_PERCENTAGE_MAX(passengerType) * income / BUSINESS_CLASS_INCOME_MAX
         }
+      }
+
+      if (flightType == SHORT_HAUL_DOMESTIC) {
+        firstClassPercentage *= 0.5
+        businessClassPercentage *= 0.5
+      } else if (flightType == SHORT_HAUL_INTERNATIONAL || flightType == SHORT_HAUL_INTERCONTINENTAL) {
+        firstClassPercentage *= 0.75
+        businessClassPercentage *= 0.75
+      }
+
       var firstClassDemand = (adjustedDemand * firstClassPercentage).toInt
       var businessClassDemand = (adjustedDemand * businessClassPercentage).toInt
       val economyClassDemand = adjustedDemand.toInt - firstClassDemand - businessClassDemand
