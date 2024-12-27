@@ -54,6 +54,10 @@ class ChristmasApplication @Inject()(cc: ControllerComponents) extends AbstractC
                   "distanceText" -> JsString(getDistanceText(Computation.calculateDistance(entry.airport, guess.airport)))))
             }
             result = result + ("guesses" -> guessesJson)
+            
+            if (entry.attemptsLeft <= 0) { //show where it is!
+              result = result + ("santaAirport" -> Json.toJson(entry.airport)(SimpleAirportWrites))
+            }
             Ok(result)
           case None => Ok(Json.obj())
         }

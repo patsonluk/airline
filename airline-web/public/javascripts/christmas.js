@@ -88,6 +88,7 @@ function updateSantaClausModal() {
                  } else {
                     if (result.attemptsLeft <= 0) {
                         $("#santaClausExhausted").show()
+                        $(".santaLocation").text(getAirportText(result.santaAirport.city, result.santaAirport.iata))
                     } else {
                         if (guessedThisAirport) {
                             disableButton($("#santaClausModal .guessButton"), 'Santa is not here! Try another airport! 🎅')
