@@ -267,6 +267,9 @@ function validateAirplaneQuantity() {
     return quantity
 }
 
+// Threshold for determining if additional confirmation is required before completing an airplane purchase.
+var SIGNIFICANT_AIRPLANE_PURCHASE_THRESHOLD = 0.5;
+
 function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHomeAirportId, multipleAble, buyAirplaneFunction) {
     var model = loadedModelsById[modelId]
     if (model.imageUrl) {
@@ -293,10 +296,11 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
 	$('#buyAirplaneModal .price').text("$" + commaSeparateNumber(price))
 	$('#buyAirplaneModal .condition').text(condition + "%")
 
+    var quantity = 1;
 	if (multipleAble) {
 	    $('#buyAirplaneModal .quantity .input').val(1)
 	    $('#buyAirplaneModal .quantity .input').on('input', function(e){
-	        var quantity = validateAirplaneQuantity()
+	        quantity = validateAirplaneQuantity()
             updateAirplaneTotalPrice(quantity * price)
         });
 	    $('#buyAirplaneModal .quantity').show()
@@ -389,7 +393,19 @@ function promptBuyAirplane(modelId, condition, price, deliveryTime, explicitHome
                     selectedConfigurationId = $($("#buyAirplaneModal .configuration-options").children()[selectedIndex]).data("configurationId")
                 }
 
-                buyAirplaneFunction($('#buyAirplaneModal .quantity .input').val(), $("#buyAirplaneModal .homeOptions").find(":selected").val(), selectedConfigurationId)
+                var homeAirportId = $("#buyAirplaneModal .homeOptions").find(":selected").val();
+                
+                const totalPrice = quantity * price;
+                var percentOfBalance = totalPrice / activeAirline.balance;
+                if (percentOfBalance >= SIGNIFICANT_AIRPLANE_PURCHASE_THRESHOLD) {
+                    var confirmationMessage = `This purchase accounts for ${(percentOfBalance * 100).toFixed(1)}% of your airline's current balance. Are you sure you want to proceed?`;
+            
+                    promptConfirm(confirmationMessage, function() {
+                        buyAirplaneFunction(quantity, homeAirportId, selectedConfigurationId);
+                    });
+                } else {
+                    buyAirplaneFunction(quantity, homeAirportId, selectedConfigurationId);
+                }
             })
             $('#buyAirplaneModal').fadeIn(200)
         },
