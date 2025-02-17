@@ -2695,20 +2695,22 @@ function linkConfirmation() {
 		
 			const percentChange = calculatePercentChange(existingPrice, futurePrice);
 			if (percentChange >= SIGNIFICANT_PRICE_THRESHOLD_PERCENT) {
-				significantChanges.push(`${fareClass.charAt(0).toUpperCase() + fareClass.slice(1)}: $${existingPrice} -> $${futurePrice}`);
+				significantChanges.push(`${fareClass.charAt(0).toUpperCase() + fareClass.slice(1)}: $${existingPrice} <img src='assets/images/icons/arrow.png' style='vertical-align:middle;'> $${futurePrice}`);
 			}
 		});
 	}
 	
-	$('#linkConfirmationModal .confirmButton').off('click');
+	$('#linkConfirmationModal .confirmButton,.negotiateButton').off('click');
 	if (significantChanges.length > 0) {
 		const confirmationPromptMessage = `≥${SIGNIFICANT_PRICE_THRESHOLD_PERCENT}% price change${significantChanges.length > 1 ? "s" : ""} detected:<ul>${significantChanges.map(change => `<li>${change}</li>`).join("")}</ul>`;
-		$('#linkConfirmationModal .confirmButton').on('click', function() {
-			promptConfirm(confirmationPromptMessage, createLink);
-			closeModal($('#linkConfirmationModal'));
+		$('#linkConfirmationModal .confirmButton,.negotiateButton').on('click', function() {
+			promptConfirm(confirmationPromptMessage, function() {
+			   createLink()
+			   closeModal($('#linkConfirmationModal'))
+			})
 		});
 	} else {
-		$('#linkConfirmationModal .confirmButton').on('click', function() {
+		$('#linkConfirmationModal .confirmButton,.negotiateButton').on('click', function() {
 			createLink()
 		});
 	}
