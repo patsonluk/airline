@@ -1,7 +1,7 @@
 package com.patson.model
 
 import com.patson.data.{AirlineSource, AirportSource, CountrySource}
-import com.patson.model.AirlineBaseSpecialization.FlightTypeSpecialization
+import com.patson.model.AirlineBaseSpecialization.{FlightTypeSpecialization, getSpecializationsFromBase}
 import com.patson.util.AirportCache
 
 
@@ -107,10 +107,7 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     }
   }
 
-  lazy val specializations : List[AirlineBaseSpecialization.Value] = {
-    (AirlineBaseSpecialization.values.filter(_.free).toList ++
-    AirportSource.loadAirportBaseSpecializations(airport.id, airline.id)).filter(_.scaleRequirement <= scale)
-  }
+  lazy val specializations : List[AirlineBaseSpecialization.Value] = AirlineBaseSpecialization.getSpecializationsFromBase(this)
 
   def delete(): Unit = {
     AirlineSource.loadLoungeByAirlineAndAirport(airline.id, airport.id).foreach { lounge =>

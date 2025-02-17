@@ -235,7 +235,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         }
 
         result = result + ("targetBase" -> Json.toJson(targetBase))
-        val baseRejection = getBaseRejection(request.user, targetBase)
+        val baseRejection = getUpgradeBaseRejection(request.user, existingBase, targetBase)
         baseRejection.foreach { rejection =>
           result = result + ("rejection" -> JsString(rejection))
         }
@@ -258,7 +258,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  def getBaseRejection(airline : Airline, targetBase : AirlineBase) : Option[String] = {
+  def getUpgradeBaseRejection(airline : Airline, existingBase : Option[AirlineBase], targetBase : AirlineBase) : Option[String] = {
     val airport = targetBase.airport
     val cost = targetBase.getValue
     if (cost > airline.getBalance()) {
@@ -267,6 +267,11 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     if (targetBase.scale < 1) {
       return Some(s"Invalid scale ${targetBase.scale}")
     }
+
+    if (targetBase.scale - existingBase.map(_.scale).getOrElse(0) != 1) { //only allow upgrade by 1 level right now
+      return Some(s"Not upgrading 1 level! Existing scale ${existingBase.map(_.scale).getOrElse(0)} and target ${targetBase.scale}")
+    }
+
 
     if (targetBase.scale == 1) { //building something new
       if (airline.getHeadQuarter().isDefined) { //building non-HQ
@@ -498,27 +503,28 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       if (inputBase.airline.id != airline.id) {
         BadRequest("not the same user!")
       } else {
-        val baseRejection = getBaseRejection(airline, inputBase)
+        val existingBase = airline.getBases().find(_.airport.id == airportId)
+        val baseRejection = getUpgradeBaseRejection(airline, existingBase, inputBase)
         val cost = inputBase.getValue
 
         if (baseRejection.isDefined) {
           BadRequest("base request rejected: " + baseRejection.get)
         } else {
+          var updateError : Option[String] = None
           if (inputBase.headquarter) {
              AirlineSource.loadAirlineHeadquarter(airlineId) match {
                case Some(headquarter) =>
                if (headquarter.airport.id != airportId) {
-                 BadRequest("Not allowed to change headquarter for now")
+                 updateError = Some("Not allowed to change headquarter for now")
                } else {
                  val updateBase = headquarter.copy(scale = inputBase.scale)
                  AirlineSource.saveAirlineBase(updateBase)
                  AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
                  AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
-                 Created(Json.toJson(updateBase))
                }
                case None => //ok to add then
                  AirportCache.getAirport(inputBase.airport.id, true).fold {
-                   BadRequest("airport id " +  inputBase.airport.id + " not found!")
+                   updateError = Some("airport id " +  inputBase.airport.id + " not found!")
                  } {
                    airport => //TODO for now. Maybe update to Ad event later on
                    val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
@@ -534,13 +540,11 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                      airplane => airplane.home = airport
                      airplane
                    })
-
-                   Created(Json.toJson(newBase))
                  }
               }
           } else {
             AirportCache.getAirport(inputBase.airport.id, true).fold {
-              BadRequest("airport id " +  inputBase.airport.id + " not found!")
+              updateError = Some("airport id " +  inputBase.airport.id + " not found!")
             } { airport =>
                   AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
                   case Some(base) => //updating
@@ -549,22 +553,39 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                       AirlineSource.saveAirlineBase(updateBase)
                       AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
                       AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
-                      Created(Json.toJson(updateBase))
                     } else {
-                      BadRequest(s"Cannot upgrade existing base $base to $inputBase")
+                      updateError = Some(s"Cannot upgrade existing base $base to $inputBase")
                     }
                   case None => //ok to add
                     AirportCache.getAirport(inputBase.airport.id, true).fold {
-                         BadRequest("airport id " +  inputBase.airport.id + " not found!")
+                         updateError = Some("airport id " +  inputBase.airport.id + " not found!")
                     } { airport =>
                       val newBase = inputBase.copy(foundedCycle = CycleSource.loadCycle(), countryCode = airport.countryCode)
                       AirlineSource.saveAirlineBase(newBase)
                       AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
                       AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
-                      Created(Json.toJson(newBase))
                     }
                 }
             }
+          }
+          updateError match {
+            case Some(error) => BadRequest(error)
+            case None =>
+              //reload the base saved, so all fields (specs) are initialized
+              AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId) match {
+                case Some(updatedBase) =>
+                  val existingSpecs = existingBase.map(_.specializations).getOrElse(List.empty)
+                  val updatedSpecs = updatedBase.specializations
+
+                  (updatedSpecs.toSet -- existingSpecs.toSet).foreach { newSpec =>
+                    newSpec.apply(airline, AirportCache.getAirport(airportId).get)
+                  }
+                  Created(Json.toJson(updatedBase))
+                case None =>
+                  BadRequest(s"Cannot load the updated base of airline id $airlineId and airport id $airportId")
+              }
+
+
           }
         }
       }
@@ -583,8 +604,11 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                 val updateBase = base.copy(scale = base.scale - 1)
                 AirlineSource.saveAirlineBase(updateBase)
 
-                val (updatingSpecs, purgingSpecs) = base.specializations.filter(!_.free).partition(_.scaleRequirement <= updateBase.scale) //remove spec that no longer able to support
-                AirportSource.updateAirportBaseSpecializations(airportId, airlineId, updatingSpecs)
+                val (updatingSpecs, purgingSpecs) = base.specializations.partition(_.scaleRequirement <= updateBase.scale) //remove spec that no longer able to support
+
+                AirportSource.updateAirportBaseSpecializations(airportId, airlineId, updatingSpecs.filter(!_.free)) //we only save non free ones (that ones that manually select)
+
+                //unapply all specs that are above current base level
                 purgingSpecs.foreach(_.unapply(request.user, base.airport))
 
                 Ok("Base downgraded")
@@ -1014,7 +1038,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val airport = AirportCache.getAirport(airportId, true).get
     val base = airport.getAirlineBase(airlineId).get
     val activeSpecializations : List[AirlineBaseSpecialization.Value] = base.specializations
-    val specializationByScaleRequirement : List[(Int, List[AirlineBaseSpecialization.Value])] = AirlineBaseSpecialization.values.toList.groupBy(_.scaleRequirement).toList.sortBy(_._1)
+    val specializationByScaleRequirement : List[(Int, List[AirlineBaseSpecialization.Value])] =
+      AirlineBaseSpecialization.values.filter(spec => !spec.headquartersOnly || base.headquarter) //for HQ only spec, only incldue them if it's HQ to avoid confusion
+        .toList.groupBy(_.scaleRequirement).toList.sortBy(_._1)
     val cooldown =
       AirportSource.loadAirportBaseSpecializationsLastUpdate(airportId, airlineId) match {
         case Some(lastUpdate) =>

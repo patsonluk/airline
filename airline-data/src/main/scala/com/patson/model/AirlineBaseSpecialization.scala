@@ -11,9 +11,32 @@ object AirlineBaseSpecialization extends Enumeration {
     val label : String
     def descriptions(airport : Airport) : List[String]
     val free = false
+    val headquartersOnly = false
     def apply(airline : Airline, airport : Airport) {}
     def unapply(airline: Airline, airport : Airport) {}
   }
+
+  case class HomeBaseLoyaltySpecialization() extends Specialization {
+    override val getType = BaseSpecializationType.LOYALTY
+    override val label = "Home Base Advantage"
+    private val loyaltyBoost = 5
+    override val scaleRequirement : Int = 7
+    override val free = true
+    override val headquartersOnly = true
+    override def descriptions(airport : Airport) = List(s"Boost loyalty of this airport by $loyaltyBoost (HQ only)")
+
+    override def apply(airline: Airline, airport : Airport) = {
+      unapply(airline, airport) //unapply first to avoid duplicates
+      AirportSource.saveAirlineAppealBonus(airport.id, airline.id, AirlineBonus(BonusType.HOME_BASE_LOYALTY, AirlineAppeal(loyalty = loyaltyBoost), None))
+    }
+
+    override def unapply(airline: Airline, airport : Airport) = {
+      AirportSource.loadAirlineAppealBonusByAirportAndAirline(airport.id, airline.id).find(_.bonusType == BonusType.HOME_BASE_LOYALTY).foreach { existingBonus =>
+        AirportSource.deleteAirlineAppealBonus(airport.id, airline.id, BonusType.HOME_BASE_LOYALTY)
+      }
+    }
+  }
+
   case class NegotiationExpertSpecialization() extends Specialization {
     override val getType = BaseSpecializationType.NEGOTIATION
     override val label = "Negotiation Expert I"
@@ -149,6 +172,7 @@ object AirlineBaseSpecialization extends Enumeration {
 
   implicit def valueToSpecialization(x: Value) = x.asInstanceOf[Specialization]
 
+  val HOME_BASE_LOYALTY = HomeBaseLoyaltySpecialization()
   val NEGOTIATION_EXPERT = NegotiationExpertSpecialization()
   val NEGOTIATION_EXPERT2 = NegotiationExpert2Specialization()
   val DOMESTIC_HUB = DomesticSpecialization()
@@ -159,6 +183,11 @@ object AirlineBaseSpecialization extends Enumeration {
   val BRANDING_BUDGET = BudgetAirlineSpecialization()
   val BRANDING_PREMIUM = PremiumAirlineSpecialization()
   val POWERHOUSE = PowerhouseSpecialization()
+
+  def getSpecializationsFromBase(base : AirlineBase) : List[AirlineBaseSpecialization.Value] = {
+    (AirlineBaseSpecialization.values.filter(_.free).toList ++
+      AirportSource.loadAirportBaseSpecializations(base.airport.id, base.airline.id)).filter(_.scaleRequirement <= base.scale).filter(spec => !spec.headquartersOnly || base.headquarter)
+  }
 }
 
 object BaseSpecializationType extends Enumeration {
