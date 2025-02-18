@@ -23,46 +23,8 @@ object PassengerSimulation {
 
 //  implicit val materializer = FlowMaterializer()
   
-  val countryOpenness : Map[String, Int] = CountrySource.loadAllCountries().map( country => (country.countryCode, country.openness)).toMap
+  lazy val countryOpenness : Map[String, Int] = CountrySource.loadAllCountries().map( country => (country.countryCode, country.openness)).toMap
   
-  def testFlow() = {
-
-    //val airportGroups = getAirportGroups(airportData)
-    //println("Using " + airportData.size + " airport data");
-    
-    //val demand = Await.result(DemandGenerator.computeDemand(), Duration.Inf)
-    val demand = DemandGenerator.computeDemand(0)
-    println("DONE with demand total demand: " + demand.foldLeft(0) {
-      case(holder, (_, _, demandValue)) =>  
-        holder + demandValue
-    })
-
-//    val airportData = AirportSource.loadAllAirports().filter( _.size >= 2)
-//    val links = generateFlightLinks(airportData)
-//    println("Generated " + links.size + " links")
-    
-    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
-    
-    val consumptionResult = passengerConsume(demand, links)
-    
-    println("Consumption result: ")
-    val soldLinks = links.filter{ link => link.getTotalSoldSeats > 0  }.map { link =>
-      (link, link.getTotalSoldSeats)
-      }.sortBy {
-        case (_, soldSeats) => soldSeats 
-      }
-      
-    soldLinks.foreach{ case(link, soldSeats) => println(link.airline.name + "($" + link.price + "; recommend $" + link.standardPrice(ECONOMY) + ") " + soldSeats  + " : " + link.from.name + " => " + link.to.name) }
-    println("seats sold: " + soldLinks.foldLeft(0) {
-      case (holder, (link, soldSeats)) => holder + soldSeats
-    })
-    
-    
-    //test
-    //findShortestRoute(airportGroups(0)(0), airportGroups(4)(0), links.toList)
-    //10 random
-    //findRandomRoutes(airportGroups(0)(0), airportGroups(4)(0), links.toList, 10)
-  }
   case class PassengerConsumptionResult(consumptionByRoutes : Map[(PassengerGroup, Airport, Route), Int], missedDemand : Map[(PassengerGroup, Airport), Int])
 
   def passengerConsume[T <: Transport](demand : List[(PassengerGroup, Airport, Int)], links : List[T]) : PassengerConsumptionResult = {

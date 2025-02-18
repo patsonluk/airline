@@ -2,6 +2,7 @@ package com.patson.data
 
 import com.patson.data.Constants._
 import com.patson.model.{AirlineAppeal, _}
+import com.patson.util.ChampionUtil.ReputationBonus
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo}
 
 import java.sql.{Statement, Types}
@@ -1048,20 +1049,29 @@ object AirportSource {
       purgeStatement.executeUpdate()
       purgeStatement.close()
 
-      val preparedStatement = connection.prepareStatement(s"INSERT INTO $AIRPORT_CHAMPION_TABLE(airport, airline, loyalist, ranking, reputation_boost) VALUES(?,?,?,?,?)")
+      val preparedChampStatement = connection.prepareStatement(s"INSERT INTO $AIRPORT_CHAMPION_TABLE(airport, airline, loyalist, ranking, reputation_boost) VALUES(?,?,?,?,?)")
+      val preparedChampBonusStatement = connection.prepareStatement(s"INSERT INTO $AIRPORT_CHAMPION_BONUS_TABLE(airport, airline, description) VALUES(?,?,?)")
 
       info.foreach {
         entry =>
-          preparedStatement.setInt(1, entry.loyalist.airport.id)
-          preparedStatement.setInt(2, entry.loyalist.airline.id)
-          preparedStatement.setInt(3, entry.loyalist.amount)
-          preparedStatement.setInt(4, entry.ranking)
-          preparedStatement.setDouble(5, entry.reputationBoost)
+          preparedChampStatement.setInt(1, entry.loyalist.airport.id)
+          preparedChampStatement.setInt(2, entry.loyalist.airline.id)
+          preparedChampStatement.setInt(3, entry.loyalist.amount)
+          preparedChampStatement.setInt(4, entry.ranking)
+          preparedChampStatement.setDouble(5, entry.reputationBoost)
 
-          preparedStatement.executeUpdate()
+          preparedChampStatement.executeUpdate()
+
+          entry.bonuses.foreach { bonus =>
+            preparedChampBonusStatement.setInt(1, entry.loyalist.airport.id)
+            preparedChampBonusStatement.setInt(2, entry.loyalist.airline.id)
+            preparedChampBonusStatement.setString(3, bonus.description)
+            preparedChampBonusStatement.executeUpdate()
+          }
       }
 
-      preparedStatement.close()
+      preparedChampStatement.close()
+      preparedChampBonusStatement.close()
       connection.commit()
     } finally {
       connection.close()
@@ -1087,9 +1097,29 @@ object AirportSource {
         preparedStatement.setObject(i + 1, criteria(i)._2)
       }
 
+      var queryBonusString = "SELECT * FROM " + AIRPORT_CHAMPION_BONUS_TABLE
+
+      if (criteria.nonEmpty) {
+        queryBonusString += " WHERE " + criteria.map(criterion => s"${criterion._1} = ?").mkString(" AND ")
+      }
+
+      val preparedBonusStatement = connection.prepareStatement(queryBonusString)
+
+      for (i <- 0 until criteria.size) {
+        preparedBonusStatement.setObject(i + 1, criteria(i)._2)
+      }
+
+      val resultBonusSet = preparedBonusStatement.executeQuery()
+      val bonusMap = mutable.HashMap[(Int, Int), ListBuffer[ReputationBonus]]() //key is airportId, airlineId
+      while (resultBonusSet.next()) {
+        val airportId = resultBonusSet.getInt("airport")
+        val airlineId = resultBonusSet.getInt("airline")
+        val entry = bonusMap.getOrElseUpdate((airportId, airlineId), ListBuffer[ReputationBonus]())
+        entry.append(ReputationBonus(resultBonusSet.getString("description")))
+      }
+
 
       val resultSet = preparedStatement.executeQuery()
-
       val result = ListBuffer[AirportChampionInfo]()
 
 
@@ -1097,7 +1127,7 @@ object AirportSource {
         val airportId = resultSet.getInt("airport")
         val airlineId = resultSet.getInt("airline")
         val loyalist = Loyalist(AirportCache.getAirport(airportId).get, AirlineCache.getAirline(airlineId).get, resultSet.getInt("loyalist"))
-        result += AirportChampionInfo(loyalist, ranking = resultSet.getInt("ranking"), reputationBoost = resultSet.getDouble("reputation_boost"))
+        result += AirportChampionInfo(loyalist, ranking = resultSet.getInt("ranking"), reputationBoost = resultSet.getDouble("reputation_boost"), bonusMap.get((airportId, airlineId)).map(_.toList).getOrElse(List.empty))
       }
       resultSet.close()
       preparedStatement.close()
