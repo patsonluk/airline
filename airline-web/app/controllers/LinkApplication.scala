@@ -421,10 +421,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       val busyDelegates = (0 until delegateCount).toList.map { _ =>
         BusyDelegate(airline, task, Some(availableCycle))
       }
-
-      DelegateSource.saveBusyDelegates(busyDelegates)
-
-      LinkSource.saveNegotiationCoolDown(resultLink.airline, resultLink.from, resultLink.to, cycle + Link.LINK_NEGOTIATION_COOL_DOWN)
+//
+//      DelegateSource.saveBusyDelegates(busyDelegates)
+//
+//      LinkSource.saveNegotiationCoolDown(resultLink.airline, resultLink.from, resultLink.to, cycle + Link.LINK_NEGOTIATION_COOL_DOWN)
+      //TODO disable for tests
 
 
 
