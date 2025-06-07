@@ -58,14 +58,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
   class BoostFactorsLoader extends CacheLoader[AirportBoostType.Value, List[(String, Double)]] {
     override def load(boostType : AirportBoostType.Value) : List[(String, Double)] = {
-      var result : List[(String, Double)] = assetBoostFactors.getOrElse(boostType, List.empty).map {
-        case (asset, boost) =>
-          if (boostType == AirportBoostType.INCOME) { //special handling for income level -> income
-            val incomeIncrement = Computation.fromIncomeLevel(Airport.this.baseIncomeLevel + boost.value) - Airport.this.baseIncome //yike hard to patch old data, need to convert from income level back to actual $ for now
-            (asset.name, incomeIncrement)
-          } else {
-            (asset.name, boost.value)
-          }
+      var result = assetBoostFactors.getOrElse(boostType, List.empty).map {
+        case (asset, boost) => (asset.name, boost.value)
       }
       if (boostType == AirportBoostType.INCOME || boostType == AirportBoostType.POPULATION) { //okay for now but not great to have special cases like these
         result = result ++ airlineBases.values.flatMap { airlineBase =>
