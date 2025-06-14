@@ -855,7 +855,7 @@ object AirportBoostType extends Enumeration {
 
     val getValueType = (boostType : AirportBoostType.Value) => boostType match {
         case POPULATION => classOf[Long]
-        case INCOME => classOf[Double]
+        case INCOME => classOf[Long]
         case INTERNATIONAL_HUB => classOf[Double]
         case VACATION_HUB =>  classOf[Double]
         case FINANCIAL_HUB => classOf[Double]
