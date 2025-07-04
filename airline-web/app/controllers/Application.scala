@@ -1,10 +1,10 @@
 package controllers
 
-import com.patson.AirportSimulation
+import com.patson.{AirportSimulation, AviationHubSimulation}
 import com.patson.data._
 import com.patson.model.Scheduling.{TimeSlot, TimeSlotStatus}
 import com.patson.model.{Link, _}
-import com.patson.util.{AirlineCache, AirportCache, ChampionUtil}
+import com.patson.util.{AirlineCache, AirportCache, ChampionUtil, DemandCache}
 import controllers.AuthenticationObject.AuthenticatedAirline
 import controllers.NegotiationUtil.FlightTypeGroup
 import controllers.WeatherUtil.{Coordinates, Weather}
@@ -291,7 +291,14 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
             emptyLoungesStats += LoungeConsumptionDetails(lounge = lounge, selfVisitors = 0, allianceVisitors = 0, cycle = 0)
           }
         }
-         
+
+        val rating = airport.rating
+        val aviationHubStrength : Int = rating.features.find(_.featureType == AirportFeatureType.AVIATION_HUB).map(_.strength).getOrElse(0)
+        val aviationHubUpRequirement : Option[Int] = DemandCache.getPlainDemand(airport).flatMap { plainDemand =>
+          AviationHubSimulation.computePaxRequirementByStrength(airport, plainDemand, aviationHubStrength + 1)
+        }
+
+
         
         
         Ok(Json.obj("connectedCountryCount" -> servedCountries.size,
@@ -308,7 +315,10 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
                     "transitPassengers" -> transitPassengers,
                     "airlineDeparture" -> Json.toJson(statisticsDepartureByAirline),
                     "airlineArrival" -> Json.toJson(statisticsArrivalByAirline),
-                    "rating" -> Json.toJson(airport.rating)))
+                    "rating" -> Json.toJson(rating),
+          "aviationHubStrength" -> aviationHubStrength,
+          "aviationHubUpRequirement" -> aviationHubUpRequirement.getOrElse(-1).toInt
+        ))
       }
       case None => NotFound
     }

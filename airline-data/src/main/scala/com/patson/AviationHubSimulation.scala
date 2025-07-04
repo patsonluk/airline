@@ -5,7 +5,8 @@ import com.patson.model._
 import scala.collection.{immutable, mutable}
 
 object AviationHubSimulation {
-  val AVIATION_HUB_DEMAND_RATIO_THRESHOLD = 2
+  //val AVIATION_HUB_DEMAND_RATIO_THRESHOLD = 2
+  val AVIATION_HUB_DEMAND_RATIO_THRESHOLD = 0.2 //TODO
   val AVIATION_HUB_PAX_THRESHOLD = 10000
   val AVIATION_HUB_MAX_STRENGTH = 100
 
@@ -14,7 +15,7 @@ object AviationHubSimulation {
     computeAviationHubStrength(Airport.fromId(0), 12749   , 236526  )
   }
 
-  def simulate(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) = {
+  def simulate(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : Map[Airport, Long] = {
     val airportDirectDemand = mutable.HashMap[Airport, Long]()
 
     DemandGenerator.computeDemand(cycle, allAirports, plainDemand = true).foreach {
@@ -33,6 +34,8 @@ object AviationHubSimulation {
           AirportSource.deleteAirportFeature(airport.id, AirportFeatureType.AVIATION_HUB)
         }
     }
+
+    airportDirectDemand.toMap
   }
 
   def computeUpdatingAirports(airportDirectDemand : Map[Airport, Long], paxByAirport: Map[Airport, Long]) : Map[Airport, Int] = {
@@ -90,5 +93,28 @@ object AviationHubSimulation {
 //    println(s"!!!!${airport.iata} demand $directDemand pax $pax ratio $strengthRatio final $strength")
 
     Math.min(AVIATION_HUB_MAX_STRENGTH, strength)
+  }
+
+  def computePaxRequirementByStrength(airport: Airport, directDemand : Long, targetStrength : Int) : Option[Int] = {
+    // a bit hard to do reverse of the computation, let's just do binary search...
+    var pax = AVIATION_HUB_PAX_THRESHOLD
+
+    if (targetStrength <= 0 || targetStrength >= AVIATION_HUB_MAX_STRENGTH) {
+      return None
+    }
+
+    for (i <- 0 until 100) { //just limit it just in case...
+      val strength = computeAviationHubStrength(airport, directDemand, pax)
+      if (strength == targetStrength) {
+        return Some(pax)
+      } else if (strength < targetStrength) {
+        pax *= 2
+      } else {
+        pax /= 2
+      }
+    }
+
+    None
+
   }
 }

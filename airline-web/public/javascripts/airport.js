@@ -447,7 +447,7 @@ function loadAirportStatistics(airport) {
 	    	$('#airportDetailsAirlineCount').text(airportStatistics.airlineCount)
 	    	$('#airportDetailsLinkCount').text(airportStatistics.linkCount)
 	    	$('#airportDetailsFlightFrequency').text(airportStatistics.flightFrequency)
-	    	updateAirportRating(airportStatistics.rating)
+	    	updateAirportRating(airportStatistics.rating, airportStatistics.aviationHubStrength, airportStatistics.aviationHubUpRequirement)
 	    	updateFacilityList(airportStatistics)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -476,7 +476,7 @@ function loadGenericTransits(airport) {
 
 }
 
-function updateAirportRating(rating) {
+function updateAirportRating(rating, aviationHubStrength, aviationHubUpRequirement) {
     var fullStarSource = "assets/images/icons/star.png"
     var halfStarSource = "assets/images/icons/star-half.png"
     var fullFireSource = "assets/images/icons/fire.png"
@@ -489,6 +489,12 @@ function updateAirportRating(rating) {
     $("#airportCanvas .competitionRating").append(getRatingSpan(rating.competitionRating, false).css('margin-left', '5px'))
     $("#airportCanvas .difficulty").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.difficulty).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
     $("#airportCanvas .difficulty").append(getRatingSpan(rating.difficulty, false).css('margin-left', '5px'))
+    $("#airportCanvas .aviationHubDescription").append(" Next level total airport PAX requirement: ")
+    if (aviationHubUpRequirement < 0) {
+        $("#airportCanvas .aviationHubDescription").append("N/A")
+    } else {
+        $("#airportCanvas .aviationHubDescription").append(commaSeparateNumber(aviationHubUpRequirement))
+    }
 }
 
 //if inverse is true then higher the rating, easier it is
@@ -964,6 +970,8 @@ function refreshAirportExtendedDetails(airport) {
     $("#airportPopupIncomeLevel").html($incomeLevelSpan)
 
     $(".airportFeatures .feature").remove()
+
+    var hasAviationHub = false
     $.each(airport.features, function(index, feature) {
         var $popupFeatureDiv = $("<div class='feature' style='display:inline-flex'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'></div>").appendTo($("#airportPopup .airportFeatures"))
         var $popupFeatureSpan
@@ -974,6 +982,7 @@ function refreshAirportExtendedDetails(airport) {
         }
         $popupFeatureDiv.append($popupFeatureSpan)
 
+        //for the airport canvas
         var $featureDiv = $("<div class='feature'><img src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
         $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
         var featureText = feature.title
@@ -998,9 +1007,21 @@ function refreshAirportExtendedDetails(airport) {
             $featureDescription.append($featureStrengthSpan)
         }
 
+        if (feature.type == 'AVIATION_HUB') {
+            $featureDescription.addClass('aviationHubDescription')
+            hasAviationHub = true
+        }
+
         $featureDiv.append($featureDescription)
         $("#airportCanvas .airportFeatures").append($featureDiv)
     })
+
+    if (!hasAviationHub) { //then add extra info in airport canvas
+        var $featureDiv = $("<div class='feature'><img src='assets/images/icons/airport-features/NO_AVIATION_HUB.png'; style='margin-right: 5px;'></div>")
+        $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })
+        var $noAviationHubDescription = $('<span><span>').text("Not yet an Aviation Hub.").addClass('aviationHubDescription')
+        $featureDiv.append($noAviationHubDescription)
+    }
 }
 
 function updateAirportExtendedDetails(airportId, countryCode) {
