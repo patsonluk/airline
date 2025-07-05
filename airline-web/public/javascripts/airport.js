@@ -537,9 +537,9 @@ function updateAirportRating(rating, features, aviationHubStrength, aviationHubU
     }
 
     if (aviationHubUpRequirement < 0) {
-        $("#airportCanvas .aviationHubDescription").append("Total PAX required for next Level: N/A")
+        $("#airportCanvas .aviationHubDescription").append(" Total PAX required for next Level: N/A")
     } else {
-        $("#airportCanvas .aviationHubDescription").append("Total PAX required for next Level: " + commaSeparateNumber(aviationHubUpRequirement))
+        $("#airportCanvas .aviationHubDescription").append(" Total PAX required for next Level: " + commaSeparateNumber(aviationHubUpRequirement))
     }
 }
 
