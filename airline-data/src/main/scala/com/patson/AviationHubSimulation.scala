@@ -123,7 +123,7 @@ object AviationHubSimulation {
       } else {
         maxPax = midPax
       }
-      println(s"$midPax -> $strength")
+//      println(s"$midPax -> $strength")
     }
     None
   }
