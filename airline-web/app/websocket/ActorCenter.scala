@@ -109,7 +109,7 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
 
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
-      println(s"Local main actor received topic $topic, re-publishing to ${actorSystem}")
+      println(s"Local main actor received topic ${topic.getClass.getName}, re-publishing to ${actorSystem}")
       Some(topic).collect {
         case CycleCompleted(cycle, cycleEndTime) =>
           println(s"${self.path} invalidating cache")

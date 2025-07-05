@@ -90,10 +90,16 @@ object SimulationEventStream{
               registeredActor ! (message, None) //send to actors on the airline-web side
             }
 
+          case directDemandInfo: DirectDemandInfo =>
+            registeredActor.foreach { registeredActor => //now notify the browser client of updated CycleInfo
+              println("Bridge actor: forwarding direct demand info to " + registeredActor.path)
+              registeredActor ! (directDemandInfo, None) //send to actors on the airline-web side
+            }
+
           case _ => //nothing
         }
         
-        println("Bridge actor: received from simulation that " + topic)
+        println("Bridge actor: received from simulation that " + topic.getClass.getName)
 
       case ReconnectPing => //do nothing
       case KeepAlivePing => sender() ! KeepAlivePong
