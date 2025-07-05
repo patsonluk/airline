@@ -5,8 +5,7 @@ import com.patson.model._
 import scala.collection.{immutable, mutable}
 
 object AviationHubSimulation {
-  //val AVIATION_HUB_DEMAND_RATIO_THRESHOLD = 2
-  val AVIATION_HUB_DEMAND_RATIO_THRESHOLD = 0.2 //TODO
+  val AVIATION_HUB_DEMAND_RATIO_THRESHOLD = 2
   val AVIATION_HUB_PAX_THRESHOLD = 10000
   val AVIATION_HUB_MAX_STRENGTH = 100
 
