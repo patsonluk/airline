@@ -494,15 +494,6 @@ function updateAirportRating(rating, features, aviationHubStrength, aviationHubU
     $("#airportCanvas .airportFeatures .feature").remove()
     var hasAviationHub = false
     $.each(features, function(index, feature) {
-        var $popupFeatureDiv = $("<div class='feature' style='display:inline-flex'><img src='assets/images/icons/airport-features/" + feature.type + ".png' title='" + feature.title + "'; style='vertical-align: bottom;'></div>").appendTo($("#airportPopup .airportFeatures"))
-        var $popupFeatureSpan
-        if (feature.boosts && feature.boosts.length > 0) {
-            $popupFeatureSpan = getBoostSpan(feature.strength, feature.boosts, createIfNotExist($('#boostDetailsTooltipTemplate'), feature.type + "Tooltip"))
-        } else {
-            $popupFeatureSpan = $('<span>' + (feature.strength > 0 ? feature.strength : '') + '</span>')
-        }
-        $popupFeatureDiv.append($popupFeatureSpan)
-
         //for the airport canvas
         var $featureDiv = $("<div class='feature'><img src='assets/images/icons/airport-features/" + feature.type + ".png'; style='margin-right: 5px;'></div>")
         $featureDiv.css({ 'display' : "flex", 'align-items' : "center", 'padding' : "2px 0" })

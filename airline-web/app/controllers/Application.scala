@@ -294,7 +294,7 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
 
         val rating = airport.rating
         val aviationHubStrength : Int = rating.features.find(_.featureType == AirportFeatureType.AVIATION_HUB).map(_.strength).getOrElse(0)
-        val aviationHubUpRequirement : Option[Int] = DemandCache.getPlainDemand(airport).flatMap { plainDemand =>
+        val aviationHubUpRequirement : Option[Long] = DemandCache.getPlainDemand(airport).flatMap { plainDemand =>
           AviationHubSimulation.computePaxRequirementByStrength(airport, plainDemand, aviationHubStrength + 1)
         }
 
@@ -317,7 +317,7 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
                     "airlineArrival" -> Json.toJson(statisticsArrivalByAirline),
                     "rating" -> Json.toJson(rating),
           "aviationHubStrength" -> aviationHubStrength,
-          "aviationHubUpRequirement" -> aviationHubUpRequirement.getOrElse(-1).toInt
+          "aviationHubUpRequirement" -> aviationHubUpRequirement.getOrElse(-1L).toInt
         ))
       }
       case None => NotFound
