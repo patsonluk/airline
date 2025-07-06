@@ -447,7 +447,7 @@ function loadAirportStatistics(airport) {
 	    	$('#airportDetailsAirlineCount').text(airportStatistics.airlineCount)
 	    	$('#airportDetailsLinkCount').text(airportStatistics.linkCount)
 	    	$('#airportDetailsFlightFrequency').text(airportStatistics.flightFrequency)
-	    	updateAirportRating(airportStatistics.rating, airport.features, airportStatistics.aviationHubStrength, airportStatistics.aviationHubUpRequirement)
+	    	updateAirportRating(airportStatistics.rating, airport.features, airportStatistics.aviationHubStrength, airportStatistics.aviationHubUpRequirement, airportStatistics.departureOrArrivalPassengers + airportStatistics.transitPassengers)
 	    	updateFacilityList(airportStatistics)
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
@@ -476,7 +476,7 @@ function loadGenericTransits(airport) {
 
 }
 
-function updateAirportRating(rating, features, aviationHubStrength, aviationHubUpRequirement) {
+function updateAirportRating(rating, features, aviationHubStrength, aviationHubUpRequirement, totalPax) {
     var fullStarSource = "assets/images/icons/star.png"
     var halfStarSource = "assets/images/icons/star-half.png"
     var fullFireSource = "assets/images/icons/fire.png"
@@ -489,7 +489,7 @@ function updateAirportRating(rating, features, aviationHubStrength, aviationHubU
     $("#airportCanvas .competitionRating").append(getRatingSpan(rating.competitionRating, false).css('margin-left', '5px'))
     $("#airportCanvas .difficulty").append(getHalfStepImageBarByValue(fullFireSource, halfFireSource, 10, rating.difficulty).css({ 'display' : 'inline-block', 'vertical-align' : 'text-bottom'}))
     $("#airportCanvas .difficulty").append(getRatingSpan(rating.difficulty, false).css('margin-left', '5px'))
-    $("#airportCanvas .aviationHubDescription").append(" Next level total airport PAX requirement: ")
+
 
     $("#airportCanvas .airportFeatures .feature").remove()
     var hasAviationHub = false
@@ -536,10 +536,8 @@ function updateAirportRating(rating, features, aviationHubStrength, aviationHubU
         $("#airportCanvas .airportFeatures").append($featureDiv)
     }
 
-    if (aviationHubUpRequirement < 0) {
-        $("#airportCanvas .aviationHubDescription").append(" Total PAX required for next Level: N/A")
-    } else {
-        $("#airportCanvas .aviationHubDescription").append(" Total PAX required for next Level: " + commaSeparateNumber(aviationHubUpRequirement))
+    if (aviationHubUpRequirement > 0) {
+        $("#airportCanvas .aviationHubDescription").append(" Total PAX progress to Level " + (aviationHubStrength + 1) + " : " + commaSeparateNumber(totalPax) + "/" + commaSeparateNumber(aviationHubUpRequirement))
     }
 }
 
