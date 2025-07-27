@@ -748,30 +748,78 @@ function showAllianceMap() {
 				$.each(result.links, function(index, link) {
 					alliancePaths.push(drawAllianceLink(link))
 				})
-				var allianceBases = []
-				 $.each(result.members, function(index, airline) {
-				    if (airline.role != "APPLICANT") {
-				        $.merge(allianceBases, airline.bases)
+
+                //consolidate information for airports with multiple alliance bases
+                var rawAllianceMembersBases = []
+                $.each(result.members, function(index, airline) {
+                    if (airline.role !== "APPLICANT") {
+                        $.merge(rawAllianceMembersBases, airline.bases)
                     }
                 })
 
-				var airportMarkers = updateAirportBaseMarkers(allianceBases, alliancePaths)
-				//now add extra listener for alliance airports
+                var basesByAirportId = {}
+                $.each(rawAllianceMembersBases, function(index, base) {
+                    if (!basesByAirportId[base.airportId]) {
+                        basesByAirportId[base.airportId] = []
+                    }
+                    basesByAirportId[base.airportId].push(base)
+                })
+
+                var allianceBasesForMap = []
+                $.each(basesByAirportId, function(airportId, basesAtThisAirport) {
+                    if (basesAtThisAirport.length === 1) {
+                        allianceBasesForMap.push(basesAtThisAirport[0])
+                    } else if (basesAtThisAirport.length === 2) {
+                        var base1 = basesAtThisAirport[0]
+                        var base2 = basesAtThisAirport[1]
+                        
+                        var primaryBase = base1.headquarter ? base1 : base2
+                        var partnerBase = base1.headquarter ? base2 : base1
+                        
+                        primaryBase.alliancePartnerBaseInfo = partnerBase
+                        allianceBasesForMap.push(primaryBase)
+                    }
+                })
+
+                var airportMarkers = updateAirportBaseMarkers(allianceBasesForMap, alliancePaths)
+
 				$.each(airportMarkers, function(key, marker) {
                         marker.addListener('mouseover', function(event) {
                             closeAlliancePopups()
                             var baseInfo = marker.baseInfo
-                            $("#allianceBasePopup .city").html(getCountryFlagImg(baseInfo.countryCode) + "&nbsp;" + baseInfo.city)
-                            $("#allianceBasePopup .airportName").text(baseInfo.airportName)
-                            $("#allianceBasePopup .iata").html(baseInfo.airportCode)
-                            $("#allianceBasePopup .airlineName").html(getAirlineLogoImg(baseInfo.airlineId) + "&nbsp;" + baseInfo.airlineName)
-                            $("#allianceBasePopup .baseScale").html(baseInfo.scale)
+                            var partnerInfo = baseInfo.alliancePartnerBaseInfo
 
-                            var infoWindow = new google.maps.InfoWindow({ maxWidth : 1200});
-                            var popup = $("#allianceBasePopup").clone()
-                            popup.show()
-                            infoWindow.setContent(popup[0])
-                            //infoWindow.setPosition(event.latLng);
+                            //clone popup template to use as main container for base info
+                            var $popup = $("#allianceBasePopup").clone()
+
+                            $popup.find(".city").html(getCountryFlagImg(baseInfo.countryCode) + " " + baseInfo.city)
+                            $popup.find(".airportName").text(baseInfo.airportName)
+                            $popup.find(".iata").html(baseInfo.airportCode)
+                            $popup.find(".airlineName").html(getAirlineLogoImg(baseInfo.airlineId) + " " + baseInfo.airlineName + (baseInfo.headquarter ? " (HQ)" : ""))
+                            $popup.find(".baseScale").html(baseInfo.scale)
+
+                            //if a partner base exists, append its info to the same table
+                            if (partnerInfo) {
+                                var $table = $popup.find(".table")
+
+                                //visual separator
+                                $table.append("<hr style='margin: 8px 0; border: 0; border-top: 1px solid #ccc;'>")
+
+                                var $airlineRowTemplate = $popup.find(".airlineName").closest(".table-row")
+                                var $partnerAirlineRow = $airlineRowTemplate.clone()
+                                $partnerAirlineRow.find(".airlineName").html(getAirlineLogoImg(partnerInfo.airlineId) + " " + partnerInfo.airlineName + (partnerInfo.headquarter ? " (HQ)" : ""))
+                                $table.append($partnerAirlineRow)
+
+                                var $scaleRowTemplate = $popup.find(".baseScale").closest(".table-row")
+                                var $partnerScaleRow = $scaleRowTemplate.clone()
+                                $partnerScaleRow.find(".baseScale").html(partnerInfo.scale)
+                                $table.append($partnerScaleRow)
+                            }
+
+                            $popup.show()
+
+                            var infoWindow = new google.maps.InfoWindow({ maxWidth : 1200 });
+                            infoWindow.setContent($popup[0])
                             infoWindow.open(map, marker);
                             map.allianceBasePopup = infoWindow
                         })

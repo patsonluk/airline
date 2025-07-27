@@ -1148,16 +1148,25 @@ function updateAirportBaseMarkers(newBaseAirports, relatedFlightPaths) {
         marker.baseInfo = baseAirport
         var originalOpacity = marker.getOpacity()
         marker.addListener('mouseover', function(event) {
+        	        var primaryBaseInfo = this.baseInfo
+                    var airlineIdsToHighlight = [primaryBaseInfo.airlineId]
+
+                    // if a partner base's info is attached, add its airline ID too
+                    if (primaryBaseInfo.alliancePartnerBaseInfo) {
+                        airlineIdsToHighlight.push(primaryBaseInfo.alliancePartnerBaseInfo.airlineId)
+                    }
+
                     $.each(relatedFlightPaths, function(linkId, pathEntry) {
                         var path = pathEntry.path
                         var link = pathEntry.path.link
                         if (!$(path).data("originalOpacity")) {
                             $(path).data("originalOpacity", path.strokeOpacity)
                         }
-                        if (link.fromAirportId != baseAirport.airportId || link.airlineId != baseAirport.airlineId) {
-                            path.setOptions({ strokeOpacity : 0.1 })
-                        } else {
+
+                        if (link.fromAirportId == primaryBaseInfo.airportId && airlineIdsToHighlight.includes(link.airlineId)) {
                             path.setOptions({ strokeOpacity : 0.8 })
+                        } else {
+                            path.setOptions({ strokeOpacity : 0.1 })
                         }
                     })
                 })
