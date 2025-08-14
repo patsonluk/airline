@@ -83,20 +83,6 @@ object ChampionUtil {
     val economicPowerRating = Math.max(0, math.log(ratioToModelAirportPower * 16) / math.log(2) / 4) //0 to 1
     boost += MAX_ECONOMIC_BOOST * economicPowerRating
 
-    import AirportFeatureType._
-    airport.getFeatures().foreach { feature =>
-      val featureBoost = feature.featureType match {
-        case GATEWAY_AIRPORT => 3
-        case INTERNATIONAL_HUB => feature.strengthFactor * 25
-        case FINANCIAL_HUB => feature.strengthFactor * 15
-        case VACATION_HUB => feature.strengthFactor * 10
-        case AVIATION_HUB => feature.strengthFactor * 25
-        case _ => 0
-      }
-
-      boost += featureBoost
-    }
-
     boost += (airport.size match {
       case x if (x >= 3) => airport.size - 2
       case _ => 0
@@ -117,6 +103,20 @@ object ChampionUtil {
           }
         }
       }
+    }
+    
+    import AirportFeatureType._
+    airport.getFeatures().foreach { feature =>
+      val featureBoost = feature.featureType match {
+        case GATEWAY_AIRPORT => 3
+        case INTERNATIONAL_HUB => feature.strengthFactor * 25
+        case FINANCIAL_HUB => feature.strengthFactor * 15
+        case VACATION_HUB => feature.strengthFactor * 10
+        case AVIATION_HUB => feature.strengthFactor * 25
+        case _ => 0
+      }
+
+      boost += featureBoost
     }
 
 
