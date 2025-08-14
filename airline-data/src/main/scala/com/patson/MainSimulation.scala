@@ -7,7 +7,7 @@ import org.apache.pekko.actor.Props
 import org.apache.pekko.actor.Actor
 import com.patson.data._
 import com.patson.model.Airport
-import com.patson.stream.{CycleCompleted, CycleStart, SimulationEventStream}
+import com.patson.stream.{CycleCompleted, CycleStart, DirectDemandInfo, SimulationEventStream}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirplaneOwnershipInfo, AirportCache}
 
 import scala.concurrent.Await
@@ -47,7 +47,7 @@ object MainSimulation extends App {
         LoanInterestRateSimulation.simulate(0)
       }
 
-      SimulationEventStream.publish(CycleStart(cycle, cycleStartTime), None)
+      SimulationEventStream.publish(CycleStart(cycle, cycleStartTime))
       invalidateCaches()
 
       println("Loading airports")
@@ -60,7 +60,10 @@ object MainSimulation extends App {
 
       val (flightLinkResult, loungeResult, linkRidershipDetails) = LinkSimulation.linkSimulation(cycle, airports)
       println("Airport simulation")
-      val airportChampionInfo = AirportSimulation.airportSimulation(cycle, airports, flightLinkResult, linkRidershipDetails)
+      val (airportChampionInfo, directDemand) = AirportSimulation.airportSimulation(cycle, airports, flightLinkResult, linkRidershipDetails)
+      SimulationEventStream.publish(DirectDemandInfo(cycle, directDemand.map{
+        case (airport, demand) => (airport.id, demand)
+      }))
 
       println("Airport assets simulation")
       AirportAssetSimulation.simulate(cycle, linkRidershipDetails)
@@ -136,7 +139,7 @@ object MainSimulation extends App {
 
         //notify the websockets via EventStream
         println("Publish Cycle Complete message")
-        SimulationEventStream.publish(CycleCompleted(currentWeek - 1, endTime), None)
+        SimulationEventStream.publish(CycleCompleted(currentWeek - 1, endTime))
     }
   }
    

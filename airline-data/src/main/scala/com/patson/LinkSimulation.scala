@@ -36,7 +36,7 @@ object LinkSimulation {
 
     val demand : immutable.List[(PassengerGroup, Airport, Int)] = DemandGenerator.computeDemand(cycle, airports)
     println("DONE with demand total demand: " + demand.foldLeft(0) {
-      case(holder, (_, _, demandValue)) =>  
+      case(holder, (_, _, demandValue)) =>
         holder + demandValue
     })
 

@@ -3,6 +3,8 @@ package com.patson.model
 import com.patson.model.airplane.Model
 import com.patson.model.airplane.Model.Type
 import FlightType._
+import com.patson.AviationHubSimulation
+import com.patson.DemandGenerator.Demand
 import com.patson.model.AirportFeatureType.{AVIATION_HUB, AirportFeatureType, DOMESTIC_AIRPORT, FINANCIAL_HUB, GATEWAY_AIRPORT, INTERNATIONAL_HUB, ISOLATED_TOWN, OLYMPICS_IN_PROGRESS, OLYMPICS_PREPARATIONS, UNKNOWN, VACATION_HUB}
 import com.patson.model.IsolatedTownFeature.HUB_RANGE_BRACKETS
 
@@ -27,7 +29,7 @@ abstract class AirportFeature {
       case GATEWAY_AIRPORT => "Gateway Airport - Easier negotiation and more passengers with other gateway airports"
       case OLYMPICS_PREPARATIONS => "Preparing the Olympic Games"
       case OLYMPICS_IN_PROGRESS => "Year of the Olympic Games"
-      case AVIATION_HUB => "Aviation Hub"
+      case AVIATION_HUB => "Aviation Hub - Increases population and income"
       case UNKNOWN => "Unknown"
     }
   }
@@ -225,12 +227,15 @@ sealed case class OlympicsInProgressFeature(strength : Int) extends AirportFeatu
 
 sealed case class AviationHubFeature(strength : Int) extends AirportFeature {
   val featureType = AirportFeatureType.AVIATION_HUB
+  val POPULATION_BOOST_PER_LEVEL = 20_000
+  val INCOME_BOOST_PER_LEVEL = 100
   override def demandAdjustment(rawDemand : Double, passengerType : PassengerType.Value, airportId : Int, fromAirport : Airport, toAirport : Airport, flightType : FlightType.Value, relationship : Int) : Double = {
     0
   }
+
   override val airportBoosts : Option[(Airport, AirportBoostType.Value) => Double] = Some {
-    case (airport, AirportBoostType.POPULATION) => strength * 20_000.0 //max 2m pop bonus
-    case (airport, AirportBoostType.INCOME) => strength * 100 //max 10,000 extra income
+    case (airport, AirportBoostType.POPULATION) => strength * POPULATION_BOOST_PER_LEVEL //max 2m pop bonus
+    case (airport, AirportBoostType.INCOME) => strength * INCOME_BOOST_PER_LEVEL //max 10,000 extra income
     case _ => 0
   }
 }
