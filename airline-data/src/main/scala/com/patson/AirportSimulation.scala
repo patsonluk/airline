@@ -44,11 +44,11 @@ object AirportSimulation {
     println("Finished loyalist simulation")
     //airportProjectSimulation(allAirports)
 
-    AviationHubSimulation.simulate(allAirports, linkRidershipDetails, cycle)
+    val directDemand = AviationHubSimulation.simulate(allAirports, linkRidershipDetails, cycle)
 
     AirportSource.purgeAirlineAppealBonus(cycle)
 
-    championInfo
+    (championInfo, directDemand)
   }
 
   val LOYALIST_HISTORY_SAVE_INTERVAL = 10 //every 10 cycles

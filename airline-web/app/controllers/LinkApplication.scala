@@ -364,6 +364,11 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
 
     val negotiationInfo = NegotiationUtil.getLinkNegotiationInfo(airline, incomingLink, existingLink)
+
+    if (delegateCount < negotiationInfo.finalRequirementValue) {
+      return BadRequest(s"Assigning $delegateCount delegates < ${negotiationInfo.finalRequirementValue}");
+    }
+
     val negotiationResultOption =
       if (negotiationInfo.finalRequirementValue > 0) { //then negotiation is required
         getNegotiationRejectionReason(airline, incomingLink.from, incomingLink.to, existingLink) foreach {

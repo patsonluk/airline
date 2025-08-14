@@ -2590,6 +2590,13 @@ function updateAirlineBaseList(airlineId, table) {
 	});
 }
 
+// A 'x' percent change in price is considered to be 'significant' and trigger additional confirmation.
+var SIGNIFICANT_PRICE_THRESHOLD_PERCENT = 50;
+
+function calculatePercentChange(existingValue, newValue){
+    return Math.abs(newValue - existingValue) / existingValue * 100;
+}
+
 var assignedDelegates = 0
 var availableDelegates = 0
 var negotiationOddsLookup
@@ -2655,6 +2662,7 @@ function linkConfirmation() {
     var planInfo = getPlanLinkCapacity()
     var planFrequency = planInfo.future ? planInfo.future.frequency : planInfo.current.frequency
 
+
 	for (i = 0 ; i < planFrequency ; i ++) {
 		var image = $("<img>")
 		image.attr("src", $(".frequencyBar").data("fillIcon"))
@@ -2671,10 +2679,43 @@ function linkConfirmation() {
         $("#linkConfirmationModal div.updating.capacity").append(futureCapacitySpan)
     }
 
+	const futurePrices = {
+		economy: parseInt($("#planLinkEconomyPrice").val()),
+		business: parseInt($("#planLinkBusinessPrice").val()),
+		first: parseInt($("#planLinkFirstPrice").val())
+	};
+	
+	const fareClasses = ["economy", "business", "first"];
+	var significantChanges = [];
+	
+	if (existingLink) {
+		fareClasses.forEach((fareClass) => {
+			const existingPrice = existingLink.price[fareClass];
+			const futurePrice = futurePrices[fareClass];
+		
+			const percentChange = calculatePercentChange(existingPrice, futurePrice);
+			if (percentChange >= SIGNIFICANT_PRICE_THRESHOLD_PERCENT) {
+				significantChanges.push(`${fareClass.charAt(0).toUpperCase() + fareClass.slice(1)}: $${existingPrice} <img src='assets/images/icons/arrow.png' style='vertical-align:middle;'> $${futurePrice}`);
+			}
+		});
+	}
+	
+	$('#linkConfirmationModal .confirmButton,.negotiateButton').off('click');
+	if (significantChanges.length > 0) {
+		const confirmationPromptMessage = `≥${SIGNIFICANT_PRICE_THRESHOLD_PERCENT}% price change${significantChanges.length > 1 ? "s" : ""} detected:<ul>${significantChanges.map(change => `<li>${change}</li>`).join("")}</ul>`;
+		$('#linkConfirmationModal .confirmButton,.negotiateButton').on('click', function() {
+			promptConfirm(confirmationPromptMessage, function() {
+			   createLink()
+			   closeModal($('#linkConfirmationModal'))
+			})
+		});
+	} else {
+		$('#linkConfirmationModal .confirmButton,.negotiateButton').on('click', function() {
+			createLink()
+		});
+	}
 
-
-	$('#linkConfirmationModal div.updating.price').text('$' + $('#planLinkEconomyPrice').val() + " / $" + $('#planLinkBusinessPrice').val() + " / $" + $('#planLinkFirstPrice').val())
-
+	$('#linkConfirmationModal div.updating.price').text(toLinkClassValueString(futurePrices, '$'));
 	$('#linkConfirmationModal').fadeIn(200)
 
     getLinkNegotiation()
