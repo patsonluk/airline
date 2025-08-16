@@ -99,7 +99,7 @@ object ChampionUtil {
 
           if (boostMultiplier > 1) {
             boost *= boostMultiplier
-            bonuses.append(ReputationBonus(s"Multiplied by $boostMultiplier as HQ in smaller airport"))
+            bonuses.append(ReputationBonus(s"Base reputation multiplied by $boostMultiplier as HQ in smaller airport"))
           }
         }
       }
