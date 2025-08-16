@@ -300,7 +300,7 @@ object ChatControllerActor {
   import scala.jdk.CollectionConverters._
   val activeUsers = new ConcurrentHashMap[ActorRef, User]().asScala
 //  val commands = List(ImgCommand)
-  val commands = List() //disable embedded image in chat for now to avoid tracking exploit
+  val commands = List[ChatCommand]() //disable embedded image in chat for now to avoid tracking exploit
 
   def getActiveUsers() : Set[User] = {
     activeUsers.values.toSet
