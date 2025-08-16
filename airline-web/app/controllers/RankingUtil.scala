@@ -229,7 +229,7 @@ object RankingUtil {
   }
 
   private[this] def getAviationHubRanking() : List[Ranking] = {
-    val allAirports = controllers.cachedAirportsByPower
+    val allAirports = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true)
     val hubs = allAirports.filter(_.features.find(_.featureType == AirportFeatureType.AVIATION_HUB).isDefined)
     val hubsByStrength = hubs.map(airport => (airport, airport.features.find(_.featureType == AirportFeatureType.AVIATION_HUB).get.strength)).sortBy(_._2)
     var ranking = 0
