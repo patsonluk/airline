@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.{AirlineSource, CycleSource, LinkSource, LoungeHistorySource}
+import com.patson.data.{AirlineSource, AirportSource, CycleSource, LinkSource, LoungeHistorySource}
 import com.patson.model._
  
 
@@ -48,15 +48,14 @@ object RankingUtil {
     updatedRankings.put(RankingType.AIRPORT, getAirportRanking(paxByAirport))
     updatedRankings.put(RankingType.INTERNATIONAL_PAX, getAirportPairRanking(paxByAirportPair, (airport1, airport2) => airport1.countryCode != airport2.countryCode))
     updatedRankings.put(RankingType.DOMESTIC_PAX, getAirportPairRanking(paxByAirportPair, (airport1, airport2) => airport1.countryCode == airport2.countryCode))
-//    val linkConsumptionsByAirlineAndZone = getPassengersByZone(linkConsumptionsByAirline)
-//    updatedRankings.put(RankingType.PASSENGER_AS, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AS, "AS"))
-//    updatedRankings.put(RankingType.PASSENGER_AF, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AF, "AF"))
-//    updatedRankings.put(RankingType.PASSENGER_OC, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_OC, "OC"))
-//    updatedRankings.put(RankingType.PASSENGER_EU, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_EU, "EU"))
-//    updatedRankings.put(RankingType.PASSENGER_NA, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_NA, "NA"))
-//    updatedRankings.put(RankingType.PASSENGER_SA, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_SA, "SA"))
-    
-    
+    val linkConsumptionsByAirlineAndZone = getPassengersByZone(flightConsumptionsByAirline)
+    updatedRankings.put(RankingType.PASSENGER_AS, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AS, "AS"))
+    updatedRankings.put(RankingType.PASSENGER_AF, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_AF, "AF"))
+    updatedRankings.put(RankingType.PASSENGER_OC, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_OC, "OC"))
+    updatedRankings.put(RankingType.PASSENGER_EU, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_EU, "EU"))
+    updatedRankings.put(RankingType.PASSENGER_NA, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_NA, "NA"))
+    updatedRankings.put(RankingType.PASSENGER_SA, getPassengerByZoneRanking(linkConsumptionsByAirlineAndZone, airlinesById, RankingType.PASSENGER_SA, "SA"))
+    updatedRankings.put(RankingType.AVIATION_HUB, getAviationHubRanking())
     
     updateMovements(cachedRankings, updatedRankings.toMap)
     
@@ -229,6 +228,18 @@ object RankingUtil {
     }.toList.take(40) //40 max for now
   }
 
+  private[this] def getAviationHubRanking() : List[Ranking] = {
+    val allAirports = controllers.cachedAirportsByPower
+    val hubs = allAirports.filter(_.features.find(_.featureType == AirportFeatureType.AVIATION_HUB).isDefined)
+    val hubsByStrength = hubs.map(airport => (airport, airport.features.find(_.featureType == AirportFeatureType.AVIATION_HUB).get.strength)).sortBy(_._2)
+    var ranking = 0
+    hubsByStrength.takeRight(40).reverse.map {
+      case (airport, hubStrength) =>
+        ranking += 1
+        Ranking(RankingType.AVIATION_HUB, key = airport, entry = airport, ranking = ranking, rankedValue = hubStrength)
+    }
+  }
+
 
 
   private[this] def updateMovements(previousRankings : Map[RankingType.Value, List[Ranking]], newRankings : Map[RankingType.Value, List[Ranking]]) = {
@@ -255,7 +266,7 @@ object RankingUtil {
 
 object RankingType extends Enumeration {
   type RankingType = Value
-  val PASSENGER, PASSENGER_MILE, REPUTATION, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LOUNGE, AIRPORT, INTERNATIONAL_PAX, DOMESTIC_PAX, PASSENGER_AS, PASSENGER_AF, PASSENGER_OC, PASSENGER_EU, PASSENGER_NA, PASSENGER_SA = Value
+  val PASSENGER, PASSENGER_MILE, REPUTATION, SERVICE_QUALITY, LINK_COUNT, LINK_PROFIT, LOUNGE, AIRPORT, INTERNATIONAL_PAX, DOMESTIC_PAX, PASSENGER_AS, PASSENGER_AF, PASSENGER_OC, PASSENGER_EU, PASSENGER_NA, PASSENGER_SA, AVIATION_HUB = Value
 }
 
 
