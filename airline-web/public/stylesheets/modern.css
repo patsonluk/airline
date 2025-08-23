@@ -207,8 +207,8 @@ html[data-theme="dark"] [title="Close"] > span {
 }
 /* top-left map type selector */
 .gm-style-mtc > button, .gm-style-mtc {
-	background-color: #0000 !important;
-	color: var(--color-1) !important;
+	background-color: #0000;
+	color: var(--color-1);
 	box-shadow: none !important;
 }
 /* arrow that's part of the airport box */
