@@ -488,7 +488,8 @@ package object controllers {
         "airlineName" -> JsString(info.loyalist.airline.name),
         "ranking" -> JsNumber(info.ranking),
         "loyalistCount" -> JsNumber(info.loyalist.amount),
-        "reputationBoost" -> JsNumber(info.reputationBoost)
+        "reputationBoost" -> JsNumber(info.reputationBoost),
+        "bonuses" -> Json.toJson(info.bonuses.map(_.description)),
       )
 
       info.loyalist.airline.getCountryCode().foreach { countryCode =>

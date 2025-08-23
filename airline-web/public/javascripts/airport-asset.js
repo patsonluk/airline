@@ -65,6 +65,9 @@ function showAirportAssets(airport) {
                     $boostImage.attr('title', boost.label)
                     $boostSpan.append($boostImage)
                     var boostText = commaSeparateNumber(boost.value)
+                    if (boost.boostType == 'INCOME') {
+                        boostText = '$' + boostText
+                    }
                     if (boost.value > 0) {
                         boostText = "+" + boostText
                     } else {
@@ -284,6 +287,9 @@ function showAssetModal(asset) {
                     $boostImage.attr('title', boost.label)
                     $boostSpan.append($boostImage)
                     var boostText = commaSeparateNumber(boost.value)
+                    if (boost.boostType == 'INCOME') {
+                        boostText = '$' + boostText
+                    }
                     if (boost.value > 0) {
                         boostText = "+" + boostText
                     } else {
@@ -389,8 +395,9 @@ function refreshBoostHistory(history, baseBoosts) {
         $cell.append($boostImage)
         $cell.append('<span>' + entry.label + '</span>')
         $row.append($cell)
-        $row.append("<div class='cell' align='right'>+" + commaSeparateNumber(entry.gain) + "</div>")
-        $row.append("<div class='cell' align='right'>" + commaSeparateNumber(entry.value) + "</div>")
+
+        $row.append("<div class='cell' align='right'>+" + (entry.boostType == 'INCOME' ? '$' : '') + commaSeparateNumber(entry.gain) + "</div>")
+        $row.append("<div class='cell' align='right'>" + (entry.boostType == 'INCOME' ? '$' : '') + commaSeparateNumber(entry.value) + "</div>")
         $upgradeFactorCell = $('<div class="cell"></div>')
         $upgradeFactorCell.append(getUpgradeFactorIcon(entry.upgradeFactor))
         $row.append($upgradeFactorCell)
@@ -408,7 +415,7 @@ function refreshBoostHistory(history, baseBoosts) {
         $cell.append('<span>' + entry.label + '</span>')
         $row.append($cell)
         $row.append("<div class='cell' align='right'>-</div>")
-        $row.append("<div class='cell' align='right'>" + commaSeparateNumber(entry.value) + "</div>")
+        $row.append("<div class='cell' align='right'>" + (entry.boostType == 'INCOME' ? '$' : '') + commaSeparateNumber(entry.value) + "</div>")
         $row.append('<div class="cell"></div>')
         $table.append($row)
     })

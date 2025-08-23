@@ -69,6 +69,8 @@ function updateRankingTable(rankingType, rankings) {
 		rankingTable = $('#passengerRankNa')
 	} else if (rankingType == "PASSENGER_SA") {
 		rankingTable = $('#passengerRankSa')
+    } else if (rankingType == "AVIATION_HUB") {
+        rankingTable = $('#aviationHubRank')
 	} else {
 		console.log("Unknown ranking type " + rankingType)
 	}

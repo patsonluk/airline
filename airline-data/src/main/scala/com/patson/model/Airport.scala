@@ -33,6 +33,8 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 
 
   private[this] var runways = List.empty[Runway]
+
+
   //private[this] var loungesLoaded = false
 
 //  private[this] var airportImageUrl : Option[String] = None
@@ -46,35 +48,12 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
   private[this] var assetBoostFactors : Map[AirportBoostType.Value, List[(AirportAsset, AirportBoost)]] = Map.empty
 
   val baseIncomeLevel = Computation.getIncomeLevel(baseIncome)
-  lazy val incomeLevelBoost = boostFactorsByType.get(AirportBoostType.INCOME).map(_._2).sum
-
-//  lazy val incomeLevelBoostFactors : Map[String, Double] = {
-//    (assetBoostFactors.getOrElse(AirportBoostType.INCOME, List.empty).map {
-//      case (asset, boost) => (asset.name, boost.value)
-//    } ++ airlineBases.values.flatMap { airlineBase =>
-//      airlineBase.specializations.filter(_ == POWERHOUSE).map { spec =>
-//        val description = s"${airlineBase.airline.name} Powerhouse"
-//        (description, spec.asInstanceOf[PowerhouseSpecialization].incomeLevelBoost(this))
-//      }
-//    }).toMap
-//  }
-
-  lazy val incomeLevel = baseIncomeLevel + incomeLevelBoost
-  lazy val income = if (incomeLevelBoost == 0) baseIncome else Computation.fromIncomeLevel(incomeLevel) //have to deduce from income level (after boost)
+  lazy val incomeBoost = boostFactorsByType.get(AirportBoostType.INCOME).map(_._2).sum.toInt
+  lazy val incomeLevel = Computation.getIncomeLevel(income)
+  lazy val income = baseIncome + incomeBoost
 
 
   lazy val populationBoost = boostFactorsByType.get(AirportBoostType.POPULATION).map(_._2).sum.toInt
-//  lazy val populationBoostFactors : Map[String, Int] = {
-//    (assetBoostFactors.getOrElse(AirportBoostType.POPULATION, List.empty).map {
-//      case (asset, boost) => (asset.name, boost.value.toInt)
-//    }
-//     ++ airlineBases.values.flatMap { airlineBase =>
-//      airlineBase.specializations.filter(_ == POWERHOUSE).map { spec =>
-//        val description = s"${airlineBase.airline.name} Powerhouse"
-//        (description, spec.asInstanceOf[PowerhouseSpecialization].populationBoost)
-//      }
-//    }).toMap
-//  }
   val boostFactorsByType :  LoadingCache[AirportBoostType.Value, List[(String, Double)]]  = CacheBuilder.newBuilder.build(new BoostFactorsLoader())
 
   class BoostFactorsLoader extends CacheLoader[AirportBoostType.Value, List[(String, Double)]] {
@@ -88,12 +67,21 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
             val description = s"${airlineBase.airline.name} Powerhouse"
             val powerHouseSpec = spec.asInstanceOf[PowerhouseSpecialization]
             val boost = boostType match {
-              case AirportBoostType.INCOME => powerHouseSpec.incomeLevelBoost(Airport.this)
+              case AirportBoostType.INCOME => powerHouseSpec.incomeBoost(Airport.this)
               case AirportBoostType.POPULATION => powerHouseSpec.populationBoost
               case _ => 0
             }
 
             (description, boost)
+          }
+        }
+
+        features.foreach { feature =>
+          feature.airportBoosts.foreach { boosts =>
+            val boost = boosts(Airport.this, boostType)
+            if (boost > 0) {
+              result = result :+ (feature.getDescription, BigDecimal(boost).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble)
+            }
           }
         }
       }
@@ -340,6 +328,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
     }
     assetBoostFactors = result.view.mapValues(_.toList).toMap
   }
+
 
   private[this] def getTransitModifiers() : List[TransitModifier] = {
     if (!assetsLoaded) {

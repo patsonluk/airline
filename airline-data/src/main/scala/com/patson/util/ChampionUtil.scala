@@ -2,11 +2,12 @@ package com.patson.util
 
 import com.patson.model._
 import com.patson.data.{AirlineSource, AirportSource, Constants, CountrySource, LoyalistSource}
+import com.patson.util.ChampionUtil.ReputationBonus
 
 import scala.collection.mutable.ListBuffer
 
 case class CountryChampionInfo(airline : Airline, country : Country, passengerCount : Long, ranking : Int)
-case class AirportChampionInfo(loyalist : Loyalist, ranking : Int, reputationBoost : Double)
+case class AirportChampionInfo(loyalist : Loyalist, ranking : Int, reputationBoost : Double, bonuses : List[ReputationBonus])
 
 object ChampionUtil {
   def getAllCountryChampionInfo() : List[CountryChampionInfo] =  {
@@ -69,19 +70,41 @@ object ChampionUtil {
     12 -> 0.01
   )
 
+  case class ReputationBonus(description : String)
   /**
     * Reputation boost if airport is at full loyalist ie loyalist = population
-    * @param airport
-    * @param ranking
     * @return
     */
-  def computeFullReputationBoost(airport : Airport, ranking : Int) : Double = {
+  def computeFullReputationBoost(airport : Airport, airline : Airline, ranking : Int) : (Double, List[ReputationBonus]) = {
+    val bonuses = ListBuffer[ReputationBonus]()
     val ratioToModelAirportPower = airport.power.toDouble / Computation.MODEL_AIRPORT_POWER
     var boost = BASE_BOOST
     //val economicPowerRating = Math.max(0, math.log10(ratioToModelAirportPower * 100) / 2) //0 to 1
     val economicPowerRating = Math.max(0, math.log(ratioToModelAirportPower * 16) / math.log(2) / 4) //0 to 1
     boost += MAX_ECONOMIC_BOOST * economicPowerRating
 
+    boost += (airport.size match {
+      case x if (x >= 3) => airport.size - 2
+      case _ => 0
+    })
+
+    //multiplier for HQ
+    AirlineCache.getAirline(airline.id, fullLoad = true).foreach { airline =>
+      airline.getHeadQuarter().foreach { hq =>
+        if (airport.id == hq.airport.id) {
+          val boostMultiplier = airport.size match {
+            case x if x <= 7 => 1 + (8 - airport.size) * 0.5
+            case _ => 0
+          }
+
+          if (boostMultiplier > 1) {
+            boost *= boostMultiplier
+            bonuses.append(ReputationBonus(s"Base reputation multiplied by $boostMultiplier as HQ in smaller airport"))
+          }
+        }
+      }
+    }
+    
     import AirportFeatureType._
     airport.getFeatures().foreach { feature =>
       val featureBoost = feature.featureType match {
@@ -89,18 +112,15 @@ object ChampionUtil {
         case INTERNATIONAL_HUB => feature.strengthFactor * 25
         case FINANCIAL_HUB => feature.strengthFactor * 15
         case VACATION_HUB => feature.strengthFactor * 10
+        case AVIATION_HUB => feature.strengthFactor * 25
         case _ => 0
       }
 
       boost += featureBoost
     }
 
-    boost += (airport.size match {
-      case x if (x >= 3) => airport.size - 2
-      case _ => 0
-    })
 
-    boost * reputationBoostBrackets(ranking)
+    (boost * reputationBoostBrackets(ranking), bonuses.toList)
   }
 
 //  def updateAirportChampionInfo(loyalists: List[Loyalist]) = {
@@ -128,8 +148,9 @@ object ChampionUtil {
         val championInfoForThisAirport = topAirlineWithSortedIndex.map {
           case(loyalist, index) => {
               val ranking = index + 1
-              val reputationBoost = computeFullReputationBoost(airport, ranking) * loyalistToPopRatio
-              Some(AirportChampionInfo(loyalist, ranking, reputationBoost))
+              val fullBoostInfo = computeFullReputationBoost(airport, loyalist.airline, ranking)
+              val reputationBoost = fullBoostInfo._1 * loyalistToPopRatio
+              Some(AirportChampionInfo(loyalist, ranking, reputationBoost, fullBoostInfo._2))
           }
         }
         result ++= championInfoForThisAirport.flatten

@@ -18,21 +18,19 @@ object AirportSimulation {
   val LOYALTY_DECREMENT_BY_MINOR_DELAY = 0.5 //if all flights have minor delay
   val LOYALTY_DECREMENT_BY_MAJOR_DELAY = 2 //if all flights have major delay
   val LOYALTY_DECREMENT_BY_CANCELLATION = 4 //if all flights are cancelled
-  
+
   private[patson] val LOYALTY_INCREMENT_BY_FLIGHTS = 1.0
   private[patson] val LOYALTY_DECREMENT_BY_FLIGHTS = 1.0
 
 
-  def airportSimulation(cycle: Int, flightLinkResult : List[LinkConsumptionDetails], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
+  def airportSimulation(cycle: Int,  allAirports: List[Airport], flightLinkResult : List[LinkConsumptionDetails], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("starting airport simulation")
     println("loading all airports")
     //do decay
-    val allAirports = AirportSource.loadAllAirports(true)
-    println("finished loading all airports")
 
-    val flightLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD).filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link])
-    val linksByFromAirportId = flightLinks.groupBy(_.from.id)
-    val linksByToAirportId = flightLinks.groupBy(_.to.id)
+//    val flightLinks = LinkSource.loadAllLinks(LinkSource.ID_LOAD).filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link])
+//    val linksByFromAirportId = flightLinks.groupBy(_.from.id)
+//    val linksByToAirportId = flightLinks.groupBy(_.to.id)
 
     //update the loyalist on airports based on link consumption
     println("Adjust loyalist by link consumptions")
@@ -43,14 +41,14 @@ object AirportSimulation {
 
 
     println("Finished simulation of loyalty by link consumption")
-
-
     println("Finished loyalist simulation")
     //airportProjectSimulation(allAirports)
 
+    val directDemand = AviationHubSimulation.simulate(allAirports, linkRidershipDetails, cycle)
+
     AirportSource.purgeAirlineAppealBonus(cycle)
 
-    championInfo
+    (championInfo, directDemand)
   }
 
   val LOYALIST_HISTORY_SAVE_INTERVAL = 10 //every 10 cycles

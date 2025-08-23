@@ -19,8 +19,8 @@ object SimulationEventStream{
   
   println("registered the mainActor to the event stream!")
   
-  def publish(topic: SimulationEvent, payload: Any) {
-    system.eventStream.publish(topic, payload)
+  def publish(topic: SimulationEvent) {
+    system.eventStream.publish(topic, None)
   }
   
   
@@ -90,10 +90,16 @@ object SimulationEventStream{
               registeredActor ! (message, None) //send to actors on the airline-web side
             }
 
+          case directDemandInfo: DirectDemandInfo =>
+            registeredActor.foreach { registeredActor => //now notify the browser client of updated CycleInfo
+              println("Bridge actor: forwarding direct demand info to " + registeredActor.path)
+              registeredActor ! (directDemandInfo, None) //send to actors on the airline-web side
+            }
+
           case _ => //nothing
         }
         
-        println("Bridge actor: received from simulation that " + topic)
+        println("Bridge actor: received from simulation that " + topic.getClass.getName)
 
       case ReconnectPing => //do nothing
       case KeepAlivePing => sender() ! KeepAlivePong
@@ -107,6 +113,7 @@ object SimulationEventStream{
 class SimulationEvent
 case class CycleCompleted(cycle : Int, cycleEndTime : Long) extends SimulationEvent //main simulation send this, this will be relayed directly to client
 case class CycleStart(cycle: Int, cycleStartTime : Long) extends SimulationEvent //main simulation send this, this will NOT be relay back to client
+case class DirectDemandInfo(cycle: Int, directDemand : Map[Int, Long]) extends SimulationEvent //main simulation send this, this will NOT be relay back to client
 case class CycleInfo(cycle: Int, fraction : Double, cycleDurationEstimation : Long) extends SimulationEvent  //bridge actor convert a CycleStart into CycleInfo and send back to client
 case class ReconnectPing()
 case class KeepAlivePing()

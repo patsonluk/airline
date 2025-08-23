@@ -4,8 +4,8 @@ import org.apache.pekko.actor.{Actor, ActorRef, ActorSelection, ActorSystem, Pro
 import org.apache.pekko.remote.{AssociatedEvent, DisassociatedEvent, RemotingLifecycleEvent}
 import com.patson.model.Airline
 import com.patson.model.notice.{AirlineNotice, NoticeCategory, TrackingNotice}
-import com.patson.stream.{CycleCompleted, CycleInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
-import com.patson.util.{AirlineCache, AirplaneModelDiscountCache, AirplaneOwnershipCache, AirportCache}
+import com.patson.stream.{CycleCompleted, CycleInfo, DirectDemandInfo, KeepAlivePing, KeepAlivePong, ReconnectPing, SimulationEvent}
+import com.patson.util.{AirlineCache, AirplaneModelDiscountCache, AirplaneOwnershipCache, AirportCache, DemandCache}
 import com.typesafe.config.ConfigFactory
 import controllers.{AirlineTutorial, AirportUtil, GooglePhotoUtil, PromptUtil, SearchUtil}
 import models.PendingAction
@@ -109,7 +109,7 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
 
   override def receive = {
     case (topic: SimulationEvent, payload: Any) =>
-      println(s"Local main actor received topic $topic, re-publishing to ${actorSystem}")
+      println(s"Local main actor received topic ${topic.getClass.getName}, re-publishing to ${actorSystem}")
       Some(topic).collect {
         case CycleCompleted(cycle, cycleEndTime) =>
           println(s"${self.path} invalidating cache")
@@ -125,6 +125,9 @@ sealed class LocalMainActor(remoteActor : ActorSelection) extends Actor {
             GooglePhotoUtil.refreshBanners()
           }
           println(s"${self.path} invalidated cache")
+        case DirectDemandInfo(cycle, directDemand) =>
+          println(s"${self.path} updating direct demand info")
+          DemandCache.update(directDemand)
       }
 
       actorSystem.eventStream.publish(topic, payload) //relay to local event stream... since i don't know if I can subscribe to remote event stream...
