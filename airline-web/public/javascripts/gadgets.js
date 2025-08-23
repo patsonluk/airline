@@ -427,7 +427,7 @@ Get a span with value and a tool tip of breakdown
 function getBoostSpan(finalValue, boosts, $tooltip, prefix) {
     var $valueSpan = $('<span>' + commaSeparateNumber(finalValue) + '</span>')
     if (boosts) {
-        $valueSpan.css('color', '#41A14D')
+        $valueSpan.css('color', 'var(--boost-color)')
         $tooltip.find('.table .table-row').remove()
         var $table = $tooltip.find('.table')
         $.each(boosts, function(index, entry) {

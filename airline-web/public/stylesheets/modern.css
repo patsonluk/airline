@@ -12,6 +12,7 @@ html {
 	--input-background: #aaa3;
 
 	--color-1: #111;
+	--boost-color: rgb(10, 100, 20);
 
 	--placeholderBlurColorLight: #c0c5d0;
 	--placeholderBlurColorDark: #111518;
@@ -28,6 +29,7 @@ html[data-theme="dark"] {
 	--input-background: #aaa3;
 
 	--color-1: #ccc;
+	--boost-color: rgb(120, 220, 140);
 
 }
 

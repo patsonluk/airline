@@ -251,7 +251,7 @@ function buildChampionDetailRow(airport, championDetails) {
     row.append("<div class='cell'>" + getAirlineSpan(championDetails.airlineId, championDetails.airlineName) + "</div>")
     row.append("<div class='cell' style='text-align: right'>" + commaSeparateNumber(championDetails.loyalistCount) + "</div>")
     var $loyaltyCell = $("<div class='cell' style='text-align: right'>" + championDetails.loyalty + "</div>")
-    var $reputationCell = $("<div class='cell' style='text-align: right'>" + championDetails.reputationBoost + "</div>")
+    var $reputationCell = $("<div class='cell' style='text-align: right'>" + (championDetails.reputationBoost ? championDetails.reputationBoost : 0) + "</div>")
     if (!isMobileDevice()) {
         $loyaltyCell.hover(
             function() {
@@ -263,7 +263,7 @@ function buildChampionDetailRow(airport, championDetails) {
                 hideInfoTooltip()
             }
         )
-        if (championDetails.bonuses.length > 0) {
+        if (championDetails.bonuses && championDetails.bonuses.length > 0) {
             $reputationCell.hover(
                 function() {
                     var rows = []
@@ -300,12 +300,12 @@ function updateAirportChampionDetails(airport) {
 	    success: function(result) {
 	        var champions = result.champions
 	    	$(champions).each(function(index, championDetails) {
-	    	    row = buildChampionDetailRow(airport, championDetails)
+	    	    var row = buildChampionDetailRow(airport, championDetails)
 	    		$('#airportDetailsChampionList').append(row)
 	    	})
 
 	    	if (result.currentAirline) {
-	    	    row = buildChampionDetailRow(airport, result.currentAirline)
+	    	    var row = buildChampionDetailRow(airport, result.currentAirline)
                 $('#airportDetailsChampionList').append(row)
             }
 	    	populateNavigation($('#airportDetailsChampionList'))

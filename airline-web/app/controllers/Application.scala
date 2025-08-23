@@ -614,7 +614,7 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
           case Some(entry) =>
             val rank = loyalistsSorted.indexOf(entry) + 1
             val loyalty = BigDecimal(airport.getAirlineLoyalty(airlineId)).setScale(2, RoundingMode.HALF_EVEN)
-            result = result + ("currentAirline" -> (Json.toJson(entry).asInstanceOf[JsObject] + ("ranking" -> JsNumber(rank)) + ("loyalty" -> JsNumber(loyalty))))
+            result = result + ("currentAirline" -> (Json.toJson(entry).asInstanceOf[JsObject] + ("ranking" -> JsNumber(rank)) + ("loyalty" -> JsNumber(loyalty)) + ("loyalistCount" -> JsNumber(entry.amount))))
           case None => //nothing
         }
       }

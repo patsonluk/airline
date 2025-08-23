@@ -51,6 +51,7 @@ html {
   --fallback-background: #aaaaaa;
 
   --highlight-text-color: #dddddd;
+  --boost-color: rgb(10, 100, 20);
 }
 
 html[data-theme='dark'] {
