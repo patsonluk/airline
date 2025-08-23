@@ -425,6 +425,9 @@ function scrollToRow($matchingRow, $container) {
 Get a span with value and a tool tip of breakdown
 */
 function getBoostSpan(finalValue, boosts, $tooltip, prefix) {
+    if (prefix === '$') {
+       finalValue = Math.round(finalValue) //for better display on tooltip. decimals for money values look confusing due to big variation (1 digit vs 4 digits)
+    }
     var $valueSpan = $('<span>' + commaSeparateNumber(finalValue) + '</span>')
     if (boosts) {
         $valueSpan.css('color', '#41A14D')
