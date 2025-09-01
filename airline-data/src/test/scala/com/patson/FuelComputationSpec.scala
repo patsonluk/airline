@@ -21,16 +21,16 @@ class FuelComputationSpec extends WordSpecLike with Matchers {
       var preDistance = 0
       var preOldCost = 0
       var preNewCost = 0
-      distances.foreach { distance =>
-        val costPerSpeed : mutable.Map[Int, Int] = new mutable.HashMap[Int, Int]()
-        speeds.foreach { speed =>
+      speeds.foreach { speed =>
+//        val costPerSpeed : mutable.Map[Int, Int] = new mutable.HashMap[Int, Int]()
+        distances.foreach { distance =>
           val duration = Computation.calculateDuration(speed, distance)
           var link = Link(airport1, airport2, airline1, LinkClassValues.getInstanceByMap(Map(ECONOMY -> 100)), distance, LinkClassValues.getInstanceByMap(Map(ECONOMY -> 100)), rawQuality = 0, duration, 1, FlightType.SHORT_HAUL_DOMESTIC)
 
           val oldCost = LinkSimulation.computeFuelCostOld(link, speed, 1)
           val newCost = LinkSimulation.computeFuelCost(link, speed, 1)
           //        println(s"$distance : $oldCost -> $newCost . Diff per 1000km with previous(old/new): ${(oldCost * 1.0 - preOldCost)/(distance - preDistance) * 1000} vs ${(newCost * 1.0 - preNewCost)/(distance - preDistance) * 1000}")
-          println(s"$speed km/hr airplane $distance km fuel cost : $oldCost -> $newCost")
+          println(s"$speed km/hr airplane $distance km fuel cost change: ${newCost * 100 / oldCost}% ")
           preDistance = distance
           preOldCost = oldCost
           preNewCost = newCost
@@ -38,7 +38,7 @@ class FuelComputationSpec extends WordSpecLike with Matchers {
           //        if (distance >= 2000) {
           //          assert(diffRatio < 0.05)
           //        }
-          costPerSpeed(speed) = newCost
+//          costPerSpeed(speed) = newCost
         }
 
         println

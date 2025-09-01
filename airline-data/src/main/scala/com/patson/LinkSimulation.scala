@@ -20,11 +20,11 @@ import java.util.concurrent.ThreadLocalRandom
 object LinkSimulation {
 
 
-  private val FUEL_UNIT_COST = 0.0042 //for easier flight monitoring, let's make it the default unit price here
-  private val MAX_ASCEND_DISTANCE_1 = 100
+  private val FUEL_UNIT_COST = 0.0043 //for easier flight monitoring, let's make it the default unit price here
+  private val MAX_ASCEND_DISTANCE_1 = 150
   private val MAX_ASCEND_DISTANCE_2 = 600
   private val ASCEND_FUEL_BURN_MULTIPLIER_1 = 30
-  private val ASCEND_FUEL_BURN_MULTIPLIER_2 = 12
+  private val ASCEND_FUEL_BURN_MULTIPLIER_2 = 9
 
   private val FUEL_UNIT_COST_OLD = 0.08
 
