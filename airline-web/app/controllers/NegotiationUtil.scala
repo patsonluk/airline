@@ -7,7 +7,7 @@ import com.patson.model.{LinkNegotiationDelegateTask, _}
 import com.patson.model.airplane._
 import com.patson.model.negotiation.LinkNegotiationDiscount
 import com.patson.util.{AirportCache, ChampionUtil, CountryCache}
-import controllers.NegotiationDiscountType.{ALLIANCE_BASE, BASE, BELOW_CAPACITY, COUNTRY_RELATIONSHIP, LOYALTY, MAIDEN_INTERNATIONAL, NEW_AIRLINE, OVER_CAPACITY, PREVIOUS_NEGOTIATION}
+import controllers.NegotiationDiscountType.{ALLIANCE_BASE, ALLIANCE_HQ, BASE, BELOW_CAPACITY, COUNTRY_RELATIONSHIP, LOYALTY, MAIDEN_INTERNATIONAL, NEW_AIRLINE, OVER_CAPACITY, PREVIOUS_NEGOTIATION}
 
 import scala.collection.mutable.ListBuffer
 import scala.math.BigDecimal.RoundingMode
@@ -22,6 +22,8 @@ object NegotiationUtil {
   val FREE_LINK_DIFFICULTY_THRESHOLD = 10
   val GREAT_SUCCESS_THRESHOLD = 0.95 // 5%
   val FREE_CAPACITY = 500 //first 500 free
+  val RANKED_BASE_DISCOUNT_CYCLE_THRESHOLD = 52 * 5 //how long a ranked alliance base should be built at least this many weeks before for bonus
+  val BASE_SCALE_REQUIREMENT = 5 //ranked allliance base min scale for bonus
 
 
   def negotiate(info : NegotiationInfo, delegateCount : Int) = {
@@ -352,9 +354,10 @@ object NegotiationUtil {
     val allianceBases = allianceMembers.flatMap(_.airline.getBases()).filter(_.airport.id == airport.id).filter(_.airline != airline.id)
 
     val championAllianceBases = allianceBases.filter(base => airportChampionAirlineIds.contains(base.airline.id))
-    if (championAllianceBases.find(_.headquarter).isDefined) {
-      discounts.append(SimpleNegotiationDiscount(ALLIANCE_BASE, 0.3))
-    } else if (!championAllianceBases.isEmpty) {
+    val cycleCutoff = CycleSource.loadCycle() - RANKED_BASE_DISCOUNT_CYCLE_THRESHOLD
+    if (championAllianceBases.exists(base => base.headquarter && base.foundedCycle <= cycleCutoff && base.scale >= BASE_SCALE_REQUIREMENT)) {
+      discounts.append(SimpleNegotiationDiscount(ALLIANCE_HQ, 0.3))
+    } else if (championAllianceBases.exists(base => base.foundedCycle <= cycleCutoff && base.scale >= BASE_SCALE_REQUIREMENT) ) {
       discounts.append(SimpleNegotiationDiscount(ALLIANCE_BASE, 0.2))
     }
 
@@ -529,7 +532,7 @@ object NegotiationRequirementType extends Enumeration {
 
 object NegotiationDiscountType extends Enumeration {
   type NegotiationDiscountType = Value
-  val COUNTRY_RELATIONSHIP, BELOW_CAPACITY, OVER_CAPACITY, LOYALTY, BASE, ALLIANCE_BASE, NEW_AIRLINE, PREVIOUS_NEGOTIATION, MAIDEN_INTERNATIONAL = Value
+  val COUNTRY_RELATIONSHIP, BELOW_CAPACITY, OVER_CAPACITY, LOYALTY, BASE, ALLIANCE_BASE, ALLIANCE_HQ, NEW_AIRLINE, PREVIOUS_NEGOTIATION, MAIDEN_INTERNATIONAL = Value
 }
 
 case class NegotiationRequirement(requirementType : NegotiationRequirementType.Value, value : Double, description : String) {
@@ -542,7 +545,8 @@ abstract class NegotiationDiscount(val adjustmentType : NegotiationDiscountType.
     case OVER_CAPACITY => s"${airport.displayText} is over capacity"
     case LOYALTY => s"Loyalty of ${airport.displayText}"
     case BASE => s"Airline base"
-    case ALLIANCE_BASE => s"Alliance member hq/base as ranked champion "
+    case ALLIANCE_BASE => s"Ranked alliance member with lvl 5+ base"
+    case ALLIANCE_HQ => s"Ranked alliance member with lvl 5+ HQ"
     case NEW_AIRLINE => s"New airline bonus"
     case MAIDEN_INTERNATIONAL => "No flights between these 2 countries yet"
     case _ => s"Unknown"
