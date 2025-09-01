@@ -21,10 +21,12 @@ object LinkSimulation {
 
 
   private val FUEL_UNIT_COST = 0.0043 //for easier flight monitoring, let's make it the default unit price here
-  private val MAX_ASCEND_DISTANCE_1 = 150
-  private val MAX_ASCEND_DISTANCE_2 = 600
-  private val ASCEND_FUEL_BURN_MULTIPLIER_1 = 30
-  private val ASCEND_FUEL_BURN_MULTIPLIER_2 = 9
+  private val MAX_ASCEND_DISTANCE_1 = 180
+  private val MAX_ASCEND_DISTANCE_2 = 250
+  private val MAX_ASCEND_DISTANCE_3 = 1000
+  private val ASCEND_FUEL_BURN_MULTIPLIER_1 = 32
+  private val ASCEND_FUEL_BURN_MULTIPLIER_2 = 13
+  private val ASCEND_FUEL_BURN_MULTIPLIER_3 = 2
 
   private val FUEL_UNIT_COST_OLD = 0.08
 
@@ -242,13 +244,23 @@ object LinkSimulation {
       val ascendDistance2 = flightLink.distance / 2 - ascendDistance1
       (fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_1 * ascendDistance1 +
         fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_2 * ascendDistance2 +
-        fuelBurn * (flightLink.distance - ascendDistance1 - ascendDistance2)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) //ascend distance huge burn, then cruising/descend at 1/10 the cost
+        fuelBurn * (flightLink.distance - ascendDistance1 - ascendDistance2)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount)
+    } else if (flightLink.distance <= MAX_ASCEND_DISTANCE_3 * 2) {
+      val ascendDistance1 = MAX_ASCEND_DISTANCE_1
+      val ascendDistance2 = MAX_ASCEND_DISTANCE_2
+      val ascendDistance3 = flightLink.distance / 2 - ascendDistance1 - ascendDistance2
+      (fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_1 * ascendDistance1 +
+        fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_2 * ascendDistance2 +
+        fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_3 * ascendDistance3 +
+        fuelBurn * (flightLink.distance - ascendDistance1 - ascendDistance2 - ascendDistance3)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount)
     } else {
       val ascendDistance1 = MAX_ASCEND_DISTANCE_1
       val ascendDistance2 = MAX_ASCEND_DISTANCE_2
+      val ascendDistance3 = MAX_ASCEND_DISTANCE_3
       (fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_1 * ascendDistance1 +
         fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_2 * ascendDistance2 +
-        fuelBurn * (flightLink.distance - ascendDistance1 - ascendDistance2)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) //ascend distance huge burn, then cruising/descend at 1/10 the cost
+        fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_3 * ascendDistance3 +
+        fuelBurn * (flightLink.distance - ascendDistance1 - ascendDistance2 - ascendDistance3)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount)
     } * (0.7 + 0.3 * loadFactor)).toInt //at 0 LF, 70% fuel cost
   }
 
