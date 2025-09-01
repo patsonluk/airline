@@ -18,10 +18,14 @@ object AviationHubSimulation {
   def simulate(allAirports : List[Airport], linkRidershipDetails : immutable.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) : Map[Airport, Long] = {
     val airportDirectDemand = mutable.HashMap[Airport, Long]()
 
+    allAirports.foreach { airport =>
+      airportDirectDemand.put(airport, 0)
+    }
+
     DemandGenerator.computeDemand(cycle, allAirports, plainDemand = true).foreach {
       case (group, toAirport, pax) =>
-        airportDirectDemand.put(group.fromAirport, airportDirectDemand.getOrElse(group.fromAirport, 0L) + pax)
-        airportDirectDemand.put(toAirport, airportDirectDemand.getOrElse(toAirport, 0L) + pax)
+        airportDirectDemand.put(group.fromAirport, airportDirectDemand(group.fromAirport) + pax)
+        airportDirectDemand.put(toAirport, airportDirectDemand(toAirport) + pax)
     }
 
     val updatingAirports = computeUpdatingAirports(airportDirectDemand.toMap, getPaxByAirport(linkRidershipDetails))
