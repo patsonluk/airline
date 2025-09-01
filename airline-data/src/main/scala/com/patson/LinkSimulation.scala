@@ -2,6 +2,7 @@ package com.patson
 
 import com.patson.PassengerSimulation.PassengerConsumptionResult
 import com.patson.model._
+import com.patson.model.airplane.Model
 import com.patson.data._
 
 import scala.collection.mutable._
@@ -19,10 +20,19 @@ import java.util.concurrent.ThreadLocalRandom
 object LinkSimulation {
 
 
-  private val FUEL_UNIT_COST = OilPrice.DEFAULT_UNIT_COST //for easier flight monitoring, let's make it the default unit price here
+  private val FUEL_UNIT_COST = 0.0042 //for easier flight monitoring, let's make it the default unit price here
+  private val MAX_ASCEND_DISTANCE_1 = 100
+  private val MAX_ASCEND_DISTANCE_2 = 600
+  private val ASCEND_FUEL_BURN_MULTIPLIER_1 = 30
+  private val ASCEND_FUEL_BURN_MULTIPLIER_2 = 12
+
+  private val FUEL_UNIT_COST_OLD = 0.08
+
   private val CREW_UNIT_COST = 12 //for now...
   
   private[this] val VIP_COUNT = 5
+
+
 
 
 
@@ -214,6 +224,34 @@ object LinkSimulation {
     computeLinkAndLoungeConsumptionDetail(link, cycle, assignmentsToThis, List.empty)._1
   }
 
+  def computeFuelCostOld(flightLink : Link,  fuelBurn : Int, loadFactor : Double) : Int = {
+    (if (flightLink.duration <= 90) {
+      val ascendTime, descendTime = (flightLink.duration / 2)
+      (fuelBurn * 10 * ascendTime + fuelBurn * descendTime) * FUEL_UNIT_COST_OLD * (flightLink.frequency - flightLink.cancellationCount)
+    } else {
+      (fuelBurn * 10 * 45 + fuelBurn * (flightLink.duration - 45)) * FUEL_UNIT_COST_OLD * (flightLink.frequency - flightLink.cancellationCount) //first 45 minutes huge burn, then cruising at 1/10 the cost
+    } * (0.7 + 0.3 * loadFactor)).toInt //at 0 LF, 70% fuel cost
+  }
+
+  def computeFuelCost(flightLink : Link, fuelBurn : Int,  loadFactor : Double) : Int = {
+    (if (flightLink.distance <= MAX_ASCEND_DISTANCE_1 * 2) {
+      val ascendDistance, descendDistance = flightLink.distance/2
+      (fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_1 * ascendDistance + fuelBurn * descendDistance) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount)
+    } else if (flightLink.distance <= MAX_ASCEND_DISTANCE_2 * 2) {
+      val ascendDistance1 = MAX_ASCEND_DISTANCE_1
+      val ascendDistance2 = flightLink.distance / 2 - ascendDistance1
+      (fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_1 * ascendDistance1 +
+        fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_2 * ascendDistance2 +
+        fuelBurn * (flightLink.distance - ascendDistance1 - ascendDistance2)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) //ascend distance huge burn, then cruising/descend at 1/10 the cost
+    } else {
+      val ascendDistance1 = MAX_ASCEND_DISTANCE_1
+      val ascendDistance2 = MAX_ASCEND_DISTANCE_2
+      (fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_1 * ascendDistance1 +
+        fuelBurn * ASCEND_FUEL_BURN_MULTIPLIER_2 * ascendDistance2 +
+        fuelBurn * (flightLink.distance - ascendDistance1 - ascendDistance2)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) //ascend distance huge burn, then cruising/descend at 1/10 the cost
+    } * (0.7 + 0.3 * loadFactor)).toInt //at 0 LF, 70% fuel cost
+  }
+
   def computeLinkAndLoungeConsumptionDetail(link : Link, cycle : Int, allAirplaneAssignments : immutable.Map[Int, LinkAssignments], passengerCostEntries : List[PassengerCost]) : (LinkConsumptionDetails, List[LoungeConsumptionDetails]) = {
     val flightLink = link.asInstanceOf[Link]
     val loadFactor = flightLink.getTotalSoldSeats.toDouble / flightLink.getTotalCapacity
@@ -221,12 +259,7 @@ object LinkSimulation {
     //val totalFuelBurn = link //fuel burn actually similar to crew cost
     val fuelCost = flightLink.getAssignedModel() match {
       case Some(model) =>
-        (if (flightLink.duration <= 90) {
-          val ascendTime, descendTime = (flightLink.duration / 2)
-          (model.fuelBurn * 10 * ascendTime + model.fuelBurn * descendTime) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount)
-        } else {
-          (model.fuelBurn * 10 * 45 + model.fuelBurn * (flightLink.duration - 45)) * FUEL_UNIT_COST * (flightLink.frequency - flightLink.cancellationCount) //first 45 minutes huge burn, then cruising at 1/10 the cost
-        } * (0.7 + 0.3 * loadFactor)).toInt //at 0 LF, 70% fuel cost
+        computeFuelCost(link, model.fuelBurn, loadFactor)
       case None => 0
     }
 
