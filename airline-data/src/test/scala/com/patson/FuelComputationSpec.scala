@@ -16,7 +16,7 @@ class FuelComputationSpec extends WordSpecLike with Matchers {
   "Compute fuel consumption".must {
     "Compute largely the same fuel consumption for airplane for non SST planes for all trips".in {
       val distances = Array(100, 200, 500, 1000, 1500, 2000, 3000, 4000, 5000, 10000, 15000)
-      val speeds = Array(800, 900, 1000)
+      val speeds = Array(800, 900, 1000, 2000)
 
       var preDistance = 0
       var preOldCost = 0
