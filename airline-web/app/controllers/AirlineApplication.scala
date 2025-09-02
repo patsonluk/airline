@@ -933,7 +933,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
   def getLivery(airlineId : Int) = Action {
     Ok(LiveryUtil.getLivery(airlineId)).as("image/png").withHeaders(
-      CACHE_CONTROL -> "max-age=3600"
+      CACHE_CONTROL -> "max-age=604800"
     )
     //Ok(ImageUtil.generateLogo("/logo/p0.bmp", Color.BLACK.getRGB, Color.BLUE.getRGB)).as("image/png")
   }
