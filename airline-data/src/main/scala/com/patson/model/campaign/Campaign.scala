@@ -6,9 +6,11 @@ case class Campaign(airline:  Airline, principalAirport : Airport, radius : Int,
   def getAirlineBonus(targetAirport: Airport, campaignDelegateTasks : List[CampaignDelegateTask], currentCycle : Int) : AirlineBonus = {
     if (area.map(_.id).contains(targetAirport.id)) { //safety check
       var totalLoyaltyBonus = 0.0
-      campaignDelegateTasks.map(task => getAirlineBonus(task, currentCycle)).foreach {
+      var currentFactor = 1.0
+      campaignDelegateTasks.sortBy(_.startCycle).map(task => getAirlineBonus(task, currentCycle)).foreach {
         case AirlineAppeal(loyalty) =>
-          totalLoyaltyBonus += loyalty
+          totalLoyaltyBonus += loyalty * currentFactor
+          currentFactor *= 0.5 //reduced effectiveness with more delegates
       }
       AirlineBonus(BonusType.CAMPAIGN, AirlineAppeal(totalLoyaltyBonus), None)
     } else {
@@ -28,7 +30,7 @@ case class Campaign(airline:  Airline, principalAirport : Airport, radius : Int,
 object Campaign {
   val SAMPLE_POP_COVERAGE = 1000000
   val LOYALTY_BASE_BONUS = 8 //loyalty boost for 1M pop coverage for each level of delegate
-  val LOYALTY_MAX_BONUS_PER_DELEGATE = 20
+  val LOYALTY_MAX_BONUS_PER_DELEGATE = 10
   def getAirlineBonus(populationCoverage : Long, delegateTaskLevel : Int) : AirlineAppeal = {
     val popCoverageRatio = SAMPLE_POP_COVERAGE.toDouble / populationCoverage
     val loyaltyBonus = Math.min(LOYALTY_MAX_BONUS_PER_DELEGATE, LOYALTY_BASE_BONUS * popCoverageRatio * delegateTaskLevel)
