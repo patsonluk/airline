@@ -21,7 +21,6 @@ object NegotiationUtil {
   val FREE_LINK_FREQUENCY_THRESHOLD = 5
   val FREE_LINK_DIFFICULTY_THRESHOLD = 10
   val GREAT_SUCCESS_THRESHOLD = 0.95 // 5%
-  val FREE_CAPACITY = 500 //first 500 free
   val RANKED_BASE_DISCOUNT_CYCLE_THRESHOLD = 52 * 5 //how long a ranked alliance base should be built at least this many weeks before for bonus
   val BASE_SCALE_REQUIREMENT = 5 //ranked allliance base min scale for bonus
 
@@ -195,7 +194,7 @@ object NegotiationUtil {
       requirements.append(NegotiationRequirement(UPDATE_LINK, UPDATE_BASE_REQUIREMENT * flightTypeMultiplier, "Update Flights"))
     }
 
-    if (capacityDelta > 0 && newCapacity.total >= FREE_CAPACITY) {
+    if (capacityDelta > 0) {
       val capacityChangeCost = capacityDelta.toDouble / 2000
       requirements.append(NegotiationRequirement(INCREASE_CAPACITY, capacityChangeCost * flightTypeMultiplier, s"Capacity increment : $capacityDelta"))
     }
