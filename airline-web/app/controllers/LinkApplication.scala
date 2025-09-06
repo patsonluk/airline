@@ -10,7 +10,7 @@ import com.patson.model.event.Olympics
 import com.patson.model.{FlightPreferenceType, _}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache, AllianceCache, CountryCache}
 import com.patson.{DemandGenerator, Util}
-import controllers.AuthenticationObject.AuthenticatedAirline
+import controllers.AuthenticationObject.{AuthenticatedAirline, getUserAirlineFromRequest}
 
 import javax.inject.Inject
 import models.{LinkHistory, RelatedLink}
@@ -543,17 +543,27 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     Ok(Json.toJson(links))
   }
 
-  def getLinks(airlineId : Int, toAirportId : Int) = Action {
+  def getLinks(airlineId : Int, toAirportId : Int) = Action { request =>
+    val isOwner = getUserAirlineFromRequest(request, airlineId).exists(_.id == airlineId)
 
-    val links =
+
+    val links = {
       if (toAirportId == -1) {
         LinkSource.loadFlightLinksByAirlineId(airlineId)
       } else {
         LinkSource.loadFlightLinksByToAirportAndAirlineId(toAirportId, airlineId)
       }
-    Ok(Json.toJson(links)).withHeaders(
-      ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
-    )
+    }
+
+    if (isOwner) {
+      Ok(Json.toJson(links)).withHeaders(
+        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+      )
+    } else {
+      Ok(Json.toJson(links)(SimpleLinkWrites)).withHeaders(
+        ACCESS_CONTROL_ALLOW_ORIGIN -> "*"
+      )
+    }
   }
 
   def getLinksDetails(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
