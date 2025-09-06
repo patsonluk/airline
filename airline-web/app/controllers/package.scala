@@ -133,6 +133,42 @@ package object controllers {
       "first" -> JsNumber(linkClassValues(FIRST)),
       "total" -> JsNumber(linkClassValues.total)))
   }
+
+  object SimpleLinkWrites extends Writes[List[Link]] {
+    def writes(links: List[Link]): JsValue =  {
+      var result = Json.arr()
+
+      links.foreach { link =>
+        var linkJson = JsObject(List(
+          "id" -> JsNumber(link.id),
+          "fromAirportId" -> JsNumber(link.from.id),
+          "toAirportId" -> JsNumber(link.to.id),
+          "fromAirportCode" -> JsString(link.from.iata),
+          "toAirportCode" -> JsString(link.to.iata),
+          "fromAirportName" -> JsString(link.from.name),
+          "toAirportName" -> JsString(link.to.name),
+          "fromAirportCity" -> JsString(link.from.city),
+          "toAirportCity" -> JsString(link.to.city),
+          "fromCountryCode" -> JsString(link.from.countryCode),
+          "toCountryCode" -> JsString(link.to.countryCode),
+          "airlineId" -> JsNumber(link.airline.id),
+          "airlineName" -> JsString(link.airline.name),
+          "frequency" -> JsNumber(link.frequency),
+          "fromLatitude" -> JsNumber(link.from.latitude),
+          "fromLongitude" -> JsNumber(link.from.longitude),
+          "toLatitude" -> JsNumber(link.to.latitude),
+          "toLongitude" -> JsNumber(link.to.longitude),
+          "capacity" -> Json.toJson(link.capacity),
+          "distance" -> Json.toJson(link.distance),
+          "flightType" -> JsString(link.flightType.toString()),
+          "flightCode" -> JsString(LinkUtil.getFlightCode(link.airline, link.flightNumber))))
+        result = result.append(linkJson)
+      }
+      result
+    }
+  }
+
+
   object AirplaneAssignmentsRead extends Reads[Map[Airplane, Int]] {
     def reads(json : JsValue) : JsResult[Map[Airplane, Int]] = {
       JsSuccess(json.asInstanceOf[JsObject].keys.map { airplaneId =>
