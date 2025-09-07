@@ -84,14 +84,20 @@ object AirportSource {
 
     val bonusByAirlineId = mutable.Map[Int, List[AirlineBonus]]()
 
-    val busyDeletesByCampaign = DelegateSource.loadBusyDelegatesByCampaigns(campaigns)
+    val busyDeletesByCampaign: Map[Campaign, List[BusyDelegate]] = DelegateSource.loadBusyDelegatesByCampaigns(campaigns)
     campaigns.groupBy(_.airline.id).foreach {
       case(airlineId, campaigns) => {
-        val bonus = campaigns.map { campaign =>
-          campaign.getAirlineBonus(airport, busyDeletesByCampaign(campaign).map(_.assignedTask.asInstanceOf[CampaignDelegateTask]), currentCycle)
-        }.maxBy(_.bonus.loyalty) //if multiple campaigns, only use the one with the highest loyalty bonus
+        val bonuses: List[AirlineBonus] = campaigns.map { campaign =>
+          busyDeletesByCampaign.get(campaign).map { busyDelegates =>
+            campaign.getAirlineBonus(airport, busyDelegates.map(_.assignedTask.asInstanceOf[CampaignDelegateTask]), currentCycle)
+          }
+        }.filter(_.isDefined).map(_.get)
 
-        bonusByAirlineId.put(airlineId, List(bonus))
+        //if multiple campaigns, only use the one with the highest loyalty bonus
+        if (bonuses.nonEmpty) {
+          val bonus = bonuses.maxBy(_.bonus.loyalty)
+          bonusByAirlineId.put(airlineId, List(bonus))
+        }
       }
     }
     bonusByAirlineId.toMap
