@@ -1,6 +1,7 @@
 package com.patson.data
 
 import com.patson.data.Constants._
+import com.patson.model.campaign.Campaign
 import com.patson.model.{AirlineAppeal, _}
 import com.patson.util.ChampionUtil.ReputationBonus
 import com.patson.util.{AirlineCache, AirportCache, AirportChampionInfo}
@@ -79,18 +80,21 @@ object AirportSource {
   }
 
   def getCampaignBonuses(airport : Airport, currentCycle : Int): Map[Int, List[AirlineBonus]] = {
-    val campaigns = CampaignSource.loadCampaignsByAreaAirport(airport.id, true)
+    val campaigns: List[Campaign] = CampaignSource.loadCampaignsByAreaAirport(airport.id, true)
 
+    val bonusByAirlineId = mutable.Map[Int, List[AirlineBonus]]()
 
-    val bonusByAirlineId = mutable.Map[Int, ListBuffer[AirlineBonus]]()
+    val busyDeletesByCampaign = DelegateSource.loadBusyDelegatesByCampaigns(campaigns)
+    campaigns.groupBy(_.airline.id).foreach {
+      case(airlineId, campaigns) => {
+        val bonus = campaigns.map { campaign =>
+          campaign.getAirlineBonus(airport, busyDeletesByCampaign(campaign).map(_.assignedTask.asInstanceOf[CampaignDelegateTask]), currentCycle)
+        }.maxBy(_.bonus.loyalty) //if multiple campaigns, only use the one with the highest loyalty bonus
 
-    DelegateSource.loadBusyDelegatesByCampaigns(campaigns).foreach {
-      case(campaign, delegates) =>
-        val bonus = campaign.getAirlineBonus(airport, delegates.map(_.assignedTask.asInstanceOf[CampaignDelegateTask]), currentCycle)
-        bonusByAirlineId.getOrElseUpdate(campaign.airline.id, ListBuffer[AirlineBonus]()).append(bonus)
+        bonusByAirlineId.put(airlineId, List(bonus))
+      }
     }
-
-    bonusByAirlineId.view.mapValues(_.toList).toMap
+    bonusByAirlineId.toMap
   }
 
   def saveAirlineAppealBonus(airportId : Int, airlineId : Int, bonus : AirlineBonus) = {
