@@ -73,8 +73,8 @@ function updateLogTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + getAirlineSpan(log.airlineId, log.airlineName) + "</div>")
 		var $messageDiv = $("<div class='cell'>" + htmlEncode(log.message) + "</div>")
 		if (log.categoryVal == 'AIRPORT_RANK_CHANGE') {
-		    if (log.properties('delta')) {
-		        var delta = Number(log.properties('delta'))
+		    if (log.properties['delta']) {
+		        var delta = Number(log.properties['delta'])
 		        if (delta >= 1) {
 		            $messageDiv.css('color', 'var(--boost-color)')
 		        } else if (delta <= -1) {
