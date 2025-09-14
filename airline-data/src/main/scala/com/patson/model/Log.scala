@@ -20,10 +20,12 @@ object LogCategory extends Enumeration {
 
 object LogSeverity extends Enumeration {
     type LogSeverity = Value
-    val WARN, INFO, FINE = Value
+    val WARN, RED_INFO, GREEN_INFO, INFO, FINE = Value
     
     val getDescription : LogSeverity.Value => String = {
       case WARN => "Warning"
+      case RED_INFO => "Information"
+      case GREEN_INFO => "Information"
       case INFO => "Information"
       case FINE => "Fine details"
     }

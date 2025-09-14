@@ -33,7 +33,26 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
   def getLogs(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val cycle = CycleSource.loadCycle()
     implicit val logWrites = LogWrites(cycle)
-    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, cycle - Log.RETENTION_CYCLE).sortBy(_.cycle)(Ordering[Int].reverse)))
+    val logs : List[Log] = LogSource.loadLogsByAirline(request.user.id, cycle - Log.RETENTION_CYCLE).sortBy(_.cycle)(Ordering[Int].reverse).map { log =>
+      if (log.category == LogCategory.AIRPORT_RANK_CHANGE) {
+        log.properties.get("delta") match {
+          case Some(deltaStr) =>
+            val delta = deltaStr.toDouble
+            if (delta >= 1) {
+              log.copy(severity = LogSeverity.GREEN_INFO)
+            } else if (delta <= -1) {
+              log.copy(severity = LogSeverity.RED_INFO)
+            } else {
+              log
+            }
+          case None => log //old logs
+        }
+
+      } else {
+        log
+      }
+    }
+    Ok(Json.toJson(logs))
   }
 
   val MAX_NOTE_LENGTH : Int = 100
