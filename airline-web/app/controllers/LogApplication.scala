@@ -18,6 +18,7 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
       "airlineId" -> JsNumber(log.airline.id),
       "message" -> JsString(log.message),
       "category" -> JsNumber(log.category.id),
+      "categoryVal" -> JsString(log.category.toString),
       "categoryText" -> JsString(LogCategory.getDescription(log.category)),
       "severity" -> JsNumber(log.severity.id),
       "severityText" -> JsString(LogSeverity.getDescription(log.severity)),
