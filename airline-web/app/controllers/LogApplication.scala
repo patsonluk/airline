@@ -18,9 +18,9 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
       "airlineId" -> JsNumber(log.airline.id),
       "message" -> JsString(log.message),
       "category" -> JsNumber(log.category.id),
+      "categoryVal" -> JsString(log.category.toString),
       "categoryText" -> JsString(LogCategory.getDescription(log.category)),
       "severity" -> JsNumber(log.severity.id),
-      "severityVal" -> JsString(log.severity.toString),
       "severityText" -> JsString(LogSeverity.getDescription(log.severity)),
       "cycleDelta" -> JsNumber(log.cycle - currentCycle),
       "properties" -> Json.toJson(log.properties)
@@ -34,26 +34,7 @@ class LogApplication @Inject()(cc: ControllerComponents) extends AbstractControl
   def getLogs(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val cycle = CycleSource.loadCycle()
     implicit val logWrites = LogWrites(cycle)
-    val logs : List[Log] = LogSource.loadLogsByAirline(request.user.id, cycle - Log.RETENTION_CYCLE).sortBy(_.cycle)(Ordering[Int].reverse).map { log =>
-      if (log.category == LogCategory.AIRPORT_RANK_CHANGE) {
-        log.properties.get("delta") match {
-          case Some(deltaStr) =>
-            val delta = deltaStr.toDouble
-            if (delta >= 1) {
-              log.copy(severity = LogSeverity.GREEN_INFO)
-            } else if (delta <= -1) {
-              log.copy(severity = LogSeverity.RED_INFO)
-            } else {
-              log
-            }
-          case None => log //old logs
-        }
-
-      } else {
-        log
-      }
-    }
-    Ok(Json.toJson(logs))
+    Ok(Json.toJson(LogSource.loadLogsByAirline(request.user.id, cycle - Log.RETENTION_CYCLE).sortBy(_.cycle)(Ordering[Int].reverse)))
   }
 
   val MAX_NOTE_LENGTH : Int = 100

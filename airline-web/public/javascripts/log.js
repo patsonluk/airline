@@ -72,11 +72,17 @@ function updateLogTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + log.categoryText + "</div>")
 		row.append("<div class='cell'>" + getAirlineSpan(log.airlineId, log.airlineName) + "</div>")
 		var $messageDiv = $("<div class='cell'>" + htmlEncode(log.message) + "</div>")
-		if (log.severityVal == 'GREEN_INFO') {
-		    $messageDiv.css('color', 'var(--boost-color)')
-		} else if (log.severityVal == 'RED_INFO') {
-            $messageDiv.css('color', 'var(--red-highlight-color)')
-        }
+		if (log.categoryVal == 'AIRPORT_RANK_CHANGE') {
+		    if (log.properties('delta')) {
+		        var delta = Number(log.properties('delta'))
+		        if (delta >= 1) {
+		            $messageDiv.css('color', 'var(--boost-color)')
+		        } else if (delta <= -1) {
+                    $messageDiv.css('color', 'var(--red-highlight-color)')
+		        }
+		    }
+		}
+
 		row.append($messageDiv)
 		if (log.properties.airportId) {
 		    row.addClass('clickable')
