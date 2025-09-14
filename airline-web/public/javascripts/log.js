@@ -72,9 +72,9 @@ function updateLogTable(sortProperty, sortOrder) {
 		row.append("<div class='cell'>" + log.categoryText + "</div>")
 		row.append("<div class='cell'>" + getAirlineSpan(log.airlineId, log.airlineName) + "</div>")
 		var $messageDiv = $("<div class='cell'>" + htmlEncode(log.message) + "</div>")
-		if (log.severity == 'GREEN_INFO') {
+		if (log.severityVal == 'GREEN_INFO') {
 		    $messageDiv.css('color', 'var(--boost-color)')
-		} else if (log.severity == 'RED_INFO') {
+		} else if (log.severityVal == 'RED_INFO') {
             $messageDiv.css('color', 'var(--red-highlight-color)')
         }
 		row.append($messageDiv)
