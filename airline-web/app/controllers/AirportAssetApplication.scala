@@ -302,6 +302,7 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
                     case None => //OK
                       val newAsset = asset.levelDown(name)
                       AirportAssetSource.updateAirportAsset(newAsset)
+                      AirportAssetSource.updateAirportAssetLevel(newAsset.id, newAsset.airport.id, newAsset.level)
                       Ok(Json.toJson(newAsset)(OwnedAirportAssetWrites))
                   }
               }
@@ -322,17 +323,25 @@ class AirportAssetApplication @Inject()(cc: ControllerComponents) extends Abstra
           case None =>
 
             val name = request.body.asInstanceOf[AnyContentAsJson].json.asInstanceOf[JsObject].value("name").as[String]
+            var isUpgrade = false
             getNameRejection(name) match {
               case Some(nameRejection) =>  Ok(Json.obj("nameRejection" -> nameRejection))
               case None => //OK
                 val newAsset = {
                   asset.airline match {
-                    case Some(owner) => asset.levelUp(name)
+                    case Some(owner) => {
+                      isUpgrade = true
+                      asset.levelUp(name)
+                    }
                     case None => AirportAsset.buildNewAsset(airline, asset.blueprint, name)
                   }
                 }
 
                 AirportAssetSource.updateAirportAsset(newAsset)
+                if (isUpgrade) {
+                  AirportAssetSource.updateAirportAssetLevel(newAsset.id, newAsset.airport.id, newAsset.level)
+                }
+
                 AirlineSource.adjustAirlineBalance(airline.id, -1 * newAsset.cost)
                 AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airline.id, CashFlowType.ASSET_TRANSACTION, -1 * newAsset.cost))
                 Ok(Json.toJson(newAsset)(OwnedAirportAssetWrites))

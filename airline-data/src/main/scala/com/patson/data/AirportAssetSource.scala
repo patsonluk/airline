@@ -253,7 +253,11 @@ object AirportAssetSource {
       connection.close()
     }
   }
-  
+
+  /**
+   * Insert new or update existing asset. Do NOT update level for existing asset due to race condition concern
+   * @param asset
+   */
   def updateAirportAsset(asset : AirportAsset) = {
     val connection = Meta.getConnection()
     try {
@@ -308,6 +312,24 @@ object AirportAssetSource {
       }
 
       AirportCache.invalidateAirport(asset.blueprint.airport.id)
+    } finally {
+      connection.close()
+    }
+  }
+
+  def updateAirportAssetLevel(assetId : Int, airportId: Int, level : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"UPDATE $AIRPORT_ASSET_TABLE SET level = ? WHERE id = ?")
+
+
+      preparedStatement.setInt(1, level)
+      preparedStatement.setInt(2, assetId)
+
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+
+      AirportCache.invalidateAirport(airportId)
     } finally {
       connection.close()
     }
