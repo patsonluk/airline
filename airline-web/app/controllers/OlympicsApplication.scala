@@ -47,10 +47,25 @@ class OlympicsApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     }
   }
 
-  def getAll() = Action {
+  def getAll(airlineId : Int) =  AuthenticatedAirline(airlineId) { request =>
     val allOlympics : List[Olympics] = EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).map(_.asInstanceOf[Olympics])
 
-    Ok(Json.toJson(allOlympics))
+    var result = Json.arr()
+    val currentCycle = CycleSource.loadCycle()
+    allOlympics.foreach { event =>
+      var olympicsJson: JsObject = Json.toJson(event).asInstanceOf[JsObject]
+      val eventId = event.id
+      val stats: List[(Int, BigDecimal)] = EventSource.loadOlympicsAirlineStats(eventId, airlineId)
+      val totalScore = stats.map(_._2).sum
+      EventSource.loadOlympicsAirlineGoal(eventId, airlineId).foreach { goal =>
+        if (totalScore >= goal) {
+          olympicsJson = olympicsJson + ("accomplished" -> JsBoolean(true))
+        }
+      }
+      result = result.append(olympicsJson)
+    }
+
+    Ok(result)
   }
 
   def getOlympicsDetails(eventId : Int) = Action {
