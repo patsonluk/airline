@@ -59,9 +59,9 @@ object AirplaneModelSimulation {
       case LIGHT => 300
       case SMALL => 300
       case REGIONAL => 500
-      case MEDIUM => 500
-      case LARGE => 500
-      case X_LARGE => 500
+      case MEDIUM => 1000
+      case LARGE => 1000
+      case X_LARGE => 750
       case JUMBO => 250
       case SUPERSONIC => 100
     }
