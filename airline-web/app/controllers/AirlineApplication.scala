@@ -175,6 +175,13 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
          ("allianceRole" -> JsString(allianceMembership.role.toString)) +
          ("isAllianceAdmin" -> JsBoolean(AllianceRole.isAdmin(allianceMembership.role)))
      }
+
+    //get oil price, not really part of airline but easy to hitchhike to reduce roundtrips
+    val currentCycle = CycleSource.loadCycle()
+    OilSource.loadOilPricesFromCycle(currentCycle - 1).sortBy(_.cycle).lastOption.foreach {
+      oilPrice => airlineJson = airlineJson + ("oilPrice" -> JsNumber(oilPrice.price))
+    }
+
      
      if (extendedInfo) {
        val links = LinkSource.loadFlightLinksByAirlineId(airlineId)

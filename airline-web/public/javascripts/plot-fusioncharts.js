@@ -1204,10 +1204,18 @@ function plotOilPriceChart(oilPrices, container) {
 	                {
 	                    "startvalue": average,
 	                    "color": "#A1D490",
-	                    "displayvalue": "Average",
+	                    "displayvalue": "Short-term Average",
 	                    "valueOnRight": "1",
 	                    "thickness": "2"
-	                }
+	                },
+	                {
+                        "startvalue": 70,
+                        "color": "#F5A623",
+                        "displayvalue": "Long-term Average",
+                        "valueOnRight": "1",
+                        "thickness": "2"
+                    }
+
 	            ]
 	        }]
 	    }

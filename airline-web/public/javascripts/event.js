@@ -9,7 +9,7 @@ function showEventCanvas() {
 }
 
 function loadAllOlympics() {
-	var url = "event/olympics"
+	var url = "event/olympics?airlineId=" + activeAirline.id
 	
 	loadedOlympicsEvents = []
 
@@ -48,7 +48,12 @@ function updateOlympicTable(sortProperty, sortOrder) {
             row.append("<div class='cell'>(Voting)</div>")
         }
 		row.append("<div class='cell'>" + event.remainingDuration + " week(s)</div>")
-		row.append("<div class='cell'>" + event.status + "</div>")
+        var $statusDiv = $("<div class='cell'>" + event.status + "</div>")
+        if (event.accomplished) {
+            $statusDiv.append("<img src='assets/images/icons/12px/tick.png' style='vertical-align: middle; margin-left: 5px;' title='Goal accomplished'/>")
+        }
+
+		row.append($statusDiv)
 		row.data('event', event)
 
 		row.click(function() {

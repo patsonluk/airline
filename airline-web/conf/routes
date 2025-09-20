@@ -217,7 +217,7 @@ GET		 /logos/templates 				  controllers.LogoApplication.getTemplates()
 GET		 /logos/templates/:id			  controllers.LogoApplication.getTemplate(id : Int)
 GET		 /logos/preview					  controllers.LogoApplication.getPreview(templateIndex : Int, color1 : String, color2 : String)
 
-GET     /event/olympics             controllers.OlympicsApplication.getAll()
+GET     /event/olympics             controllers.OlympicsApplication.getAll(airlineId: Int)
 GET     /event/olympics/:eventId             controllers.OlympicsApplication.getOlympicsDetails(eventId : Int)
 GET		/event/olympics/:eventId/airlines/:airlineId/votes  controllers.OlympicsApplication.getOlympicsAirlineVotes(airlineId : Int, eventId : Int)
 PUT		/event/olympics/:eventId/airlines/:airlineId/votes  controllers.OlympicsApplication.putOlympicsAirlineVotes(airlineId : Int, eventId : Int)
