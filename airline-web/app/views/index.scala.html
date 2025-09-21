@@ -234,11 +234,15 @@
 				</span>
   			</span>
   		</div>
-		<div style="max-width: 35%;" class="mobileOnly">
+		<div style="max-width: 50%;" class="mobileOnly">
 			<div class="topBarDetails">
 				<span class="currentAirline label" style="margin-left: 0px 5px; font-weight: bold"></span>
 				<span>$<span class="balance label"></span></span>
-				<span style="display: inline-block;" class="delegatesShortcut clickable" onclick="toggleDelegateStatusModal()">
+                <span style="display: inline-block;" class="clickable" data-link="oil" onclick="showOilCanvas()">
+                    <img src='@routes.Assets.versioned("images/icons/oil-barrel.png")' style="vertical-align: middle;">
+                    <span class="oilPrice label"></span>
+                </span>
+                <span style="display: inline-block;" class="delegatesShortcut clickable" onclick="toggleDelegateStatusModal()">
 			</div>
 		</div>
   		<div style="display: flex; align-items: center; flex-wrap: wrap;">
