@@ -2055,9 +2055,6 @@ function showLinkEventHistory(linkId) {
 
 
 
-
-R
-
     var url = "airlines/" + activeAirline.id + "/link-related-event-history/" + linkId + "?cycleCount=" + linkConsumptions.length
     $.ajax({
     		type: 'GET',
@@ -3156,4 +3153,5 @@ function addAirlineTooltip($target, airlineId, slogan, airlineName) {
         $liveryImg.show()
     })
 }
+
 
