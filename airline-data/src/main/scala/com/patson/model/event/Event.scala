@@ -46,6 +46,7 @@ object OlympicsStatus extends Enumeration {
 
 object Olympics {
   val WEEKS_PER_YEAR = 52
+  val TOTAL_DURATION : Int = 4 * WEEKS_PER_YEAR
   val GAMES_DURATION = 4
   def getCandidates(eventId : Int) : List[Airport] = {
     EventSource.loadOlympicsCandidates(eventId)
@@ -139,6 +140,85 @@ object Olympics {
       }
   }
   val demandMultiplierSum = (0 until WEEKS_PER_YEAR).map(getDemandMultiplier(_)).sum
+
+  val PASSENGER_AWARD_CLAIM_DURATION = 4 * 52 //4 * 52 weeks
+
+  /**
+   * Left is the message why it is NOT unclaimed, Right is the duration left to claim
+   */
+  def hasUnclaimedVoteAward(eventId : Int, airlineId : Int, currentCycle : Int) : Either[String, Int] = {
+    EventSource.loadEventById(eventId) match {
+      case Some(olympics : Olympics) =>
+        EventSource.loadPickedRewardOption(eventId, airlineId, RewardCategory.OLYMPICS_VOTE) match {
+          case Some(existingReward) => Left("Reward has already been claimed")
+          case None =>
+            if (olympics.isActive(currentCycle)) {
+              if (isOlympicsVoteMatch(airlineId, eventId)) {
+                Right(olympics.startCycle + Olympics.TOTAL_DURATION - currentCycle) //has till the end of this olympics to claim
+              } else {
+                Left("vote does not match")
+              }
+            } else {
+              Left("no longer active")
+            }
+        }
+      case _ =>
+        Left("event not found")
+
+    }
+  }
+
+  def isOlympicsVoteMatch(airlineId: Int, eventId: Int): Boolean = {
+    EventSource.loadOlympicsAirlineVotes(eventId, airlineId) match {
+      case Some(vote) =>
+        Olympics.getSelectedAirport(eventId) match {
+          case Some(selectedAirport) =>
+            if (!vote.voteList.isEmpty) {
+              //vote.voteList(0).id == selectedAirport.id
+              true //as far as a vote is casted it's considered okay now
+            } else {
+              false
+            }
+          case None => false
+        }
+      case None => false
+    }
+  }
+
+  /**
+   * Left is the message why it is NOT unclaimed, Right is the duration left to claim
+   */
+  def hasUnclaimedPassengerAward(eventId : Int, airlineId : Int, currentCycle : Int) : Either[String, Int] = {
+    EventSource.loadEventById(eventId) match {
+      case Some(olympics : Olympics) =>
+        val stats: List[(Int, BigDecimal)] = EventSource.loadOlympicsAirlineStats(eventId, airlineId)
+        val totalScore = stats.map(_._2).sum
+        EventSource.loadOlympicsAirlineGoal(eventId, airlineId) match {
+          case Some(goal) =>
+            if (totalScore >= goal) {
+              val expiryCycle = olympics.startCycle + olympics.duration + PASSENGER_AWARD_CLAIM_DURATION
+              if (expiryCycle < currentCycle) {
+                Left("Cannot redeem reward, it has already been expired")
+              } else if (olympics.isActive(currentCycle)) {
+                Left("Cannot yet claim reward, olympics still active")
+              } else {
+                EventSource.loadPickedRewardOption(eventId, airlineId, RewardCategory.OLYMPICS_PASSENGER) match {
+                  case Some(pickedReward) =>
+                    Left(s"Already picked reward $pickedReward")
+                  case None =>
+                    Right(expiryCycle - currentCycle)
+                }
+              }
+            } else {
+              Left(s"Did not reach the goal")
+            }
+          case _ =>
+            Left(s"No goal set for airline $airlineId")
+        }
+      case _ => Left("event not found")
+    }
+
+  }
 }
 
 /**
