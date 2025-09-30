@@ -588,6 +588,7 @@ function pickEventReward(eventId, categoryId, optionId) {
             closeEventRewardModal()
             updateAirlineInfo(activeAirline.id)
             loadOlympicsDetails($('#olympicsTable .table-row.selected'))
+            checkPendingActions()
         },
         error: function(jqXHR, textStatus, errorThrown) {
                 console.log(JSON.stringify(jqXHR));

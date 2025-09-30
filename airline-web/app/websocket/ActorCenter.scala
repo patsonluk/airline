@@ -9,7 +9,7 @@ import com.patson.util.{AirlineCache, AirplaneModelDiscountCache, AirplaneOwners
 import com.typesafe.config.ConfigFactory
 import controllers.{AirlineTutorial, AirportUtil, GooglePhotoUtil, PromptUtil, SearchUtil}
 import models.PendingAction
-import play.api.libs.json.{JsNumber, Json}
+import play.api.libs.json.{JsNumber, JsObject, Json, OWrites}
 import websocket.chat.TriggerPing
 
 import java.util.{Date, Timer, TimerTask}
@@ -73,7 +73,7 @@ sealed class LocalActor(out : ActorRef, airlineId : Int) extends Actor {
       }
     case AirlinePendingActions(airline, pendingActions : List[PendingAction]) =>
       //println(s"$self get pending actions")
-      out ! Json.obj("messageType" -> "pendingAction", "actions" -> Json.toJson(pendingActions.map(_.category.toString)))
+      out ! Json.obj("messageType" -> "pendingAction", "actions" -> Json.toJson(pendingActions)(OWrites.list(PendingActionWrites)))
     case any =>
       println("received " + any + " not handled")
   }
@@ -283,3 +283,13 @@ object ActorCenter {
 
 case class RemoteActor(remoteActor : ActorSelection)
 case class Resubscribe(remoteActor : ActorSelection)
+
+
+object PendingActionWrites extends OWrites[PendingAction] {
+  override def writes(pendingAction: PendingAction): JsObject = {
+    Json.obj(
+      "category" -> pendingAction.category.toString,
+      "params" -> pendingAction.params,
+    )
+  }
+}
