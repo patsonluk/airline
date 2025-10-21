@@ -517,11 +517,15 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
                if (headquarter.airport.id != airportId) {
                  BadRequest("Not allowed to change headquarter for now")
                } else {
-                 val updateBase = headquarter.copy(scale = inputBase.scale)
-                 AirlineSource.saveAirlineBase(updateBase)
-                 AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
-                 AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
-                 Created(Json.toJson(updateBase))
+                 if (headquarter.scale + 1 == inputBase.scale) { //only allow one level at a time now
+                   val updateBase = headquarter.copy(scale = inputBase.scale)
+                   AirlineSource.saveAirlineBase(updateBase)
+                   AirlineSource.adjustAirlineBalance(request.user.id, -1 * cost)
+                   AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airlineId, CashFlowType.BASE_CONSTRUCTION, -1 * cost))
+                   Created(Json.toJson(updateBase))
+                 } else {
+                   BadRequest(s"Cannot upgrade existing HQ $headquarter to $inputBase")
+                 }
                }
                case None => //ok to add then
                  AirportCache.getAirport(inputBase.airport.id, true).fold {
