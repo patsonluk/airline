@@ -1,12 +1,29 @@
 function handlePendingActions(pendingActions) {
     $('.left-tab .tab-icon .pendingAction').remove()
+
+    //for now only display the first one
+
+    let eventMarked = false
     $.each(pendingActions, function(index, pendingAction) {
-        if (pendingAction === 'OLYMPICS_VOTE') {
-            var $pendingActionDiv = $('<div style="position: absolute; right: -5px; bottom: -5px; height: 20px; width: 20px;" class="pendingAction"></div>').appendTo($('.left-tab .tab-icon[data-link="event"]'))
-            var $icon = $('<img src="assets/images/icons/exclamation.png">')
-            $icon.attr('title', "Olympics Voting Active")
-            $pendingActionDiv.append($icon)
-        } else if (pendingAction === 'ALLIANCE_PENDING_APPLICATION') {
+        const category = pendingAction.category
+        if (category === 'OLYMPICS_VOTE' || category === 'OLYMPICS_PAX_REWARD' || category === 'OLYMPICS_VOTE_REWARD') {
+            if (!eventMarked) { //only process the first one for now (highest precedence)
+                const $pendingActionDiv = $('<div style="position: absolute; right: -5px; bottom: -5px; height: 20px; width: 20px;" class="pendingAction"></div>').appendTo($('.left-tab .tab-icon[data-link="event"]'))
+                let $icon
+                if (category === 'OLYMPICS_VOTE') {
+                    $icon = $('<img src="assets/images/icons/exclamation.png">')
+                    $icon.attr('title', "Olympics Voting Active")
+                } else if (category === 'OLYMPICS_PAX_REWARD') {
+                    $icon = $('<img src="assets/images/icons/present.png">')
+                    $icon.attr('title', "Unclaimed Olympics passenger reward (" + pendingAction.params['duration'] + ' week(s) left)' )
+                } else if (category === 'OLYMPICS_VOTE_REWARD') {
+                    $icon = $('<img src="assets/images/icons/present.png">')
+                    $icon.attr('title', "Unclaimed Olympics vote reward (" + pendingAction.params['duration'] + ' week(s) left)' )
+                }
+                $pendingActionDiv.append($icon)
+                eventMarked = true
+            }
+        } else if (category === 'ALLIANCE_PENDING_APPLICATION') {
             var $pendingActionDiv = $('<div style="position: absolute; right: -5px; bottom: -5px; height: 20px; width: 20px;" class="pendingAction"></div>').appendTo($('.left-tab .tab-icon[data-link="alliance"]'))
             var $icon = $('<img src="assets/images/icons/exclamation.png">')
             $icon.attr('title', "Pending Application")

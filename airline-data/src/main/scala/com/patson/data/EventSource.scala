@@ -572,6 +572,27 @@ object EventSource {
     }
   }
 
+  def loadLatestOlympics(count : Int): List[Olympics] =  {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT * FROM $EVENT_TABLE WHERE event_type = ${EventType.OLYMPICS.id} ORDER BY start_cycle DESC LIMIT $count" )
+
+      val resultSet = preparedStatement.executeQuery()
+      val events = ListBuffer[Olympics]()
+
+      while (resultSet.next()) {
+        events.append(Olympics(resultSet.getInt("start_cycle"), resultSet.getInt("duration"), resultSet.getInt("id")))
+      }
+
+      resultSet.close()
+      preparedStatement.close()
+
+      events.toList
+    } finally {
+      connection.close()
+    }
+  }
+
   def loadEventById(eventId : Int): Option[Event] =  {
     val connection = Meta.getConnection()
     try {

@@ -10,32 +10,42 @@ import scala.collection.mutable.ListBuffer
 
 object PendingActionUtil {
   def getPendingActions(airline : Airline) : List[PendingAction] = {
-    val result = ListBuffer[PendingAction]()
+    val result = ListBuffer[PendingAction]() //sorted by precedence, first one has higher precedence for now
     result.appendAll(getOlympicsPendingActions(airline))
     result.appendAll(getAlliancePendingActions(airline))
     result.toList
   }
 
-  private def getOlympicsPendingActions(airline : Airline) = {
-    if (Olympics.getVoteWeight(airline) > 0) {
-      EventSource.loadEvents().filter(_.eventType == EventType.OLYMPICS).map(_.asInstanceOf[Olympics]).sortBy(_.startCycle).lastOption match {
-        case Some(latestOlympics) =>
-          val currentCycle = CycleSource.loadCycle()
-          if (latestOlympics.status(currentCycle) == OlympicsStatus.VOTING) {
-            if (EventSource.loadOlympicsAirlineVotes(latestOlympics.id, airline.id).isEmpty) {
-              List(PendingAction(airline, PendingActionCategory.OLYMPICS_VOTE))
-            } else {
-              List.empty
-            }
-          } else {
-            List.empty
-          }
-        case None => List.empty
-      }
-    } else {
-      List.empty
-    }
+  private def getOlympicsPendingActions(airline : Airline): List[PendingAction] = {
+    //check if current airline has pending pax reward
+    val currentCycle = CycleSource.loadCycle()
+    val pendingActions = ListBuffer[PendingAction]()
 
+    val previousOlympics: List[Olympics] = EventSource.loadLatestOlympics(2)
+    previousOlympics.headOption.foreach { latestOlympics =>
+      //pax reward has the highest precedence
+      previousOlympics.lift(1).foreach { completedOlympics =>
+        Olympics.hasUnclaimedPassengerAward(completedOlympics.id, airline.id, currentCycle) match {
+          case Right(duration) => pendingActions.append(PendingAction(airline, PendingActionCategory.OLYMPICS_PAX_REWARD, Map("duration" -> duration.toString)))
+          case _ =>
+        }
+      }
+
+      Olympics.hasUnclaimedVoteAward(latestOlympics.id, airline.id, currentCycle) match {
+        case Right(duration) => pendingActions.append(PendingAction(airline, PendingActionCategory.OLYMPICS_VOTE_REWARD, Map("duration" -> duration.toString)))
+        case _ =>
+      }
+
+      //check if current airline has voted
+      if (Olympics.getVoteWeight(airline) > 0) {
+        if (latestOlympics.status(currentCycle) == OlympicsStatus.VOTING) {
+          if (EventSource.loadOlympicsAirlineVotes(latestOlympics.id, airline.id).isEmpty) {
+            pendingActions.append(PendingAction(airline, PendingActionCategory.OLYMPICS_VOTE))
+          }
+        }
+      }
+    }
+    pendingActions.toList
   }
 
   private def getAlliancePendingActions(airline : Airline) = {
