@@ -535,12 +535,22 @@ public class SearchUtil {
 		}
 	}
 
-
+	// This method has been updated to move the Elasticsearch connection string to environment variable ES_HOST
+	// The format of ES_HOST is hostname:port, e.g., localhost:9200
+	// If ES_HOST is not set, it defaults to localhost:9200
 	private static RestHighLevelClient getClient() {
+		String esHost = System.getenv("ES_HOST");
+		if (esHost == null || esHost.isEmpty()) {
+			esHost = "localhost:9200";
+		}
+
+		String[] hostParts = esHost.split(":");
+		String hostname = hostParts[0];
+		int port = hostParts.length > 1 ? Integer.parseInt(hostParts[1]) : 9200;
+		
 		RestHighLevelClient client = new RestHighLevelClient(
 				RestClient.builder(
-						new HttpHost("localhost", 9200, "http"),
-						new HttpHost("localhost", 9201, "http")));
+						new HttpHost(hostname, port, "http")));
 		return client;
 	}
 }

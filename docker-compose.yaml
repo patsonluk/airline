@@ -1,0 +1,84 @@
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: airline_v2_1
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_USER: sa
+      MYSQL_PASSWORD: admin
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "db" ]
+      timeout: 20s
+      retries: 10
+
+  airline-init:
+    build: .
+    command: init
+    environment:
+      - DB_HOST=db:3306
+      - DB_USER=sa
+      - DB_PASSWORD=admin
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - init
+
+  airline-sim:
+    build: .
+    command: sim
+    hostname: airline-sim
+    environment:
+      - DB_HOST=db:3306
+      - DB_USER=sa
+      - DB_PASSWORD=admin
+      - SIM_HOST=airline-sim
+      - ES_HOST=elasticsearch:9200
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "2552:2552"
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  airline-web:
+    build: .
+    command: web
+    environment:
+      - DB_HOST=db:3306
+      - DB_USER=sa
+      - DB_PASSWORD=admin
+      - SIM_HOST=airline-sim
+      - ES_HOST=elasticsearch:9200
+    depends_on:
+      airline-sim:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "9000:9000"
+      - "10999:10999"
+
+volumes:
+  db_data:
+  es_data:
