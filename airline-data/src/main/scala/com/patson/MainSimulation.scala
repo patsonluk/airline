@@ -9,13 +9,15 @@ import com.patson.data._
 import com.patson.model.Airport
 import com.patson.stream.{CycleCompleted, CycleStart, DirectDemandInfo, SimulationEventStream}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirplaneOwnershipInfo, AirportCache}
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 object MainSimulation extends App {
-  val CYCLE_DURATION : Int = 30 * 60
+  private val config = ConfigFactory.load()
+  val CYCLE_DURATION : Int = config.getInt("simulation.cycleDurationSeconds")
   var currentWeek: Int = 0
 
 //  implicit val actorSystem = ActorSystem("rabbit-akka-stream")

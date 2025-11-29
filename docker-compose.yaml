@@ -41,6 +41,7 @@ services:
       - METRICS_DB_HOST=metrics-db:8181
       - METRICS_DB_NAME=airlinemetrics
       - METRICS_DB_TOKEN=apiv3_3S3M8MSs6gPREE1zt65lrJpX6fsYZXvRFBMVaEpokGh2bRQ_p36m_tJrm5Pw745tQg-dfmzhAkzdixAfHmMEVA
+      - CYCLE_DURATION_SECONDS=60
     depends_on:
       db:
         condition: service_healthy
