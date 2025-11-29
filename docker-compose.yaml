@@ -61,6 +61,18 @@ services:
       timeout: 10s
       retries: 5
 
+  metrics-db:
+    image: influxdb:3.7-core
+    ports:
+      - "8086:8086"
+    volumes:
+      - metrics_db_data:/var/lib/influxdb
+    healthcheck:
+      test: [ "CMD", "influx", "ping", "-host", "localhost" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   airline-web:
     build: .
     command: web
@@ -82,3 +94,4 @@ services:
 volumes:
   db_data:
   es_data:
+  metrics_db_data:
