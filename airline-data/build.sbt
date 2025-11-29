@@ -17,7 +17,8 @@ libraryDependencies ++= Seq(
   "org.apache.pekko" %% "pekko-cluster" % "1.0.3",
   "com.typesafe.play"          %%  "play-json" % "2.7.4",
   "com.mchange" % "c3p0" % "0.9.5.5",
-  "com.google.guava" % "guava" % "22.0")
+  "com.google.guava" % "guava" % "22.0",
+  "com.influxdb" % "influxdb-client-java" % "6.10.0")
 
   
   

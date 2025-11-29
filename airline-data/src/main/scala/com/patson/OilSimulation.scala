@@ -2,6 +2,7 @@ package com.patson
 
 import com.patson.data._
 import com.patson.model.oil.OilPrice
+import com.patson.util.MetricsExport
 
 object OilSimulation {
   def simulate(cycle: Int) : Unit = {
@@ -9,6 +10,7 @@ object OilSimulation {
     val prices = OilSource.loadOilPricesFromCycle(fromCycle).sortBy(_.cycle).map(_.price)
     val nextPrice = getNextPrice(prices)
     OilSource.saveOilPrice(OilPrice(nextPrice, cycle))
+    MetricsExport.write("oil_price", Map.empty, Map("price" -> nextPrice, "cycle" -> cycle))
     //purge 200 turns ago
     OilSource.deleteOilPricesUpToCycle(cycle - 200)
     
