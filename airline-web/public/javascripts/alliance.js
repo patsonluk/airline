@@ -742,66 +742,133 @@ function showAllianceMap() {
 	$.ajax({
 		type: 'GET',
 		url: "alliances/" + selectedAlliance.id + "/details",
-	    contentType: 'application/json; charset=utf-8',
-	    dataType: 'json',
-	    success: function(result) {
-				$.each(result.links, function(index, link) {
-					alliancePaths.push(drawAllianceLink(link))
+		contentType: 'application/json; charset=utf-8',
+		dataType: 'json',
+		success: function(result) {
+			//group links by endpoints
+			var groupedLinks = {};
+			$.each(result.links, function(index, link) {
+				var key = [link.fromAirportId, link.toAirportId].sort().join('-');
+
+				if (!groupedLinks[key]) {
+					groupedLinks[key] = {
+						links: [],
+						totalCapacity: 0,
+						fromLatitude: link.fromLatitude,
+						fromLongitude: link.fromLongitude,
+						toLatitude: link.toLatitude,
+						toLongitude: link.toLongitude,
+						fromAirportCity: link.fromAirportCity,
+						fromAirportCode: link.fromAirportCode,
+						fromCountryCode: link.fromCountryCode,
+						toAirportCity: link.toAirportCity,
+						toAirportCode: link.toAirportCode,
+						toCountryCode: link.toCountryCode
+					};
+				}
+				groupedLinks[key].links.push(link);
+				groupedLinks[key].totalCapacity += link.capacity.total;
+			});
+
+			$.each(groupedLinks, function(key, groupedLink) {
+				alliancePaths.push(drawAllianceLink(groupedLink));
+			});
+
+			//consolidate information for airports with multiple alliance bases
+			var rawAllianceMembersBases = []
+			$.each(result.members, function(index, airline) {
+				if (airline.role !== "APPLICANT") {
+					$.merge(rawAllianceMembersBases, airline.bases)
+				}
+			})
+
+			var basesByAirportId = {}
+			$.each(rawAllianceMembersBases, function(index, base) {
+				if (!basesByAirportId[base.airportId]) {
+					basesByAirportId[base.airportId] = []
+				}
+				basesByAirportId[base.airportId].push(base)
+			})
+
+			var allianceBasesForMap = []
+			$.each(basesByAirportId, function(airportId, basesAtThisAirport) {
+				if (basesAtThisAirport.length === 1) {
+					allianceBasesForMap.push(basesAtThisAirport[0])
+				} else if (basesAtThisAirport.length === 2) {
+					var base1 = basesAtThisAirport[0]
+					var base2 = basesAtThisAirport[1]
+					var primaryBase = base1.headquarter ? base1 : base2
+					var partnerBase = base1.headquarter ? base2 : base1
+					primaryBase.alliancePartnerBaseInfo = partnerBase
+					allianceBasesForMap.push(primaryBase)
+				}
+			})
+
+			var airportMarkers = updateAirportBaseMarkers(allianceBasesForMap, alliancePaths)
+
+			$.each(airportMarkers, function(key, marker) {
+				marker.addListener('mouseover', function(event) {
+					closeAlliancePopups()
+					var baseInfo = marker.baseInfo
+					var partnerInfo = baseInfo.alliancePartnerBaseInfo
+
+					var $popup = $("#allianceBasePopup").clone()
+
+					$popup.find(".city").html(getCountryFlagImg(baseInfo.countryCode) + " " + baseInfo.city)
+					$popup.find(".airportName").text(baseInfo.airportName)
+					$popup.find(".iata").html(baseInfo.airportCode)
+					$popup.find(".airlineName").html(getAirlineLogoImg(baseInfo.airlineId) + " " + baseInfo.airlineName + (baseInfo.headquarter ? " (HQ)" : ""))
+					$popup.find(".baseScale").html(baseInfo.scale)
+
+					if (partnerInfo) {
+						var $table = $popup.find(".table")
+						$table.append("<hr style='margin: 8px 0; border: 0; border-top: 1px solid #ccc;'>")
+
+						var $airlineRowTemplate = $popup.find(".airlineName").closest(".table-row")
+						var $partnerAirlineRow = $airlineRowTemplate.clone()
+						$partnerAirlineRow.find(".airlineName").html(getAirlineLogoImg(partnerInfo.airlineId) + " " + partnerInfo.airlineName + (partnerInfo.headquarter ? " (HQ)" : ""))
+						$table.append($partnerAirlineRow)
+
+						var $scaleRowTemplate = $popup.find(".baseScale").closest(".table-row")
+						var $partnerScaleRow = $scaleRowTemplate.clone()
+						$partnerScaleRow.find(".baseScale").html(partnerInfo.scale)
+						$table.append($partnerScaleRow)
+					}
+
+					$popup.show()
+
+					var infoWindow = new google.maps.InfoWindow({ maxWidth : 1200 });
+					infoWindow.setContent($popup[0])
+					infoWindow.open(map, marker);
+					map.allianceBasePopup = infoWindow
 				})
-				var allianceBases = []
-				 $.each(result.members, function(index, airline) {
-				    if (airline.role != "APPLICANT") {
-				        $.merge(allianceBases, airline.bases)
-                    }
-                })
-
-				var airportMarkers = updateAirportBaseMarkers(allianceBases, alliancePaths)
-				//now add extra listener for alliance airports
-				$.each(airportMarkers, function(key, marker) {
-                        marker.addListener('mouseover', function(event) {
-                            closeAlliancePopups()
-                            var baseInfo = marker.baseInfo
-                            $("#allianceBasePopup .city").html(getCountryFlagImg(baseInfo.countryCode) + "&nbsp;" + baseInfo.city)
-                            $("#allianceBasePopup .airportName").text(baseInfo.airportName)
-                            $("#allianceBasePopup .iata").html(baseInfo.airportCode)
-                            $("#allianceBasePopup .airlineName").html(getAirlineLogoImg(baseInfo.airlineId) + "&nbsp;" + baseInfo.airlineName)
-                            $("#allianceBasePopup .baseScale").html(baseInfo.scale)
-
-                            var infoWindow = new google.maps.InfoWindow({ maxWidth : 1200});
-                            var popup = $("#allianceBasePopup").clone()
-                            popup.show()
-                            infoWindow.setContent(popup[0])
-                            //infoWindow.setPosition(event.latLng);
-                            infoWindow.open(map, marker);
-                            map.allianceBasePopup = infoWindow
-                        })
-                        marker.addListener('mouseout', function(event) {
-                            closeAlliancePopups()
-                        })
-                    })
+				marker.addListener('mouseout', function(event) {
+					closeAlliancePopups()
+				})
+			})
 
 
-				switchMap();
-				$("#worldMapCanvas").data("initCallback", function() { //if go back to world map, re-init the map
-				        map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
-				        clearAllPaths()
-                        updateAirportMarkers(activeAirline)
-                        updateLinksInfo() //redraw all flight paths
-                        closeAlliancePopups()
-                })
+			switchMap();
+			$("#worldMapCanvas").data("initCallback", function() { //if go back to world map, re-init the map
+				map.controls[google.maps.ControlPosition.TOP_CENTER].clear()
+				clearAllPaths()
+				updateAirportMarkers(activeAirline)
+				updateLinksInfo() //redraw all flight paths
+				closeAlliancePopups()
+			})
 
-				window.setTimeout(addExitButton , 1000); //delay otherwise it doesn't push to center
-	    },
-        error: function(jqXHR, textStatus, errorThrown) {
-	            console.log(JSON.stringify(jqXHR));
-	            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-	    },
-	    beforeSend: function() {
-            $('body .loadingSpinner').show()
-        },
-        complete: function(){
-            $('body .loadingSpinner').hide()
-        }
+			window.setTimeout(addExitButton , 1000); //delay otherwise it doesn't push to center
+		},
+		error: function(jqXHR, textStatus, errorThrown) {
+			console.log(JSON.stringify(jqXHR));
+			console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+		},
+		beforeSend: function() {
+			$('body .loadingSpinner').show()
+		},
+		complete: function(){
+			$('body .loadingSpinner').hide()
+		}
 	});
 }
 
@@ -812,90 +879,114 @@ function addExitButton() {
     map.controls[google.maps.ControlPosition.TOP_CENTER].push(createMapButton(map, 'Exit Alliance Flight Map', 'hideAllianceMap()', 'hideAllianceMapButton')[0]);
 }
 
-function drawAllianceLink(link) {
-	var from = new google.maps.LatLng({lat: link.fromLatitude, lng: link.fromLongitude})
-	var to = new google.maps.LatLng({lat: link.toLatitude, lng: link.toLongitude})
-	//var pathKey = link.id
-	
-	var strokeColor = airlineColors[link.airlineId]
+function drawAllianceLink(groupedLink) {
+	var from = new google.maps.LatLng({lat: groupedLink.fromLatitude, lng: groupedLink.fromLongitude})
+	var to = new google.maps.LatLng({lat: groupedLink.toLatitude, lng: groupedLink.toLongitude})
+
+	//use link with highest capacity for route color
+	var dominantLink = groupedLink.links.reduce(function(prev, current) {
+		return (prev.capacity.total > current.capacity.total) ? prev : current;
+	});
+
+	var strokeColor = airlineColors[dominantLink.airlineId]
 	if (!strokeColor) {
 		strokeColor = "#DC83FC"
 	}
 
-    var maxOpacity = 0.7
-    var minOpacity = 0.1
-    var standardCapacity = 10000
-    var strokeOpacity
-	if (link.capacity.total < standardCapacity) {
-        strokeOpacity = minOpacity + link.capacity.total / standardCapacity * (maxOpacity - minOpacity)
-    } else {
-        strokeOpacity = maxOpacity
-    }
-		
+	var maxOpacity = 0.7
+	var minOpacity = 0.1
+	var standardCapacity = 10000
+	var strokeOpacity
+	if (groupedLink.totalCapacity < standardCapacity) {
+		strokeOpacity = minOpacity + groupedLink.totalCapacity / standardCapacity * (maxOpacity - minOpacity)
+	} else {
+		strokeOpacity = maxOpacity
+	}
+
 	var linkPath = new google.maps.Polyline({
-			 geodesic: true,
-		     strokeColor: strokeColor,
-		     strokeOpacity: strokeOpacity,
-		     strokeWeight: 2,
-		     path: [from, to],
-		     zIndex : 90,
-		     link : link
-		});
-		
-	var fromAirport = getAirportText(link.fromAirportCity, link.fromAirportCode)
-	var toAirport = getAirportText(link.toAirportCity, link.toAirportCode)
-	
-	
-	shadowPath = new google.maps.Polyline({
-		 geodesic: true,
-	     strokeColor: strokeColor,
-	     strokeOpacity: 0.0001,
-	     strokeWeight: 25,
-	     path: [from, to],
-	     zIndex : 100,
-	     fromAirport : fromAirport,
-	     fromCountry : link.fromCountryCode, 
-	     toAirport : toAirport,
-	     toCountry : link.toCountryCode,
-	     capacity : link.capacity.total,
-	     airlineName : link.airlineName,
-	     airlineId : link.airlineId
+		geodesic: true,
+		strokeColor: strokeColor,
+		strokeOpacity: strokeOpacity,
+		strokeWeight: 2,
+		path: [from, to],
+		zIndex : 90,
+		//for compatibility with other functions, assign the dominant link object
+		link : dominantLink
 	});
-	
+
+	var fromAirport = getAirportText(dominantLink.fromAirportCity, dominantLink.fromAirportCode)
+	var toAirport = getAirportText(dominantLink.toAirportCity, dominantLink.toAirportCode)
+
+	var shadowPath = new google.maps.Polyline({
+		geodesic: true,
+		strokeColor: strokeColor,
+		strokeOpacity: 0.0001,
+		strokeWeight: 25,
+		path: [from, to],
+		zIndex : 100,
+		fromAirport : fromAirport,
+		fromCountry : groupedLink.fromCountryCode,
+		toAirport : toAirport,
+		toCountry : groupedLink.toCountryCode,
+		links: groupedLink.links, //full array of individual links
+		totalCapacity: groupedLink.totalCapacity
+	});
+
 	linkPath.shadowPath = shadowPath
-	
 
 	shadowPath.addListener('mouseover', function(event) {
-	    if (!map.allianceBasePopup) { //only do this if it is not hovered over base icon. This is a workaround as zIndex does not work - hovering over base icon triggers onmouseover event on the link below the icon
-            $("#linkPopupFrom").html(getCountryFlagImg(this.fromCountry) + "&nbsp;" + this.fromAirport)
-            $("#linkPopupTo").html(getCountryFlagImg(this.toCountry) + "&nbsp;" + this.toAirport)
-            $("#linkPopupCapacity").html(this.capacity)
-            $("#linkPopupAirline").html(getAirlineLogoImg(this.airlineId) + "&nbsp;" + this.airlineName)
+		if (!map.allianceBasePopup) {
+			var $popupContent = $("#linkPopup").clone();
 
+			$popupContent.find("#linkPopupFrom").html(getCountryFlagImg(this.fromCountry) + " " + this.fromAirport)
+			$popupContent.find("#linkPopupTo").html(getCountryFlagImg(this.toCountry) + " " + this.toAirport)
+			if (this.links.length > 1) {
+				var capacityBreakdown = this.links.map(function (l) {
+					return commaSeparateNumber(l.capacity.total);
+				}).join(' / ');
+				$popupContent.find("#linkPopupCapacity").html(commaSeparateNumber(this.totalCapacity) + " (" + capacityBreakdown + ")")
+			} else {
+				$popupContent.find("#linkPopupCapacity").html(commaSeparateNumber(this.totalCapacity))
+			}
 
-            var infowindow = new google.maps.InfoWindow({
-                 maxWidth : 1200});
+			var $airlineRowTemplate = $popupContent.find("#linkPopupAirline").closest(".table-row");
+			if (this.links.length > 1) {
+				$airlineRowTemplate.find(".label h5").text("Airlines:");
+			} else {
+				$airlineRowTemplate.find(".label h5").text("Airline:");
+			}
 
-            var popup = $("#linkPopup").clone()
-            popup.show()
-            infowindow.setContent(popup[0])
+			var firstLink = this.links[0];
+			$airlineRowTemplate.find("#linkPopupAirline").html(getAirlineLogoImg(firstLink.airlineId) + " " + firstLink.airlineName);
 
-            infowindow.setPosition(event.latLng);
-            infowindow.open(map);
-            map.allianceLinkPopup = infowindow
-        }
-	})		
-	shadowPath.addListener('mouseout', function(event) {
-        closeAllianceLinkPopup()
+			//add new rows for subsequent airlines
+			for (var i = 1; i < this.links.length; i++) {
+				var link = this.links[i];
+				var $newRow = $airlineRowTemplate.clone();
+				$newRow.find(".label").html("");
+				$newRow.find(".value").removeAttr('id').html(getAirlineLogoImg(link.airlineId) + " " + link.airlineName);
+				$airlineRowTemplate.parent().append($newRow);
+			}
+
+			var infowindow = new google.maps.InfoWindow({ maxWidth : 1200});
+			$popupContent.show()
+			infowindow.setContent($popupContent[0])
+			infowindow.setPosition(event.latLng);
+			infowindow.open(map);
+			map.allianceLinkPopup = infowindow
+		}
 	})
-	
+	shadowPath.addListener('mouseout', function(event) {
+		closeAllianceLinkPopup()
+	})
+
 	linkPath.setMap(map)
 	linkPath.shadowPath.setMap(map)
 	polylines.push(linkPath)
 	polylines.push(linkPath.shadowPath)
 
-    var resultPath = { path : linkPath, shadow : shadowPath } //kinda need this so it has consistent data structure as the normal flight paths
-    return resultPath
+	var resultPath = { path : linkPath, shadow : shadowPath } //kinda need this so it has consistent data structure as the normal flight paths
+	return resultPath
 }
 
 function showAllianceMemberDetails(allianceMember) {
