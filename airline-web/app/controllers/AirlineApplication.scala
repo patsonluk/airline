@@ -275,6 +275,15 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       return Some(s"Invalid scale ${targetBase.scale}")
     }
 
+    val existingBase = airline.getBases().find(_.airport.id == targetBase.airport.id)
+    if (existingBase != undefined) {
+      if (targetBase.scale != existingBase.scale + 1) {
+        return Some(s"Can only upgrade base to level ${existingBase.scale + 1}")
+      }
+    } else if (targetBase.scale != 1) {
+      return Some(s"Base does not exist yet, can only build level 1 base")
+    }
+
     if (targetBase.scale == 1) { //building something new
       if (airline.getHeadQuarter().isDefined) { //building non-HQ
         AllianceSource.loadAllianceMemberByAirline(airline).filter(_.role != AllianceRole.APPLICANT).foreach { allianceMember =>
