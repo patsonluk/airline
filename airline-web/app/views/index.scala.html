@@ -35,12 +35,12 @@
 	  <link rel="stylesheet" type="text/css" href='@routes.Assets.versioned("stylesheets/mobile.css")'> <!-- this has to be last so it overrides the CSS if mobile-->
 
 
-    
+
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js" defer></script>
     <script src="https://code.jquery.com/jquery-2.2.4.min.js"
 			  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
 			  crossorigin="anonymous"></script>
-			  
+
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
 			  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
 			  crossorigin="anonymous"></script>
@@ -57,10 +57,10 @@
 	<script type="text/javascript" src='@routes.Assets.versioned("fusioncharts/themes/fusioncharts.theme.zune.js")' defer></script>
 	<script type="text/javascript" src='@routes.Assets.versioned("fusioncharts/fusioncharts-jquery-plugin.js")' defer></script>
 	<script src='@routes.Assets.versioned("javascripts/plot-fusioncharts.js")' defer></script>
-	
+
 	<script type="text/javascript" src='@routes.Assets.versioned("progress-bar/progress-bar.js")' defer></script>
 	  <link rel="stylesheet" href='@routes.Assets.versioned("progress-bar/progress-bar.css")' type="text/css" />
-	
+
 	<script type="text/javascript" src='@routes.Assets.versioned("jquery-upload-file/jquery.uploadfile.min.js")' defer></script>
 	<link rel="stylesheet" href='@routes.Assets.versioned("jquery-upload-file/uploadfile.css")' type="text/css" />
 	<script src='@routes.Assets.versioned("javascripts/lazysizes/lazysizes.min.js")' async></script>
@@ -2759,7 +2759,7 @@
 					</div>
 
 					<div id="rivalDetails" class="sidePanel" style="float: left; display: none;">
-						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap; gap: 5px;">
 							<div style="min-width: 200px; flex: 1;">
 								<h4><span class="airlineName"></span></h4>
 
@@ -2851,7 +2851,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap; gap: 5px;">
 							<div style="min-width: 200px; flex: 1;">
 								<h4>Airline Headquarters</h4>
 								<div style="position: relative; height: 150px; width: 100%" class="headquartersMap"></div>
@@ -2864,7 +2864,7 @@
 							</div>
 						</div>
 
-						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap;">
+						<div class="section" style="width: 95%; display: flex; flex-wrap: wrap; gap: 5px;">
 							<div style="min-width: 200px; flex: 1;">
 								<h4>National Airline of</h4>
 								<div class="table data nationalAirlineCountryList" style="width: 100%;">
@@ -3594,7 +3594,7 @@
 		</div> <!-- end container for main canvas and the landing blur -->
 		<div style="clear: both;"></div>
     </div>
-    
+
     <!-- popups and overlay buttons below. Hidden by default -->
     <div style="display: none; width: 100%; white-space: normal;" id="airportPopup" class="mapPopup">
     	<input type="hidden" id="airportPopupId">
@@ -3714,7 +3714,7 @@
     	</div>
 		<div id="cityPie" style="height: 70px;"></div>
     </div>
-    
+
     <div style="display: none; width: 350px;" id="linkHistoryPopup" class="mapPopup">
     	<input type="hidden" id="linkHistoryPopupId">
     	<div class="table" style="width: 100%">
@@ -3740,7 +3740,7 @@
    			</div>
 		</div>
     </div>
-    
+
     <div style="display: none; width: 350px;" id="airportLinkPopup" class="mapPopup">
     	<input type="hidden" id="airportLinkPopupId">
     	<div class="table" style="width: 100%">
@@ -3772,7 +3772,7 @@
 	  </div>
 
 
-    
+
     <div style="display: none; width: 100%;" id="linkPopup" class="mapPopup">
     	<input type="hidden" id="airportLinkPopupId">
     	<div class="table" style="width: 100%">
@@ -3819,7 +3819,7 @@
 			  </div>
 		  </div>
 	  </div>
-    
+
     <!-- The Annoucement Modal -->
 	<div id="announcementModal" class="modal">
 	  <div class="modal-content" style="width: 500px;">
@@ -3858,9 +3858,9 @@
 			  </div>
 		  </div>
 	  </div>
-	
+
 	<!-- Logo Modal -->
-	
+
 	<div id="logoModal" class="modal">
 	  <div class="modal-content"  style="width : 400px;">
 	    <span class="close" onclick="closeModal($('#logoModal'))">&times;</span>
@@ -3877,12 +3877,12 @@
 	    <h4>Preview</h4>
 	    <div id="logoPreview" style="height: 30px">
 	    </div>
-	    
+
 	    <div class="button confirmationButton" onclick="closeModal($('#logoModal')); setAirlineLogo();">Confirm</div>
 	    <div class="button" onclick="closeModal($('#logoModal'))">Cancel</div>
 	  </div>
 	</div>
-	
+
 	<div id="uploadLogoModal" class="modal">
 		<div class="modal-content"  style="width : 400px;">
 			<span class="close" onclick="closeModal($('#uploadLogoModal'))">&times;</span>
@@ -3918,7 +3918,7 @@
 		  </div>
 	  </div>
   </div>
-	
+
 	<!-- airport facility modal -->
 	<div id="facilityModal" class="modal facility">
 	  <div class="modal-content"  style="width : 400px;">
@@ -3933,9 +3933,9 @@
 			</div>
 			<div class="table-row facitilyNameWarningDiv" style="display: none;">
 			    				<div class="warning"></div>
-			    				
+
 			    			</div>
-			    			
+
 							<div class="table-row">
 			    				<div class="label" style="width: 50%"><h5>Level:</h5></div>
 			    				<div class="value facilityLevel" style="width: 50%"></div>
@@ -4080,7 +4080,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	<!-- airport passenger quality expectation model -->
 	<div id="expectedQualityModal" class="modal">
 		<div class="modal-content"  style="width : 500px;">
@@ -4111,10 +4111,10 @@
 				<li class="label" style="padding: 5px;">- Service level per route</li>
 				<li class="label" style="padding: 5px;">- Company wide level Service Quality (by Service Funding in Office View)</li>
 			</ul>
-			
+
 	    </div>
 	</div>
-	
+
 	<!-- link passenger composition modal -->
     <div id="linkCompositionModal" class="modal">
         <div class="modal-content"  style="width : 800px">
@@ -5515,7 +5515,7 @@
 
 	<!-- Modal for loading -->
 	<div class="loadingSpinner"><!-- Place at bottom of page --></div>
-	
+
 	<audio id="christmasMusic" preload="none" loop>
 <!--	    <source src='@routes.Assets.versioned("music/silent-night.mp3")' type="audio/mp3" />-->
 		<source src='@routes.Assets.versioned("music/joy-to-the-world.mp3")' type="audio/mp3" />
@@ -5530,6 +5530,6 @@
   <script src='/assets/firework/stage.js'></script>
   <script src='/assets/firework/my-math.js'></script>
   <script src="/assets/firework/firework.js"></script>
-	 
+
   </body>
 </html>
