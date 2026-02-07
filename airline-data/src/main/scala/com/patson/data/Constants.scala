@@ -37,6 +37,7 @@ object Constants {
   val LINK_CONSUMPTION_INDEX_1 = "link_consumption_index_1"
   val LINK_CONSUMPTION_INDEX_2 = "link_consumption_index_2"
   val LINK_CONSUMPTION_INDEX_3 = "link_consumption_index_3"
+  val LINK_CONSUMPTION_INDEX_4 = "link_consumption_index_4"
   val LINK_ASSIGNMENT_TABLE = "link_assignment"
   val LINK_ASSIGNMENT_INDEX_1 = "link_assignment_index_1"
   val LINK_ASSIGNMENT_INDEX_2 = "link_assignment_index_2"
