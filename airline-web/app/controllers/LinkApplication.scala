@@ -1440,9 +1440,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     var result = Json.obj()
 
     LinkSource.loadFlightLinkById(linkId).foreach { link =>
-      //load change history of this airport pair
-      val relatedLinks = LinkSource.loadFlightLinksByAirports(link.from.id, link.to.id) ++ LinkSource.loadFlightLinksByAirports(link.to.id, link.from.id)
-      val consumptionsByCycle = LinkSource.loadLinkConsumptionsByLinksId(relatedLinks.map(_.id), cycleCount).groupBy(_.cycle).toList.sortBy(_._1)
+      //load consumption history of this airport pair (includes deleted links)
+      val consumptionsByCycle = LinkSource.loadLinkConsumptionsByAirportPair(link.from.id, link.to.id, cycleCount).groupBy(_.cycle).toList.sortBy(_._1)
       consumptionsByCycle.foreach {
         case(cycle, consumptions) =>
           var cycleJson = Json.obj()
