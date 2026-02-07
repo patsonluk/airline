@@ -868,6 +868,11 @@ object LinkSource {
     }
   }
   
+  def loadLinkConsumptionsByAirportPair(fromAirportId : Int, toAirportId : Int, cycleCount : Int = 1) = {
+    val queryString = "SELECT * FROM link_consumption WHERE cycle > ? AND ((from_airport = ? AND to_airport = ?) OR (from_airport = ? AND to_airport = ?)) ORDER BY cycle DESC"
+    loadLinkConsumptionsByQuery(queryString, List(fromAirportId, toAirportId, toAirportId, fromAirportId), cycleCount)
+  }
+
   def loadLinkConsumptionsByAirline(airlineId : Int, cycleCount : Int = 1) = {
     loadLinkConsumptionsByCriteria(List(("airline", airlineId)), cycleCount)
   }
