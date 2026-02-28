@@ -85,6 +85,11 @@ function registerEscape() {
             if ($topMapControlPanel.length > 0) {
                 closeMapControlPanelById($topMapControlPanel[0].id);
             }
+        } else if (e.key === "Enter") {
+            if ($('#confirmationModal').is(':visible')) {
+                closeModal($('#confirmationModal'))
+                executeConfirmationTarget()
+            }
         }
     });
 }
