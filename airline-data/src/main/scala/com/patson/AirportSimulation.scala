@@ -37,7 +37,7 @@ object AirportSimulation {
     val championInfo = simulateLoyalists(allAirports, linkRidershipDetails, cycle)
 
     //check whether lounge is still active
-    updateLoungeStatus(allAirports, linkRidershipDetails)
+    updateLoungeStatus(allAirports, linkRidershipDetails, cycle)
 
 
     println("Finished simulation of loyalty by link consumption")
@@ -322,7 +322,7 @@ object AirportSimulation {
     result.toList.partition(_.amount > 0)
   }
 
-  def updateLoungeStatus(allAirports : List[Airport], linkRidershipDetails : Predef.Map[(PassengerGroup, Airport, Route), Int]) = {
+  def updateLoungeStatus(allAirports : List[Airport], linkRidershipDetails : Predef.Map[(PassengerGroup, Airport, Route), Int], cycle : Int) = {
     println("Checking lounge status")
     val passengersByAirport : MapView[Airport, MapView[Airline, Int]] = linkRidershipDetails.toList.flatMap {
       case ((passengerGroup, airport, route), count) =>
@@ -338,6 +338,7 @@ object AirportSimulation {
       }.groupBy(_._1).view.mapValues(_.map(_._2).sum)
     }
 
+    val logs = ListBuffer[Log]()
 
     allAirports.foreach { airport =>
       if (!airport.getLounges().isEmpty) {
@@ -359,10 +360,19 @@ object AirportSimulation {
           if (lounge.status != newStatus) {
             println(s"Flipping status for lounge $lounge to $newStatus")
             AirlineSource.saveLounge(lounge.copy(status = newStatus))
+            val severity = if (newStatus == LoungeStatus.ACTIVE) LogSeverity.INFO else LogSeverity.WARN
+            val message = if (newStatus == LoungeStatus.ACTIVE) {
+              s"Lounge at ${airport.displayText} is now ACTIVE"
+            } else {
+              s"Lounge at ${airport.displayText} is now INACTIVE"
+            }
+            logs += Log(lounge.airline, message, LogCategory.LOUNGE, severity, cycle)
           }
         }
       }
     }
+
+    LogSource.insertLogs(logs.toList)
   }
 //
 //  def airportProjectSimulation(allAirports : List[Airport]) = {
