@@ -8,13 +8,14 @@ object Log {
 
 object LogCategory extends Enumeration {
     type LogCategory = Value
-    val LINK, NEGOTIATION, AIRPORT_RANK_CHANGE, SELF_NOTE = Value
-    
+    val LINK, NEGOTIATION, AIRPORT_RANK_CHANGE, SELF_NOTE, LOUNGE = Value
+
     val getDescription : LogCategory.Value => String = {
       case LINK => "Flight Route"
       case NEGOTIATION => "Negotiation"
       case AIRPORT_RANK_CHANGE => "Airport Rank Change"
       case SELF_NOTE => "Self Note"
+      case LOUNGE => "Lounge"
     }
 }
 
