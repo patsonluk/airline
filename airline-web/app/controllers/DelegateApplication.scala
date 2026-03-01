@@ -43,7 +43,7 @@ class DelegateApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         }
         Ok(Json.obj())
       } else {
-        BadRequest(s"Invalid delegate value $delegateCount")
+        BadRequest(s"Invalid delegate value $delegateCount delta $delta permanentAvailableCount ${airline.getDelegateInfo().permanentAvailableCount} details ${airline.getDelegateInfo()}")
       }
     }
   }
