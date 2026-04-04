@@ -20,6 +20,7 @@ import play.api.libs.json.Json.toJsFieldJsValueWrapper
 import play.api.libs.json.{JsBoolean, JsNumber, JsObject, Json, _}
 import play.api.mvc.Security.AuthenticatedRequest
 import play.api.mvc._
+import play.api.Logger
 
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.concurrent.TrieMap
@@ -31,6 +32,7 @@ import scala.util.{Failure, Success, Try}
 
 
 class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+  val logger = Logger(this.getClass)
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -382,7 +384,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
 
-    println("PUT " + incomingLink)
+    logger.info("PUT " + incomingLink)
 
     val resultLink : Link =
       if (negotiationResultOption.map(_.isSuccessful).getOrElse(true)) { //negotiation successful or no negotiation needed {
@@ -1591,6 +1593,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     getNegotiationRejectionReason(request.user, incomingLink.from, incomingLink.to, existingLinkOption).foreach {
       case (reason, rejectionType) => result = result + ("rejection" -> JsString(reason))
     }
+
+    logger.info(s"Getting negotiation for ${request.user} on flight ${incomingLink.from.displayText} -> ${incomingLink.to.displayText}")
 
     Ok(result)
 
