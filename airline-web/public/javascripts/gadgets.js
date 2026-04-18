@@ -299,14 +299,20 @@ function getUserModifiersSpan(modifiers) {
 
     var result = ""
     $.each(modifiers, function(index, modifier) {
-        if (modifier == "WARNED") {
-           result += "<span><img src='assets/images/icons/exclamation.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
-        } else if (modifier == "CHAT_BANNED") {
-           result += "<span><img src='assets/images/icons/mute.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
-        } else if (modifier == "BANNED") {
-           result += "<span><img src='assets/images/icons/prohibition.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
+        var name = (typeof modifier === 'object') ? modifier.name : modifier
+        var title = name
+        if (typeof modifier === 'object' && modifier.actionTimestamp) {
+            var days = Math.floor((Date.now() - modifier.actionTimestamp) / (1000 * 60 * 60 * 24))
+            title = name + ' (since ' + days + ' day' + (days === 1 ? '' : 's') + ' ago)'
+        }
+        if (name == "WARNED") {
+           result += "<span><img src='assets/images/icons/exclamation.png' title='" + title + "' style='vertical-align:middle;'/></span>"
+        } else if (name == "CHAT_BANNED") {
+           result += "<span><img src='assets/images/icons/mute.png' title='" + title + "' style='vertical-align:middle;'/></span>"
+        } else if (name == "BANNED") {
+           result += "<span><img src='assets/images/icons/prohibition.png' title='" + title + "' style='vertical-align:middle;'/></span>"
         } else {
-           result += "<span>" + modifier + "</span>"
+           result += "<span>" + name + "</span>"
         }
     })
     return result
@@ -319,13 +325,19 @@ function getAirlineModifiersSpan(modifiers) {
 
     var result = ""
     $.each(modifiers, function(index, modifier) {
-        if (modifier == "NERFED") {
-           result += "<span><img src='assets/images/icons/ghost.png' title='" + modifier + "' style='vertical-align:middle;'/></span>"
-        } else if (modifier == "BANNER_LOYALTY_BOOST") {
-            result += "<span><img src='assets/images/icons/megaphone.png' title='Banner contest winner!' style='vertical-align:middle;'/></span>"
+        var name = (typeof modifier === 'object') ? modifier.name : modifier
+        var sinceStr = ""
+        if (typeof modifier === 'object' && modifier.actionTimestamp) {
+            var days = Math.floor((Date.now() - modifier.actionTimestamp) / (1000 * 60 * 60 * 24))
+            sinceStr = ' (since ' + days + ' day' + (days === 1 ? '' : 's') + ' ago)'
+        }
+        if (name == "NERFED") {
+           result += "<span><img src='assets/images/icons/ghost.png' title='" + name + sinceStr + "' style='vertical-align:middle;'/></span>"
+        } else if (name == "BANNER_LOYALTY_BOOST") {
+            result += "<span><img src='assets/images/icons/megaphone.png' title='Banner contest winner!" + sinceStr + "' style='vertical-align:middle;'/></span>"
         }
 //        } else { //let's no show modifiers that are not listed for now. since they could be common
-//           result += "<span>" + modifier + "</span>"
+//           result += "<span>" + name + "</span>"
     })
     return result
 }

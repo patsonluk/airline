@@ -4,7 +4,7 @@ import java.util.Calendar
 import scala.collection.mutable.ListBuffer
 import scala.collection.mutable.Map
 
-case class User(userName : String, email : String, creationTime : Calendar, lastActiveTime : Calendar, status : UserStatus.UserStatus, level : Int, adminStatus : Option[AdminStatus.Value], modifiers : List[UserModifier.Value], var id : Int = 0) extends IdObject{
+case class User(userName : String, email : String, creationTime : Calendar, lastActiveTime : Calendar, status : UserStatus.UserStatus, level : Int, adminStatus : Option[AdminStatus.Value], modifiers : List[(UserModifier.Value, Long)], var id : Int = 0) extends IdObject{
   private[this] val airlinesMap : Map[Int, Airline] = Map[Int, Airline]()
   
   def getAccessibleAirlines() = {
@@ -22,8 +22,8 @@ case class User(userName : String, email : String, creationTime : Calendar, last
   import User._
   val isAdmin = adminStatus.isDefined
   val isSuperAdmin = adminStatus.isDefined && adminStatus.get == AdminStatus.SUPER_ADMIN
-  val isChatBanned = modifiers.contains(UserModifier.CHAT_BANNED)
-  val isBanned = modifiers.contains(UserModifier.BANNED)
+  val isChatBanned = modifiers.exists(_._1 == UserModifier.CHAT_BANNED)
+  val isBanned = modifiers.exists(_._1 == UserModifier.BANNED)
   val isPremium = level > 0
 
   val maxAirlinesAllowed = if (isPremium) 3 else 2

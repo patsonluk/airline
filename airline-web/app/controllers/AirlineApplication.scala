@@ -58,7 +58,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
 
       if (isCurrentUserAdmin) {
         result = result + ("userStatus" -> JsString(user.status.toString)) + ("userId" -> JsNumber(user.id))
-        result = result + ("userModifiers" -> Json.toJson(user.modifiers.map(_.toString)))
+        result = result + ("userModifiers" -> Json.toJson(user.modifiers.map { case (m, ts) =>
+          Json.obj("name" -> m.toString, "actionTimestamp" -> ts)
+        }))
       }
 
       loginStatus.foreach { status => //if there's a login status
@@ -72,7 +74,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       }
 
       if (!airlineModifiers.isEmpty) {
-        result = result + ("airlineModifiers" -> Json.toJson(airlineModifiers.map(_.modifierType.toString)))
+        result = result + ("airlineModifiers" -> Json.toJson(airlineModifiers.map { m =>
+          Json.obj("name" -> m.modifierType.toString, "actionTimestamp" -> m.actionTimestamp)
+        }))
       }
         //("lastActiveTime" -> JsString(user.lastActive.getTime.toString)) //maybe last active time is still too sensitive
       result

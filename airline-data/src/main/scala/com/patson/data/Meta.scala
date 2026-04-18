@@ -2013,6 +2013,7 @@ object Meta {
       "modifier_name CHAR(20), " +
       "creation INTEGER," +
       "expiry INTEGER," +
+      "action_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
       "INDEX " + AIRLINE_MODIFIER_INDEX_PREFIX + 1 + " (airline)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")"
@@ -2047,6 +2048,7 @@ object Meta {
       "user INTEGER, " +
       "modifier_name CHAR(20), " +
       "creation INTEGER," +
+      "action_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
       "PRIMARY KEY (user, modifier_name)," +
       "FOREIGN KEY(user) REFERENCES " + USER_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")"
