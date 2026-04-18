@@ -90,7 +90,7 @@ class MyWebSocketActor(out: ActorRef, airlineId : Int, remoteAddress : String) e
 
   def checkWarnings(airlineId : Int) = {
     UserSource.loadUserByAirlineId(airlineId).foreach { user =>
-      if (user.modifiers.contains(UserModifier.WARNED)) {
+      if (user.modifiers.exists(_._1 == UserModifier.WARNED)) {
         Broadcaster.sendMessage(AirlineCache.getAirline(airlineId).get, s"Our systems have detected you own more airlines than the allowed ${user.maxAirlinesAllowed} airlines limit. Please take actions to reset your airlines and maintain only active airlines according to the limit.  Otherwise we might ban all your accounts after 3 days. Please contact our admins on discord for disputes.")
       }
     }

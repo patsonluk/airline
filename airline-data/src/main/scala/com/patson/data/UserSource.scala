@@ -84,7 +84,7 @@ object UserSource {
       
       val userList = scala.collection.mutable.Map[Int, (User, ListBuffer[Int])]() //Map[UserId, (User, List[AirlineId])]
 
-      val modifiersByUserId : Map[Int, List[UserModifier.Value]] = UserSource.loadUserModifiers()
+      val modifiersByUserId : Map[Int, List[(UserModifier.Value, Long)]] = UserSource.loadUserModifiers()
 
 
       while (resultSet.next()) {
@@ -327,17 +327,18 @@ object UserSource {
   }
 
 
-  def loadUserModifiers() : Map[Int, List[UserModifier.Value]] = { //_1 is user Id
+  def loadUserModifiers() : Map[Int, List[(UserModifier.Value, Long)]] = { //_1 is user Id
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement("SELECT * FROM " + USER_MODIFIER_TABLE)
 
       val resultSet = preparedStatement.executeQuery()
-      val result = mutable.HashMap[Int, ListBuffer[UserModifier.Value]]()
+      val result = mutable.HashMap[Int, ListBuffer[(UserModifier.Value, Long)]]()
       while (resultSet.next()) {
         val userModifier = UserModifier.withName(resultSet.getString("modifier_name"))
+        val timestamp = resultSet.getTimestamp("action_timestamp").getTime
         val modifiers = result.getOrElseUpdate(resultSet.getInt("user"), ListBuffer())
-        modifiers.append(userModifier)
+        modifiers.append((userModifier, timestamp))
       }
 
       resultSet.close()
@@ -349,17 +350,18 @@ object UserSource {
     }
   }
 
-  def loadUserModifierByUserId(userId : Int) : List[UserModifier.Value] = {
+  def loadUserModifierByUserId(userId : Int) : List[(UserModifier.Value, Long)] = {
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement("SELECT * FROM " + USER_MODIFIER_TABLE + " WHERE user = ?")
       preparedStatement.setInt(1, userId)
 
       val resultSet = preparedStatement.executeQuery()
-      val result = ListBuffer[UserModifier.Value]()
+      val result = ListBuffer[(UserModifier.Value, Long)]()
       while (resultSet.next()) {
         val userModifier = UserModifier.withName(resultSet.getString("modifier_name"))
-        result.append(userModifier)
+        val timestamp = resultSet.getTimestamp("action_timestamp").getTime
+        result.append((userModifier, timestamp))
       }
 
       resultSet.close()

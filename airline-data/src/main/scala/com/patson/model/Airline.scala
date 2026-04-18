@@ -427,7 +427,7 @@ object AirlineGrade {
 object AirlineModifier {
   def fromValues(modifierType : AirlineModifierType.Value, creationCycle : Int, expiryCycle : Option[Int], properties : Map[AirlineModifierPropertyType.Value, Long]) : AirlineModifier = {
     import AirlineModifierType._
-    val modifier = modifierType match {
+    modifierType match {
       case NERFED => NerfedAirlineModifier(creationCycle)
       case DELEGATE_BOOST => DelegateBoostAirlineModifier(
         properties(AirlineModifierPropertyType.STRENGTH).toInt,
@@ -437,14 +437,13 @@ object AirlineModifier {
         properties(AirlineModifierPropertyType.STRENGTH).toInt,
         creationCycle)
     }
-
-    modifier
   }
 }
 
 
 
 abstract class AirlineModifier(val modifierType : AirlineModifierType.Value, val creationCycle : Int, val expiryCycle : Option[Int], var id : Int = 0) extends IdObject {
+  var actionTimestamp : Long = 0L
   def properties : Map[AirlineModifierPropertyType.Value, Long]
   def isHidden : Boolean //should it be visible to admin only
 }

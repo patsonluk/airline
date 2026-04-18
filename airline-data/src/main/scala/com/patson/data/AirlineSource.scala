@@ -1245,6 +1245,7 @@ object AirlineSource {
           propertiesById.get(id).getOrElse(immutable.Map.empty)
         )
         airlineModifier.id = id
+        airlineModifier.actionTimestamp = resultSet.getTimestamp("action_timestamp").getTime
 
 
         result.append((resultSet.getInt("airline"), airlineModifier))
@@ -1275,6 +1276,7 @@ object AirlineSource {
           if (expiryObject == null) None else Some(expiryObject.asInstanceOf[Int]),
           loadAirlineModifierPropertiesById(resultSet.getInt("id"))
         )
+        airlineModifier.actionTimestamp = resultSet.getTimestamp("action_timestamp").getTime
         result.append(airlineModifier)
       }
 
