@@ -50,7 +50,7 @@ object DetectAirlineViolations {
                                   violation : AirlineViolation.Value) : Set[(Int, AirlineViolation.Value)] = {
     identifierToUserIds.flatMap { case (_, userIds) =>
       val airlineIds = userIds.flatMap(userId => userInfoById.get(userId).map(_._2).getOrElse(List.empty)).distinct
-      if (airlineIds.size > SHARING_THRESHOLD) {
+      if (airlineIds.size >= SHARING_THRESHOLD) {
         userIds
           .filter(userId => userInfoById.get(userId).exists(_._1 == 0))
           .flatMap(userId => userInfoById.get(userId).map(_._2).getOrElse(List.empty))
