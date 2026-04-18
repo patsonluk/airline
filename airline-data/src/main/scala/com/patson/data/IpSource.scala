@@ -98,6 +98,24 @@ object IpSource {
     }
   }
 
+  def loadUserIdsByIpSince(cutoffDate : java.util.Date) : Map[String, List[Int]] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT user, ip FROM $USER_IP_TABLE WHERE last_update >= ?")
+      preparedStatement.setTimestamp(1, new java.sql.Timestamp(cutoffDate.getTime))
+      val resultSet = preparedStatement.executeQuery()
+      val result = scala.collection.mutable.HashMap[String, scala.collection.mutable.ListBuffer[Int]]()
+      while (resultSet.next()) {
+        result.getOrElseUpdate(resultSet.getString("ip"), scala.collection.mutable.ListBuffer()).append(resultSet.getInt("user"))
+      }
+      resultSet.close()
+      preparedStatement.close()
+      result.view.mapValues(_.toList).toMap
+    } finally {
+      connection.close()
+    }
+  }
+
   def loadBannedIps() = {
     val connection = Meta.getConnection()
 

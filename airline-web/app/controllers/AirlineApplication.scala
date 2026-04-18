@@ -46,9 +46,9 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], Boolean)] {
-    def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], Boolean)): JsValue = {
-      val (airline, user, loginStatus, alliance, airlineModifiers, isCurrentUserAdmin) = entry
+  implicit object AirlineWithUserWrites extends Writes[(Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], List[(AirlineViolation.Value, Long)], Boolean)] {
+    def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], List[(AirlineViolation.Value, Long)], Boolean)): JsValue = {
+      val (airline, user, loginStatus, alliance, airlineModifiers, airlineViolations, isCurrentUserAdmin) = entry
       var result = Json.toJson(airline).asInstanceOf[JsObject] +
         ("userLevel" -> JsNumber(user.level)) +
         ("username" -> JsString(user.userName))
@@ -76,6 +76,12 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
       if (!airlineModifiers.isEmpty) {
         result = result + ("airlineModifiers" -> Json.toJson(airlineModifiers.map { m =>
           Json.obj("name" -> m.modifierType.toString, "actionTimestamp" -> m.actionTimestamp)
+        }))
+      }
+
+      if (isCurrentUserAdmin && airlineViolations.nonEmpty) {
+        result = result + ("airlineViolations" -> Json.toJson(airlineViolations.map { case (v, ts) =>
+          Json.obj("name" -> v.toString, "detectionTimestamp" -> ts)
         }))
       }
         //("lastActiveTime" -> JsString(user.lastActive.getTime.toString)) //maybe last active time is still too sensitive
@@ -152,10 +158,12 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         AirlineSource.loadAirlineModifiers().filter(!_._2.isHidden).groupBy(_._1).view.mapValues(_.toList.map(_._2)).toMap
       }
 
+    val airlineViolations : Map[Int, List[(AirlineViolation.Value, Long)]] =
+      if (request.user.isAdmin) AirlineViolationSource.loadAllViolations() else Map.empty
 
     val alliances = AllianceSource.loadAllAlliances().map(alliance => (alliance.id, alliance)).toMap
     Ok(Json.toJson(airlinesByUser.toList.map {
-      case(airline, user) => (airline, user, userStatusMap.get(user), airline.getAllianceId().map(alliances(_)), airlineModifiers.getOrElse(airline.id, List.empty), request.user.isAdmin)
+      case(airline, user) => (airline, user, userStatusMap.get(user), airline.getAllianceId().map(alliances(_)), airlineModifiers.getOrElse(airline.id, List.empty), airlineViolations.getOrElse(airline.id, List.empty), request.user.isAdmin)
     })).withHeaders(
       ACCESS_CONTROL_ALLOW_ORIGIN -> "http://localhost:9000",
       "Access-Control-Allow-Credentials" -> "true"

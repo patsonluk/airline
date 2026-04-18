@@ -72,6 +72,24 @@ object UserUuidSource {
     }
   }
 
+  def loadUserIdsByUuidSince(cutoffDate : java.util.Date) : Map[String, List[Int]] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT user, uuid FROM $USER_UUID_TABLE WHERE last_update >= ?")
+      preparedStatement.setTimestamp(1, new java.sql.Timestamp(cutoffDate.getTime))
+      val resultSet = preparedStatement.executeQuery()
+      val result = scala.collection.mutable.HashMap[String, scala.collection.mutable.ListBuffer[Int]]()
+      while (resultSet.next()) {
+        result.getOrElseUpdate(resultSet.getString("uuid"), scala.collection.mutable.ListBuffer()).append(resultSet.getInt("user"))
+      }
+      resultSet.close()
+      preparedStatement.close()
+      result.view.mapValues(_.toList).toMap
+    } finally {
+      connection.close()
+    }
+  }
+
   def loadUserUuids(userId : Int) : Map[String, UuidDetails] = {
     val connection = Meta.getConnection()
     

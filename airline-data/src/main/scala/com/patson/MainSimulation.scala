@@ -92,6 +92,8 @@ object MainSimulation extends App {
       println("Purging airline modifier")
       AirlineSource.deleteAirlineModifierByExpiry(cycle)
 
+      DetectAirlineViolations.detect()
+
       val cycleEnd = System.currentTimeMillis()
       
       println("cycle " + cycle + " spent " + (cycleEnd - cycleStartTime) / 1000 + " secs")

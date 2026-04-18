@@ -318,6 +318,23 @@ function getUserModifiersSpan(modifiers) {
     return result
 }
 
+function getAirlineViolationsSpan(violations) {
+    if (!violations || !violations.length) {
+        return ""
+    }
+    var result = ""
+    $.each(violations, function(index, violation) {
+        var name = (typeof violation === 'object') ? violation.name : violation
+        var title = name + ' violation'
+        if (typeof violation === 'object' && violation.detectionTimestamp) {
+            var days = Math.floor((Date.now() - violation.detectionTimestamp) / (1000 * 60 * 60 * 24))
+            title += ' (since ' + days + ' day' + (days === 1 ? '' : 's') + ' ago)'
+        }
+        result += "<span><img src='assets/images/icons/exclamation-red-frame.png' title='" + title + "' style='vertical-align:middle;'/></span>"
+    })
+    return result
+}
+
 function getAirlineModifiersSpan(modifiers) {
 	if (!modifiers) {
 		return ""
