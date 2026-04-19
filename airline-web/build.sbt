@@ -2,6 +2,8 @@ name := """airline-web"""
 
 version := "1.0-SNAPSHOT"
 
+enablePlugins(PlayScala)
+
 scalaVersion := "2.13.11"
 
 libraryDependencies ++= Seq(
