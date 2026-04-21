@@ -92,7 +92,7 @@ function initAdminActions() {
 function showAdminActions(airline) {
     $("#rivalDetails .adminActions").data("userId", airline.userId)
     $("#rivalDetails .adminActions").data("airlineId", airline.id)
-    $("#rivalDetails .adminActions .username").text(airline.username)
+    $("#rivalDetails .adminActions .username").text(airline.username || '-')
     $("#rivalDetails .adminActions .userId").text(airline.userId)
 
     if (airline.userModifiers) {
@@ -167,7 +167,7 @@ function showAirlinesByIp(ip) {
                $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
                $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByUuidModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
                $row.append("<div class='cell'>" + (entry.hqAirport ? getAirportText(entry.hqAirport.city, entry.hqAirport.iata) : "-") + "</div>")
-               $row.append("<div class='cell'>" + entry.username + getUserLevelImg(entry.userLevel) + "</div>")
+               $row.append("<div class='cell'>" + (entry.username || '-') + getUserLevelImg(entry.userLevel) + "</div>")
                $row.append("<div class='cell'>" + entry.userStatus + "</div>")
                $row.append("<div class='cell'>" + modifiersSpan + "</div>")
                $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")
@@ -203,7 +203,7 @@ function showAirlinesByUuid(uuid) {
                 $row.append("<div class='cell'><input type='checkbox' checked='checked' data-user-id='" + entry.userId + "' data-airline-id='" + entry.airlineId + "'></div>")
                 $row.append("<div class='cell clickable' onclick='loadRivalDetails(null," + entry.airlineId + "); closeModal($(\"#airlinesByUuidModal\"))'>" + getAirlineLogoImg(entry.airlineId) +  entry.airlineName + "</div>")
                 $row.append("<div class='cell'>" + (entry.hqAirport ? getAirportText(entry.hqAirport.city, entry.hqAirport.iata) : "-") + "</div>")
-                $row.append("<div class='cell'>" + entry.username + getUserLevelImg(entry.userLevel) + "</div>")
+                $row.append("<div class='cell'>" + (entry.username || '-') + getUserLevelImg(entry.userLevel) + "</div>")
                 $row.append("<div class='cell'>" + entry.userStatus + "</div>")
                 $row.append("<div class='cell'>" + modifiersSpan + "</div>")
                 $row.append("<div class='cell'>" + entry.lastUpdated + "</div>")

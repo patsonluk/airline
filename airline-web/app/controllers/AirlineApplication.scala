@@ -50,14 +50,16 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     def writes(entry: (Airline, User, Option[LoginStatus.Value], Option[Alliance], List[AirlineModifier], List[(AirlineViolation.Value, Long)], Boolean)): JsValue = {
       val (airline, user, loginStatus, alliance, airlineModifiers, airlineViolations, isCurrentUserAdmin) = entry
       var result = Json.toJson(airline).asInstanceOf[JsObject] +
-        ("userLevel" -> JsNumber(user.level)) +
-        ("username" -> JsString(user.userName))
+        ("userLevel" -> JsNumber(user.level))
       user.adminStatus.foreach { adminStatus =>
         result = result + ("adminStatus" -> JsString(adminStatus.toString))
       }
 
       if (isCurrentUserAdmin) {
-        result = result + ("userStatus" -> JsString(user.status.toString)) + ("userId" -> JsNumber(user.id))
+        result = result +
+          ("username" -> JsString(user.userName)) +
+          ("userStatus" -> JsString(user.status.toString)) +
+          ("userId" -> JsNumber(user.id))
         result = result + ("userModifiers" -> Json.toJson(user.modifiers.map { case (m, ts) =>
           Json.obj("name" -> m.toString, "actionTimestamp" -> ts)
         }))
