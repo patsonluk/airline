@@ -3,6 +3,7 @@
 package com.patson
 
 import java.util.{ArrayList, Collections}
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
 import com.patson.data.{AirlineSource, AirportSource, AllianceSource, CountrySource, CycleSource, LinkSource}
 import com.patson.model.AirlineBaseSpecialization.BrandSpecialization
@@ -26,6 +27,43 @@ object PassengerSimulation {
   lazy val countryOpenness : Map[String, Int] = CountrySource.loadAllCountries().map( country => (country.countryCode, country.openness)).toMap
   
   case class PassengerConsumptionResult(consumptionByRoutes : Map[(PassengerGroup, Airport, Route), Int], missedDemand : Map[(PassengerGroup, Airport), Int])
+  case class DirectedRouteCandidate(link : Transport, matchingLinkClass : LinkClass, inverted : Boolean, fromCountryCode : String, toCountryCode : String)
+  case class RouteSearchIndex(candidatesByClassAndFromAirportId : Map[(LinkClass, Int), Array[DirectedRouteCandidate]],
+                              candidatesByClass : Map[LinkClass, Array[DirectedRouteCandidate]])
+  private val shortestRouteSolveNanosCollector = new java.util.concurrent.atomic.AtomicLong(0L)
+
+  private def buildRouteSearchIndex(availableLinks : List[Transport]) : RouteSearchIndex = {
+    val candidates = mutable.Map[(LinkClass, Int), ListBuffer[DirectedRouteCandidate]]()
+    availableLinks.foreach { link =>
+      LinkClass.values.foreach { preferredLinkClass =>
+        link.availableSeatsAtOrBelowClass(preferredLinkClass).foreach {
+          case (matchingLinkClass, _) =>
+            val forwardCandidate = DirectedRouteCandidate(link, matchingLinkClass, inverted = false, link.from.countryCode, link.to.countryCode)
+            val backwardCandidate = DirectedRouteCandidate(link, matchingLinkClass, inverted = true, link.to.countryCode, link.from.countryCode)
+            candidates.getOrElseUpdate((preferredLinkClass, forwardCandidate.link.from.id), ListBuffer[DirectedRouteCandidate]()).append(forwardCandidate)
+            candidates.getOrElseUpdate((preferredLinkClass, backwardCandidate.link.to.id), ListBuffer[DirectedRouteCandidate]()).append(backwardCandidate)
+        }
+      }
+    }
+
+    val candidatesByClass = mutable.Map[LinkClass, ListBuffer[DirectedRouteCandidate]]()
+    candidates.foreach {
+      case ((preferredLinkClass, _), directedCandidates) =>
+        candidatesByClass.getOrElseUpdate(preferredLinkClass, ListBuffer[DirectedRouteCandidate]()).appendAll(directedCandidates)
+    }
+
+    RouteSearchIndex(candidates.view.mapValues(_.toArray).toMap, candidatesByClass.view.mapValues(_.toArray).toMap)
+  }
+
+  private def hasFreedom(fromCountryCode : String, toCountryCode : String, originatingCountryCode : String, countryOpenness : Map[String, Int]) : Boolean = {
+    if (fromCountryCode == toCountryCode) { //domestic flight is always ok
+      true
+    } else if (fromCountryCode == originatingCountryCode) { //always ok if link flying out from same country as the originate airport
+      true
+    } else { //a foreign airline flying out carrying passengers originating from a foreign airport, decide base on openness
+      countryOpenness(fromCountryCode) >= Country.SIXTH_FREEDOM_MIN_OPENNESS
+    }
+  }
 
   def passengerConsume[T <: Transport](demand : List[(PassengerGroup, Airport, Int)], links : List[T]) : PassengerConsumptionResult = {
     val consumptionResult = Collections.synchronizedList(new ArrayList[(PassengerGroup, Airport, Int, Route)]())
@@ -114,7 +152,10 @@ object PassengerSimulation {
         if (consumptionCycleCount < 3) 4
         else if (consumptionCycleCount < 6) 5
         else 6
-      val allRoutesMap = mutable.HashMap[PassengerGroup, Map[Airport, Route]]()
+      val indexBuildStart = System.nanoTime()
+      val routeSearchIndex = buildRouteSearchIndex(availableLinks)
+      val indexBuildNanos = System.nanoTime() - indexBuildStart
+      val allRoutesMap = new ConcurrentHashMap[PassengerGroup, Map[Airport, Route]]()
 
        //start consuming routes
 //       println()
@@ -128,13 +169,19 @@ object PassengerSimulation {
       val counter = new AtomicInteger(0)
       val progressCount = new AtomicInteger(0)
       val progressChunk = requiredRoutes.size / 100
+      val routeMapComputeNanos = new java.util.concurrent.atomic.AtomicLong(0L)
+      val syncConsumeNanos = new java.util.concurrent.atomic.AtomicLong(0L)
+      shortestRouteSolveNanosCollector.set(0L)
 
        demandChunks.par.foreach {
          case (passengerGroup, toAirport, chunkSize) =>
            var hasComputedRouteMap = false
-           val toAirportRouteMap = allRoutesMap.getOrElseUpdate(passengerGroup,  {
+           val toAirportRouteMap = allRoutesMap.computeIfAbsent(passengerGroup, _ => {
              hasComputedRouteMap = true
-             findRoutesByPassengerGroup(passengerGroup, requiredRoutes(passengerGroup), availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId, Some(externalCostModifier), iterationCount)
+             val routeComputeStart = System.nanoTime()
+             val routeMap = findRoutesByPassengerGroup(passengerGroup, requiredRoutes(passengerGroup), availableLinks, activeAirportIds, PassengerSimulation.countryOpenness, establishedAllianceIdByAirlineId, Some(externalCostModifier), iterationCount, Some(routeSearchIndex))
+             routeMapComputeNanos.addAndGet(System.nanoTime() - routeComputeStart)
+             routeMap
            })
            //allRoutesMap.get(passengerGroup).foreach { toAirportRouteMap =>
 //             if (!toAirportRouteMap.isEmpty) {
@@ -158,6 +205,7 @@ object PassengerSimulation {
                  rejection match {
                    case None =>
                      synchronized {
+                       val syncStart = System.nanoTime()
                        val consumptionSize = pickedRoute.links.foldLeft(chunkSize) { (foldInt, linkConsideration) =>
                          val actualLinkClass = linkConsideration.linkClass
                          val availableSeats = linkConsideration.link.availableSeats(actualLinkClass)
@@ -187,6 +235,7 @@ object PassengerSimulation {
                          //put a updated demand chunk
                          remainingDemandChunks.add((passengerGroup, toAirport, chunkSize - consumptionSize));
                        }
+                       syncConsumeNanos.addAndGet(System.nanoTime() - syncStart)
                      }
                    case Some(rejection) =>
                     import RouteRejectionReason._
@@ -213,6 +262,7 @@ object PassengerSimulation {
            }
         }
        println("Done!")
+      println(s"Cycle $consumptionCycleCount timings(ms): index=${indexBuildNanos / 1000000} routeMap=${routeMapComputeNanos.get / 1000000} shortestRoute=${shortestRouteSolveNanosCollector.get / 1000000} syncConsume=${syncConsumeNanos.get / 1000000}")
 
        //now process the remainingDemandChunks in next cycle
        demandChunks =  Random.shuffle(remainingDemandChunks.asScala.toList)
@@ -439,30 +489,36 @@ object PassengerSimulation {
                     countryOpenness : Map[String, Int] = PassengerSimulation.countryOpenness,
                     establishedAllianceIdByAirlineId : java.util.Map[Int, Int] = Collections.emptyMap[Int, Int](),
                     externalCostModifier : Option[CostModifier] = None,
-                    iterationCount : Int = 4) : Map[Airport, Route] = {
+                    iterationCount : Int = 4,
+                    routeSearchIndex : Option[RouteSearchIndex] = None) : Map[Airport, Route] = {
 
     val preferredLinkClass = passengerGroup.preference.preferredLinkClass
     //remove links that's unknown to this airport then compute cost for each link. Cost is adjusted by the PassengerGroup's preference
     val linkConsiderations = new ArrayList[LinkConsideration]()
+    val costProviderByLinkAndClass = mutable.HashMap[(Transport, LinkClass), CostStoreProvider]()
 
-    linksList.foreach { link =>
+    val directedCandidates : Iterable[DirectedRouteCandidate] = routeSearchIndex match {
+      case Some(index) =>
+        index.candidatesByClass.getOrElse(preferredLinkClass, Array.empty[DirectedRouteCandidate]).toSeq
+      case None =>
+        linksList.flatMap { link =>
+          link.availableSeatsAtOrBelowClass(preferredLinkClass).toList.flatMap {
+            case (matchingLinkClass, _) =>
+              List(
+                DirectedRouteCandidate(link, matchingLinkClass, inverted = false, link.from.countryCode, link.to.countryCode),
+                DirectedRouteCandidate(link, matchingLinkClass, inverted = true, link.to.countryCode, link.from.countryCode)
+              )
+          }
+        }
+    }
 
-      //see if there are any seats for that class (or lower) left
-      link.availableSeatsAtOrBelowClass(preferredLinkClass).foreach {
-        case (matchingLinkClass, seatsLeft) =>
-          //2 instance of the link, one for each direction. Take note that the underlying link is the same, hence capacity and other params is shared properly!
-          val costProvider = CostStoreProvider() //use same instance of costProvider so this is only computed once
-          val linkConsideration1 = LinkConsideration(link, matchingLinkClass, false, passengerGroup, externalCostModifier, costProvider)
-          val linkConsideration2 = LinkConsideration(link, matchingLinkClass, true, passengerGroup, externalCostModifier, costProvider)
-          if (hasFreedom(linkConsideration1, passengerGroup.fromAirport, countryOpenness)) {
-            linkConsiderations.add(linkConsideration1)
-          }
-          if (hasFreedom(linkConsideration2, passengerGroup.fromAirport, countryOpenness)) {
-            linkConsiderations.add(linkConsideration2)
-          }
+    directedCandidates.foreach { candidate =>
+      val provider = costProviderByLinkAndClass.getOrElseUpdate((candidate.link, candidate.matchingLinkClass), CostStoreProvider())
+      val linkConsideration = LinkConsideration(candidate.link, candidate.matchingLinkClass, candidate.inverted, passengerGroup, externalCostModifier, provider)
+      if (hasFreedom(candidate.fromCountryCode, candidate.toCountryCode, passengerGroup.fromAirport.countryCode, countryOpenness)) {
+        linkConsiderations.add(linkConsideration)
       }
     }
-    //val links = linksList.toArray
     findShortestRoute(passengerGroup, toAirports, activeAirportIds, linkConsiderations, establishedAllianceIdByAirlineId, iterationCount)
   }
 
@@ -470,13 +526,7 @@ object PassengerSimulation {
   
   
   def hasFreedom(linkConsideration : LinkConsideration, originatingAirport : Airport, countryOpenness : Map[String, Int]) : Boolean = {
-    if (linkConsideration.from.countryCode == linkConsideration.to.countryCode) { //domestic flight is always ok
-      true
-    } else if (linkConsideration.from.countryCode == originatingAirport.countryCode) { //always ok if link flying out from same country as the originate airport
-      true
-    } else { //a foreign airline flying out carrying passengers originating from a foreign airport, decide base on openness
-      countryOpenness(linkConsideration.from.countryCode) >= Country.SIXTH_FREEDOM_MIN_OPENNESS
-    }
+    hasFreedom(linkConsideration.from.countryCode, linkConsideration.to.countryCode, originatingAirport.countryCode, countryOpenness)
   }
   
   
@@ -558,6 +608,7 @@ object PassengerSimulation {
    * Map[toAiport, Route]
    */
   def findShortestRoute(passengerGroup : PassengerGroup, toAirports : Set[Airport], allVertices : Set[Int], linkConsiderations : java.util.List[LinkConsideration], allianceIdByAirlineId : java.util.Map[Int, Int], maxIteration : Int) : Map[Airport, Route] = {
+    val shortestRouteStart = System.nanoTime()
     val from = passengerGroup.fromAirport
 
     //     // Step 1: initialize graph
@@ -586,6 +637,14 @@ object PassengerSimulation {
 //           if distance[u] + w < distance[v]:
 //               distance[v] := distance[u] + w
 //               predecessor[v] := u
+    val outgoingByFromAirportId = new java.util.HashMap[Int, ArrayList[LinkConsideration]]()
+    val setupIterator = linkConsiderations.iterator()
+    while (setupIterator.hasNext) {
+      val edge = setupIterator.next()
+      val bucket = outgoingByFromAirportId.computeIfAbsent(edge.from.id, _ => new ArrayList[LinkConsideration]())
+      bucket.add(edge)
+    }
+
     for (i <- 0 until maxIteration) {
       //val updatingLinks = ArrayBuffer[LinkConsideration]()
       //val linkConsiderationsIterator = linkConsiderations.iterator()
@@ -606,11 +665,15 @@ object PassengerSimulation {
       // This also create the shuttle from other alliance problem
       //The fix for this is never use the current predecessorMap for lookup, instead, use the previous map
 
-      val linkConsiderationsIterator = linkConsiderations.iterator()
-      while (linkConsiderationsIterator.hasNext) {
-        val linkConsideration = linkConsiderationsIterator.next
-        if (activeVertices.contains(linkConsideration.from.id)) { //optimization - only need to re-run if the vertex was update in last iteration
-          val predecessorLinkConsideration = predecessorMap.get(linkConsideration.from.id)
+      val activeVerticesIterator = activeVertices.iterator()
+      while (activeVerticesIterator.hasNext) {
+        val activeVertexId = activeVerticesIterator.next()
+        val outgoing = outgoingByFromAirportId.get(activeVertexId)
+        if (outgoing != null) {
+          val outgoingIterator = outgoing.iterator()
+          while (outgoingIterator.hasNext) {
+            val linkConsideration = outgoingIterator.next()
+            val predecessorLinkConsideration = predecessorMap.get(linkConsideration.from.id)
 
           var connectionCost = 0.0
           var isValid : Boolean = true
@@ -671,6 +734,7 @@ object PassengerSimulation {
               newActiveVertices.add(linkConsideration.to.id)
             }
           }
+          }
         }
       }
       predecessorMap = newPredecessorMap
@@ -717,7 +781,9 @@ object PassengerSimulation {
       }  
     }
     
-    resultMap.toMap
+    val result = resultMap.toMap
+    shortestRouteSolveNanosCollector.addAndGet(System.nanoTime() - shortestRouteStart)
+    result
   }
 
 
