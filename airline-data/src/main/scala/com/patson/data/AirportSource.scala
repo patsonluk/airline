@@ -269,6 +269,7 @@ object AirportSource {
           resultSet.getLong("population"),
           runwayLength = resultSet.getInt("runway_length"))
         airport.id = resultSet.getInt("id")
+        airport.islandAirport = resultSet.getBoolean("island_airport")
         airportData += airport
 
         if (fullLoad || loadFeatures) {
@@ -1143,6 +1144,24 @@ object AirportSource {
       preparedStatement.close()
 
       result.toList
+    } finally {
+      connection.close()
+    }
+  }
+
+  def updateAirportIslandStatus(updates : Map[Int, Boolean]) : Unit = {
+    val connection = Meta.getConnection()
+    try {
+      connection.setAutoCommit(false)
+      val stmt = connection.prepareStatement(s"UPDATE $AIRPORT_TABLE SET island_airport = ? WHERE id = ?")
+      updates.foreach { case (airportId, isIsland) =>
+        stmt.setBoolean(1, isIsland)
+        stmt.setInt(2, airportId)
+        stmt.addBatch()
+      }
+      stmt.executeBatch()
+      connection.commit()
+      stmt.close()
     } finally {
       connection.close()
     }

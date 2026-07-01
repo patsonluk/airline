@@ -41,6 +41,7 @@ case class Airport(iata : String, icao : String, name : String, latitude : Doubl
 //  private[this] var cityImageUrl : Option[String] = None
 
   private[model] var country : Option[Country] = None
+  var islandAirport : Boolean = false
 
   //val baseIncome = if (basePopulation > 0) (power / basePopulation).toInt  else 0
 
