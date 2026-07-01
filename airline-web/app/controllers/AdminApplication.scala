@@ -183,8 +183,8 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
               "username" -> user.userName,
               "userStatus" -> user.status,
               "userLevel" -> user.level,
-              "userModifiers" -> user.modifiers.map(_._1),
-              "airlineModifiers" -> airlineModifiers.map(_.modifierType),
+              "userModifiers" -> user.modifiers.map { case (m, ts) => Json.obj("name" -> m.toString, "actionTimestamp" -> ts) },
+              "airlineModifiers" -> airlineModifiers.map(m => Json.obj("name" -> m.modifierType.toString, "actionTimestamp" -> m.actionTimestamp)),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
               "occurrence" -> ipDetails.occurrence,
             )
@@ -229,8 +229,8 @@ class AdminApplication @Inject()(cc: ControllerComponents) extends AbstractContr
               "username" -> user.userName,
               "userLevel" -> user.level,
               "userStatus" -> user.status,
-              "userModifiers" -> user.modifiers.map(_._1),
-              "airlineModifiers" -> airlineModifiers.map(_.modifierType),
+              "userModifiers" -> user.modifiers.map { case (m, ts) => Json.obj("name" -> m.toString, "actionTimestamp" -> ts) },
+              "airlineModifiers" -> airlineModifiers.map(m => Json.obj("name" -> m.modifierType.toString, "actionTimestamp" -> m.actionTimestamp)),
               "lastUpdated" -> DateFormat.getInstance().format(ipDetails.lastUpdated),
               "occurrence" -> ipDetails.occurrence,
             )
