@@ -3,6 +3,7 @@ name := """airline-web"""
 version := "1.0-SNAPSHOT"
 
 scalaVersion := "2.13.14"
+enablePlugins(PlayScala)
 
 libraryDependencies ++= Seq(
   jdbc,

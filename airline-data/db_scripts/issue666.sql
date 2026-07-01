@@ -1,0 +1,10 @@
+ALTER TABLE `user_modifier` ADD COLUMN `action_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE `airline_modifier` ADD COLUMN `action_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+CREATE TABLE IF NOT EXISTS `airline_violation` (
+  `airline` INTEGER,
+  `violation` VARCHAR(10),
+  `detection_timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`airline`, `violation`),
+  FOREIGN KEY (`airline`) REFERENCES `airline`(`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);

@@ -314,6 +314,7 @@ object Meta {
     createUserUuid(connection)
     createAirlineModifier(connection)
     createAirlineModifierProperty(connection)
+    createAirlineViolation(connection)
     createUserModifier(connection)
     createAllianceLabelColor(connection)
     createAirportAsset(connection)
@@ -2015,6 +2016,23 @@ object Meta {
       "expiry INTEGER," +
       "action_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP," +
       "INDEX " + AIRLINE_MODIFIER_INDEX_PREFIX + 1 + " (airline)," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")"
+    )
+    statement.execute()
+    statement.close()
+  }
+
+  def createAirlineViolation(connection : Connection) {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + AIRLINE_VIOLATION_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + AIRLINE_VIOLATION_TABLE + "(" +
+      "airline INTEGER, " +
+      "violation VARCHAR(10), " +
+      "detection_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+      "PRIMARY KEY (airline, violation)," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")"
     )

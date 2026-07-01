@@ -489,4 +489,9 @@ object AirlineModifierPropertyType extends Enumeration {
   val STRENGTH, DURATION = Value
 }
 
+object AirlineViolation extends Enumeration {
+  type AirlineViolation = Value
+  val IP, UUID = Value
+}
+
 case class NameHistory(name : String, updateTimestamp : Date)

@@ -74,6 +74,7 @@ object Constants {
   val AIRLINE_MODIFIER_TABLE = "airline_modifier"
   val AIRLINE_MODIFIER_INDEX_PREFIX = "airline_modifier_index_"
   val AIRLINE_MODIFIER_PROPERTY_TABLE = "airline_modifier_property"
+  val AIRLINE_VIOLATION_TABLE = "airline_violation"
 
   
   val INCOME_TABLE = "income"
