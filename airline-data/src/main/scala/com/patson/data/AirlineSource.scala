@@ -11,8 +11,6 @@ import java.sql.{Blob, Date, Statement}
 import java.io.ByteArrayInputStream
 import com.patson.util.{AirlineCache, AirportCache}
 
-import java.util.Date
-
 
 object AirlineSource {
   private[this] val BASE_QUERY = "SELECT a.id AS id, a.name AS name, a.is_generated AS is_generated, ai.* FROM " + AIRLINE_TABLE + " a JOIN " + AIRLINE_INFO_TABLE + " ai ON a.id = ai.airline "

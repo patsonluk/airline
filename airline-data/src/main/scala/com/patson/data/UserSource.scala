@@ -58,28 +58,37 @@ object UserSource {
   }
   
   
-  def loadUsersByCriteria(criteria : List[(String, Any)]) : List[User] = {
+  def loadUsersByCriteria(criteria : List[(String, Any)], airlineFullLoad : Boolean = true) : List[User] = {
+    var queryString = "SELECT u.*, ua.* FROM " +  USER_TABLE + " u LEFT JOIN " + USER_AIRLINE_TABLE + " ua ON u.user_name = ua.user_name"
+
+    if (!criteria.isEmpty) {
+      queryString += " WHERE "
+      for (i <- 0 until criteria.size - 1) {
+        queryString += criteria(i)._1 + " = ? AND "
+      }
+      queryString += criteria.last._1 + " = ?"
+    }
+
+    loadUsersByQuery(queryString, criteria.map(_._2), airlineFullLoad)
+  }
+
+  def loadUsersByLastActive(lastActive : Calendar, airlineFullLoad : Boolean = true) : List[User] = {
+    val queryString = "SELECT u.*, ua.* FROM " +  USER_TABLE + " u LEFT JOIN " + USER_AIRLINE_TABLE + " ua ON u.user_name = ua.user_name WHERE u.last_active > ?"
+    loadUsersByQuery(queryString, List(new java.sql.Timestamp(lastActive.getTimeInMillis)), airlineFullLoad)
+  }
+
+  def loadUsersByQuery(queryString: String, parameters : List[Any], airlineFullLoad : Boolean = true) : List[User] = {
       //open the hsqldb
     val connection = Meta.getConnection()
-    
-    try {  
-      var queryString = "SELECT u.*, ua.* FROM " +  USER_TABLE + " u LEFT JOIN " + USER_AIRLINE_TABLE + " ua ON u.user_name = ua.user_name"  
-      
-      if (!criteria.isEmpty) {
-        queryString += " WHERE "
-        for (i <- 0 until criteria.size - 1) {
-          queryString += criteria(i)._1 + " = ? AND "
-        }
-        queryString += criteria.last._1 + " = ?"
-      }
-      
+
+    try {
       val preparedStatement = connection.prepareStatement(queryString)
-      
-      for (i <- 0 until criteria.size) {
-        preparedStatement.setObject(i + 1, criteria(i)._2)
+
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 1, parameters(i))
       }
-      
-      
+
+
       val resultSet = preparedStatement.executeQuery()
       
       val userList = scala.collection.mutable.Map[Int, (User, ListBuffer[Int])]() //Map[UserId, (User, List[AirlineId])]
@@ -114,7 +123,7 @@ object UserSource {
       val allAirlineIds : List[Int] = userList.values.map(_._2).flatten.toSet.toList
       
       //val airlinesMap = AirlineSource.loadAirlinesByIds(allAirlineIds, true).map(airline => (airline.id, airline)).toMap
-      val airlinesMap = AirlineCache.getAirlines(allAirlineIds, true)
+      val airlinesMap = AirlineCache.getAirlines(allAirlineIds, airlineFullLoad)
 
       userList.values.foreach {
         case(user,userAirlineIds) =>
