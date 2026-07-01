@@ -35,7 +35,7 @@ GET      /airports/:airportId/generic-transits     controllers.GenericTransitApp
 
 GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
 
-GET		 /airlines						  controllers.AirlineApplication.getAllAirlines(loginStatus : Boolean ?= false, hideInactive : Boolean ?= false)
+GET		 /airlines						  controllers.AirlineApplication.getAllAirlines(loginStatus : Boolean ?= false, hideInactive : Boolean ?= false, includeAirline : Option[Int])
 GET		 /airlines/:airlineId	  		  controllers.AirlineApplication.getAirline(airlineId : Int, extendedInfo : Boolean ?= false)
 GET		 /airlines/:airlineId/airplane-models	  controllers.AirplaneApplication.getAirplaneModelsByAirline(airlineId : Int)
 GET		 /airlines/:airlineId/airplanes	  controllers.AirplaneApplication.getOwnedAirplanes(airlineId : Int, simpleResult : Boolean ?= false, groupedResult : Boolean ?= false)

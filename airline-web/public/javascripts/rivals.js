@@ -13,12 +13,15 @@ function showRivalsCanvas(selectedAirline) {
 
 function toggleHideInactive(flagValue) {
     hideInactive = flagValue
-    var selectedSortHeader = $('#rivalsTableSortHeader .table-header .cell.selected')
-    updateRivalsTable(selectedSortHeader.data('sort-property'), selectedSortHeader.data('sort-order'), null)
+    loadAllRivals()
 }
 
 function loadAllRivals(selectedAirline) {
-	var getUrl = "airlines?loginStatus=true"
+	var getUrl = "airlines?loginStatus=true&hideInactive=" + hideInactive
+
+	if (selectedAirline) {
+	    getUrl += "&includeAirline=" + selectedAirline
+	}
 
 	loadedRivals = []
 	loadedRivalsById = {}

@@ -114,7 +114,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     }
   }
 
-  def getAllAirlines(loginStatus : Boolean, hideInactive : Boolean) = Authenticated { implicit request =>
+  def getAllAirlines(loginStatus : Boolean, hideInactive : Boolean, includeAirline : Option[Int]) = Authenticated { implicit request =>
      //val airlines = AirlineSource.loadAllAirlines(fullLoad = true)
     val airlinesByUser = scala.collection.mutable.Map[Airline, User]()
     val sevenDaysAgo = Calendar.getInstance();
@@ -122,17 +122,31 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val thirtyDaysAgo = Calendar.getInstance()
     thirtyDaysAgo.add(Calendar.DATE, -30)
 
-    UserSource.loadUsersByCriteria(List.empty).foreach { user =>
-      if (!hideInactive || user.lastActiveTime.after(thirtyDaysAgo)) {
-        user.getAccessibleAirlines().foreach { airline =>
-          airlinesByUser.put(airline, user)
+    val users = if (hideInactive) {
+      UserSource.loadUsersByLastActive(thirtyDaysAgo)
+    } else {
+      UserSource.loadUsersByCriteria(List.empty)
+    }
+
+    users.foreach { user =>
+      user.getAccessibleAirlines().foreach { airline =>
+        airlinesByUser.put(airline, user)
+      }
+    }
+
+    includeAirline.foreach { airlineId => //see if we need to explicitly load extra airlines
+      if (!airlinesByUser.keys.map(_.id).toSet.contains(airlineId)) {
+        UserSource.loadUserByAirlineId(airlineId).foreach { user =>
+          user.getAccessibleAirlines().foreach { airline =>
+            airlinesByUser.put(airline, user)
+          }
         }
       }
     }
 
+
     val userStatusMap: Map[User, LoginStatus.Value] =
       if (loginStatus) {
-
         val activeUsers = ChatControllerActor.getActiveUsers().map(_.id)
         airlinesByUser.values.map { user =>
           val status =
