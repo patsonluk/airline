@@ -94,6 +94,8 @@
 	<script src='@routes.Assets.versioned("javascripts/confetti.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/admin.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/about.js")'></script>
+	<script src='https://unpkg.com/deck.gl@@8.9.22/dist.min.js'></script>
+	<script src='https://unpkg.com/@@deck.gl/google-maps@@8.9.22/dist.min.js'></script>
 	<script src='@routes.Assets.versioned("javascripts/heatmap.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/campaign.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/profile.js")'></script>
@@ -5524,7 +5526,7 @@
 
     <script src="@routes.Assets.versioned("javascripts/chat-popup.js")"></script>
 
-    <script src='https://maps.googleapis.com/maps/api/js?v=3.43&key=@configuration.get[String]("google.mapKey")&libraries=geometry,drawing,visualization&callback=initMap'>
+    <script src='https://maps.googleapis.com/maps/api/js?v=3.43&key=@configuration.get[String]("google.mapKey")&libraries=geometry,drawing&callback=initMap'>
 	</script>
 <!-- 	<script src="https://apis.google.com/js/platform.js"></script> -->
   <script src='/assets/firework/fscreen.js'></script>
