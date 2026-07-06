@@ -43,18 +43,121 @@ function closeHeatmap() {
 }
 
 function clearHeatmap() {
-    if (heatmapPositive) {
-        heatmapPositive.setMap(null)
-        heatmapPositive = undefined
-    }
-    if (heatmapNegative) {
-        heatmapNegative.setMap(null)
-        heatmapPositive = undefined
+    lastHeatmapLayerData = null
+    if (deckHeatmapOverlay) {
+        deckHeatmapOverlay.setProps({layers: []})
     }
 }
 
-var heatmapPositive
-var heatmapNegative
+var deckHeatmapOverlay
+function getDeckHeatmapOverlay() {
+    if (!deckHeatmapOverlay) {
+        deckHeatmapOverlay = new deck.GoogleMapsOverlay({layers: []})
+    }
+    return deckHeatmapOverlay
+}
+
+//old google.maps.visualization.HeatmapLayer's dissipating:false meant "radius" is the radius at zoom level 0 and grows with zoom
+//so a point's real-world footprint (and therefore overlap with neighboring points) stays constant across zoom levels.
+//deck.gl's radiusPixels is always screen-space, so we replicate that by rescaling it ourselves on zoom change.
+const HEATMAP_REFERENCE_ZOOM = 2
+const HEATMAP_BASE_RADIUS_PIXELS = 20
+const HEATMAP_ZOOM_GROWTH_FACTOR = 2 //matches the true doubling of pixel density per zoom level, so a point's real-world footprint stays constant as you zoom
+const HEATMAP_MIN_RADIUS_PIXELS = 20
+const HEATMAP_MAX_RADIUS_PIXELS = 400
+var lastHeatmapLayerData
+var heatmapViewportListenerAdded = false
+var heatmapViewportRedrawTimeout
+
+function getZoomScaledRadiusPixels() {
+    var radius = HEATMAP_BASE_RADIUS_PIXELS * Math.pow(HEATMAP_ZOOM_GROWTH_FACTOR, map.getZoom() - HEATMAP_REFERENCE_ZOOM)
+    return Math.min(HEATMAP_MAX_RADIUS_PIXELS, Math.max(HEATMAP_MIN_RADIUS_PIXELS, radius))
+}
+
+//HeatmapLayer aggregates into a single viewport-sized texture and doesn't support wrapLongitude (that's only on path/line/polygon
+//layers), so when the visible view spans both sides of the Pacific, raw longitudes more than 180 degrees from the view center
+//end up aggregated in the wrong place (or dropped). Shift each point by whole 360s to the copy nearest the current center.
+function wrapLngNearCenter(lng, centerLng) {
+    return lng - Math.round((lng - centerLng) / 360) * 360
+}
+
+function ensureHeatmapViewportListener() {
+    if (heatmapViewportListenerAdded) {
+        return
+    }
+    heatmapViewportListenerAdded = true
+    google.maps.event.addListener(map, 'bounds_changed', function() {
+        if (!lastHeatmapLayerData || !$("#heatmapControlPanel").is(":visible")) {
+            return
+        }
+        //debounce past deck.gl's own internal viewport-sync delay so we don't re-aggregate against a stale (pre-pan/zoom) viewport
+        window.clearTimeout(heatmapViewportRedrawTimeout)
+        heatmapViewportRedrawTimeout = window.setTimeout(renderHeatmapLayers, 600)
+    })
+}
+
+var heatmapRenderVersion = 0
+
+//an explicit colorDomain gets rescaled internally by deck.gl in ways we can't predict or control (differently for SUM vs MEAN,
+//and differently again by zoom/radius), so we let deck.gl auto-compute the domain from whatever's in view like before.
+//log(weight + HEATMAP_LOG_OFFSET) still compresses large weights so dense hubs don't drown out sparser areas as much, and a
+//bigger offset keeps the curve closer to linear for small weights (raise it to reduce how much low-loyalist areas get boosted).
+const HEATMAP_LOG_OFFSET = 5
+//points this weak render as effectively fully transparent anyway, so skip aggregating/rendering them entirely to cut GPU work
+const HEATMAP_MIN_VISIBLE_WEIGHT = 0.1
+
+function normalizedWeight(weight) {
+    return Math.log(weight + HEATMAP_LOG_OFFSET) - Math.log(HEATMAP_LOG_OFFSET)
+}
+
+function renderHeatmapLayers() {
+    heatmapRenderVersion++
+    var radiusPixels = getZoomScaledRadiusPixels()
+    //map.getCenter().lng() can come back outside -180..180 after panning repeatedly around the globe in the same direction,
+    //so normalize it first or every point ends up wrapped relative to the wrong reference
+    var centerLng = wrapLngNearCenter(map.getCenter().lng(), 0)
+    var layers = []
+    if (lastHeatmapLayerData.heatmapPositiveData.length > 0) {
+        layers.push(new deck.HeatmapLayer({
+            id: 'heatmap-positive',
+            data: lastHeatmapLayerData.heatmapPositiveData,
+            getPosition: function(d) { return [wrapLngNearCenter(d.lng, centerLng), d.lat] },
+            getWeight: function(d) { return normalizedWeight(d.weight) },
+            colorRange: lastHeatmapLayerData.heatmapPositiveColorRange,
+            radiusPixels: radiusPixels,
+            //data array reference is reused across pans, so force deck.gl to fully re-aggregate every render
+            updateTriggers: {getPosition: heatmapRenderVersion, getWeight: heatmapRenderVersion}
+        }))
+    }
+
+    if (lastHeatmapLayerData.heatmapNegativeData.length > 0) {
+        layers.push(new deck.HeatmapLayer({
+            id: 'heatmap-negative',
+            data: lastHeatmapLayerData.heatmapNegativeData,
+            getPosition: function(d) { return [wrapLngNearCenter(d.lng, centerLng), d.lat] },
+            getWeight: function(d) { return normalizedWeight(d.weight) },
+            colorRange: lastHeatmapLayerData.heatmapNegativeColorRange,
+            radiusPixels: radiusPixels,
+            updateTriggers: {getPosition: heatmapRenderVersion, getWeight: heatmapRenderVersion}
+        }))
+    }
+
+    var overlay = getDeckHeatmapOverlay()
+    overlay.setMap(map)
+    overlay.setProps({layers: layers})
+}
+
+//deck.gl colorRange entries are [r, g, b, a] with a in 0-255, so convert from the css rgba(...) strings kept below for readability.
+//the original alphas (authored for the old Google heatmap's much smaller radius) jump abruptly partway through instead of ramping
+//smoothly, which shows up as a visible ring now that the radius is much larger, so we override alpha with a linear 0->1 ramp here.
+function cssRgbaToColorRange(gradient) {
+    return gradient.map(function(css, index) {
+        var channels = css.match(/rgba?\(([^)]+)\)/)[1].split(',').map(function(channel) { return parseFloat(channel) })
+        var alpha = index / (gradient.length - 1)
+        return [channels[0], channels[1], channels[2], Math.round(alpha * 255)]
+    })
+}
+
 const loyalistStatusHeatmapGradient = [
     "rgba(128, 133, 242, 0)",
     "rgba(141, 145, 243, 0.7)",
@@ -93,6 +196,10 @@ const loyalistTrendHeatmapNegativeGradient = [
   "rgba(255, 150, 80, 1)"
 ];
 
+const loyalistStatusHeatmapColorRange = cssRgbaToColorRange(loyalistStatusHeatmapGradient)
+const loyalistTrendHeatmapPositiveColorRange = cssRgbaToColorRange(loyalistTrendHeatmapPositiveGradient)
+const loyalistTrendHeatmapNegativeColorRange = cssRgbaToColorRange(loyalistTrendHeatmapNegativeGradient)
+
 function updateHeatmap(airlineId) {
 //    $.each(historyPaths, function(index, path) { //clear all history path
 //        path.setMap(null)
@@ -107,52 +214,40 @@ function updateHeatmap(airlineId) {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(result) {
-            clearHeatmap()
             if (!$("#heatmapControlPanel").is(":visible")) { //heatmap closed already
+                clearHeatmap()
                 return
             }
             var heatmapPositiveData = []
             var heatmapNegativeData = []
             $.each(result.points, function(index, entry) {
+              if (Math.abs(entry.weight) < HEATMAP_MIN_VISIBLE_WEIGHT) { //renders indistinguishable from background, skip aggregating/rendering it
+                return
+              }
               if (entry.weight >= 0) {
-                heatmapPositiveData.push({location: new google.maps.LatLng(entry.lat, entry.lng), weight: entry.weight})
+                heatmapPositiveData.push({lat: entry.lat, lng: entry.lng, weight: entry.weight})
               } else {
-                heatmapNegativeData.push({location: new google.maps.LatLng(entry.lat, entry.lng), weight: entry.weight * -1})
+                heatmapNegativeData.push({lat: entry.lat, lng: entry.lng, weight: entry.weight * -1})
               }
             })
 
-            var heatmapPositiveGradient
-            var heatmapNegativeGradient
+            var heatmapPositiveColorRange
+            var heatmapNegativeColorRange
             if (heatmapType === "loyalistImpact") {
-                heatmapPositiveGradient =loyalistStatusHeatmapGradient
+                heatmapPositiveColorRange = loyalistStatusHeatmapColorRange
             } else if (heatmapType === "loyalistTrend") {
-                heatmapPositiveGradient = loyalistTrendHeatmapPositiveGradient
-                heatmapNegativeGradient = loyalistTrendHeatmapNegativeGradient
+                heatmapPositiveColorRange = loyalistTrendHeatmapPositiveColorRange
+                heatmapNegativeColorRange = loyalistTrendHeatmapNegativeColorRange
             }
 
-            if (heatmapPositiveData.length > 0) {
-                heatmapPositive = new google.maps.visualization.HeatmapLayer({
-                  data: heatmapPositiveData,
-                  dissipating: false,
-                  gradient: heatmapPositiveGradient,
-                  maxIntensity: result.maxIntensity,
-                  radius: 3
-                });
-
-                heatmapPositive.setMap(map);
+            lastHeatmapLayerData = {
+                heatmapPositiveData: heatmapPositiveData,
+                heatmapNegativeData: heatmapNegativeData,
+                heatmapPositiveColorRange: heatmapPositiveColorRange,
+                heatmapNegativeColorRange: heatmapNegativeColorRange
             }
-
-            if (heatmapNegativeData.length > 0) {
-                heatmapNegative = new google.maps.visualization.HeatmapLayer({
-                  data: heatmapNegativeData,
-                  dissipating: false,
-                  gradient: heatmapNegativeGradient,
-                  maxIntensity: result.maxIntensity,
-                  radius: 3
-                });
-
-                heatmapNegative.setMap(map);
-            }
+            ensureHeatmapViewportListener()
+            renderHeatmapLayers()
 
             updateHeatmapArrows(result.minDeltaCount, airlineId)
         },
