@@ -1,0 +1,1 @@
+Model("Boeing 747-8I", capacity = 605, fuelBurn = (605 * 4).toInt, speed = 917, range = 15000, price = 400000000, lifespan = 35 * 52, constructionTime = 48, countryCode = "US",imageUrl = "imageUrl = "https://www.norebbo.com/2015/12/boeing-747-8i-blank-illustration-templates/"),
