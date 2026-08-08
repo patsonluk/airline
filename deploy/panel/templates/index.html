@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Airline Club — Ops</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 1.5rem; }
+  header { display: flex; justify-content: space-between; align-items: baseline; }
+  h1 { font-size: 1.2rem; }
+  table { border-collapse: collapse; width: 100%; max-width: 60rem; }
+  th, td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid #8883; }
+  .state-running { color: #27ae60; font-weight: 600; }
+  .state-exited, .state-dead { color: #c0392b; font-weight: 600; }
+  .health-unhealthy { color: #e67e22; }
+  button { margin-right: .35rem; padding: .3rem .8rem; cursor: pointer; }
+  button:disabled { cursor: wait; opacity: .5; }
+  #logbox { margin-top: 1.5rem; max-width: 60rem; }
+  pre { background: #0002; padding: 1rem; overflow-x: auto; max-height: 24rem;
+        overflow-y: auto; font-size: .78rem; white-space: pre-wrap; }
+  .note { color: #888; font-size: .85rem; }
+  #err { color: #c0392b; min-height: 1.2rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Airline Club ops panel</h1>
+  <a href="/logout">Log out</a>
+</header>
+<div id="err"></div>
+<table>
+  <thead><tr><th>Service</th><th>State</th><th>Status</th><th>Actions</th></tr></thead>
+  <tbody id="rows"><tr><td colspan="4">Loading…</td></tr></tbody>
+</table>
+<p class="note">Restart the sim first, then the web front end, if live updates stay stale.
+Database problems: contact the developer — do not restart <code>db</code> from here.</p>
+<div id="logbox" hidden>
+  <h2 id="logtitle" style="font-size:1rem"></h2>
+  <pre id="logs"></pre>
+</div>
+<script>
+const err = (m) => { document.getElementById('err').textContent = m || ''; };
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  if (r.status === 401) { location.href = '/login'; throw new Error('logged out'); }
+  if (!r.ok) {
+    let msg = 'HTTP ' + r.status;
+    try { msg = (await r.json()).error || msg; } catch (e) {}
+    throw new Error(msg);
+  }
+  return r;
+}
+
+async function refresh() {
+  try {
+    const data = await (await api('/api/status')).json();
+    const rows = data.services.map(s => {
+      const stateCls = 'state-' + s.state;
+      const healthCls = 'health-' + s.health;
+      const buttons = [];
+      if (s.controllable) {
+        buttons.push(`<button onclick="act('${s.service}','restart',this)">Restart</button>`);
+        if (s.state === 'running')
+          buttons.push(`<button onclick="act('${s.service}','stop',this)">Stop</button>`);
+        else
+          buttons.push(`<button onclick="act('${s.service}','start',this)">Start</button>`);
+      }
+      buttons.push(`<button onclick="showLogs('${s.service}')">Logs</button>`);
+      return `<tr><td>${s.service}</td><td class="${stateCls}">${s.state}</td>` +
+             `<td class="${healthCls}">${s.status}</td><td>${buttons.join('')}</td></tr>`;
+    });
+    document.getElementById('rows').innerHTML = rows.join('') || '<tr><td colspan="4">No containers found.</td></tr>';
+    err('');
+  } catch (e) { err('Status refresh failed: ' + e.message); }
+}
+
+async function act(service, verb, btn) {
+  if (!confirm(verb + ' ' + service + '?')) return;
+  btn.disabled = true;
+  try { await api(`/api/service/${service}/${verb}`, {method: 'POST'}); err(''); }
+  catch (e) { err(verb + ' ' + service + ' failed: ' + e.message); }
+  finally { btn.disabled = false; refresh(); }
+}
+
+async function showLogs(service) {
+  try {
+    const text = await (await api(`/api/service/${service}/logs?tail=200`)).text();
+    document.getElementById('logtitle').textContent = 'Logs: ' + service + ' (last 200 lines)';
+    document.getElementById('logs').textContent = text || '(empty)';
+    document.getElementById('logbox').hidden = false;
+    err('');
+  } catch (e) { err('logs failed: ' + e.message); }
+}
+
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

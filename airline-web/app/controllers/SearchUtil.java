@@ -537,6 +537,13 @@ public class SearchUtil {
 
 
 	private static RestHighLevelClient getClient() {
+		com.typesafe.config.Config config = com.typesafe.config.ConfigFactory.load();
+		if (config.hasPath("elasticsearch.host")) {
+			int port = config.hasPath("elasticsearch.port") ? config.getInt("elasticsearch.port") : 9200;
+			return new RestHighLevelClient(
+					RestClient.builder(
+							new HttpHost(config.getString("elasticsearch.host"), port, "http")));
+		}
 		RestHighLevelClient client = new RestHighLevelClient(
 				RestClient.builder(
 						new HttpHost("localhost", 9200, "http"),

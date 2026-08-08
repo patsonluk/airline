@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Airline Club — Ops</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; display: flex; min-height: 100vh;
+         align-items: center; justify-content: center; margin: 0; }
+  form { border: 1px solid #8884; border-radius: 8px; padding: 2rem; width: 20rem; }
+  h1 { font-size: 1.1rem; margin-top: 0; }
+  input[type=password] { width: 100%; padding: .5rem; margin: .5rem 0 1rem; box-sizing: border-box; }
+  button { padding: .5rem 1.5rem; cursor: pointer; }
+  .error { color: #c0392b; margin-top: 1rem; }
+</style>
+</head>
+<body>
+<form method="post" action="/login">
+  <h1>Airline Club ops panel</h1>
+  <label for="password">Admin password</label>
+  <input id="password" name="password" type="password" autofocus autocomplete="current-password">
+  <button type="submit">Log in</button>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+</form>
+</body>
+</html>
