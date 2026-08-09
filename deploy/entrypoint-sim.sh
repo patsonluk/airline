@@ -5,6 +5,7 @@ set -eu
 # ConfigFactory.load() only; it does not read env vars itself.
 exec /app/airline-data/bin/airline-data \
   -J-Xms"${SIM_HEAP:-8g}" -J-Xmx"${SIM_HEAP:-8g}" \
+  -J-XX:+ExitOnOutOfMemoryError \
   -J-XX:MetaspaceSize=64m -J-XX:MaxMetaspaceSize=256m \
   -Dlog4j2.formatMsgNoLookups=true \
   -Dmysqldb.host="${DB_HOST:-db:3306}" \

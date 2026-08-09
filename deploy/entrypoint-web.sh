@@ -3,8 +3,11 @@ set -eu
 
 # pidfile to /dev/null: a stale RUNNING_PID would otherwise block every
 # container restart and defeat restart-on-crash.
+# ExitOnOutOfMemoryError: an OutOfMemoryError otherwise wounds the JVM but
+# leaves it running, and the restart policy never fires on a zombie.
 exec /app/airline-web/bin/airline-web \
   -J-Xmx"${WEB_HEAP:-1024m}" \
+  -J-XX:+ExitOnOutOfMemoryError \
   -Dplay.server.pidfile.path=/dev/null \
   -Dhttp.address=0.0.0.0 \
   -Dhttp.port=9000 \
