@@ -47,8 +47,12 @@ services:
       dockerfile: deploy/Dockerfile
       target: sim
     restart: unless-stopped
+    # Lets a container reach a MySQL that runs on the host itself
+    # (hybrid mode, RUNBOOK section 12). Harmless when unused.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      DB_HOST: db:3306
+      DB_HOST: ${DB_HOST:-db:3306}
       DB_SCHEMA: ${DB_SCHEMA:-airline_v2_1}
       DB_USER: ${DB_USER:-sa}
       DB_PASSWORD: ${DB_PASSWORD:?}
@@ -75,8 +79,10 @@ services:
       - "9000:9000"
     # es and sim are not dependencies on purpose: the web starts without the
     # sim (ReconnectActor self-heals) and degrades without ES.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
-      DB_HOST: db:3306
+      DB_HOST: ${DB_HOST:-db:3306}
       DB_SCHEMA: ${DB_SCHEMA:-airline_v2_1}
       DB_USER: ${DB_USER:-sa}
       DB_PASSWORD: ${DB_PASSWORD:?}

@@ -180,6 +180,35 @@ Recommended hardening (optional, no TLS required): add a GCP firewall rule that 
   `dbdata` and `esdata` volumes.
 - **WARNING: `docker compose down -v` deletes the database volume. Do not use the `-v` flag.**
 
+## 12. Hybrid mode: keep MySQL on the host
+
+Use this mode to containerize only the JVMs and Elasticsearch, with the existing bare-metal MySQL
+left in place. No data moves. This is a low-risk first step; move the database later or never.
+
+1. Make the host MySQL listen on the Docker bridge. In the MySQL config, set:
+   ```
+   bind-address = 0.0.0.0
+   ```
+   (Or bind to the docker0 address only. Keep the GCP firewall closed on port 3306.)
+2. Grant access from the Docker subnet:
+   ```sql
+   CREATE USER 'sa'@'172.%' IDENTIFIED BY '<the sa password>';
+   GRANT ALL PRIVILEGES ON airline_v2_1.* TO 'sa'@'172.%';
+   ```
+3. Restart the host MySQL.
+4. In `deploy/.env`, set:
+   ```
+   DB_HOST=host.docker.internal:3306
+   ```
+5. Start the stack without the db container:
+   ```bash
+   docker compose -f deploy/docker-compose.yml up -d --no-deps sim web es panel socket-proxy
+   ```
+
+`--no-deps` is necessary: without it, compose also starts the `db` container. The panel works the
+same in this mode; it does not list a db container, and database problems remain an escalation to
+the dev.
+
 ## Known limits
 
 *(Normal prose.)*
