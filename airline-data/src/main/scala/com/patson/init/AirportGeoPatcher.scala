@@ -54,8 +54,8 @@ object AirportGeoPatcher extends App {
 
     val computedAirports = GeoDataGenerator.generateAirportData(csvAirports, runways, cities)
 
-    val newAirports = computedAirports.filter(_.id == 0)
-    val updatingAirports = computedAirports.filter(_.id > 0)
+    val newAirports = computedAirports.filter(_._1.id == 0)
+    val updatingAirports = computedAirports.filter(_._1.id > 0)
 
     //GeoDataGenerator.setAirportRunwayDetails(csvAirports, runways)
     println(s"Creating ${newAirports.length} Airports")
@@ -73,16 +73,16 @@ object AirportGeoPatcher extends App {
     GenericTransitGenerator.generateGenericTransit()
 
     val updatingCountries = ListBuffer[Country]()
-    computedAirports.groupBy(_.countryCode).foreach {
+    computedAirports.groupBy(_._1.countryCode).foreach {
       case (countryCode, airports) =>
         val totalAirportPopulation : Long = airports.map {
-          _.population
+          _._1.population
         }.sum
         val averageIncome = if (totalAirportPopulation == 0) {
           0
         } else {
           airports.map {
-            _.power
+            _._1.power
           }.sum / totalAirportPopulation
        }
 

@@ -180,6 +180,9 @@ class Application @Inject()(cc: ControllerComponents, val configuration: play.ap
          }
          result = result + ("linkCounts" -> linkCountJson)
 
+         val citiesServed = AirportSource.loadCitiesServed(airportId).sortBy(_._1.population).takeRight(20)
+         result = result + ("citiesServed" -> Json.toJson(citiesServed.map(_._1)))
+
          if (image) {
            val cityImageUrl = GoogleImageUtil.getCityImageUrl(airport);
            if (cityImageUrl != null) {

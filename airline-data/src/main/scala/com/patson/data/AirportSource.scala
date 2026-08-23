@@ -395,8 +395,6 @@ object AirportSource {
           }
           runwayStatement.close()
           airport.setRunways(runways.toList)
-
-          airport.shouldLoadCities = true //set this flag so this airport can lazy load cities, which could be a lot of data
         }
       }
       
@@ -624,15 +622,15 @@ object AirportSource {
   }
 
   
-  def saveAirports(airports : List[Airport]) = {
+  def saveAirports(airportsWithCities : List[(Airport, List[(City, Double)])]) = {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
     try {
       val preparedStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_TABLE + "(iata, icao, name, latitude, longitude, country_code, city, zone, airport_size, income, population, runway_length)  VALUES(?,?,?,?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS)
-    
+
       connection.setAutoCommit(false)
-      airports.foreach { 
-        airport =>
+      airportsWithCities.foreach {
+        case (airport, citiesServed) =>
           preparedStatement.setString(1, airport.iata)
           preparedStatement.setString(2, airport.icao)
           preparedStatement.setString(3, airport.name)
@@ -654,7 +652,7 @@ object AirportSource {
             airport.id = generatedId
             
             //insert airline info too
-            airport.citiesServed.foreach { 
+            citiesServed.foreach {
               case (city, share) =>
               val infoStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_CITY_SHARE_TABLE + "(airport, city, share) VALUES(?,?,?)")
               infoStatement.setInt(1, airport.id)
@@ -692,7 +690,7 @@ object AirportSource {
     }
   }
   
-  def fullUpdateAirports(airports : List[Airport]) = {
+  def fullUpdateAirports(airportsWithCities : List[(Airport, List[(City, Double)])]) = {
             Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
 
@@ -702,8 +700,8 @@ object AirportSource {
       connection.setAutoCommit(false)
 
 
-      airports.foreach {
-        airport =>
+      airportsWithCities.foreach {
+        case (airport, citiesServed) =>
           preparedStatement.setInt(1, airport.size)
           preparedStatement.setInt(2, airport.baseIncome)
           preparedStatement.setLong(3, airport.basePopulation)
@@ -726,7 +724,7 @@ object AirportSource {
           purgeFeatureStatement.close()
 
           //update airline info too
-          airport.citiesServed.foreach {
+          citiesServed.foreach {
             case (city, share) =>
             val infoStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_CITY_SHARE_TABLE + "(airport, city, share) VALUES(?,?,?)")
             infoStatement.setInt(1, airport.id)
@@ -777,7 +775,7 @@ object AirportSource {
     }
   }
 
-  def updateAirports(airports : List[Airport]) = {
+  def updateAirports(airportsWithCities : List[(Airport, List[(City, Double)])]) = {
     Class.forName(DB_DRIVER);
     val connection = Meta.getConnection()
 
@@ -787,8 +785,8 @@ object AirportSource {
       connection.setAutoCommit(false)
 
 
-      airports.foreach {
-        airport =>
+      airportsWithCities.foreach {
+        case (airport, citiesServed) =>
           if (airport.id != 0) {
             preparedStatement.setInt(1, airport.size)
             preparedStatement.setLong(2, airport.baseIncome)
@@ -812,7 +810,7 @@ object AirportSource {
             println(s"updating airport $airport")
 
             //update airline info too
-            airport.citiesServed.foreach {
+            citiesServed.foreach {
               case (city, share) =>
                 val infoStatement = connection.prepareStatement("INSERT INTO " + AIRPORT_CITY_SHARE_TABLE + "(airport, city, share) VALUES(?,?,?)")
                 infoStatement.setInt(1, airport.id)
