@@ -254,23 +254,29 @@ object GeoDataGenerator extends App {
     println(rawAirportResult.size + " airports")
     println(runwayResult.size + " solid runways")
     println(citites.size + " cities")
-    val airports = generateAirportData(rawAirportResult, runwayResult, citites)
+    val airportsWithCities = generateAirportData(rawAirportResult, runwayResult, citites)
 
     //Meta.resetDatabase
 
     AirportSource.deleteAllAirports()
-    AirportSource.saveAirports(airports)
+    AirportSource.saveAirports(airportsWithCities)
 
     //patch features
     AirportFeaturePatcher.patchFeatures()
     IsolatedAirportPatcher.patchIsolatedAirports()
 
-    airports
+    airportsWithCities.map(_._1)
   }
 
 
 
-  def generateAirportData(rawAirportResult : List[CsvAirport], runwayResult : Map[Int, List[Runway]], cities : List[City]) : List[Airport] = {
+  def generateAirportData(rawAirportResult : List[CsvAirport], runwayResult : Map[Int, List[Runway]], cities : List[City]) : List[(Airport, List[(City, Double)])] = {
+    //keyed by object identity (not case class equality) since Airport carries mutable vars that change during this method
+    val citiesServedByAirport = new java.util.IdentityHashMap[Airport, ListBuffer[(City, Double)]]()
+    def addCityServed(airport : Airport, city : City, share : Double) : Unit = {
+      citiesServedByAirport.computeIfAbsent(airport, _ => ListBuffer[(City, Double)]()) += Tuple2(city, share)
+    }
+
     val specialAirportNames = AdditionalLoader.loadSpecialAirportNames()
     val removalAirportIatas = AdditionalLoader.loadRemovalAirportIatas()
 
@@ -312,7 +318,7 @@ object GeoDataGenerator extends App {
       }
 
       if (potentialAirports.size == 1) {
-        potentialAirports(0)._1.addCityServed(city, 1)
+        addCityServed(potentialAirports(0)._1, city, 1)
       } else if (potentialAirports.size > 1) {
         //val sortedAirports = potentialAirports.sortBy(_._2).sortBy(- _._1.size)
         val dominateAirportSize : Int = potentialAirports.filter(_._2 <= 50).map(_._1).reduceLeftOption { (largestAirport, airport) =>
@@ -334,7 +340,7 @@ object GeoDataGenerator extends App {
         val totalWeight = airportWeights.foldRight(0)(_._2 + _)
 
         airportWeights.foreach {
-          case Tuple2(airport, weight) => airport.addCityServed(city, weight.toDouble / totalWeight)
+          case Tuple2(airport, weight) => addCityServed(airport, city, weight.toDouble / totalWeight)
         }
       }
 
@@ -350,10 +356,11 @@ object GeoDataGenerator extends App {
     }
 
     val airports = airportResult.map { airport =>
-      val power = airport.citiesServed.foldLeft(0.toLong) {
+      val citiesServed : List[(City, Double)] = Option(citiesServedByAirport.get(airport)).map(_.toList).getOrElse(List.empty)
+      val power = citiesServed.foldLeft(0.toLong) {
         case (foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong * city.income
       }
-      val population = airport.citiesServed.foldLeft(0.toLong) {
+      val population = citiesServed.foldLeft(0.toLong) {
         case (foldLong, Tuple2(city, weight)) => foldLong + (city.population.toLong * weight).toLong
       }
 
@@ -376,18 +383,15 @@ object GeoDataGenerator extends App {
 //      airport.slots = slots
 
       if (population == 0) {
-        airport
+        (airport, citiesServed)
       } else {
         val airportCopy = airport.copy(baseIncome = (power / population).toInt, basePopulation = population)
         //YIKE copy here does not copy everything, we need to manually look up what does updateAirport/saveAirport do and clone stuff here...
         airportCopy.setRunways(airport.getRunways())
-        airport.citiesServed.foreach {
-          case (city, share) => airportCopy.addCityServed(city, share)
-        }
         //don't have to copy feature here as they are generated later
-        airportCopy
+        (airportCopy, citiesServed)
       }
-    }.sortBy { airport =>
+    }.sortBy { case (airport, _) =>
       airport.baseIncome * airport.basePopulation
     }
 
