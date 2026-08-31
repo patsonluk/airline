@@ -86,6 +86,7 @@ object AirportSizeAdjust {
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Spain
         "AGP" -> 7,
         "ALC" -> 7,
+        "MAD" -> 7,
         "LPA" -> 7,
         "TFS" -> 7,
         //https://en.wikipedia.org/wiki/List_of_the_busiest_airports_in_Austria
