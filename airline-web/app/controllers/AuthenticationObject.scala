@@ -31,12 +31,18 @@ object AuthenticationObject {
 
   case class AuthenticatedAirline(airlineId : Int) extends AuthenticatedBuilder(req => getUserAirlineFromRequest(req, airlineId), defaultBodyParser, unauthorizedHandler)
 
-  val unauthorizedHandler = (request : RequestHeader) =>
+  def clientIp(request : RequestHeader) : String = {
+    request.headers.get("X-Forwarded-For").map(_.split(",").head.trim).getOrElse(request.remoteAddress)
+  }
+
+  val unauthorizedHandler = (request : RequestHeader) => {
+    println(s"Unauthorized access attempt from ${clientIp(request)} to ${request.method} ${request.path}")
     if (!request.session.isEmpty && request.session.get("userToken").isDefined) {
       BadRequest("User token is invalid").removingFromSession("userToken")(request)
     } else {
       Unauthorized("Invalid login")
     }
+  }
 
 
   def getUserFromRequest(request : RequestHeader) : Option[User] = {
@@ -78,7 +84,7 @@ object AuthenticationObject {
         if (user.hasAccessToAirline(airlineId)) {
           AirlineCache.getAirline(airlineId, true)
         } else {
-          println(user.userName + " trying to access airline " + airlineId + " which he does not have access to!")
+          println(s"${user.userName} (${clientIp(request)}) trying to access airline $airlineId which he does not have access to!")
           None
         }
       case None =>
