@@ -5,6 +5,7 @@ import com.patson.data.{AllianceSource, ConsumptionHistorySource, CountrySource,
 import com.patson.model.Scheduling.TimeSlot
 import com.patson.model.{PassengerType, _}
 import com.patson.util.AirportCache
+import controllers.AuthenticationObject.AuthenticatedAirline
 
 import javax.inject.Inject
 import play.api.libs.json._
@@ -82,7 +83,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
 
 
 
-  def searchRoute(fromAirportId : Int, toAirportId : Int) = Action {
+  def searchRoute(airlineId: Int, fromAirportId : Int, toAirportId : Int) = AuthenticatedAirline(airlineId)  { request =>
     val routes: List[(SimpleRoute, PassengerType.Value, Int)] = ConsumptionHistorySource.loadConsumptionsByAirportPair(fromAirportId, toAirportId).toList.sortBy(_._2._2).map {
       case ((route, (passengerType, passengerCount))) =>
         (SimpleRoute(route.links.map(linkConsideration => (linkConsideration.link, linkConsideration.linkClass, linkConsideration.inverted))), passengerType, passengerCount)
@@ -93,7 +94,7 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
         (SimpleRoute(route.links.reverse.map(linkConsideration => (linkConsideration.link, linkConsideration.linkClass, !linkConsideration.inverted))), passengerType, passengerCount)
     }
 
-    println(s"Search route found ${routes.length} route(s)")
+    println(s"Airline ${request.user.name} id ${request.user.id} Search route found ${routes.length} route(s)")
 //    println(routes.groupBy(_._1).size)
 
     val sortedRoutes: List[(SimpleRoute, Int)] = (routes ++ reverseRoutes).groupBy(_._1).view.mapValues( _.map(_._3).sum).toList.sortBy(_._1.totalPrice)
