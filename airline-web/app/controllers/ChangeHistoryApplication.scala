@@ -3,6 +3,8 @@ package controllers
 import com.patson.data.{ChangeHistorySource, Constants, CycleSource}
 import com.patson.model.LinkClass
 import com.patson.model.history.LinkChange
+import controllers.AuthenticationObject.AuthenticatedAirline
+
 import javax.inject.Inject
 import play.api.libs.json._
 import play.api.mvc._
@@ -75,7 +77,7 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
   }
 
 
-  def searchLinkHistory = Action { implicit request =>
+  def searchLinkHistory(airlineId : Int) = AuthenticatedAirline(airlineId)  { implicit request =>
     currentCycle = CycleSource.loadCycle()
     val json = request.body.asInstanceOf[AnyContentAsJson].json
     val capacityDelta = json.\("capacityDelta").asOpt[Int]
@@ -144,6 +146,8 @@ class ChangeHistoryApplication @Inject()(cc: ControllerComponents) extends Abstr
       query += " WHERE "
       query += criteria.map("(" + _ + ")").toArray.mkString(" AND ")
     }
+
+    println(s"Airline ${request.user.name} id ${request.user.id} Search change history")
 
     val entries = ChangeHistorySource.loadLinkChangeByQueryString(query, parameters.toList)
     Ok(Json.toJson(entries))

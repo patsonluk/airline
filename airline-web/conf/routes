@@ -194,14 +194,14 @@ GET		 /santa-claus/award-options/:airlineId  controllers.ChristmasApplication.ge
 GET      /santa-claus/pick-award/:airlineId/:optionId   controllers.ChristmasApplication.pickAwardOption(airlineId : Int, optionId : Int)
 
 
-GET     /search-route/:fromAirportId/:toAirportId controllers.SearchApplication.searchRoute(fromAirportId : Int, toAirportId : Int)
+GET     /search-route/:fromAirportId/:toAirportId controllers.SearchApplication.searchRoute(airlineId: Int, fromAirportId : Int, toAirportId : Int)
 GET     /search-airport  controllers.SearchApplication.searchAirport(input: String ?= "")
 GET     /search-country  controllers.SearchApplication.searchCountry(input: String ?= "")
 GET     /search-zone  controllers.SearchApplication.searchZone(input: String ?= "")
 GET     /search-airline  controllers.SearchApplication.searchAirline(input: String ?= "")
 GET     /search-alliance  controllers.SearchApplication.searchAlliance(input: String ?= "")
 
-POST    /search-link-history    controllers.ChangeHistoryApplication.searchLinkHistory()
+POST    /search-link-history    controllers.ChangeHistoryApplication.searchLinkHistory(airlineId: Int)
 
 GET     /research-link/:fromAirportId/:toAirportId  controllers.SearchApplication.researchLink(fromAirportId : Int, toAirportId : Int)
 

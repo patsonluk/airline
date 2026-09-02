@@ -117,7 +117,7 @@ function searchAction(fromAirportId, toAirportId) {
 
 function searchRoute(fromAirportId, toAirportId) {
     if (fromAirportId && toAirportId) {
-        var url = "search-route/" + fromAirportId + "/" + toAirportId
+        var url = "search-route/" + fromAirportId + "/" + toAirportId + "?airlineId=" + activeAirline.id
 
         $.ajax({
             type: 'GET',
@@ -200,7 +200,7 @@ function searchRoute(fromAirportId, toAirportId) {
                             }
 
                             linkSummaryDiv.append("<div style='width: 50%; float:left;'> " + linkDurationText + "</div>")
-    //                        airlineSpan.append("<div style='width: 50%; float:left;'> " + link.flightCode + "&nbsp;" + getAirlineTimeSlotText(link.departure, startDay) + " - " + getAirlineTimeSlotText(link.arrival, startDay) + "</div>")
+    //                        airlineSpan.append("<div style='width: 50%; flosat:left;'> " + link.flightCode + "&nbsp;" + getAirlineTimeSlotText(link.departure, startDay) + " - " + getAirlineTimeSlotText(link.arrival, startDay) + "</div>")
                             linkSummaryDiv.append("<div style='clear:both; '></div>")
                             linkDiv.append(linkSummaryDiv)
 
@@ -293,7 +293,7 @@ function searchRoute(fromAirportId, toAirportId) {
 
 
 function searchLinkHistory() {
-    var url = "search-link-history"
+    var url = "search-link-history?airlineId=" + activeAirline.id
 
     var fromAirportId = $('#searchCanvas div.historySearch input.fromAirport').data('selectedId')
     var toAirportId = $('#searchCanvas div.historySearch input.toAirport').data('selectedId')
