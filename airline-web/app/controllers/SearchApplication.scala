@@ -94,7 +94,9 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
         (SimpleRoute(route.links.reverse.map(linkConsideration => (linkConsideration.link, linkConsideration.linkClass, !linkConsideration.inverted))), passengerType, passengerCount)
     }
 
-    println(s"Airline ${request.user.name} id ${request.user.id} Search route found ${routes.length} route(s)")
+    val fromAirportOption = AirportCache.getAirport(fromAirportId)
+    val toAirportOption = AirportCache.getAirport(toAirportId)
+    println(s"Airline ${request.user.name} id ${request.user.id} Search route ${fromAirportOption.map(_.iata).getOrElse("unknown")} -> ${toAirportOption.map(_.iata).getOrElse("unknown")} found ${routes.length} route(s)")
 //    println(routes.groupBy(_._1).size)
 
     val sortedRoutes: List[(SimpleRoute, Int)] = (routes ++ reverseRoutes).groupBy(_._1).view.mapValues( _.map(_._3).sum).toList.sortBy(_._1.totalPrice)
