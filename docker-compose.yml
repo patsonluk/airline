@@ -1,0 +1,95 @@
+name: airline
+
+x-app: &app
+  build: .
+  image: airline:local
+  env_file: .env
+  environment:
+    DB_HOST: db
+    SIM_HOST: simulation
+    WEB_HOST: web
+    ELASTICSEARCH_URL: http://elasticsearch:9200
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  db:
+    # README says MySQL 5.x; 5.7 has no ARM image, so force amd64 (emulated on Apple Silicon).
+    image: mysql:5.7
+    platform: linux/amd64
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --max_allowed_packet=256M
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpw}
+      MYSQL_DATABASE: ${DB_NAME:-airline_v2_1}
+      MYSQL_USER: ${DB_USER:-sa}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-admin}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  # One-off: docker compose run --rm init
+  init:
+    <<: *app
+    command: ["init"]
+    profiles: ["init"]
+
+  simulation:
+    <<: *app
+    command: ["simulation"]
+    restart: unless-stopped
+
+  web:
+    <<: *app
+    command: ["web"]
+    ports:
+      - "9000:9000"
+    depends_on:
+      db:
+        condition: service_healthy
+      simulation:
+        condition: service_started
+    restart: unless-stopped
+
+  # Optional "Flight search": docker compose --profile search up -d
+  # then: docker compose run --rm search-index
+  elasticsearch:
+    # 7.17.2's bundled JDK crashes on cgroup v2 (Docker Desktop); later 7.17.x fixes it.
+    # The app's 7.17.2 client is compatible with any 7.17 server.
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.28
+    profiles: ["search"]
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+    restart: unless-stopped
+
+  search-index:
+    <<: *app
+    command: ["search-index"]
+    profiles: ["search"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  es-data:
