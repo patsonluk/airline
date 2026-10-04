@@ -1015,7 +1015,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	$.each(linkInfo.otherLinks, function(index, linkConsumption) {
 		if (linkConsumption.airlineId != activeAirline.id) {
 		    let loadFactorPercentage = Math.round(linkConsumption.soldSeats * 100 / linkConsumption.capacity.total)
-			$("#planLinkCompetitors").append("<div class='table-row data-row'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
+			$("#planLinkCompetitors").append("<div class='table-row data-row'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName) + getLoungeIconsHtml(linkConsumption)
 				    	    			   + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity) + " (" + linkConsumption.frequency + ")"
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality
@@ -1029,7 +1029,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	    $.each(linkInfo.otherViaLocalTransitLinks, function(index, linkConsumption) { //reachable by 1 local transit
                 if (linkConsumption.airlineId != activeAirline.id) {
                     let loadFactorPercentage = Math.round(linkConsumption.soldSeats * 100 / linkConsumption.capacity.total)
-                    var $row = $("<div class='table-row data-row' style='opacity: 60%'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
+                    var $row = $("<div class='table-row data-row' style='opacity: 60%'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName) + getLoungeIconsHtml(linkConsumption)
                                                                           + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
                                                                           + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity) + " (" + linkConsumption.frequency + ")"
                                                                           + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality
@@ -2227,6 +2227,17 @@ function showLinkRivalDetails(linkId) {
 	    	$('body .loadingSpinner').hide()
 	    }
 	});
+}
+
+function getLoungeIconsHtml(linkConsumption) {
+    var html = ""
+    if (linkConsumption.fromLounge) {
+        html += getLoungeIconSpan(linkConsumption.fromLounge)[0].outerHTML
+    }
+    if (linkConsumption.toLounge) {
+        html += getLoungeIconSpan(linkConsumption.toLounge)[0].outerHTML
+    }
+    return html
 }
 
 function getLoungeIconSpan(lounge) {
