@@ -384,7 +384,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       }
 
 
-    logger.info(s"PUT link by ${request.user.name} (${clientIp(request)}) ${incomingLink.from.displayText} -> ${incomingLink.to.displayText} delegates=$delegateCount negotiationRequired=${negotiationInfo.finalRequirementValue > 0} negotiationSuccessful=${negotiationResultOption.map(_.isSuccessful)} $incomingLink")
+    logger.info("PUT " + incomingLink)
 
     val resultLink : Link =
       if (negotiationResultOption.map(_.isSuccessful).getOrElse(true)) { //negotiation successful or no negotiation needed {
@@ -1610,7 +1610,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
       case (reason, rejectionType) => result = result + ("rejection" -> JsString(reason))
     }
 
-    logger.info(s"Getting negotiation for ${request.user} (${clientIp(request)}) on flight ${incomingLink.from.displayText} -> ${incomingLink.to.displayText}")
+    logger.info(s"Getting negotiation for ${request.user} on flight ${incomingLink.from.displayText} -> ${incomingLink.to.displayText}")
 
     Ok(result)
 
