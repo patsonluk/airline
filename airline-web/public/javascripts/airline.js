@@ -1015,7 +1015,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	$.each(linkInfo.otherLinks, function(index, linkConsumption) {
 		if (linkConsumption.airlineId != activeAirline.id) {
 		    let loadFactorPercentage = Math.round(linkConsumption.soldSeats * 100 / linkConsumption.capacity.total)
-			$("#planLinkCompetitors").append("<div class='table-row data-row'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
+			$("#planLinkCompetitors").append("<div class='table-row data-row'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName) + getLoungeIconsHtml(linkConsumption.fromLounge, linkConsumption.toLounge)
 				    	    			   + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity) + " (" + linkConsumption.frequency + ")"
 				    	    			   + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality
@@ -1029,7 +1029,7 @@ function updatePlanLinkInfo(linkInfo, isRefresh) {
 	    $.each(linkInfo.otherViaLocalTransitLinks, function(index, linkConsumption) { //reachable by 1 local transit
                 if (linkConsumption.airlineId != activeAirline.id) {
                     let loadFactorPercentage = Math.round(linkConsumption.soldSeats * 100 / linkConsumption.capacity.total)
-                    var $row = $("<div class='table-row data-row' style='opacity: 60%'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName)
+                    var $row = $("<div class='table-row data-row' style='opacity: 60%'><div style='display: table-cell;'>" + getAirlineSpan(linkConsumption.airlineId, linkConsumption.airlineName) + getLoungeIconsHtml(linkConsumption.fromLounge, linkConsumption.toLounge)
                                                                           + "</div><div style='display: table-cell;'>" + toLinkClassValueString(linkConsumption.price, "$")
                                                                           + "</div><div style='display: table-cell; text-align:right;'>" + toLinkClassValueString(linkConsumption.capacity) + " (" + linkConsumption.frequency + ")"
                                                                           + "</div><div style='display: table-cell; text-align:right;'>" + linkConsumption.quality
@@ -2229,6 +2229,17 @@ function showLinkRivalDetails(linkId) {
 	});
 }
 
+function getLoungeIconsHtml(fromLounge, toLounge) {
+    var html = ""
+    if (fromLounge) {
+        html += getLoungeIconSpan(fromLounge)[0].outerHTML
+    }
+    if (toLounge) {
+        html += getLoungeIconSpan(toLounge)[0].outerHTML
+    }
+    return html
+}
+
 function getLoungeIconSpan(lounge) {
     var $loungeSpan = $('<span style="position:relative"></span>')
     $loungeSpan.append($('<img src="' + 'assets/images/icons/sofa.png' +  '">'))
@@ -2285,12 +2296,7 @@ function updateRivalTables(result) {
     $.each(airlineNameById, function(airlineId, airlineName) {
      	var row = $("<div class='table-row'></div>")
      	var $airlineSpan = $(getAirlineSpan(airlineId, airlineName))
-     	if (fromAirportLounge[airlineId]) {
-     	    $airlineSpan.append(getLoungeIconSpan(fromAirportLounge[airlineId]))
-     	}
-     	if (toAirportLounge[airlineId]) {
-            $airlineSpan.append(getLoungeIconSpan(toAirportLounge[airlineId]))
-        }
+     	$airlineSpan.append(getLoungeIconsHtml(fromAirportLounge[airlineId], toAirportLounge[airlineId]))
         var $airlineCell = $("<div class='cell' align='left'></div>").append($airlineSpan)
 		row.append($airlineCell)
 		getPaddedHalfStepImageBarByValue(fullHeartSource, halfHeartSource, emptyHeartSource, 10, fromAirportLoyalty[airlineId].toFixed(2)).appendTo($("<div class='cell' align='right'></div>").appendTo(row))

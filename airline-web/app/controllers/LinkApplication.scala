@@ -10,7 +10,7 @@ import com.patson.model.event.Olympics
 import com.patson.model.{FlightPreferenceType, _}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache, AllianceCache, CountryCache}
 import com.patson.{DemandGenerator, Util}
-import controllers.AuthenticationObject.{AuthenticatedAirline, getUserAirlineFromRequest}
+import controllers.AuthenticationObject.{AuthenticatedAirline, clientIp, getUserAirlineFromRequest}
 
 import javax.inject.Inject
 import models.{LinkHistory, RelatedLink}
@@ -812,7 +812,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         val competitorLinkConsumptions = (LinkSource.loadFlightLinksByAirports(fromAirportId, toAirportId, LinkSource.ID_LOAD) ++ LinkSource.loadFlightLinksByAirports(toAirportId, fromAirportId, LinkSource.ID_LOAD)).flatMap { link =>
           LinkSource.loadLinkConsumptionsByLinkId(link.id, 1)
         }
-        var otherLinkArray = Json.toJson(competitorLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite) }.toSeq)
+        var otherLinkArray = Json.toJson(competitorLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => addLoungeJson(linkConsumption, Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite).as[JsObject]) }.toSeq)
         resultObject = resultObject + ("otherLinks", otherLinkArray)
 
         val nearbyFromAirports = loadGenericTransitAirports(fromAirport)
@@ -832,7 +832,7 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
           LinkSource.loadLinkConsumptionsByLinksId(viaLocalTransitFlightLinks.map(_.id), 1)
         }
         val otherViaLocalTransitLinkArray = Json.toJson(competitorViaLocalTransitLinkConsumptions.filter(_.link.capacity.total > 0).map { linkConsumption => {
-          var linkConsumptionJson : JsObject = Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite).as[JsObject]
+          var linkConsumptionJson : JsObject = addLoungeJson(linkConsumption, Json.toJson(linkConsumption)(SimpleLinkConsumptionWrite).as[JsObject])
           if (nearbyFromAirports.contains(linkConsumption.link.to)) {
             linkConsumptionJson = linkConsumptionJson + ("altFrom" -> JsString(linkConsumption.link.to.iata))
           } else if (nearbyFromAirports.contains(linkConsumption.link.from)) {
@@ -1280,6 +1280,22 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
     }
 
     Ok(result)
+  }
+
+  def addLoungeJson(linkConsumption : LinkConsumptionDetails, linkConsumptionJson : JsObject) : JsObject = {
+    var result = linkConsumptionJson
+    val airline = linkConsumption.link.airline
+    AirportCache.getAirport(linkConsumption.link.from.id, fullLoad = true).foreach { fromAirport =>
+      getLoungeJson(airline, fromAirport).foreach { loungeJson =>
+        result = result + ("fromLounge" -> loungeJson)
+      }
+    }
+    AirportCache.getAirport(linkConsumption.link.to.id, fullLoad = true).foreach { toAirport =>
+      getLoungeJson(airline, toAirport).foreach { loungeJson =>
+        result = result + ("toLounge" -> loungeJson)
+      }
+    }
+    result
   }
 
   def getLoungeJson(airline : Airline, airport : Airport) : Option[JsValue] = {
