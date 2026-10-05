@@ -4,6 +4,11 @@ version := "2.1"
 
 scalaVersion := "2.13.14"
 
+enablePlugins(JavaAppPackaging)
+
+// Many objects extend App; pin the launcher default. Other mains run via `bin/airline-data -main <class>`.
+Compile / mainClass := Some("com.patson.MainSimulation")
+
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",

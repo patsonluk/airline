@@ -1,0 +1,148 @@
+name: airline
+
+# Restart policy note: `unless-stopped` restarts a container only when its
+# process dies. A container stopped on purpose (ops panel or `docker compose
+# stop`) stays down. Nothing in this file runs DB init or patchers.
+
+services:
+  db:
+    image: mysql:5.7.44
+    platform: linux/amd64
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?}
+      MYSQL_DATABASE: ${DB_SCHEMA:-airline_v2_1}
+      MYSQL_USER: ${DB_USER:-sa}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?}
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.22
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.ml.enabled=false
+      - ES_JAVA_OPTS=-Xms${ES_HEAP:-4g} -Xmx${ES_HEAP:-4g}
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  sim:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: sim
+    restart: unless-stopped
+    # Lets a container reach a MySQL that runs on the host itself
+    # (hybrid mode, RUNBOOK section 12). Harmless when unused.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DB_HOST: ${DB_HOST:-db:3306}
+      DB_SCHEMA: ${DB_SCHEMA:-airline_v2_1}
+      DB_USER: ${DB_USER:-sa}
+      DB_PASSWORD: ${DB_PASSWORD:?}
+      SIM_HOST: sim
+      SIM_HEAP: ${SIM_HEAP:-8g}
+      DEV_MODE: ${DEV_MODE:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/2552"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: web
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    # es and sim are not dependencies on purpose: the web starts without the
+    # sim (ReconnectActor self-heals) and degrades without ES.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DB_HOST: ${DB_HOST:-db:3306}
+      DB_SCHEMA: ${DB_SCHEMA:-airline_v2_1}
+      DB_USER: ${DB_USER:-sa}
+      DB_PASSWORD: ${DB_PASSWORD:?}
+      SIM_HOST: sim
+      WEB_HOST: web
+      WEB_HEAP: ${WEB_HEAP:-1024m}
+      ES_HOST: es
+      ES_PORT: 9200
+      SECRET_KEY: ${SECRET_KEY:?}
+      GOOGLE_MAP_KEY: ${GOOGLE_MAP_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:9000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      CONTAINERS: 1
+      POST: 1
+      ALLOW_RESTARTS: 1
+      ALLOW_START: 1
+      ALLOW_STOP: 1
+    networks:
+      - ops
+
+  panel:
+    build: panel
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DOCKER_API: http://socket-proxy:2375
+      COMPOSE_PROJECT: airline
+      ALLOWED_SERVICES: sim,web,es
+      PANEL_PASSWORD_HASH: ${PANEL_PASSWORD_HASH:?}
+      PANEL_SECRET_KEY: ${PANEL_SECRET_KEY:?}
+    depends_on:
+      - socket-proxy
+    networks:
+      - ops
+      - default
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  ops: {}
+
+volumes:
+  dbdata: {}
+  esdata: {}

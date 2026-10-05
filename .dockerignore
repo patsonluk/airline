@@ -1,0 +1,16 @@
+.git
+.metals
+.vscode
+**/target
+**/project/target
+**/project/project
+airline-rest
+*.log
+*.iml
+airline-web/tokens
+airline-web/google-tokens
+airline-web/activator*
+airline-data/activator*
+sbt-launch.jar
+wt-*
+deploy/.env
