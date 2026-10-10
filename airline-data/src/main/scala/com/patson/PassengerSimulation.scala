@@ -605,6 +605,10 @@ object PassengerSimulation {
       // At the end it will be wrong as solution for route from F0 to T2, will be Link 3 and Link 2 while the final cost is incorrect
       // This also create the shuttle from other alliance problem
       //The fix for this is never use the current predecessorMap for lookup, instead, use the previous map
+      //However, this fix only addresses issue within a single iteration (never hop more than 1 leg). The issue still
+      //could still happen if 2nd iteration does Link 1 ->  Link 2, then 3rd iteration replaces first leg with Link 1
+      //it's just a bit less likely. To fully address this issue we will need use a different algorithm if every link consideration
+      //cost relies on previous link and require re-computation if previous link has changed (but then it might not even be the cheapest anymore?)
 
       val linkConsiderationsIterator = linkConsiderations.iterator()
       while (linkConsiderationsIterator.hasNext) {
@@ -626,6 +630,10 @@ object PassengerSimulation {
               isValid = false
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
               connectionCost = 25
+            } else if (predecessorLink.transportType == TransportType.HIGH_SPEED_RAIL || linkConsideration.link.transportType == TransportType.HIGH_SPEED_RAIL) {
+              if (!isSameAirlineOrAlliance(previousLinkAirlineId, currentLinkAirlineId, allianceIdByAirlineId)) { //only incur CONNECTION_COST if different airlines, the regular "travel cost" of HSR still applies tho
+                connectionCost = HighSpeedRail.CONNECTION_COST
+              }
             } else {
               connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
@@ -635,7 +643,7 @@ object PassengerSimulation {
                 connectionCost += (3.5 * 24 * 5) / frequency //each extra hour wait is like $5 more
               }
 
-              if (previousLinkAirlineId != currentLinkAirlineId && (allianceIdByAirlineId.get(previousLinkAirlineId) == null.asInstanceOf[Int] || allianceIdByAirlineId.get(previousLinkAirlineId) != allianceIdByAirlineId.get(currentLinkAirlineId))) { //switch airline, impose extra cost
+              if (!isSameAirlineOrAlliance(previousLinkAirlineId, currentLinkAirlineId, allianceIdByAirlineId)) { //switch airline, impose extra cost
                 connectionCost += 75
               }
               flightTransit = true
@@ -718,6 +726,10 @@ object PassengerSimulation {
     }
     
     resultMap.toMap
+  }
+
+  private[this] def isSameAirlineOrAlliance(airlineId1 : Int, airlineId2 : Int, allianceIdByAirlineId : java.util.Map[Int, Int]) : Boolean = {
+    airlineId1 == airlineId2 || (allianceIdByAirlineId.get(airlineId1) != null.asInstanceOf[Int] && allianceIdByAirlineId.get(airlineId1) == allianceIdByAirlineId.get(airlineId2))
   }
 
 
