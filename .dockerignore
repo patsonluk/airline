@@ -1,0 +1,8 @@
+.git
+**/target
+**/project/target
+**/project/project
+**/.bsp
+**/.idea
+airline-rest
+.env
