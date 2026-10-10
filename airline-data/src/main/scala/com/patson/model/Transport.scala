@@ -104,7 +104,7 @@ abstract class Transport extends IdObject{
 
 object TransportType extends Enumeration {
   type TransportType = Value
-  val FLIGHT, GENERIC_TRANSIT = Value
+  val FLIGHT, GENERIC_TRANSIT, HIGH_SPEED_RAIL = Value
 }
 
 
