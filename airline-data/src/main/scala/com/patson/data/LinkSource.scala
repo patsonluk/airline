@@ -136,6 +136,15 @@ object LinkSource {
                   LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
                   resultSet.getInt("duration")
                 )
+              case HIGH_SPEED_RAIL =>
+                HighSpeedRail(
+                  fromAirport.get,
+                  toAirport.get,
+                  airline.get,
+                  resultSet.getInt("distance"),
+                  LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
+                  resultSet.getInt("frequency")
+                )
             }
 
           }
@@ -348,6 +357,9 @@ object LinkSource {
         case TransportType.GENERIC_TRANSIT =>
           val genericTransit = link.asInstanceOf[GenericTransit]
           (genericTransit.from.id, genericTransit.to.id, 0, genericTransit.price, genericTransit.distance, genericTransit.capacity, GenericTransit.QUALITY, genericTransit.duration, genericTransit.frequency, genericTransit.flightType, 0, Map.empty)
+        case TransportType.HIGH_SPEED_RAIL =>
+          val rail = link.asInstanceOf[HighSpeedRail]
+          (rail.from.id, rail.to.id, rail.airline.id, rail.price, rail.distance, rail.capacity, HighSpeedRail.QUALITY, rail.duration, rail.frequency, rail.flightType, 0, Map.empty)
       }
 
 
@@ -936,6 +948,8 @@ object LinkSource {
             Link(fromAirport, toAirport, airline, price, distance, capacity, 0, duration, frequency, FlightType(flightType), flightNumber, linkId)
           } else if (transportType == TransportType.GENERIC_TRANSIT.id) {
             GenericTransit(fromAirport, toAirport, distance, capacity, linkId)
+          } else if (transportType == TransportType.HIGH_SPEED_RAIL.id) {
+            HighSpeedRail(fromAirport, toAirport, airline, distance, capacity, frequency, linkId)
           } else {
             println("Unknown transport type for link consumption : " + resultSet.getInt("transport_type"))
             Link(fromAirport, toAirport, airline, price, distance, capacity, 0, duration, frequency, FlightType(flightType), flightNumber, linkId)
