@@ -10,7 +10,7 @@ case class GenericTransit(from : Airport, to : Airport, distance : Int, var capa
 
   override val flightType : FlightType.Value = FlightType.SHORT_HAUL_DOMESTIC
 
-  override val cost = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) * 0.25 //hidden cost of general transit
+  override val cost = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) * 0.25 //perceived ticket price of pax taking such transit. This could up adjust if it's a downgrade of a pax's preference
 
   val upkeep = 0
   override var minorDelayCount : Int = 0

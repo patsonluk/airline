@@ -7,7 +7,8 @@ case class HighSpeedRail(from : Airport, to : Airport, airline : Airline, distan
   override val flightType : FlightType.Value = FlightType.SHORT_HAUL_DOMESTIC //has to be defined before cost, as standardPrice uses it
 
   override val price : LinkClassValues = LinkClassValues.getInstance() //TODO price modelling in later PR
-  //hidden cost similar to generic transit. TODO actual pricing/perceived cost in later PR
+
+  //perceived ticket price of pax taking such transit. This could up adjust if it's a downgrade of a pax's preference
   override val cost : LinkClassValues = LinkClassValues.getInstance(
     economy = (standardPrice(ECONOMY) * HighSpeedRail.COST_RATIO).toInt,
     business = (standardPrice(BUSINESS) * HighSpeedRail.COST_RATIO).toInt,
@@ -25,10 +26,10 @@ case class HighSpeedRail(from : Airport, to : Airport, airline : Airline, distan
 }
 
 object HighSpeedRail {
-  val QUALITY = 70
+  val QUALITY = 80 //high quality traffic
   val SPEED = 150 //km/h
-  val COST_RATIO = 0.5 //placeholder, ratio of standard price as the hidden cost
-  val CONNECTION_COST = 20 //slightly lower than generic transit (25)
+  val COST_RATIO = 0.5 //HSR is a bit more expensive than generic transit
+  val CONNECTION_COST = 10 //lower than generic transit, they are usually more convenient
 
   val MIN_BASE_SCALE = 13
   val MAX_DISTANCE = 100 //km
