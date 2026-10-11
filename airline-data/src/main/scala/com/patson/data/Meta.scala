@@ -380,7 +380,7 @@ object Meta {
     statement.execute()
     statement.close()
 
-    statement = connection.prepareStatement("CREATE UNIQUE INDEX " + LINK_INDEX_1 + " ON " + LINK_TABLE + "(from_airport, to_airport, airline)")
+    statement = connection.prepareStatement("CREATE UNIQUE INDEX " + LINK_INDEX_1 + " ON " + LINK_TABLE + "(from_airport, to_airport, airline, transport_type)")
     statement.execute()
     statement.close()
     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_2 + " ON " + LINK_TABLE + "(from_airport)")

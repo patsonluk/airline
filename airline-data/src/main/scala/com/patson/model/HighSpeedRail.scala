@@ -29,5 +29,46 @@ object HighSpeedRail {
   val SPEED = 150 //km/h
   val COST_RATIO = 0.5 //placeholder, ratio of standard price as the hidden cost
   val CONNECTION_COST = 20 //slightly lower than generic transit (25)
-  val ALLIANCE_CONNECTION_DISCOUNT = 0.5 //discount on connection cost if the HSR is operated by the same airline/alliance as the connecting link
+
+  val MIN_BASE_SCALE = 13
+  val MAX_DISTANCE = 100 //km
+  val MIN_CARS = 3
+  val MAX_CARS = 8
+  val CAR_CAPACITY = 50000 //weekly capacity of a train car if it's all economy
+  val COST_PER_KM_PER_CAPACITY = 1250
+  val RECONFIGURE_COOLDOWN = 1000 //in cycles (weeks)
+  //cooldown is checked against link last_update (real time). Do not use MainSimulation.CYCLE_DURATION here, it's an App so it's not initialized outside of the simulation
+  val WEEKLY_FREQUENCY = 250
+
+  //number of train cars is determined by the size of the from airport
+  def carCount(fromAirport : Airport) : Int = Math.max(MIN_CARS, Math.min(MAX_CARS, fromAirport.size))
+
+  def maxCapacity(fromAirport : Airport) : Int = carCount(fromAirport) * CAR_CAPACITY
+
+  //each car can only be assigned to one class
+  def seatsPerCar(linkClass : LinkClass) : Int = (CAR_CAPACITY / linkClass.spaceMultiplier).toInt
+
+  def capacityByCars(cars : Map[LinkClass, Int]) : LinkClassValues = {
+    LinkClassValues.getInstanceByMap(cars.map {
+      case (linkClass, carCount) => (linkClass, carCount * seatsPerCar(linkClass))
+    })
+  }
+
+  def carsByCapacity(capacity : LinkClassValues) : Map[LinkClass, Int] = {
+    LinkClass.values.map(linkClass => (linkClass, capacity(linkClass) / seatsPerCar(linkClass))).toMap
+  }
+
+  def buildCost(distance : Int, fromAirport : Airport) : Long = distance.toLong * maxCapacity(fromAirport) * COST_PER_KM_PER_CAPACITY
+
+  def carsRejection(cars : Map[LinkClass, Int], carCount : Int) : Option[String] = {
+    if (cars.values.exists(_ < 0)) {
+      Some("Number of train cars cannot be negative")
+    } else if (cars.values.sum <= 0) {
+      Some("Must assign at least 1 train car")
+    } else if (cars.values.sum > carCount) {
+      Some(s"Cannot assign more than $carCount train cars")
+    } else {
+      None
+    }
+  }
 }

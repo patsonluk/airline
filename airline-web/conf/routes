@@ -32,6 +32,7 @@ GET	 	 /airports/:airportId/assets	      controllers.AirportAssetApplication.get
 GET	 	 /airports/:airportId/champions	      controllers.Application.getAirportChampions(airportId : Int, airlineId: Option[Int])
 GET		 /airports/base/scale-details			  controllers.Application.getScaleDetails()
 GET      /airports/:airportId/generic-transits     controllers.GenericTransitApplication.getGenericTransits(airportId: Int)
+GET      /airports/:airportId/high-speed-rails     controllers.HighSpeedRailApplication.getAirportHighSpeedRails(airportId: Int)
 
 GET		 /cities/:cityId/airportShares	  controllers.Application.getAirportSharesOnCity(cityId: Int)
 
@@ -61,6 +62,11 @@ PUT	 	 /airlines/:airlineId/facilities/:airportId  		controllers.AirlineApplicat
 POST     /airlines/:airlineId/facility-consideration/:airportId	controllers.AirlineApplication.getFacilityConsideration(airlineId : Int, airportId : Int)
 GET	 	 /airlines/:airlineId/facilities/:airportId  		controllers.AirlineApplication.getFacilities(airlineId : Int, airportId : Int)
 GET		 /airlines/:airlineId/downgradeBase/:airportId  controllers.AirlineApplication.downgradeBase(airlineId : Int, airportId : Int)
+GET      /airlines/:airlineId/high-speed-rails  controllers.HighSpeedRailApplication.getAirlineHighSpeedRails(airlineId : Int)
+PUT      /airlines/:airlineId/high-speed-rails  controllers.HighSpeedRailApplication.buildHighSpeedRail(airlineId : Int)
+PUT      /airlines/:airlineId/high-speed-rails/:linkId  controllers.HighSpeedRailApplication.reconfigureHighSpeedRail(airlineId : Int, linkId : Int)
+DELETE   /airlines/:airlineId/high-speed-rails/:linkId  controllers.HighSpeedRailApplication.deleteHighSpeedRail(airlineId : Int, linkId : Int)
+POST     /airlines/:airlineId/high-speed-rail-consideration  controllers.HighSpeedRailApplication.getConsideration(airlineId : Int)
 GET      /airlines/:airlineId/bases/:airportId/specialization-info  controllers.AirlineApplication.getBaseSpecializationInfo(airlineId: Int, airportId : Int)
 PUT      /airlines/:airlineId/bases/:airportId/specializations  controllers.AirlineApplication.setBaseSpecializations(airlineId: Int, airportId : Int)
 GET		 /airlines/:airlineId/link-consumptions/:linkId	  controllers.LinkApplication.getLinkConsumption(airlineId : Int, linkId: Int, cycleCount : Int ?= 1)

@@ -459,6 +459,11 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
        }
      }
 
+     if (base.scale - 1 < HighSpeedRail.MIN_BASE_SCALE &&
+       LinkSource.loadLinksByCriteria(List(("from_airport", base.airport.id), ("airline", base.airline.id), ("transport_type", TransportType.HIGH_SPEED_RAIL.id))).nonEmpty) {
+       return Some(s"This base cannot be downgraded below level ${HighSpeedRail.MIN_BASE_SCALE} while it operates a high speed rail")
+     }
+
      AirportAssetSource.loadAirportAssetsByAirport(base.airport.id).filter(asset => asset.airline.isDefined && asset.airline.get.id == base.airline.id).foreach { ownedAsset =>
        if (ownedAsset.blueprint.assetType.baseRequirement > base.scale - 1) {
          return Some(s"This cannot be downgraded as asset ${ownedAsset.name} requires base level ${ownedAsset.blueprint.assetType.baseRequirement}")
