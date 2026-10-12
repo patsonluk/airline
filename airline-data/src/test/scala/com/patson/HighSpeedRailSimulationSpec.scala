@@ -79,6 +79,17 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       routes.isDefinedAt(toAirportsList(1)).shouldBe(false)
     }
 
+    "not find a route with back to back non flights (generic transit + HSR)".in {
+      val transit = GenericTransit(fromAirport, toAirportsList(0), 50, LinkClassValues.getInstance(10000), id = 1)
+      val links = List(
+        LinkConsideration.getExplicit(transit, 100, ECONOMY, false),
+        LinkConsideration.getExplicit(hsr(toAirportsList(0), toAirportsList(1), testAirline1, id = 2), 100, ECONOMY, false),
+        LinkConsideration.getExplicit(flight(toAirportsList(1), toAirportsList(2), testAirline1, id = 3), 100, ECONOMY, false))
+
+      val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 3)
+      routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
+    }
+
     "have no connection cost if HSR is operated by the same airline or alliance as the connecting flight".in {
       def routeCost(hsrAirline : Airline, flightAirline : Airline, allianceIdByAirlineId : java.util.Map[Int, Int]) : Double = {
         val links = List(
