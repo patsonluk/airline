@@ -1,6 +1,6 @@
 package controllers
 
-import com.patson.data.{AirlineSource, LinkSource}
+import com.patson.data.{AirlineSource, CountrySource, CycleSource, LinkSource}
 import com.patson.model._
 import com.patson.util.AirportCache
 import controllers.AuthenticationObject.AuthenticatedAirline
@@ -8,7 +8,6 @@ import models.Consideration
 import play.api.libs.json._
 import play.api.mvc._
 
-import java.util.Calendar
 import javax.inject.Inject
 
 
@@ -33,22 +32,15 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
   private[this] def loadHighSpeedRail(linkId : Int) : Option[HighSpeedRail] = loadHighSpeedRails(List(("id", linkId))).headOption
 
   /**
-    * Remaining cooldown (in seconds) before the HSR can be reconfigured again. Measured from link last_update
+find    * Remaining cooldown (in cycles) before the HSR can be reconfigured again. No record means no cooldown
     */
-  private[this] def remainingCooldownSeconds(railIds : List[Int]) : Map[Int, Long] = {
-    val now = System.currentTimeMillis()
-    LinkSource.loadLinkLastUpdates(railIds).map {
-      case (railId, lastUpdate : Calendar) =>
-        val elapsedSeconds = (now - lastUpdate.getTimeInMillis) / 1000
-        (railId, Math.max(0L, HighSpeedRail.RECONFIGURE_COOLDOWN_SECONDS - elapsedSeconds))
-    }
+  private[this] def reconfigureCooldown(railId : Int, currentCycle : Int) : Int = {
+    LinkSource.loadHighSpeedRailUpdateCycle(railId).map(HighSpeedRail.reconfigureCooldown(_, currentCycle)).getOrElse(0)
   }
-
-  private[this] def cooldownWeeks(remainingSeconds : Long) : Long = Math.ceil(remainingSeconds.toDouble / HighSpeedRail.CYCLE_DURATION_SECONDS).toLong
 
   def getBuildConsideration(airline : Airline, fromAirport : Airport, toAirport : Airport, cars : Map[LinkClass, Int]) : Consideration[HighSpeedRail] = {
     val distance = Computation.calculateDistance(fromAirport, toAirport)
-    val rail = HighSpeedRail(fromAirport, toAirport, airline, distance, HighSpeedRail.capacityByCars(cars), HighSpeedRail.FREQUENCY)
+    val rail = HighSpeedRail(fromAirport, toAirport, airline, distance, HighSpeedRail.capacityByCars(cars), HighSpeedRail.WEEKLY_FREQUENCY)
     val cost = HighSpeedRail.buildCost(distance, fromAirport)
 
     val rejection : Option[String] = {
@@ -59,6 +51,8 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
         Some("Departure and destination airports cannot be the same")
       } else if (distance <= 0 || distance > HighSpeedRail.MAX_DISTANCE) {
         Some(s"High speed rail can only be built up to ${HighSpeedRail.MAX_DISTANCE} km. This is $distance km")
+      } else if (CountrySource.getCountryMutualRelationship(fromAirport.countryCode, toAirport.countryCode) < HighSpeedRail.MIN_COUNTRY_RELATIONSHIP) {
+        Some(s"High speed rail can only be built between countries with a mutual relationship of at least ${HighSpeedRail.MIN_COUNTRY_RELATIONSHIP}")
       } else if (loadHighSpeedRails(List(("from_airport", fromAirport.id), ("airline", airline.id))).nonEmpty) {
         Some(s"Your airline already operates a high speed rail from ${fromAirport.displayText}")
       } else if (loadHighSpeedRails(List(("from_airport", fromAirport.id), ("to_airport", toAirport.id))).nonEmpty) {
@@ -84,9 +78,9 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
         Some("This high speed rail is not operated by your airline")
       } else {
         HighSpeedRail.carsRejection(cars, HighSpeedRail.carCount(existingRail.from)).orElse {
-          val remainingSeconds = remainingCooldownSeconds(List(existingRail.id)).getOrElse(existingRail.id, 0L)
-          if (remainingSeconds > 0) {
-            Some(s"Can only reconfigure in ${cooldownWeeks(remainingSeconds)} week(s)")
+          val cooldown = reconfigureCooldown(existingRail.id, CycleSource.loadCycle())
+          if (cooldown > 0) {
+            Some(s"Can only reconfigure in $cooldown week(s)")
           } else {
             None
           }
@@ -142,6 +136,7 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
         } else {
           LinkSource.saveLink(consideration.newFacility) match {
             case Some(savedRail) =>
+              LinkSource.saveHighSpeedRailUpdateCycle(savedRail.id, CycleSource.loadCycle()) //starts the reconfigure cooldown
               AirlineSource.adjustAirlineBalance(airline.id, -1 * consideration.cost)
               AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airline.id, CashFlowType.FACILITY_CONSTRUCTION, -1 * consideration.cost))
               Ok(Json.toJson(savedRail)(HighSpeedRailWrites))
@@ -162,7 +157,8 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
         if (consideration.isRejected) {
           BadRequest(consideration.rejectionReason)
         } else {
-          LinkSource.updateLink(consideration.newFacility) //also resets last_update, which restarts the cooldown
+          LinkSource.updateLink(consideration.newFacility)
+          LinkSource.saveHighSpeedRailUpdateCycle(linkId, CycleSource.loadCycle()) //restarts the reconfigure cooldown
           Ok(Json.toJson(consideration.newFacility)(HighSpeedRailWrites))
         }
       case None => NotFound
@@ -184,10 +180,9 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
 
   def getAirlineHighSpeedRails(airlineId : Int) = AuthenticatedAirline(airlineId) { request =>
     val rails = loadHighSpeedRails(List(("airline", airlineId)))
-    val cooldowns = remainingCooldownSeconds(rails.map(_.id))
+    val currentCycle = CycleSource.loadCycle()
     Ok(JsArray(rails.map { rail =>
-      val remainingSeconds = cooldowns.getOrElse(rail.id, 0L)
-      Json.toJson(rail)(HighSpeedRailWrites).as[JsObject] + ("reconfigureCooldown" -> JsNumber(cooldownWeeks(remainingSeconds)))
+      Json.toJson(rail)(HighSpeedRailWrites).as[JsObject] + ("reconfigureCooldown" -> JsNumber(reconfigureCooldown(rail.id, currentCycle)))
     }))
   }
 

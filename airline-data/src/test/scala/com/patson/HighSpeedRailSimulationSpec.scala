@@ -3,10 +3,12 @@ package com.patson
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.testkit.{ImplicitSender, TestKit}
 import com.patson.model.FlightType._
+import com.patson.model.FlightPreferenceType.{APPEAL, BUDGET, SPEED}
 import com.patson.model._
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import java.util.Collections
+import java.util.concurrent.ThreadLocalRandom
 import scala.collection.mutable.Set
 import scala.jdk.CollectionConverters._
 
@@ -159,43 +161,61 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
     }
 
     /**
-      * Ratio of pax (with preference drawn from the pool) that pick a route with HSR, out of all pax that found a route
+      * Simulates pax (with preference from drawPreference) and returns the HSR percentage (0 - 100), out of all pax that found a route
       */
-    def hsrRatioByLinkClass(links : List[Transport], from : Airport, to : Airport) : Map[LinkClass, Double] = {
-      val pool = DemandGenerator.getFlightPreferencePoolOnAirport(from)
+    def hsrPercentage(links : List[Transport], from : Airport, to : Airport, label : String)(drawPreference : () => FlightPreference) : Double = {
       val activeAirports = links.flatMap(link => List(link.from.id, link.to.id)).to(collection.mutable.Set)
       val toAirports = Set(to)
 
-      LinkClass.values.map { linkClass =>
-        var routeCount = 0
-        var hsrCount = 0
-        for (i <- 0 until iterations) {
-          val group = PassengerGroup(from, pool.draw(linkClass, from, to), PassengerType.BUSINESS)
-          val result = PassengerSimulation.findAllRoutes(Map(group -> toAirports), links, activeAirports, countryOpenness = countryOpenness)
-          result(group).get(to).foreach { route =>
-            routeCount += 1
-            if (route.links.exists(_.link.transportType == TransportType.HIGH_SPEED_RAIL)) {
-              hsrCount += 1
-            }
+      var routeCount = 0
+      var hsrCount = 0
+      for (i <- 0 until iterations) {
+        val group = PassengerGroup(from, drawPreference(), PassengerType.BUSINESS)
+        val result = PassengerSimulation.findAllRoutes(Map(group -> toAirports), links, activeAirports, countryOpenness = countryOpenness)
+        result(group).get(to).foreach { route =>
+          routeCount += 1
+          if (route.links.exists(_.link.transportType == TransportType.HIGH_SPEED_RAIL)) {
+            hsrCount += 1
           }
         }
-        println(s"$linkClass : HSR $hsrCount / routes $routeCount / iterations $iterations")
+      }
+      println(s"$label : HSR $hsrCount / routes $routeCount / iterations $iterations")
+      withClue(s"$label found no route") {
         assert(routeCount > 0)
-        (linkClass, hsrCount.toDouble / routeCount)
+      }
+      hsrCount * 100.0 / routeCount
+    }
+
+    def hsrPercentageByLinkClass(links : List[Transport], from : Airport, to : Airport) : Map[LinkClass, Double] = {
+      val pool = DemandGenerator.getFlightPreferencePoolOnAirport(from)
+      LinkClass.values.map { linkClass =>
+        (linkClass, hsrPercentage(links, from, to, linkClass.toString)(() => pool.draw(linkClass, from, to)))
       }.toMap
     }
 
-    def assertMostButNotAll(ratioByLinkClass : Map[LinkClass, Double]) = {
-      ratioByLinkClass.foreach {
-        case (linkClass, ratio) =>
-          withClue(s"$linkClass HSR ratio $ratio") {
-            assert(ratio > 0.9)
-            assert(ratio < 1)
-          }
+    /**
+      * Draws pax of the preference type from the pool (across all link classes)
+      */
+    def hsrPercentageByPreferenceType(links : List[Transport], from : Airport, to : Airport, preferenceType : FlightPreferenceType.Value) : Double = {
+      val preferences = DemandGenerator.getFlightPreferencePoolOnAirport(from).pool.values.flatten.filter { preference =>
+        preference.isApplicable(from, to) && preference.getPreferenceType == preferenceType
+      }.toList
+      withClue(s"No preference of type $preferenceType in the pool") {
+        assert(preferences.nonEmpty)
+      }
+      hsrPercentage(links, from, to, preferenceType.title)(() => preferences(ThreadLocalRandom.current().nextInt(preferences.length)))
+    }
+
+    /**
+      * Assert the percentage (0 - 100) is within [min, max] inclusively
+      */
+    def assertProbablyRange(label : String, percentage : Double, min : Double, max : Double) = {
+      withClue(s"$label HSR percentage $percentage not within [$min, $max]") {
+        assert(percentage >= min && percentage <= max)
       }
     }
 
-    "prefer HSR over generic transit (50km) to connect to a long haul flight".in {
+    "HSR over generic transit (50km) to connect to a long haul flight".in {
       val airportA = airport("A", 0, 0, "C1", 1)
       val airportB = airport("B", 0.45, 0, "C1", 2) //~50km from A
       val airportC = airport("C", 0.45, 70, "C2", 3) //long haul from B
@@ -205,10 +225,17 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
         standardHsr(airportA, airportB, testAirline2, id = 2), //not the same airline/alliance as the long haul flight
         standardFlight(airportB, airportC, testAirline1, frequency = 7, id = 3))
 
-      assertMostButNotAll(hsrRatioByLinkClass(links, airportA, airportC))
+      //simulate all pax groups first, so all results are printed even if one of them fails
+      val budgetPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, BUDGET)
+      val comprehensivePercentage = hsrPercentageByPreferenceType(links, airportA, airportC, APPEAL)
+      val speedPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, SPEED)
+
+      assertProbablyRange(BUDGET.title, budgetPercentage, 0.1, 10) //most will use generic transit as it's cheaper
+      assertProbablyRange(APPEAL.title, comprehensivePercentage, 80, 99) //most but not all would use HSR
+      assertProbablyRange(SPEED.title, speedPercentage, 100, 100) //always HSR
     }
 
-    "prefer HSR over flight (100km) to connect to a long haul flight".in {
+    "HSR over flight (100km) to connect to a long haul flight".in {
       val airportA = airport("A", 0, 0, "C1", 1)
       val airportB = airport("B", 0.89, 0, "C1", 2) //~99km from A
       val airportC = airport("C", 0.89, 70, "C2", 3) //long haul from B
@@ -218,7 +245,14 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
         standardHsr(airportA, airportB, testAirline2, id = 2), //not the same airline/alliance as the long haul flight
         standardFlight(airportB, airportC, testAirline1, frequency = 7, id = 3))
 
-      assertMostButNotAll(hsrRatioByLinkClass(links, airportA, airportC))
+      //simulate all pax groups first, so all results are printed even if one of them fails
+      val budgetPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, BUDGET)
+      val comprehensivePercentage = hsrPercentageByPreferenceType(links, airportA, airportC, APPEAL)
+      val speedPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, SPEED)
+
+      assertProbablyRange(BUDGET.title, budgetPercentage, 40, 60)
+      assertProbablyRange(APPEAL.title, comprehensivePercentage, 90, 100)
+      assertProbablyRange(SPEED.title, speedPercentage, 100, 100)
     }
 
     "prefer HSR over connection flight (100km) between 2 flights".in {
@@ -233,7 +267,9 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
         standardHsr(airportB, airportC, testAirline2, id = 3), //not the same airline/alliance as the flights
         standardFlight(airportC, airportD, testAirline1, frequency = 14, id = 4))
 
-      assertMostButNotAll(hsrRatioByLinkClass(links, airportA, airportD))
+      hsrPercentageByLinkClass(links, airportA, airportD).foreach {
+        case (linkClass, percentage) => assertProbablyRange(linkClass.toString, percentage, 90, 99.99) //most but not all
+      }
     }
   }
 }

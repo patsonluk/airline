@@ -216,6 +216,43 @@ object LinkSource {
       }
     }
   }
+
+  /**
+    * Cycle on which the HSR was last built/reconfigured
+    */
+  def saveHighSpeedRailUpdateCycle(linkId : Int, cycle : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"REPLACE INTO $HIGH_SPEED_RAIL_TABLE (link, update_cycle) VALUES(?,?)")
+      preparedStatement.setInt(1, linkId)
+      preparedStatement.setInt(2, cycle)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  def loadHighSpeedRailUpdateCycle(linkId : Int) : Option[Int] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT update_cycle FROM $HIGH_SPEED_RAIL_TABLE WHERE link = ?")
+      preparedStatement.setInt(1, linkId)
+
+      val resultSet = preparedStatement.executeQuery()
+      val result =
+        if (resultSet.next()) {
+          Some(resultSet.getInt("update_cycle"))
+        } else {
+          None
+        }
+      resultSet.close()
+      preparedStatement.close()
+      result
+    } finally {
+      connection.close()
+    }
+  }
   
   def loadFlightNumbers(airlineId : Int) : List[Int] = {
     val connection = Meta.getConnection()

@@ -28,18 +28,21 @@ case class HighSpeedRail(from : Airport, to : Airport, airline : Airline, distan
 object HighSpeedRail {
   val QUALITY = 80 //high quality traffic
   val SPEED = 150 //km/h
-  val COST_RATIO = 0.5 //HSR is a bit more expensive than generic transit
+  val COST_RATIO = 0.35 //HSR is a bit more expensive than generic transit
   val CONNECTION_COST = 10 //lower than generic transit, they are usually more convenient
 
   val MIN_BASE_SCALE = 13
   val MAX_DISTANCE = 100 //km
+  val MIN_COUNTRY_RELATIONSHIP = 2 //same as generic transit, so it's always allowed within the same country
   val MIN_CARS = 3
   val MAX_CARS = 8
   val CAR_CAPACITY = 50000 //weekly capacity of a train car if it's all economy
   val COST_PER_KM_PER_CAPACITY = 1250
   val RECONFIGURE_COOLDOWN = 1000 //in cycles (weeks)
-  //cooldown is checked against link last_update (real time). Do not use MainSimulation.CYCLE_DURATION here, it's an App so it's not initialized outside of the simulation
   val WEEKLY_FREQUENCY = 250
+
+  //remaining cycles before the HSR can be reconfigured again. Counts from the cycle it was last built/reconfigured
+  def reconfigureCooldown(lastUpdateCycle : Int, currentCycle : Int) : Int = Math.max(0, lastUpdateCycle + RECONFIGURE_COOLDOWN - currentCycle)
 
   //number of train cars is determined by the size of the from airport
   def carCount(fromAirport : Airport) : Int = Math.max(MIN_CARS, Math.min(MAX_CARS, fromAirport.size))

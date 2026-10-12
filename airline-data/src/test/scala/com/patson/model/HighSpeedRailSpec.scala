@@ -47,4 +47,13 @@ class HighSpeedRailSpec extends WordSpecLike with Matchers {
       HighSpeedRail.carsRejection(Map(ECONOMY -> 1, BUSINESS -> 0, FIRST -> 0), 5).shouldBe(None)
     }
   }
+
+  "reconfigureCooldown".must {
+    "count down in cycles from the last update cycle".in {
+      HighSpeedRail.reconfigureCooldown(100, 100).shouldBe(HighSpeedRail.RECONFIGURE_COOLDOWN)
+      HighSpeedRail.reconfigureCooldown(100, 101).shouldBe(HighSpeedRail.RECONFIGURE_COOLDOWN - 1)
+      HighSpeedRail.reconfigureCooldown(100, 100 + HighSpeedRail.RECONFIGURE_COOLDOWN).shouldBe(0)
+      HighSpeedRail.reconfigureCooldown(100, 200 + HighSpeedRail.RECONFIGURE_COOLDOWN).shouldBe(0)
+    }
+  }
 }
