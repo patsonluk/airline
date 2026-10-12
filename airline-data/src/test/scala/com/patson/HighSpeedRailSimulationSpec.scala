@@ -186,13 +186,6 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       hsrCount * 100.0 / routeCount
     }
 
-    def hsrPercentageByLinkClass(links : List[Transport], from : Airport, to : Airport) : Map[LinkClass, Double] = {
-      val pool = DemandGenerator.getFlightPreferencePoolOnAirport(from)
-      LinkClass.values.map { linkClass =>
-        (linkClass, hsrPercentage(links, from, to, linkClass.toString)(() => pool.draw(linkClass, from, to)))
-      }.toMap
-    }
-
     /**
       * Draws pax of the preference type from the pool (across all link classes)
       */
@@ -250,8 +243,9 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       val comprehensivePercentage = hsrPercentageByPreferenceType(links, airportA, airportC, APPEAL)
       val speedPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, SPEED)
 
-      assertProbablyRange(BUDGET.title, budgetPercentage, 40, 60)
-      assertProbablyRange(APPEAL.title, comprehensivePercentage, 90, 100)
+      //HSR for all
+      assertProbablyRange(BUDGET.title, budgetPercentage, 100, 100)
+      assertProbablyRange(APPEAL.title, comprehensivePercentage, 100, 100)
       assertProbablyRange(SPEED.title, speedPercentage, 100, 100)
     }
 
@@ -263,13 +257,19 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
 
       val links = List(
         standardFlight(airportA, airportB, testAirline1, frequency = 14, id = 1),
-        standardFlight(airportB, airportC, testAirline1, frequency = 14, id = 2),
+        standardFlight(airportB, airportC, testAirline1, frequency = 28, id = 2),
         standardHsr(airportB, airportC, testAirline2, id = 3), //not the same airline/alliance as the flights
         standardFlight(airportC, airportD, testAirline1, frequency = 14, id = 4))
 
-      hsrPercentageByLinkClass(links, airportA, airportD).foreach {
-        case (linkClass, percentage) => assertProbablyRange(linkClass.toString, percentage, 90, 99.99) //most but not all
-      }
+      //simulate all pax groups first, so all results are printed even if one of them fails
+      val budgetPercentage = hsrPercentageByPreferenceType(links, airportA, airportD, BUDGET)
+      val comprehensivePercentage = hsrPercentageByPreferenceType(links, airportA, airportD, APPEAL)
+      val speedPercentage = hsrPercentageByPreferenceType(links, airportA, airportD, SPEED)
+
+      //HSR is just faster and cheaper in all aspect
+      assertProbablyRange(BUDGET.title, budgetPercentage, 100, 100)
+      assertProbablyRange(APPEAL.title, comprehensivePercentage, 100, 100)
+      assertProbablyRange(SPEED.title, speedPercentage, 100, 100)
     }
   }
 }
