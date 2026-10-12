@@ -14,7 +14,6 @@ import com.patson.model
  */
 case class Link(from : Airport, to : Airport, airline: Airline, price : LinkClassValues, distance : Int, var capacity: LinkClassValues, rawQuality : Int, duration : Int, var frequency : Int, flightType : FlightType.Value, var flightNumber : Int = 0, var id : Int = 0) extends Transport {
   override val transportType = TransportType.FLIGHT
-  override val cost = price
   @volatile override var cancellationCount = 0
   @volatile override var majorDelayCount = 0
   @volatile override var minorDelayCount = 0

@@ -130,11 +130,11 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       hsrLinkClass(LinkClassValues.getInstance(10000, 0, 10000)).shouldBe(ECONOMY)
     }
 
-    "have hidden cost on HSR for all classes".in {
+    "have price on HSR for all classes".in {
       val rail = hsr(fromAirport, toAirportsList(0), testAirline1, id = 1)
       LinkClass.values.foreach { linkClass =>
-        rail.cost(linkClass).shouldBe((rail.standardPrice(linkClass) * HighSpeedRail.COST_RATIO).toInt)
-        assert(rail.cost(linkClass) > 0)
+        rail.price(linkClass).shouldBe((rail.standardPrice(linkClass) * HighSpeedRail.PRICE_RATIO).toInt)
+        assert(rail.price(linkClass) > 0)
       }
     }
   }

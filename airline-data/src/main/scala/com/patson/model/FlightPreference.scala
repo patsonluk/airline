@@ -102,7 +102,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     val standardPrice = link.standardPrice(preferredLinkClass)
     val deltaFromStandardPrice = priceAdjustedByLinkClassDiff(link, linkClass) - standardPrice
 
-    //only flights apply price sensitivity. Non flights (generic transit, HSR) have hidden cost much lower than standard price,
+    //only flights apply price sensitivity. Non flights (generic transit, HSR) have price much lower than standard price,
     //amplifying such discount could make the ratio negative
     val sensitivity = if (link.transportType == TransportType.FLIGHT) priceSensitivity else 1.0
 
@@ -155,12 +155,12 @@ abstract class FlightPreference(homeAirport : Airport) {
   }
 
   val priceAdjustedByLinkClassDiff = (link : Transport, linkClass : LinkClass) => {
-    val cost = link.cost(linkClass) //use cost here
+    val price = link.price(linkClass)
     if (linkClass.level != preferredLinkClass.level) {
       val classDiffMultiplier: Double = 1 + (preferredLinkClass.level - linkClass.level) * 0.2
-      (cost / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * classDiffMultiplier for unwillingness to downgrade
+      (price / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * classDiffMultiplier for unwillingness to downgrade
     } else {
-      cost
+      price
     }
   }
 
