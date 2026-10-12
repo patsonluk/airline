@@ -308,6 +308,7 @@ object Meta {
     createAirportAnimation(connection)
     createAirlineBaseSpecialization(connection)
     createAirlineBaseSpecializationLastUpdate(connection)
+    createHighSpeedRail(connection)
     createReputationBreakdown(connection)
     createIp(connection)
     createAdminLog(connection)
@@ -380,7 +381,7 @@ object Meta {
     statement.execute()
     statement.close()
 
-    statement = connection.prepareStatement("CREATE UNIQUE INDEX " + LINK_INDEX_1 + " ON " + LINK_TABLE + "(from_airport, to_airport, airline)")
+    statement = connection.prepareStatement("CREATE UNIQUE INDEX " + LINK_INDEX_1 + " ON " + LINK_TABLE + "(from_airport, to_airport, airline, transport_type)")
     statement.execute()
     statement.close()
     statement = connection.prepareStatement("CREATE INDEX " + LINK_INDEX_2 + " ON " + LINK_TABLE + "(from_airport)")
@@ -1923,6 +1924,20 @@ object Meta {
       "PRIMARY KEY (airport, airline)," +
       "FOREIGN KEY(airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+  }
+
+  def createHighSpeedRail(connection : Connection): Unit = {
+    var statement = connection.prepareStatement("DROP TABLE IF EXISTS " + HIGH_SPEED_RAIL_TABLE)
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + HIGH_SPEED_RAIL_TABLE + "(" +
+      "link INTEGER PRIMARY KEY, " +
+      "update_cycle INTEGER, " +
+      "FOREIGN KEY(link) REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

@@ -1,0 +1,7 @@
+# sbt / build output
+target/
+/project/build.properties
+.bsp/
+
+# IntelliJ
+/.idea/

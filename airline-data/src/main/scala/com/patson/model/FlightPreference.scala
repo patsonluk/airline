@@ -102,7 +102,11 @@ abstract class FlightPreference(homeAirport : Airport) {
     val standardPrice = link.standardPrice(preferredLinkClass)
     val deltaFromStandardPrice = priceAdjustedByLinkClassDiff(link, linkClass) - standardPrice
 
-    1 + deltaFromStandardPrice * priceSensitivity / standardPrice
+    //only flights apply price sensitivity. Non flights (generic transit, HSR) have hidden cost much lower than standard price,
+    //amplifying such discount could make the ratio negative
+    val sensitivity = if (link.transportType == TransportType.FLIGHT) priceSensitivity else 1.0
+
+    1 + deltaFromStandardPrice * sensitivity / standardPrice
   }
 
   def loyaltyAdjustRatio(link : Transport) = {
@@ -169,14 +173,20 @@ abstract class FlightPreference(homeAirport : Airport) {
     //full penalty on 0 freq, full bonus if 2 * theshold. at threshold it's neutral
     val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequencyByClass(linkClass)).toDouble / frequencyThreshold) * frequencySensitivity
 
-    val flightDurationRatioDelta =
-      if (flightDurationSensitivity == 0 || link.transportType != TransportType.FLIGHT) {
+    val durationRatioDelta =
+      if (flightDurationSensitivity == 0) {
         0
       } else {
-        val flightDurationThreshold = Computation.computeStandardFlightDuration(link.distance)
-        Math.min(flightDurationSensitivity, (link.duration - flightDurationThreshold).toFloat / flightDurationThreshold * flightDurationSensitivity)
+        //flights are compared with standard flight duration. Non flights (ground transport) are compared with generic transit duration
+        val durationThreshold =
+          if (link.transportType == TransportType.FLIGHT) {
+            Computation.computeStandardFlightDuration(link.distance)
+          } else {
+            GenericTransit.computeDuration(link.distance) //for non flight, use generic transit as a refernce point, so other faster non flight transit would have advantage
+          }
+        Math.min(flightDurationSensitivity, (link.duration - durationThreshold).toFloat / durationThreshold * flightDurationSensitivity)
       }
-    val finalDelta = Math.max(-0.75, frequencyRatioDelta + flightDurationRatioDelta) //just to play safe, can only at most 75% off
+    val finalDelta = Math.max(-0.75, frequencyRatioDelta + durationRatioDelta) //just to play safe, can only at most 75% off
 
     1 + finalDelta
   }

@@ -70,6 +70,7 @@ object Constants {
   val AIRLINE_CASH_FLOW_ITEM_TABLE = "airline_cash_flow_item"
   val AIRLINE_BASE_SPECIALIZATION_TABLE = "airline_base_specialization"
   val AIRLINE_BASE_SPECIALIZATION_LAST_UPDATE_TABLE = "airline_base_specialization_last_update"
+  val HIGH_SPEED_RAIL_TABLE = "high_speed_rail"
   val AIRLINE_REPUTATION_BREAKDOWN = "airline_reputation_breakdown"
   val AIRLINE_MODIFIER_TABLE = "airline_modifier"
   val AIRLINE_MODIFIER_INDEX_PREFIX = "airline_modifier_index_"
