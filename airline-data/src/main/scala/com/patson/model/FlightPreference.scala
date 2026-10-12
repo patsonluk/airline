@@ -25,7 +25,7 @@ abstract class FlightPreference(homeAirport : Airport) {
 
     cost = (cost * tripDurationAdjustRatio(link, linkClass)).toInt
 
-    if (loyaltySensitivity > 0) {
+    if (loyaltySensitivity > 0 && link.transportType == TransportType.FLIGHT) { //non flights (generic transit, HSR) are not seen as operated by any airline, hence no loyalty adjustment
       cost = (cost * loyaltyAdjustRatio(link)).toInt
     }
 
@@ -54,7 +54,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     cost = (cost * tripDurationAdjust).toInt
 
     var loyaltyAdjust = 1.0
-    if (loyaltySensitivity > 0) {
+    if (loyaltySensitivity > 0 && link.transportType == TransportType.FLIGHT) {
       loyaltyAdjust = loyaltyAdjustRatio(link)
       cost = (cost * loyaltyAdjust).toInt
     }

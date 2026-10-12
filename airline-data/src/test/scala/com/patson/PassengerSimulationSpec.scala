@@ -1086,8 +1086,8 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
         }
         totalRoutes = totalRoutes + 1
       }
-      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.5)
-      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.8)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble > 0.2)
+      assert(totalAcceptedRoutes / totalRoutes.toDouble < 0.5)
     }
 
     "accept some links at 1.4 x suggested price with neutral quality and decent loyalty for SUPERSONIC flight of Appeal First Class pax".in {
