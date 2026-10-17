@@ -5,12 +5,9 @@ case class GenericTransit(from : Airport, to : Airport, distance : Int, var capa
   override val duration = GenericTransit.computeDuration(distance)
   override var frequency : Int = 24 * 7
   override def computedQuality() : Int = GenericTransit.QUALITY //constant quality
-  override val price : LinkClassValues = LinkClassValues.getInstance()
-  //override val price : LinkClassValues = LinkClassValues.getInstance() //has to have some hidden price? otherwise it will be too strong?
-
   override val flightType : FlightType.Value = FlightType.SHORT_HAUL_DOMESTIC
 
-  override val cost = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) * 0.25 //perceived ticket price of pax taking such transit. This could up adjust if it's a downgrade of a pax's preference
+  override val price : LinkClassValues = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) * 0.25 //ticket price pax pay for local transit
 
   val upkeep = 0
   override var minorDelayCount : Int = 0

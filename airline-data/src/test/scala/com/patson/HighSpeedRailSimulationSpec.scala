@@ -79,6 +79,17 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       routes.isDefinedAt(toAirportsList(1)).shouldBe(false)
     }
 
+    "not find a route with back to back non flights (generic transit + HSR)".in {
+      val transit = GenericTransit(fromAirport, toAirportsList(0), 50, LinkClassValues.getInstance(10000), id = 1)
+      val links = List(
+        LinkConsideration.getExplicit(transit, 100, ECONOMY, false),
+        LinkConsideration.getExplicit(hsr(toAirportsList(0), toAirportsList(1), testAirline1, id = 2), 100, ECONOMY, false),
+        LinkConsideration.getExplicit(flight(toAirportsList(1), toAirportsList(2), testAirline1, id = 3), 100, ECONOMY, false))
+
+      val routes = PassengerSimulation.findShortestRoute(passengerGroup, toAirports, allAirportIds, links.asJava, Collections.emptyMap[Int, Int](), 3)
+      routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
+    }
+
     "have no connection cost if HSR is operated by the same airline or alliance as the connecting flight".in {
       def routeCost(hsrAirline : Airline, flightAirline : Airline, allianceIdByAirlineId : java.util.Map[Int, Int]) : Double = {
         val links = List(
@@ -119,12 +130,27 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       hsrLinkClass(LinkClassValues.getInstance(10000, 0, 10000)).shouldBe(ECONOMY)
     }
 
-    "have hidden cost on HSR for all classes".in {
+    "have price on HSR for all classes".in {
       val rail = hsr(fromAirport, toAirportsList(0), testAirline1, id = 1)
       LinkClass.values.foreach { linkClass =>
-        rail.cost(linkClass).shouldBe((rail.standardPrice(linkClass) * HighSpeedRail.COST_RATIO).toInt)
-        assert(rail.cost(linkClass) > 0)
+        rail.price(linkClass).shouldBe((rail.standardPrice(linkClass) * HighSpeedRail.PRICE_RATIO).toInt)
+        assert(rail.price(linkClass) > 0)
       }
+    }
+
+    "not apply lounge adjustment on HSR".in {
+      val airportA = fromAirport.copy(iata = "A", id = 11)
+      val airportB = fromAirport.copy(iata = "B", id = 12)
+      airportA.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = airportA, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
+      airportB.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = airportB, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
+      val preference = AppealPreference(airportA, BUSINESS, loungeLevelRequired = 1, loyaltyRatio = 1, 0)
+
+      //lounges at both ends do nothing for HSR
+      preference.loungeAdjustRatio(hsr(airportA, airportB, testAirline1, id = 1), loungeLevelRequired = 1, BUSINESS).shouldBe(1.0)
+      //missing lounges have no penalty on HSR either
+      preference.loungeAdjustRatio(hsr(toAirportsList(0), toAirportsList(1), testAirline1, id = 2), loungeLevelRequired = 1, BUSINESS).shouldBe(1.0)
+      //flights still get the lounge discount
+      assert(preference.loungeAdjustRatio(flight(airportA, airportB, testAirline1, id = 3), loungeLevelRequired = 1, BUSINESS) < 1.0)
     }
   }
 
@@ -272,7 +298,7 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       assertProbablyRange(SPEED.title, speedPercentage, 100, 100)
     }
 
-    "prefer HSR (100km) + short haul flight (300km) over direct short haul flight (400km)".in {
+    "prefer direct short haul flight (400km) over HSR (100km) + short haul flight (300km)".in {
       val airportA = airport("A", 0, 0, "C1", 1)
       val airportB = airport("B", 0.89, 0, "C1", 2) //~99km from A
       val airportC = airport("C", 3.6, 0, "C1", 3) //~301km from B, ~400km from A
@@ -290,13 +316,13 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       val speedPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, SPEED)
       val loyalPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, LOYAL)
 
-      assertProbablyRange(BUDGET.title, budgetPercentage, 100, 100)
-      assertProbablyRange(APPEAL.title, comprehensivePercentage, 100, 100)
-      assertProbablyRange(SPEED.title, speedPercentage, 100, 100)
-      assertProbablyRange(LOYAL.title, loyalPercentage, 50, 99) //some would take the direct flight of the airline they are loyal to
+      assertProbablyRange(BUDGET.title, budgetPercentage, 1, 20)
+      assertProbablyRange(APPEAL.title, comprehensivePercentage, 5, 25) //appreciate the HSR high quality more than budget PAX
+      assertProbablyRange(SPEED.title, speedPercentage, 20, 50) //in some cases HSR + flight could be faster
+      assertProbablyRange(LOYAL.title, loyalPercentage, 1, 20) //enjoy the flight more (branded)
     }
 
-    "prefer HSR (100km) + long haul flight (10000km) over direct long haul flight (10100km)".in {
+    "HSR (100km) + long haul flight (10000km) vs direct long haul flight (10100km)".in {
       val airportA = airport("A", 0, 0, "C1", 1)
       val airportB = airport("B", 0, 0.89, "C1", 2) //~99km from A
       val airportC = airport("C", 0, 90.83, "C2", 3) //~10000km from B, ~10100km from A
@@ -314,10 +340,59 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       val speedPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, SPEED)
       val loyalPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, LOYAL)
 
-      assertProbablyRange(BUDGET.title, budgetPercentage, 100, 100)
-      assertProbablyRange(APPEAL.title, comprehensivePercentage, 100, 100)
-      assertProbablyRange(SPEED.title, speedPercentage, 100, 100)
-      assertProbablyRange(LOYAL.title, loyalPercentage, 50, 99) //some would take the direct flight of the airline they are loyal to
+      assertProbablyRange(BUDGET.title, budgetPercentage, 30, 60) //does not really matter that much
+      assertProbablyRange(APPEAL.title, comprehensivePercentage, 30, 60) //does not really matter that much
+      assertProbablyRange(SPEED.title, speedPercentage, 30, 60) //does not really matter that much
+      assertProbablyRange(LOYAL.title, loyalPercentage, 30, 60) //does not really matter that much
+    }
+
+    "HSR (100km) + long haul flight (10000km) vs direct long haul flight (10100km) but one with higher loyalty".in {
+      val airportA = airport("A", 0, 0, "C1", 1)
+      val airportB = airport("B", 0, 0.89, "C1", 2) //~99km from A
+      val airportC = airport("C", 0, 90.83, "C2", 3) //~10000km from B, ~10100km from A
+      //pax from A are very loyal to the airline operating the flights out from B
+      airportA.initAirlineAppeals(Map(testAirline1.id -> AirlineAppeal(AirlineAppeal.MAX_LOYALTY), testAirline2.id -> AirlineAppeal(0)))
+
+      val links = List(
+        standardHsr(airportA, airportB, testAirline2, id = 1), //not the same airline/alliance as the flights
+        standardFlight(airportB, airportC, testAirline1, frequency = 14, id = 2),
+        standardFlight(airportA, airportC, testAirline2, frequency = 14, id = 3))
+
+      //simulate all pax groups first, so all results are printed even if one of them fails
+      val budgetPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, BUDGET)
+      val comprehensivePercentage = hsrPercentageByPreferenceType(links, airportA, airportC, APPEAL)
+      val speedPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, SPEED)
+      val loyalPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, LOYAL)
+
+      assertProbablyRange(BUDGET.title, budgetPercentage, 30, 60) //does not really matter that much
+      assertProbablyRange(APPEAL.title, comprehensivePercentage, 90, 100) //would rather take HSR to catch flight from airline1
+      assertProbablyRange(SPEED.title, speedPercentage, 30, 60) //does not really matter that much
+      assertProbablyRange(LOYAL.title, loyalPercentage, 80, 100) //would rather take HSR to catch flight from airline1
+    }
+
+    "HSR (100km) + long haul flight (10000km) vs direct long haul flight (10100km) but connection one has much higher frequency".in {
+      val airportA = airport("A", 0, 0, "C1", 1)
+      val airportB = airport("B", 0, 0.89, "C1", 2) //~99km from A
+      val airportC = airport("C", 0, 90.83, "C2", 3) //~10000km from B, ~10100km from A
+
+
+      val links = List(
+        standardHsr(airportA, airportB, testAirline1, id = 1), //not the same airline/alliance as the flights
+        standardFlight(airportB, airportC, testAirline1, frequency = 14, id = 2),
+        standardFlight(airportA, airportC, testAirline1, frequency = 2, id = 3))
+
+      //simulate all pax groups first, so all results are printed even if one of them fails
+      val budgetPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, BUDGET)
+      val comprehensivePercentage = hsrPercentageByPreferenceType(links, airportA, airportC, APPEAL)
+      val speedPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, SPEED)
+      val loyalPercentage = hsrPercentageByPreferenceType(links, airportA, airportC, LOYAL)
+
+      assertProbablyRange(BUDGET.title, budgetPercentage, 30, 60) //does not really matter that much
+      assertProbablyRange(APPEAL.title, comprehensivePercentage, 50, 70) //would rather take HSR to catch more frequent flight from airline1
+      assertProbablyRange(SPEED.title, speedPercentage, 70, 90) //would rather take HSR to catch more frequent flight from airline1. Sometimes it might still take direct tho, even low frequency can match schedule occasionally
+      assertProbablyRange(LOYAL.title, loyalPercentage, 50, 70) //would rather take HSR to catch more frequent flight from airline1
     }
   }
+
+
 }

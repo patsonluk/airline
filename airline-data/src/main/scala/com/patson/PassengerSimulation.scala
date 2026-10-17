@@ -628,6 +628,8 @@ object PassengerSimulation {
 
             if (linkConsideration.link.id == predecessorLink.id) { //going back and forth on the same link
               isValid = false
+            } else if (predecessorLink.transportType != TransportType.FLIGHT && linkConsideration.link.transportType != TransportType.FLIGHT) { //no back to back non flights (generic transit, HSR)
+              isValid = false
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
               connectionCost = 25
             } else if (predecessorLink.transportType == TransportType.HIGH_SPEED_RAIL || linkConsideration.link.transportType == TransportType.HIGH_SPEED_RAIL) {

@@ -353,8 +353,8 @@ class GenericTransitSimulationSpec(_system: ActorSystem) extends TestKit(_system
       println(s"paxTransitCount $paxTransitCount")
       assert(paxTransitCount(economyPassengerGroup).toDouble / paxDirectCount(economyPassengerGroup) > 2)
       assert(paxTransitCount(economyPassengerGroup).toDouble / paxDirectCount(economyPassengerGroup) < 5)
-      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) > 0.7)
-      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) < 1.5)
+      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) > 1)
+      assert(paxTransitCount(businessPassengerGroup).toDouble / paxDirectCount(businessPassengerGroup) < 2)
       assert(paxTransitCount(firstPassengerGroup).toDouble / paxDirectCount(firstPassengerGroup) > 0.2)
       assert(paxTransitCount(firstPassengerGroup).toDouble / paxDirectCount(firstPassengerGroup) < 0.5)
 

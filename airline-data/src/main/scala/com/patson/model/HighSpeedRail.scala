@@ -4,15 +4,13 @@ case class HighSpeedRail(from : Airport, to : Airport, airline : Airline, distan
   override val transportType : TransportType.Value = TransportType.HIGH_SPEED_RAIL
   override val duration = (distance.toDouble / HighSpeedRail.SPEED * 60).toInt
   override def computedQuality() : Int = HighSpeedRail.QUALITY //constant quality for now
-  override val flightType : FlightType.Value = FlightType.SHORT_HAUL_DOMESTIC //has to be defined before cost, as standardPrice uses it
+  override val flightType : FlightType.Value = FlightType.SHORT_HAUL_DOMESTIC //has to be defined before price, as standardPrice uses it
 
-  override val price : LinkClassValues = LinkClassValues.getInstance() //TODO price modelling in later PR
-
-  //perceived ticket price of pax taking such transit. This could up adjust if it's a downgrade of a pax's preference
-  override val cost : LinkClassValues = LinkClassValues.getInstance(
-    economy = (standardPrice(ECONOMY) * HighSpeedRail.COST_RATIO).toInt,
-    business = (standardPrice(BUSINESS) * HighSpeedRail.COST_RATIO).toInt,
-    first = (standardPrice(FIRST) * HighSpeedRail.COST_RATIO).toInt)
+  //ticket price pax pay for HSR. Not a revenue of the airline that builds it
+  override val price : LinkClassValues = LinkClassValues.getInstance(
+    economy = (standardPrice(ECONOMY) * HighSpeedRail.PRICE_RATIO).toInt,
+    business = (standardPrice(BUSINESS) * HighSpeedRail.PRICE_RATIO).toInt,
+    first = (standardPrice(FIRST) * HighSpeedRail.PRICE_RATIO).toInt)
 
   override var minorDelayCount : Int = 0
   override var majorDelayCount : Int = 0
@@ -28,7 +26,7 @@ case class HighSpeedRail(from : Airport, to : Airport, airline : Airline, distan
 object HighSpeedRail {
   val QUALITY = 80 //high quality traffic
   val SPEED = 150 //km/h
-  val COST_RATIO = 0.35 //HSR is a bit more expensive than generic transit
+  val PRICE_RATIO = 0.35 //HSR is a bit more expensive than generic transit
   val CONNECTION_COST = 10 //lower than generic transit, they are usually more convenient
 
   val MIN_BASE_SCALE = 13
