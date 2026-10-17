@@ -192,7 +192,7 @@ abstract class FlightPreference(homeAirport : Airport) {
   }
 
   def loungeAdjustRatio(link : Transport, loungeLevelRequired : Int, linkClass: LinkClass) = {
-    if (loungeSensitivity == 0 || linkClass.level < BUSINESS.level) {
+    if (loungeSensitivity == 0 || linkClass.level < BUSINESS.level || link.transportType != TransportType.FLIGHT) { //non flights (generic transit, HSR) do not use lounges
       1.0
     } else {
       val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)

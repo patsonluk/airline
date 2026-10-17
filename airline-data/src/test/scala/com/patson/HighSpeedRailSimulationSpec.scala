@@ -137,6 +137,21 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
         assert(rail.price(linkClass) > 0)
       }
     }
+
+    "not apply lounge adjustment on HSR".in {
+      val airportA = fromAirport.copy(iata = "A", id = 11)
+      val airportB = fromAirport.copy(iata = "B", id = 12)
+      airportA.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = airportA, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
+      airportB.initLounges(List(Lounge(airline = testAirline1, allianceId = None, airport = airportB, level = 1, status = LoungeStatus.ACTIVE, foundedCycle = 0)))
+      val preference = AppealPreference(airportA, BUSINESS, loungeLevelRequired = 1, loyaltyRatio = 1, 0)
+
+      //lounges at both ends do nothing for HSR
+      preference.loungeAdjustRatio(hsr(airportA, airportB, testAirline1, id = 1), loungeLevelRequired = 1, BUSINESS).shouldBe(1.0)
+      //missing lounges have no penalty on HSR either
+      preference.loungeAdjustRatio(hsr(toAirportsList(0), toAirportsList(1), testAirline1, id = 2), loungeLevelRequired = 1, BUSINESS).shouldBe(1.0)
+      //flights still get the lounge discount
+      assert(preference.loungeAdjustRatio(flight(airportA, airportB, testAirline1, id = 3), loungeLevelRequired = 1, BUSINESS) < 1.0)
+    }
   }
 
   "find routes".must {
