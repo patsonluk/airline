@@ -4013,7 +4013,8 @@
 			  </div>
 		  </div>
 
-		  <div class="section hsrDetails" style="display: none; margin-top: 10px;">
+		  <div style="width: 780px;"> <!-- fixed width so the modal does not resize when details are toggled -->
+		  <div class="hsrDetails" style="display: none; margin-top: 10px;">
 			  <div class="table" style="width: 100%">
 				  <div class="table-row">
 					  <div class="label" style="width: 30%"><h5>Destination:</h5></div>
@@ -4045,8 +4046,7 @@
 			  <div class="button updateButton" onclick="updateHighSpeedRail()">Update</div>
 			  <div class="button removeButton" onclick="promptRemoveHighSpeedRail()">Remove</div>
 		  </div>
-
-		  <div class="button" onclick="closeModal($(this).closest('.modal'))">Close</div>
+		  </div>
 	  </div>
 	</div>
 
@@ -4067,8 +4067,6 @@
 				  <div class="cell" style="width: 8%" align="right">PAX</div>
 			  </div>
 		  </div>
-
-		  <div class="button confirmButton" onclick="closeModal($(this).closest('.modal'))">OK</div>
 	  </div>
 	</div>
 

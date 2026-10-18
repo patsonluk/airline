@@ -24,12 +24,14 @@ function loadHighSpeedRailOptions(fromAirportId, selectedToAirportId, callback) 
 
             var $table = $modal.find('.table.hsrOptions')
             $table.find('.table-row').remove()
-            $modal.find('.hsrDetails').hide()
+            if (!selectedToAirportId) { //keep the details visible if the same row will be reselected below
+                $modal.find('.hsrDetails').hide()
+            }
 
             $.each(result.options, function(index, option) {
                 var $row = $('<div class="table-row clickable" style="width: 100%"></div>')
                 var rail = option.rail
-                $row.append($('<div class="cell">' + (rail ? getAirlineSpan(rail.airlineId, rail.airlineName) : '-') + '</div>'))
+                $row.append($('<div class="cell">' + (rail ? getAirlineSpan(rail.airlineId, rail.airlineName) : '(Unfunded)') + '</div>'))
                 $row.append($('<div class="cell">' + getAirportSpan(option.airport) + '</div>'))
                 $row.append($('<div class="cell" align="right">' + commaSeparateNumber(option.airport.population) + '</div>'))
                 $row.append($('<div class="cell" align="right">' + option.distance + ' km</div>'))
@@ -93,29 +95,26 @@ function selectHighSpeedRailOption($row) {
     $details.data('option', option)
     $details.data('cars', cars)
 
-    $details.find('.fundedBy').html(rail ? getAirlineSpan(rail.airlineId, rail.airlineName) : '-')
+    $details.find('.fundedBy').html(rail ? getAirlineSpan(rail.airlineId, rail.airlineName) : '(Unfunded)')
     $details.find('.destination').html(getAirportSpan(option.airport) + ' (' + option.distance + ' km)')
     $details.find('.constructionCost').text('$' + commaSeparateNumber(option.buildCost))
     $details.find('.carCount').text(hsrOptions.carCount)
-    $details.find('.rejection').hide()
+    //rejection is updated once the consideration returns, do not hide it here to avoid the details jumping
 
     var $buildButton = $details.find('.buildButton')
     var $updateButton = $details.find('.updateButton')
     var $removeButton = $details.find('.removeButton')
-    $buildButton.hide()
-    $updateButton.hide()
-    $removeButton.hide()
-    if (!rail) {
-        $buildButton.show()
-    } else if (rail.airlineId == activeAirline.id) {
-        $updateButton.show()
-        $removeButton.show()
-    } //funded by other airline, no action allowed
+    var isOwnRail = !!rail && rail.airlineId == activeAirline.id //must be boolean, toggle(undefined) flips the visibility instead
+    $buildButton.toggle(!rail)
+    $updateButton.toggle(isOwnRail)
+    $removeButton.toggle(isOwnRail) //funded by other airline, no action allowed
 
     //render as read only first, then check if the current airline can build/update it
     $details.data('editable', false)
     renderHighSpeedRailCars()
-    $details.show()
+    if (!$details.is(':visible')) {
+        $details.show()
+    }
 
     $.ajax({
         type: 'POST',
@@ -133,6 +132,7 @@ function selectHighSpeedRailOption($row) {
                 disableButton($buildButton, consideration.rejection)
                 disableButton($updateButton, consideration.rejection)
             } else {
+                $details.find('.rejection').hide()
                 enableButton($buildButton)
                 enableButton($updateButton)
                 $details.data('editable', true)
