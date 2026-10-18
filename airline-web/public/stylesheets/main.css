@@ -777,6 +777,11 @@ div#canvas {
     font-weight: bold !important;
 }
 
+.table.data div.table-row.hsrBuilt .cell { /* high speed rail options that are already built */
+    color : var(--highlight-text-color);
+    font-weight: bold;
+}
+
 
 /* The Modal (background) */
 .modal {

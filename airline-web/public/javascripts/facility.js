@@ -71,6 +71,23 @@ function updateFacilityIcons(airport) {
 	    		iconImg.data("facility", facilityDetails.lounge)
 	    		$('#airportDetailsFacilities').append(iconImg)
     		}
+    		if (facilityDetails.highSpeedRail) { //high speed rail
+    		    var hsrInfo = facilityDetails.highSpeedRail
+    		    var hsrImageUrl
+    		    var hsrImageTitle
+    		    if (hsrInfo.rail) {
+    		        hsrImageUrl = 'assets/images/icons/train.svg'
+    		        hsrImageTitle = 'High Speed Rail to ' + hsrInfo.rail.toAirportCity + '(' + hsrInfo.rail.toAirportCode + ')'
+    		    } else if (hsrInfo.baseScale < hsrInfo.minBaseScale) {
+    		        hsrImageUrl = 'assets/images/icons/train-grey.svg'
+    		        hsrImageTitle = 'High Speed Rail requires base level ' + hsrInfo.minBaseScale
+    		    } else {
+    		        hsrImageUrl = 'assets/images/icons/train-grey.svg'
+    		        hsrImageTitle = 'No High Speed Rail'
+    		    }
+    		    var hsrIconImg = $("<img class='button' src='" + hsrImageUrl + "' onclick='showHighSpeedRailModal(" + airport.id + ")' title='" + hsrImageTitle + "' style='margin-left: 5px;'>")
+    		    $('#airportDetailsFacilities').append(hsrIconImg)
+    		}
 	    },
 	    error: function(jqXHR, textStatus, errorThrown) {
 	            console.log(JSON.stringify(jqXHR));

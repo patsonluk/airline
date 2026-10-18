@@ -32,7 +32,7 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
   private[this] def loadHighSpeedRail(linkId : Int) : Option[HighSpeedRail] = loadHighSpeedRails(List(("id", linkId))).headOption
 
   /**
-find    * Remaining cooldown (in cycles) before the HSR can be reconfigured again. No record means no cooldown
+    * Remaining cooldown (in cycles) before the HSR can be reconfigured again. No record means no cooldown
     */
   private[this] def reconfigureCooldown(railId : Int, currentCycle : Int) : Int = {
     LinkSource.loadHighSpeedRailUpdateCycle(railId).map(HighSpeedRail.reconfigureCooldown(_, currentCycle)).getOrElse(0)
@@ -186,8 +186,59 @@ find    * Remaining cooldown (in cycles) before the HSR can be reconfigured agai
     }))
   }
 
+  /**
+    * Airports within HSR range of the airport and with enough country mutual relationship, sorted by size (biggest first)
+    */
+  private[this] def candidateAirports(airport : Airport) : List[Airport] = {
+    val relationships = CountrySource.getCountryMutualRelationships(airport.countryCode) //same country is 5
+    Computation.getAirportsWithinRange(airport, HighSpeedRail.MAX_DISTANCE, cachedAirportsByLatitude)
+      .filter(candidate => relationships.getOrElse(candidate.countryCode, 0) >= HighSpeedRail.MIN_COUNTRY_RELATIONSHIP)
+      .sortBy(candidate => (-candidate.size, -candidate.population))
+  }
+
+  /**
+    * Candidate destination airports of HSR from the fromAirport, with the existing HSR (if any) from fromAirport to each of them
+    */
+  def getHighSpeedRailOptions(airlineId : Int, fromAirportId : Int) = AuthenticatedAirline(airlineId) { request =>
+    AirportCache.getAirport(fromAirportId) match {
+      case Some(fromAirport) =>
+        val existingRailsByToAirportId = loadHighSpeedRails(List(("from_airport", fromAirportId))).map(rail => (rail.to.id, rail)).toMap
+        val currentCycle = CycleSource.loadCycle()
+        val candidates = candidateAirports(fromAirport)
+        val options = candidates.map { candidate =>
+          val distance = Computation.calculateDistance(fromAirport, candidate)
+          var optionJson = Json.obj("airport" -> Json.toJson(candidate)(SimpleAirportWrites), "distance" -> distance, "buildCost" -> HighSpeedRail.buildCost(distance, fromAirport))
+          existingRailsByToAirportId.get(candidate.id).foreach { rail =>
+            optionJson = optionJson + ("rail" -> (Json.toJson(rail)(HighSpeedRailWrites).as[JsObject] + ("reconfigureCooldown" -> JsNumber(reconfigureCooldown(rail.id, currentCycle)))))
+          }
+          optionJson
+        }
+
+        Ok(Json.obj(
+          "fromAirport" -> Json.toJson(fromAirport)(SimpleAirportWrites),
+          "carCount" -> HighSpeedRail.carCount(fromAirport),
+          "seatsPerCar" -> Json.obj(
+            "economy" -> HighSpeedRail.seatsPerCar(ECONOMY),
+            "business" -> HighSpeedRail.seatsPerCar(BUSINESS),
+            "first" -> HighSpeedRail.seatsPerCar(FIRST)),
+          "options" -> JsArray(options)))
+      case None => NotFound
+    }
+  }
+
+  /**
+    * For airport details. HSR from and to this airport, with their ridership
+    */
   def getAirportHighSpeedRails(airportId : Int) = Action { request =>
-    val rails = loadHighSpeedRails(List(("from_airport", airportId))) ++ loadHighSpeedRails(List(("to_airport", airportId)))
-    Ok(JsArray(rails.map(rail => Json.toJson(rail)(HighSpeedRailWrites))))
+      val rails = loadHighSpeedRails(List(("from_airport", airportId))) ++ loadHighSpeedRails(List(("to_airport", airportId)))
+      val passengersByLinkId : Map[Int, Int] = LinkSource.loadLinkConsumptionsByLinksId(rails.map(_.id)).map(consumption => (consumption.link.id, consumption.link.getTotalSoldSeats)).toMap
+
+      val railsWithPaxStats = rails.map { rail =>
+        Json.toJson(rail)(HighSpeedRailWrites).as[JsObject] ++ Json.obj(
+          "toAirportPopulation" -> rail.to.population,
+          "passenger" -> passengersByLinkId.getOrElse[Int](rail.id, 0))
+      }
+
+      Ok(JsArray(railsWithPaxStats))
   }
 }

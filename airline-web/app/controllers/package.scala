@@ -914,6 +914,7 @@ package object controllers {
   }
 
   val cachedAirportsByPower = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true).filter(_.population > 0).sortBy(_.power)
+  val cachedAirportsByLatitude = cachedAirportsByPower.sortBy(_.latitude).toIndexedSeq //for range lookup, see Computation.getAirportsWithinRange
 
 
   val allAirplaneModels = ModelSource.loadAllModels()

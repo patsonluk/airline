@@ -327,4 +327,25 @@ object Computation {
     }
     affectedAirports.toList
   }
+
+  /**
+    * Airports (across countries) from candidates that are within range of the principal airport, excluding the principal airport itself
+    *
+    * candidatesByLatitude MUST be sorted by latitude (ascending). Binary search to the latitude band (latitude does not wrap around),
+    * then only check the actual distance on airports within that band
+    */
+  def getAirportsWithinRange(principalAirport : Airport, range : Int, candidatesByLatitude : IndexedSeq[Airport]) : List[Airport] = { //range in km
+    val maxLatitudeDelta = range / 111.0 + 0.1 //~111 km per degree of latitude
+
+    //don't worry about overflow
+    val minLatitude = principalAirport.latitude - maxLatitudeDelta
+    val maxLatitude = principalAirport.latitude + maxLatitudeDelta
+
+    //binary search (IndexedSeqView), index of first airport with latitude >= minLatitude
+    val startIndex = candidatesByLatitude.view.map(_.latitude).search(minLatitude).insertionPoint
+
+    candidatesByLatitude.iterator.drop(startIndex).takeWhile(_.latitude <= maxLatitude).filter { airport =>
+      airport.id != principalAirport.id && Computation.calculateDistance(principalAirport, airport) <= range
+    }.toList
+  }
 }

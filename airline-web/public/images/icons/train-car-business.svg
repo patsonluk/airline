@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="16" viewBox="0 0 24 16">
+  <rect x="1" y="2" width="22" height="10" rx="2" fill="#3f6fb5" stroke="#333333" stroke-width="0.8"/>
+  <rect x="3" y="4" width="4" height="3" fill="#ffffff"/>
+  <rect x="10" y="4" width="4" height="3" fill="#ffffff"/>
+  <rect x="17" y="4" width="4" height="3" fill="#ffffff"/>
+  <text x="12" y="11.3" font-family="Arial, sans-serif" font-size="4.5" font-weight="bold" fill="#ffffff" text-anchor="middle">J</text>
+  <circle cx="6" cy="13.5" r="1.5" fill="#333333"/>
+  <circle cx="18" cy="13.5" r="1.5" fill="#333333"/>
+</svg>

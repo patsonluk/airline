@@ -85,6 +85,7 @@
 	<script src='@routes.Assets.versioned("javascripts/event.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/search.js")'></script>
 	<script src='@routes.Assets.versioned("javascripts/facility.js")'></script>
+	<script src='@routes.Assets.versioned("javascripts/high-speed-rail.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/departures.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/websocket.js")'></script>
     <script src='@routes.Assets.versioned("javascripts/map-button.js")'></script>
@@ -1346,6 +1347,8 @@
 									<div class="value">
 										<span id="airportDetailsNearbyAirportCount"></span>
 										<img src='@routes.Assets.versioned("images/icons/shuttle.png")' title='Connections' class="clickable" onclick="showGenericTransitModal()" style="vertical-align: middle;">
+										<span id="airportDetailsHighSpeedRailCount" style="margin-left: 10px;"></span>
+										<img src='@routes.Assets.versioned("images/icons/train.svg")' title='High Speed Rail' class="clickable" onclick="showAirportHighSpeedRailModal()" style="vertical-align: middle;">
 									</div>
 								</div>
 								<div class="table-row">
@@ -3986,6 +3989,82 @@
 				  <div class="cell" style="width: 20%" align="right">Pop</div>
 				  <div class="cell" style="width: 20%" align="right">Cap</div>
 				  <div class="cell" style="width: 20%" align="right">PAX</div>
+			  </div>
+		  </div>
+
+		  <div class="button confirmButton" onclick="closeModal($(this).closest('.modal'))">OK</div>
+	  </div>
+	</div>
+
+	<div id="highSpeedRailModal" class="modal facility">
+	  <div class="modal-content"  style="width : 800px;">
+		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
+		  <h4>High Speed Rail Configuration</h4>
+		  <h6>From <span class="fromAirport"></span></h6>
+
+		  <div class="data table hsrOptions" style="width: 100%">
+			  <div class="table-header">
+				  <div class="cell" style="width: 20%">Funded By</div>
+				  <div class="cell" style="width: 30%">Destination Airport</div>
+				  <div class="cell" style="width: 12%" align="right">Pop</div>
+				  <div class="cell" style="width: 10%" align="right">Distance</div>
+				  <div class="cell" style="width: 10%" align="right">Cars (Y/J/F)</div>
+				  <div class="cell" style="width: 18%" align="right">Capacity (Y/J/F)</div>
+			  </div>
+		  </div>
+
+		  <div class="section hsrDetails" style="display: none; margin-top: 10px;">
+			  <div class="table" style="width: 100%">
+				  <div class="table-row">
+					  <div class="label" style="width: 30%"><h5>Destination:</h5></div>
+					  <div class="value destination" style="width: 70%"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Funded By:</h5></div>
+					  <div class="value fundedBy"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Construction Cost:</h5></div>
+					  <div class="value constructionCost"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Train Cars:</h5></div>
+					  <div class="value carCount"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Capacity (Y/J/F):</h5></div>
+					  <div class="value capacity"></div>
+				  </div>
+				  <div class="table-row">
+					  <div class="label"><h5>Configuration:</h5></div>
+					  <div class="value configuration"></div>
+				  </div>
+			  </div>
+			  <div class="rejection" style="display: none;"><div class="warning"></div></div>
+			  <div class="button buildButton" onclick="promptBuildHighSpeedRail()">Build</div>
+			  <div class="button updateButton" onclick="updateHighSpeedRail()">Update</div>
+			  <div class="button removeButton" onclick="promptRemoveHighSpeedRail()">Remove</div>
+		  </div>
+
+		  <div class="button" onclick="closeModal($(this).closest('.modal'))">Close</div>
+	  </div>
+	</div>
+
+	<div id="airportHighSpeedRailModal" class="modal facility">
+	  <div class="modal-content"  style="width : 900px;">
+		  <span class="close" onclick="closeModal($(this).closest('.modal'))">&times;</span>
+		  <h4>High speed rails</h4>
+
+		  <div class="data table airportHsrs" style="width: 100%">
+			  <div class="table-header">
+				  <div class="cell" style="width: 15%">Funded By</div>
+				  <div class="cell" style="width: 18%">Departure Airport</div>
+				  <div class="cell" style="width: 18%">Destination Airport</div>
+				  <div class="cell" style="width: 9%" align="right">Pop</div>
+				  <div class="cell" style="width: 8%" align="right">Distance</div>
+				  <div class="cell" style="width: 8%" align="right">Cars (Y/J/F)</div>
+				  <div class="cell" style="width: 16%" align="right">Capacity (Y/J/F)</div>
+				  <div class="cell" style="width: 8%" align="right">PAX</div>
 			  </div>
 		  </div>
 
