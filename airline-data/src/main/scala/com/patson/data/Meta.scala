@@ -1836,7 +1836,8 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + TRACKING_NOTICE_TABLE + "(" +
       "id INTEGER PRIMARY KEY AUTO_INCREMENT," +
       "airline INTEGER REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE, " +
-      "category VARCHAR(256)" +
+      "category VARCHAR(256)," +
+      "description VARCHAR(1024)" +
       ")")
     statement.execute()
     statement.close()
@@ -1937,6 +1938,7 @@ object Meta {
     statement = connection.prepareStatement("CREATE TABLE " + HIGH_SPEED_RAIL_TABLE + "(" +
       "link INTEGER PRIMARY KEY, " +
       "update_cycle INTEGER, " +
+      "funded_cycle INTEGER NOT NULL DEFAULT 0, " +
       "FOREIGN KEY(link) REFERENCES " + LINK_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()

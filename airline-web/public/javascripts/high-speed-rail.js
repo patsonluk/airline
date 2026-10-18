@@ -31,7 +31,7 @@ function loadHighSpeedRailOptions(fromAirportId, selectedToAirportId, callback) 
             $.each(result.options, function(index, option) {
                 var $row = $('<div class="table-row clickable" style="width: 100%"></div>')
                 var rail = option.rail
-                $row.append($('<div class="cell">' + (rail ? getAirlineSpan(rail.airlineId, rail.airlineName) : '(Unfunded)') + '</div>'))
+                $row.append($('<div class="cell">' + (rail ? getHighSpeedRailFundedByHtml(rail) : '(Unfunded)') + '</div>'))
                 $row.append($('<div class="cell">' + getAirportSpan(option.airport) + '</div>'))
                 $row.append($('<div class="cell" align="right">' + commaSeparateNumber(option.airport.population) + '</div>'))
                 $row.append($('<div class="cell" align="right">' + option.distance + ' km</div>'))
@@ -95,7 +95,7 @@ function selectHighSpeedRailOption($row) {
     $details.data('option', option)
     $details.data('cars', cars)
 
-    $details.find('.fundedBy').html(rail ? getAirlineSpan(rail.airlineId, rail.airlineName) : '(Unfunded)')
+    $details.find('.fundedBy').html(rail ? getAirlineSpan(rail.airlineId, rail.airlineName) + getHighSpeedRailConstructionText(rail) : '(Unfunded)')
     $details.find('.destination').html(getAirportSpan(option.airport) + ' (' + option.distance + ' km)')
     $details.find('.constructionCost').text('$' + commaSeparateNumber(option.buildCost))
     $details.find('.carCount').text(hsrOptions.carCount)
@@ -305,7 +305,7 @@ function showAirportHighSpeedRailModal() {
         var fromAirport = { "city" : rail.fromAirportCity, "iata" : rail.fromAirportCode, "countryCode" : rail.fromCountryCode }
         var toAirport = { "city" : rail.toAirportCity, "iata" : rail.toAirportCode, "countryCode" : rail.toCountryCode }
         var $row = $('<div class="table-row" style="width: 100%"></div>')
-        $row.append($('<div class="cell">' + getAirlineSpan(rail.airlineId, rail.airlineName) + '</div>'))
+        $row.append($('<div class="cell">' + getHighSpeedRailFundedByHtml(rail) + '</div>'))
         $row.append($('<div class="cell">' + getAirportSpan(fromAirport) + '</div>'))
         $row.append($('<div class="cell">' + getAirportSpan(toAirport) + '</div>'))
         $row.append($('<div class="cell" align="right">' + commaSeparateNumber(rail.toAirportPopulation) + '</div>'))
@@ -319,4 +319,19 @@ function showAirportHighSpeedRailModal() {
         $table.append('<div class="table-row"><div class="cell">-</div><div class="cell">-</div><div class="cell">No High Speed Rail</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div></div>')
     }
     $('#airportHighSpeedRailModal').fadeIn(200)
+}
+
+/**
+ * Funded by airline, with a construction icon (hover for remaining weeks) if the HSR is still under construction
+ */
+function getHighSpeedRailFundedByHtml(rail) {
+    var html = getAirlineSpan(rail.airlineId, rail.airlineName)
+    if (rail.constructionRemaining > 0) {
+        html += '<img src="assets/images/icons/construction.gif" style="vertical-align: middle; margin-left: 3px;" title="Complete in ' + rail.constructionRemaining + ' week(s)">'
+    }
+    return html
+}
+
+function getHighSpeedRailConstructionText(rail) {
+    return rail.constructionRemaining > 0 ? ' (complete in ' + rail.constructionRemaining + ' week(s))' : ''
 }

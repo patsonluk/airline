@@ -169,7 +169,7 @@ package object controllers {
   }
 
 
-  object HighSpeedRailWrites extends Writes[HighSpeedRail] {
+  class HighSpeedRailWrites(currentCycle : Int) extends Writes[HighSpeedRail] {
     def writes(rail: HighSpeedRail): JsValue = {
       val carsByClass = HighSpeedRail.carsByCapacity(rail.capacity)
       Json.obj(
@@ -196,6 +196,8 @@ package object controllers {
         "quality" -> rail.computedQuality(),
         "capacity" -> Json.toJson(rail.capacity),
         "carCount" -> HighSpeedRail.carCount(rail.from),
+        "fundedCycle" -> rail.fundedCycle,
+        "constructionRemaining" -> rail.remainingConstructionCycles(currentCycle), //0 if completed
         "cars" -> Json.obj(
           "economy" -> carsByClass(ECONOMY),
           "business" -> carsByClass(BUSINESS),

@@ -7,3 +7,10 @@ CREATE TABLE high_speed_rail (
   update_cycle INTEGER,
   FOREIGN KEY(link) REFERENCES link(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+
+-- cycle on which a HSR was funded, it takes HighSpeedRail.CONSTRUCTION_DURATION cycles to complete. Existing HSR (funded_cycle 0) are treated as completed
+ALTER TABLE high_speed_rail ADD COLUMN funded_cycle INTEGER NOT NULL DEFAULT 0;
+
+-- extra description for tracking notices that carry their own message (for example HSR completion)
+ALTER TABLE tracking_notice ADD COLUMN description VARCHAR(1024);

@@ -56,4 +56,24 @@ class HighSpeedRailSpec extends WordSpecLike with Matchers {
       HighSpeedRail.reconfigureCooldown(100, 200 + HighSpeedRail.RECONFIGURE_COOLDOWN).shouldBe(0)
     }
   }
+
+  "construction".must {
+    val rail = HighSpeedRail(airportOfSize(8), Airport.fromId(2), Airline.fromId(1), 50, LinkClassValues.getInstance(100, 0, 0), HighSpeedRail.WEEKLY_FREQUENCY, fundedCycle = 100)
+
+    "take 5 years (5 * 52 cycles) to complete".in {
+      rail.completionCycle.shouldBe(100 + 5 * 52)
+    }
+    "not be completed before the completion cycle".in {
+      rail.isCompleted(100).shouldBe(false)
+      rail.isCompleted(rail.completionCycle - 1).shouldBe(false)
+      rail.remainingConstructionCycles(100).shouldBe(5 * 52)
+      rail.remainingConstructionCycles(rail.completionCycle - 1).shouldBe(1)
+    }
+    "be completed on and after the completion cycle".in {
+      rail.isCompleted(rail.completionCycle).shouldBe(true)
+      rail.isCompleted(rail.completionCycle + 1).shouldBe(true)
+      rail.remainingConstructionCycles(rail.completionCycle).shouldBe(0)
+      rail.remainingConstructionCycles(rail.completionCycle + 100).shouldBe(0)
+    }
+  }
 }
