@@ -664,7 +664,14 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
         }
 
 
-        Ok(Json.obj("lounge" -> loungeJson))
+        val baseScale = AirlineSource.loadAirlineBaseByAirlineAndAirport(airlineId, airportId).map(_.scale).getOrElse(0)
+        val highSpeedRail = LinkSource.loadLinksByCriteria(List(("from_airport", airportId), ("airline", airlineId), ("transport_type", TransportType.HIGH_SPEED_RAIL.id))).headOption
+        var highSpeedRailJson = Json.obj("baseScale" -> baseScale, "minBaseScale" -> HighSpeedRail.MIN_BASE_SCALE)
+        highSpeedRail.foreach { rail =>
+          highSpeedRailJson = highSpeedRailJson + ("rail" -> Json.toJson(rail.asInstanceOf[HighSpeedRail])(HighSpeedRailWrites))
+        }
+
+        Ok(Json.obj("lounge" -> loungeJson, "highSpeedRail" -> highSpeedRailJson))
       case None => NotFound
     }
 

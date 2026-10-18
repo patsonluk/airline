@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <defs>
+    <linearGradient id="body-grey" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c4c4c4"/>
+      <stop offset="0.45" stop-color="#9a9a9a"/>
+      <stop offset="1" stop-color="#6e6e6e"/>
+    </linearGradient>
+    <linearGradient id="window-grey" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfe3f2"/>
+    </linearGradient>
+  </defs>
+  <path d="M1 11 L1 6 Q1 4 3 4 L7.5 4 C10.5 4 13.5 6.5 15.6 10.1 Q15.9 11 14.9 11 Z" fill="url(#body-grey)" stroke="#6e6e6e" stroke-width="0.6" stroke-linejoin="round"/>
+  <path d="M2 5.3 Q2 4.6 3 4.6 L7.5 4.6 C9 4.6 10.3 5 11.3 5.6 L2 5.6 Z" fill="#ffffff" opacity="0.4"/>
+  <rect x="2.4" y="6" width="2.2" height="1.9" rx="0.4" fill="url(#window-grey)"/>
+  <rect x="5.4" y="6" width="2.2" height="1.9" rx="0.4" fill="url(#window-grey)"/>
+  <path d="M8.6 6 L10.2 6 C11.2 6.2 12.2 7 12.8 7.9 L8.6 7.9 Z" fill="url(#window-grey)"/>
+  <path d="M1.3 9.3 L14.4 9.3 L14.8 9.9 L1.3 9.9 Z" fill="#ffffff" opacity="0.45"/>
+  <rect x="0" y="12.5" width="16" height="1.2" rx="0.6" fill="url(#body-grey)"/>
+</svg>

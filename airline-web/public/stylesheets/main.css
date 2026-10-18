@@ -379,7 +379,8 @@ body.christmas {
 	background-color: var(--table-even-row-background-color);
 }
 
-.table.data div.table-row.selected:nth-child(even), .table.data div.table-row.selected:nth-child(odd), .table.data div.table-row.clickable:hover:nth-child(even), .table.data div.table-row.clickable:hover:nth-child(odd) {
+.table.data div.table-row.selected:nth-child(even), .table.data div.table-row.selected:nth-child(odd), .table.data div.table-row.clickable:hover:nth-child(even), .table.data div.table-row.clickable:hover:nth-child(odd),
+.table.data div.table-row.hsrBuilt:nth-child(even), .table.data div.table-row.hsrBuilt:nth-child(odd) { /* hsrBuilt : high speed rail options that are already built */
     background: #72ad5f;  /* fallback for old browsers */
     background: -webkit-linear-gradient(#72ad5f, #90be81);  /* Chrome 10-25, Safari 5.1-6 */
     background: var(--table-selected-row-background);
@@ -791,6 +792,10 @@ div#canvas {
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: var(--modal-background-color); /* Black w/ opacity */
     /*backdrop-filter: blur(2px);*/
+}
+
+#highSpeedRailModal {
+    scrollbar-gutter: stable; /* reserve the scrollbar space, otherwise expanding the details shows the scrollbar and shifts the modal */
 }
 
 .modal.transparentBackground {

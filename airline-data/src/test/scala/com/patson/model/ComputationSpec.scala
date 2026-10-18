@@ -69,6 +69,24 @@ class ComputationSpec(_system: ActorSystem) extends TestKit(_system) with Implic
       println(large)
       println(extraLarge)
     }
-    
+
+  }
+
+  "getAirportsWithinRange".must {
+    "return airports within range across countries, excluding the principal airport".in {
+      //~111.19 km per degree at the equator
+      val principal = Airport.fromId(1).copy(latitude = 0, longitude = 0, countryCode = "C1")
+      val near = Airport.fromId(2).copy(latitude = 0, longitude = 0.5, countryCode = "C1") //~56km
+      val nearOtherCountry = Airport.fromId(3).copy(latitude = 0.8, longitude = 0, countryCode = "C2") //~89km
+      val far = Airport.fromId(4).copy(latitude = 0, longitude = 1, countryCode = "C1") //~111km
+      val farLatitude = Airport.fromId(5).copy(latitude = 5, longitude = 0, countryCode = "C1")
+      val farSouthLatitude = Airport.fromId(6).copy(latitude = -5, longitude = 0, countryCode = "C1")
+      val nearSouth = Airport.fromId(7).copy(latitude = -0.85, longitude = 0, countryCode = "C1") //~95km
+      val farSouth = Airport.fromId(8).copy(latitude = -0.95, longitude = 0, countryCode = "C1") //~106km, within latitude band but out of range
+
+      val candidatesByLatitude = List(principal, near, nearOtherCountry, far, farLatitude, farSouthLatitude, nearSouth, farSouth).sortBy(_.latitude).toIndexedSeq
+      val result = Computation.getAirportsWithinRange(principal, 100, candidatesByLatitude)
+      result.map(_.id).toSet.shouldBe(Set(near.id, nearOtherCountry.id, nearSouth.id))
+    }
   }
 }
