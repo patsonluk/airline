@@ -510,7 +510,6 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
             val model = originalModel.applyDiscount(ModelDiscount.getCombinedDiscountsByModelId(airlineId, originalModel.id))
 
             val replaceCost = model.price - sellValue
-            val purchaseRate = model.price.toDouble / originalModel.price
             if (request.user.airlineInfo.balance < replaceCost) { //not enough money!
               BadRequest("Not enough money")
             } else {
@@ -518,7 +517,7 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
 //                  AirplaneSource.saveAirplanes(List(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, id = 0)))
 //               }
 
-              val replacingAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = originalModel.price, purchaseRate = purchaseRate)
+              val replacingAirplane = airplane.renew(currentCycle, model)
 
               val updateCount = AirplaneSource.updateAirplanes(List(replacingAirplane), true)
               if (updateCount == 1) {

@@ -132,7 +132,7 @@ object AirplaneSimulation {
                if (airplane.condition >= Airplane.BAD_CONDITION) { //create a clone as the sold airplane
                  secondHandAirplanes.append(airplane.copy(isSold = true, dealerRatio = Airplane.DEFAULT_DEALER_RATIO, configuration = AirplaneConfiguration.empty, id = 0))
                }
-               val renewedAirplane = airplane.copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = airplane.model.price)
+               val renewedAirplane = airplane.renew(currentCycle, adjustedModel)
                renewedAirplanes.append(renewedAirplane)
                renewedAirplane
              } else { //not enough fund

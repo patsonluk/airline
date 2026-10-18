@@ -27,6 +27,14 @@ case class Airplane(model : Model, var owner : Airline, constructedCycle : Int, 
     assignDefaultConfiguration()
   }
 
+  /**
+    * Replaces this airplane with a brand new one of the same model, bought at the current (discounted) market price.
+    * purchaseRate is recomputed from that price instead of being inherited from the previous purchase.
+    */
+  def renew(currentCycle : Int, discountedModel : Model) : Airplane = {
+    copy(constructedCycle = currentCycle, purchasedCycle = currentCycle, condition = Airplane.MAX_CONDITION, value = model.price, purchaseRate = discountedModel.price.toDouble / model.price)
+  }
+
   def assignDefaultConfiguration() = {
     val configurationOptions = AirplaneSource.loadAirplaneConfigurationsByCriteria(List(("airline", owner.id), ("model", model.id)))
     val pickedConfiguration =
