@@ -794,6 +794,10 @@ div#canvas {
     /*backdrop-filter: blur(2px);*/
 }
 
+#highSpeedRailModal {
+    scrollbar-gutter: stable; /* reserve the scrollbar space, otherwise expanding the details shows the scrollbar and shifts the modal */
+}
+
 .modal.transparentBackground {
     background-color: transparent;
 }
