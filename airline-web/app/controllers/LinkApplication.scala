@@ -6,7 +6,7 @@ import com.patson.data.airplane.ModelSource
 import com.patson.model.airplane.{Airplane, LinkAssignment, LinkAssignments, Model}
 import com.patson.model.history.LinkChange
 import com.patson.model.negotiation.LinkNegotiationDiscount
-import com.patson.model.event.Olympics
+import com.patson.model.event.{HighSpeedRailCompletion, Olympics}
 import com.patson.model.{FlightPreferenceType, _}
 import com.patson.util.{AirlineCache, AirplaneOwnershipCache, AirportCache, AllianceCache, CountryCache}
 import com.patson.{DemandGenerator, Util}
@@ -1508,6 +1508,14 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
                   walkerStatus = olympics.status(cycle)
                 }
               }
+            case completion : HighSpeedRailCompletion => //no matching airport, hence it shows up as an "Other" event on every link
+              result = result :+ Json.obj(
+                "description" -> s"High speed rail between ${completion.fromAirport.displayText} and ${completion.toAirport.displayText} is now open",
+                "descriptionCountryCode" -> completion.fromAirport.countryCode,
+                "airlineId" -> completion.airline.id,
+                "airlineName" -> completion.airline.name,
+                "cycle" -> completion.startCycle,
+                "cycleDelta" -> (completion.startCycle - currentCycle))
             case _ =>
           }
         }

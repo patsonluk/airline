@@ -16,11 +16,15 @@ object NoticeSource {
     */
   def saveTrackingNotice(airlineId : Int, notice : TrackingNotice) : Notice = {
     val connection = Meta.getConnection()
-    val statement = connection.prepareStatement(s"INSERT INTO $TRACKING_NOTICE_TABLE (airline, category) VALUES(?,?)", Statement.RETURN_GENERATED_KEYS)
+    val statement = connection.prepareStatement(s"INSERT INTO $TRACKING_NOTICE_TABLE (airline, category, description) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
     try {
       statement.setInt(1, airlineId)
       statement.setString(2, notice.category.toString)
+      notice match {
+        case highSpeedRailNotice : HighSpeedRailNotice => statement.setString(3, highSpeedRailNotice.description)
+        case _ => statement.setNull(3, java.sql.Types.VARCHAR)
+      }
 
       val updateCount = statement.executeUpdate()
       if (updateCount > 0) {
@@ -101,7 +105,8 @@ object NoticeSource {
       while (resultSet.next()) {
         val id = resultSet.getString("id")
         val category = NoticeCategory.withName(resultSet.getString("category"))
-        trackingNotices += Notice.fromCategoryAndId(category, id)
+        val description = Option(resultSet.getString("description")).getOrElse("")
+        trackingNotices += Notice.fromCategoryAndId(category, id, description)
 
       }
       resultSet.close()

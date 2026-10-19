@@ -45,7 +45,7 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
   val passengerGroup = PassengerGroup(fromAirport, SimplePreference(homeAirport = fromAirport, priceSensitivity = 1, preferredLinkClass = ECONOMY), PassengerType.BUSINESS)
 
   def hsr(from : Airport, to : Airport, airline : Airline, capacity : LinkClassValues = LinkClassValues.getInstance(10000, 10000, 10000), id : Int) =
-    HighSpeedRail(from, to, airline, 50, capacity, frequency = 100, id = id)
+    HighSpeedRail(from, to, airline, 50, capacity, frequency = 100, fundedCycle = 0, id = id)
 
   def flight(from : Airport, to : Airport, airline : Airline, id : Int) =
     Link(from, to, airline, LinkClassValues.getInstance(100, 100, 100), 10000, LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC, id = id)
@@ -179,7 +179,7 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
 
     def standardHsr(from : Airport, to : Airport, airline : Airline, id : Int) : HighSpeedRail = {
       val cars : Map[LinkClass, Int] = Map(ECONOMY -> 6, BUSINESS -> 1, FIRST -> 1)
-      HighSpeedRail(from, to, airline, Computation.calculateDistance(from, to), HighSpeedRail.capacityByCars(cars), HighSpeedRail.WEEKLY_FREQUENCY, id = id)
+      HighSpeedRail(from, to, airline, Computation.calculateDistance(from, to), HighSpeedRail.capacityByCars(cars), HighSpeedRail.WEEKLY_FREQUENCY, fundedCycle = 0, id = id)
     }
 
     def genericTransit(from : Airport, to : Airport, id : Int) : GenericTransit = {

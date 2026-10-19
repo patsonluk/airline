@@ -40,7 +40,7 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
 
   def getBuildConsideration(airline : Airline, fromAirport : Airport, toAirport : Airport, cars : Map[LinkClass, Int]) : Consideration[HighSpeedRail] = {
     val distance = Computation.calculateDistance(fromAirport, toAirport)
-    val rail = HighSpeedRail(fromAirport, toAirport, airline, distance, HighSpeedRail.capacityByCars(cars), HighSpeedRail.WEEKLY_FREQUENCY)
+    val rail = HighSpeedRail(fromAirport, toAirport, airline, distance, HighSpeedRail.capacityByCars(cars), HighSpeedRail.WEEKLY_FREQUENCY, fundedCycle = CycleSource.loadCycle())
     val cost = HighSpeedRail.buildCost(distance, fromAirport)
 
     val rejection : Option[String] = {
@@ -136,10 +136,9 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
         } else {
           LinkSource.saveLink(consideration.newFacility) match {
             case Some(savedRail) =>
-              LinkSource.saveHighSpeedRailUpdateCycle(savedRail.id, CycleSource.loadCycle()) //starts the reconfigure cooldown
               AirlineSource.adjustAirlineBalance(airline.id, -1 * consideration.cost)
               AirlineSource.saveCashFlowItem(AirlineCashFlowItem(airline.id, CashFlowType.FACILITY_CONSTRUCTION, -1 * consideration.cost))
-              Ok(Json.toJson(savedRail)(HighSpeedRailWrites))
+              Ok(Json.toJson(savedRail)(new HighSpeedRailWrites(savedRail.fundedCycle))) //saving the link also starts the reconfigure cooldown
             case None =>
               BadRequest("Failed to build high speed rail")
           }
@@ -158,8 +157,8 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
           BadRequest(consideration.rejectionReason)
         } else {
           LinkSource.updateLink(consideration.newFacility)
-          LinkSource.saveHighSpeedRailUpdateCycle(linkId, CycleSource.loadCycle()) //restarts the reconfigure cooldown
-          Ok(Json.toJson(consideration.newFacility)(HighSpeedRailWrites))
+          LinkSource.updateHighSpeedRailCycle(linkId, CycleSource.loadCycle()) //restarts the reconfigure cooldown
+          Ok(Json.toJson(consideration.newFacility)(new HighSpeedRailWrites(CycleSource.loadCycle())))
         }
       case None => NotFound
     }
@@ -182,7 +181,7 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
     val rails = loadHighSpeedRails(List(("airline", airlineId)))
     val currentCycle = CycleSource.loadCycle()
     Ok(JsArray(rails.map { rail =>
-      Json.toJson(rail)(HighSpeedRailWrites).as[JsObject] + ("reconfigureCooldown" -> JsNumber(reconfigureCooldown(rail.id, currentCycle)))
+      Json.toJson(rail)(new HighSpeedRailWrites(currentCycle)).as[JsObject] + ("reconfigureCooldown" -> JsNumber(reconfigureCooldown(rail.id, currentCycle)))
     }))
   }
 
@@ -209,7 +208,7 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
           val distance = Computation.calculateDistance(fromAirport, candidate)
           var optionJson = Json.obj("airport" -> Json.toJson(candidate)(SimpleAirportWrites), "distance" -> distance, "buildCost" -> HighSpeedRail.buildCost(distance, fromAirport))
           existingRailsByToAirportId.get(candidate.id).foreach { rail =>
-            optionJson = optionJson + ("rail" -> (Json.toJson(rail)(HighSpeedRailWrites).as[JsObject] + ("reconfigureCooldown" -> JsNumber(reconfigureCooldown(rail.id, currentCycle)))))
+            optionJson = optionJson + ("rail" -> (Json.toJson(rail)(new HighSpeedRailWrites(currentCycle)).as[JsObject] + ("reconfigureCooldown" -> JsNumber(reconfigureCooldown(rail.id, currentCycle)))))
           }
           optionJson
         }
@@ -231,12 +230,13 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
     */
   def getAirportHighSpeedRails(airportId : Int) = Action { request =>
       val rails = loadHighSpeedRails(List(("from_airport", airportId))) ++ loadHighSpeedRails(List(("to_airport", airportId)))
-      val passengersByLinkId : Map[Int, Int] = LinkSource.loadLinkConsumptionsByLinksId(rails.map(_.id)).map(consumption => (consumption.link.id, consumption.link.getTotalSoldSeats)).toMap
+      val passengersByLinkId : Map[Int, LinkClassValues] = LinkSource.loadLinkConsumptionsByLinksId(rails.map(_.id)).map(consumption => (consumption.link.id, consumption.link.soldSeats)).toMap
+      val currentCycle = CycleSource.loadCycle()
 
       val railsWithPaxStats = rails.map { rail =>
-        Json.toJson(rail)(HighSpeedRailWrites).as[JsObject] ++ Json.obj(
+        Json.toJson(rail)(new HighSpeedRailWrites(currentCycle)).as[JsObject] ++ Json.obj(
           "toAirportPopulation" -> rail.to.population,
-          "passenger" -> passengersByLinkId.getOrElse[Int](rail.id, 0))
+          "passenger" -> Json.toJson(passengersByLinkId.getOrElse(rail.id, LinkClassValues.getInstance())))
       }
 
       Ok(JsArray(railsWithPaxStats))

@@ -1,6 +1,13 @@
 package com.patson.model
 
-case class HighSpeedRail(from : Airport, to : Airport, airline : Airline, distance : Int, var capacity: LinkClassValues, var frequency : Int, var id : Int = 0) extends Transport {
+case class HighSpeedRail(from : Airport, to : Airport, airline : Airline, distance : Int, var capacity: LinkClassValues, var frequency : Int, fundedCycle : Int, var id : Int = 0) extends Transport {
+  val completionCycle : Int = fundedCycle + HighSpeedRail.CONSTRUCTION_DURATION
+
+  def isCompleted(currentCycle : Int) : Boolean = currentCycle >= completionCycle
+
+  //remaining cycles (weeks) before the construction completes, 0 if already completed
+  def remainingConstructionCycles(currentCycle : Int) : Int = Math.max(0, completionCycle - currentCycle)
+
   override val transportType : TransportType.Value = TransportType.HIGH_SPEED_RAIL
   override val duration = (distance.toDouble / HighSpeedRail.SPEED * 60).toInt
   override def computedQuality() : Int = HighSpeedRail.QUALITY //constant quality for now
@@ -38,6 +45,7 @@ object HighSpeedRail {
   val COST_PER_KM_PER_CAPACITY = 1250
   val RECONFIGURE_COOLDOWN = 1000 //in cycles (weeks)
   val WEEKLY_FREQUENCY = 250
+  val CONSTRUCTION_DURATION = 5 * 52 //in cycles (weeks). Not usable by pax until construction is completed
 
   //remaining cycles before the HSR can be reconfigured again. Counts from the cycle it was last built/reconfigured
   def reconfigureCooldown(lastUpdateCycle : Int, currentCycle : Int) : Int = Math.max(0, lastUpdateCycle + RECONFIGURE_COOLDOWN - currentCycle)

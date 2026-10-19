@@ -5,7 +5,7 @@ import java.sql.Statement
 import com.patson.LinkSimulation.PassengerTransportStats
 import com.patson.data.Constants._
 import com.patson.model.{Airline, Airport}
-import com.patson.model.event.{Event, EventReward, EventType, Olympics, OlympicsAirlineVote, OlympicsVoteRound, RewardCategory, RewardOption}
+import com.patson.model.event.{Event, EventReward, EventType, HighSpeedRailCompletion, Olympics, OlympicsAirlineVote, OlympicsVoteRound, RewardCategory, RewardOption}
 import com.patson.util.{AirlineCache, AirportCache}
 
 import scala.collection.{immutable, mutable}
@@ -547,28 +547,68 @@ object EventSource {
 
 
   def loadEvents(): List[Event] =  {
+    loadEventsByQueryString("SELECT * FROM " + EVENT_TABLE, List.empty)
+  }
+
+  private[this] def loadEventsByQueryString(queryString : String, parameters : List[Any]): List[Event] =  {
     val connection = Meta.getConnection()
+    val rows = ListBuffer[(EventType.Value, Int, Int, Int)]() //(type, start cycle, duration, id)
     try {
-      val preparedStatement = connection.prepareStatement("SELECT * FROM " + EVENT_TABLE)
-
-      val resultSet = preparedStatement.executeQuery()
-      val events = ListBuffer[Event]()
-
-      while (resultSet.next()) {
-        val eventType = EventType(resultSet.getInt("event_type"))
-        val event = eventType match {
-          case EventType.OLYMPICS =>
-            Olympics(resultSet.getInt("start_cycle"), resultSet.getInt("duration"), resultSet.getInt("id"))
-        }
-        events.append(event)
+      val preparedStatement = connection.prepareStatement(queryString)
+      for (i <- 0 until parameters.size) {
+        preparedStatement.setObject(i + 1, parameters(i))
       }
 
+      val resultSet = preparedStatement.executeQuery()
+      while (resultSet.next()) {
+        rows.append((EventType(resultSet.getInt("event_type")), resultSet.getInt("start_cycle"), resultSet.getInt("duration"), resultSet.getInt("id")))
+      }
       resultSet.close()
       preparedStatement.close()
-
-      events.toList
     } finally {
       connection.close()
+    }
+
+    val highSpeedRailCompletionEventIds = rows.collect { case (EventType.HIGH_SPEED_RAIL_COMPLETION, _, _, id) => id }.toList
+    val highSpeedRailCompletionDetails = loadHighSpeedRailCompletionDetails(highSpeedRailCompletionEventIds)
+
+    rows.toList.flatMap {
+      case (EventType.OLYMPICS, startCycle, duration, id) => Some(Olympics(startCycle, duration, id))
+      case (EventType.HIGH_SPEED_RAIL_COMPLETION, startCycle, _, id) =>
+        highSpeedRailCompletionDetails.get(id).map {
+          case (fromAirport, toAirport, airline) => HighSpeedRailCompletion(startCycle, fromAirport, toAirport, airline, id)
+        }
+      case _ => None
+    }
+  }
+
+  /**
+    * @return (from airport, to airport, airline) by event id
+    */
+  private[this] def loadHighSpeedRailCompletionDetails(eventIds : List[Int]) : Map[Int, (Airport, Airport, Airline)] = {
+    if (eventIds.isEmpty) {
+      Map.empty
+    } else {
+      val connection = Meta.getConnection()
+      try {
+        val preparedStatement = connection.prepareStatement(s"SELECT * FROM $HIGH_SPEED_RAIL_COMPLETION_EVENT_TABLE WHERE event IN (${eventIds.mkString(",")})")
+        val resultSet = preparedStatement.executeQuery()
+        val result = mutable.HashMap[Int, (Airport, Airport, Airline)]()
+        while (resultSet.next()) {
+          val fromAirportId = resultSet.getInt("from_airport")
+          val toAirportId = resultSet.getInt("to_airport")
+          val airlineId = resultSet.getInt("airline")
+          result.put(resultSet.getInt("event"), (
+            AirportCache.getAirport(fromAirportId).getOrElse(Airport.fromId(fromAirportId)),
+            AirportCache.getAirport(toAirportId).getOrElse(Airport.fromId(toAirportId)),
+            AirlineCache.getAirline(airlineId).getOrElse(Airline.fromId(airlineId))))
+        }
+        resultSet.close()
+        preparedStatement.close()
+        result.toMap
+      } finally {
+        connection.close()
+      }
     }
   }
 
@@ -594,59 +634,44 @@ object EventSource {
   }
 
   def loadEventById(eventId : Int): Option[Event] =  {
-    val connection = Meta.getConnection()
-    try {
-      val preparedStatement = connection.prepareStatement("SELECT * FROM " + EVENT_TABLE + " WHERE id = ?")
-
-      preparedStatement.setInt(1, eventId)
-      val resultSet = preparedStatement.executeQuery()
-
-      val result : Option[Event] =
-        if (resultSet.next()) {
-          val eventType = EventType(resultSet.getInt("event_type"))
-          eventType match {
-            case EventType.OLYMPICS =>
-              Some(Olympics(resultSet.getInt("start_cycle"), resultSet.getInt("duration"), resultSet.getInt("id")))
-          }
-        } else {
-          None
-        }
-
-      resultSet.close()
-      preparedStatement.close()
-
-      result
-    } finally {
-      connection.close()
-    }
+    loadEventsByQueryString("SELECT * FROM " + EVENT_TABLE + " WHERE id = ?", List(eventId)).headOption
   }
 
 
   val saveEvents = (events : List[Event]) => {
     val connection = Meta.getConnection()
     val statement = connection.prepareStatement("INSERT INTO " + EVENT_TABLE + "(event_type, start_cycle, duration) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS)
-    
-    connection.setAutoCommit(false)
-    
-    try {
-      events.foreach { event => event match {
-          case olympics : Olympics => {
-            statement.setInt(1, olympics.eventType.id)
-            statement.setInt(2, olympics.startCycle)
-            statement.setInt(3, olympics.duration)
+    val highSpeedRailCompletionStatement = connection.prepareStatement("INSERT INTO " + HIGH_SPEED_RAIL_COMPLETION_EVENT_TABLE + "(event, from_airport, to_airport, airline) VALUES(?,?,?,?)")
 
-            statement.executeUpdate()
-        
-            val generatedKeys = statement.getGeneratedKeys
-            if (generatedKeys.next()) {
-              val generatedId = generatedKeys.getInt(1)
-              event.id = generatedId
-            }
-          }
+    connection.setAutoCommit(false)
+
+    try {
+      events.foreach { event =>
+        statement.setInt(1, event.eventType.id)
+        statement.setInt(2, event.startCycle)
+        statement.setInt(3, event.duration)
+
+        statement.executeUpdate()
+
+        val generatedKeys = statement.getGeneratedKeys
+        if (generatedKeys.next()) {
+          val generatedId = generatedKeys.getInt(1)
+          event.id = generatedId
+        }
+
+        event match {
+          case completion : HighSpeedRailCompletion =>
+            highSpeedRailCompletionStatement.setInt(1, completion.id)
+            highSpeedRailCompletionStatement.setInt(2, completion.fromAirport.id)
+            highSpeedRailCompletionStatement.setInt(3, completion.toAirport.id)
+            highSpeedRailCompletionStatement.setInt(4, completion.airline.id)
+            highSpeedRailCompletionStatement.executeUpdate()
+          case _ => //no extra details
         }
       }
       connection.commit()
     } finally {
+      highSpeedRailCompletionStatement.close()
       statement.close()
       connection.close()
     }

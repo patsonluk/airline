@@ -10,7 +10,8 @@ import scala.collection.{immutable, mutable}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.patson.model.airplane.{Airplane, AirplaneMaintenanceUtil, LinkAssignments}
-import com.patson.model.event.Olympics
+import com.patson.model.event.{HighSpeedRailCompletion, Olympics}
+import com.patson.model.notice.HighSpeedRailNotice
 
 import scala.util.Random
 import com.patson.model.oil.OilPrice
@@ -38,11 +39,34 @@ object LinkSimulation {
 
 
 
+  /**
+    * Notify airlines with HQ/base at either end of the HSR that completes its construction on this cycle
+    */
+  def notifyCompletedHighSpeedRails(links : List[Transport], cycle : Int) : Unit = {
+    val completedRails = links.collect {
+      case rail : HighSpeedRail if rail.completionCycle == cycle => rail
+    }
+    EventSource.saveEvents(completedRails.map(rail => HighSpeedRailCompletion(cycle, rail.from, rail.to, rail.airline))) //for link event history
+    completedRails.foreach { rail =>
+      val highSpeedRailNotice = HighSpeedRailNotice(rail)
+      val airlineIds = (AirlineSource.loadAirlineBasesByAirport(rail.from.id) ++ AirlineSource.loadAirlineBasesByAirport(rail.to.id)).map(_.airline.id).distinct
+      println(s"$rail completed, notifying ${airlineIds.size} airline(s)")
+      airlineIds.foreach { airlineId =>
+        NoticeSource.saveTrackingNotice(airlineId, highSpeedRailNotice)
+      }
+    }
+  }
+
   def linkSimulation(cycle: Int, srcAirports : List[Airport]) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("Loading all links")
-    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
+    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).filter {
+      case rail : HighSpeedRail => rail.isCompleted(cycle) //HSR under construction cannot be used by pax
+      case _ => true
+    }
     val flightLinks = links.filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link])
     println("Finished loading all links")
+
+    notifyCompletedHighSpeedRails(links, cycle)
 
     val airports = srcAirports.filter(airport => airport.iata != "" && airport.power > 0)
 
