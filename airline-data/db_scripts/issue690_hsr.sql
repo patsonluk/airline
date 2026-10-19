@@ -14,3 +14,15 @@ ALTER TABLE high_speed_rail ADD COLUMN funded_cycle INTEGER NOT NULL DEFAULT 0;
 
 -- extra description for tracking notices that carry their own message (for example HSR completion)
 ALTER TABLE tracking_notice ADD COLUMN description VARCHAR(1024);
+
+-- details of the HIGH_SPEED_RAIL_COMPLETION event, shown in link event history
+CREATE TABLE high_speed_rail_completion_event (
+  event INTEGER PRIMARY KEY,
+  from_airport INTEGER,
+  to_airport INTEGER,
+  airline INTEGER,
+  FOREIGN KEY(event) REFERENCES event(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(from_airport) REFERENCES airport(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(to_airport) REFERENCES airport(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY(airline) REFERENCES airline(id) ON DELETE CASCADE ON UPDATE CASCADE
+);

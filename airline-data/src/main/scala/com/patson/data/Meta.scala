@@ -1202,6 +1202,9 @@ object Meta {
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + EVENT_PICKED_REWARD_TABLE)
     statement.execute()
     statement.close()
+    statement = connection.prepareStatement("DROP TABLE IF EXISTS " + HIGH_SPEED_RAIL_COMPLETION_EVENT_TABLE)
+    statement.execute()
+    statement.close()
     statement = connection.prepareStatement("DROP TABLE IF EXISTS " + EVENT_TABLE)
     statement.execute()
     statement.close()
@@ -1309,6 +1312,19 @@ object Meta {
       "PRIMARY KEY (event, airline, reward_category), " +
       "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
       "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
+      ")")
+    statement.execute()
+    statement.close()
+
+    statement = connection.prepareStatement("CREATE TABLE " + HIGH_SPEED_RAIL_COMPLETION_EVENT_TABLE + "(" +
+      "event INTEGER PRIMARY KEY," +
+      "from_airport INTEGER," +
+      "to_airport INTEGER," +
+      "airline INTEGER," +
+      "FOREIGN KEY(event) REFERENCES " + EVENT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(from_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(to_airport) REFERENCES " + AIRPORT_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE," +
+      "FOREIGN KEY(airline) REFERENCES " + AIRLINE_TABLE + "(id) ON DELETE CASCADE ON UPDATE CASCADE" +
       ")")
     statement.execute()
     statement.close()

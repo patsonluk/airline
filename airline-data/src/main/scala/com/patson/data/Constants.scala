@@ -142,6 +142,7 @@ object Constants {
   val OLYMPIC_AIRLINE_STATS_TABLE = "olympics_airline_stats"
   val OLYMPIC_AIRLINE_GOAL_TABLE = "olympics_airline_goal"
   val EVENT_PICKED_REWARD_TABLE = "event_picked_reward"
+  val HIGH_SPEED_RAIL_COMPLETION_EVENT_TABLE = "high_speed_rail_completion_event"
   val LINK_CHANGE_HISTORY_TABLE ="link_change_history"
   val LINK_CHANGE_HISTORY_INDEX_PREFIX = "link_change_index_"
   val GOOGLE_RESOURCE_TABLE ="google_resource"
