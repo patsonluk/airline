@@ -230,13 +230,13 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
     */
   def getAirportHighSpeedRails(airportId : Int) = Action { request =>
       val rails = loadHighSpeedRails(List(("from_airport", airportId))) ++ loadHighSpeedRails(List(("to_airport", airportId)))
-      val passengersByLinkId : Map[Int, Int] = LinkSource.loadLinkConsumptionsByLinksId(rails.map(_.id)).map(consumption => (consumption.link.id, consumption.link.getTotalSoldSeats)).toMap
+      val passengersByLinkId : Map[Int, LinkClassValues] = LinkSource.loadLinkConsumptionsByLinksId(rails.map(_.id)).map(consumption => (consumption.link.id, consumption.link.soldSeats)).toMap
       val currentCycle = CycleSource.loadCycle()
 
       val railsWithPaxStats = rails.map { rail =>
         Json.toJson(rail)(new HighSpeedRailWrites(currentCycle)).as[JsObject] ++ Json.obj(
           "toAirportPopulation" -> rail.to.population,
-          "passenger" -> passengersByLinkId.getOrElse[Int](rail.id, 0))
+          "passenger" -> Json.toJson(passengersByLinkId.getOrElse(rail.id, LinkClassValues.getInstance())))
       }
 
       Ok(JsArray(railsWithPaxStats))

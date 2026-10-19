@@ -312,7 +312,7 @@ function showAirportHighSpeedRailModal() {
         $row.append($('<div class="cell" align="right">' + rail.distance + ' km</div>'))
         $row.append($('<div class="cell" align="right">' + getHighSpeedRailCarsText(rail.cars) + '</div>'))
         $row.append($('<div class="cell" align="right">' + getHighSpeedRailCapacityText(rail.capacity) + '</div>'))
-        $row.append($('<div class="cell" align="right">' + commaSeparateNumber(rail.passenger) + '</div>'))
+        $row.append($('<div class="cell" align="right">' + getHighSpeedRailCapacityText(rail.passenger) + '</div>'))
         $table.append($row)
     })
     if (rails.length == 0) {
