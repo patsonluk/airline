@@ -633,9 +633,7 @@ object PassengerSimulation {
             } else if (predecessorLink.transportType == TransportType.GENERIC_TRANSIT || linkConsideration.link.transportType == TransportType.GENERIC_TRANSIT) {
               connectionCost = 25
             } else if (predecessorLink.transportType == TransportType.HIGH_SPEED_RAIL || linkConsideration.link.transportType == TransportType.HIGH_SPEED_RAIL) {
-              if (!isSameAirlineOrAlliance(previousLinkAirlineId, currentLinkAirlineId, allianceIdByAirlineId)) { //only incur CONNECTION_COST if different airlines, the regular "travel cost" of HSR still applies tho
-                connectionCost = HighSpeedRail.CONNECTION_COST
-              }
+              connectionCost = HighSpeedRail.CONNECTION_COST
             } else {
               connectionCost += 25 //base cost for connection
               //now look at the frequency of the link arriving at this FromAirport and the link (current link) leaving this FromAirport. check frequency
