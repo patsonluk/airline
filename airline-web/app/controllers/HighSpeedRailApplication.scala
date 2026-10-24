@@ -226,19 +226,42 @@ class HighSpeedRailApplication @Inject()(cc: ControllerComponents) extends Abstr
   }
 
   /**
-    * For airport details. HSR from and to this airport, with their ridership
+    * For airport details. All HSR options of this airport: for each candidate airport C, both airport -> C and C -> airport,
+    * with the funded HSR (if any) and its ridership
     */
   def getAirportHighSpeedRails(airportId : Int) = Action { request =>
-      val rails = loadHighSpeedRails(List(("from_airport", airportId))) ++ loadHighSpeedRails(List(("to_airport", airportId)))
-      val passengersByLinkId : Map[Int, LinkClassValues] = LinkSource.loadLinkConsumptionsByLinksId(rails.map(_.id)).map(consumption => (consumption.link.id, consumption.link.soldSeats)).toMap
-      val currentCycle = CycleSource.loadCycle()
+    AirportCache.getAirport(airportId) match {
+      case Some(airport) =>
+        val rails = loadHighSpeedRails(List(("from_airport", airportId))) ++ loadHighSpeedRails(List(("to_airport", airportId)))
+        val railsByAirportIds : Map[(Int, Int), HighSpeedRail] = rails.map(rail => ((rail.from.id, rail.to.id), rail)).toMap
+        val passengersByLinkId : Map[Int, LinkClassValues] = LinkSource.loadLinkConsumptionsByLinksId(rails.map(_.id)).map(consumption => (consumption.link.id, consumption.link.soldSeats)).toMap
+        val currentCycle = CycleSource.loadCycle()
 
-      val railsWithPaxStats = rails.map { rail =>
-        Json.toJson(rail)(new HighSpeedRailWrites(currentCycle)).as[JsObject] ++ Json.obj(
-          "toAirportPopulation" -> rail.to.population,
-          "passenger" -> Json.toJson(passengersByLinkId.getOrElse(rail.id, LinkClassValues.getInstance())))
-      }
+        val candidates = candidateAirports(airport)
+        val candidateIds = candidates.map(_.id).toSet
+        //existing HSR to airports that are no longer candidates (for example relationship changed) should still be listed
+        val otherAirports = rails.map(rail => if (rail.from.id == airportId) rail.to else rail.from).filter(other => !candidateIds.contains(other.id)).distinctBy(_.id)
 
-      Ok(JsArray(railsWithPaxStats))
+        val options = (candidates ++ otherAirports).flatMap { otherAirport =>
+          val distance = Computation.calculateDistance(airport, otherAirport)
+          List((airport, otherAirport), (otherAirport, airport)).map {
+            case (fromAirport, toAirport) =>
+              var optionJson = Json.obj(
+                "fromAirport" -> Json.toJson(fromAirport)(SimpleAirportWrites),
+                "toAirport" -> Json.toJson(toAirport)(SimpleAirportWrites),
+                "population" -> otherAirport.population,
+                "distance" -> distance)
+              railsByAirportIds.get((fromAirport.id, toAirport.id)).foreach { rail =>
+                optionJson = optionJson ++ Json.obj(
+                  "rail" -> Json.toJson(rail)(new HighSpeedRailWrites(currentCycle)),
+                  "passenger" -> Json.toJson(passengersByLinkId.getOrElse(rail.id, LinkClassValues.getInstance())))
+              }
+              optionJson
+          }
+        }
+
+        Ok(Json.obj("fundedCount" -> rails.length, "options" -> JsArray(options)))
+      case None => NotFound
+    }
   }
 }

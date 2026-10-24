@@ -285,9 +285,9 @@ function loadAirportHighSpeedRails(airport) {
         url: "airports/" + airport.id + "/high-speed-rails",
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
-        success: function(rails) {
-            $('#airportHighSpeedRailModal .table.airportHsrs').data('rails', rails) //set the loaded data to modal as well
-            $('#airportDetailsHighSpeedRailCount').text(rails.length)
+        success: function(result) {
+            $('#airportHighSpeedRailModal .table.airportHsrs').data('options', result.options) //set the loaded data to modal as well
+            $('#airportDetailsHighSpeedRailCount').text(result.fundedCount)
         },
         error: function(jqXHR, textStatus, errorThrown) {
             console.log(JSON.stringify(jqXHR));
@@ -296,27 +296,31 @@ function loadAirportHighSpeedRails(airport) {
     });
 }
 
+/**
+ * All HSR options of the airport (both directions per candidate airport). Funded ones are highlighted with pax stats
+ */
 function showAirportHighSpeedRailModal() {
     var $table = $('#airportHighSpeedRailModal .table.airportHsrs')
     $table.find('.table-row').remove()
 
-    var rails = $table.data('rails')
-    $.each(rails, function(index, rail) {
-        var fromAirport = { "city" : rail.fromAirportCity, "iata" : rail.fromAirportCode, "countryCode" : rail.fromCountryCode }
-        var toAirport = { "city" : rail.toAirportCity, "iata" : rail.toAirportCode, "countryCode" : rail.toCountryCode }
+    var options = $table.data('options')
+    $.each(options, function(index, option) {
+        var rail = option.rail
         var $row = $('<div class="table-row" style="width: 100%"></div>')
-        $row.append($('<div class="cell">' + getHighSpeedRailFundedByHtml(rail) + '</div>'))
-        $row.append($('<div class="cell">' + getAirportSpan(fromAirport) + '</div>'))
-        $row.append($('<div class="cell">' + getAirportSpan(toAirport) + '</div>'))
-        $row.append($('<div class="cell" align="right">' + commaSeparateNumber(rail.toAirportPopulation) + '</div>'))
-        $row.append($('<div class="cell" align="right">' + rail.distance + ' km</div>'))
-        $row.append($('<div class="cell" align="right">' + getHighSpeedRailCarsText(rail.cars) + '</div>'))
-        $row.append($('<div class="cell" align="right">' + getHighSpeedRailCapacityText(rail.capacity) + '</div>'))
-        $row.append($('<div class="cell" align="right">' + getHighSpeedRailCapacityText(rail.passenger) + '</div>'))
+        $row.append($('<div class="cell">' + (rail ? getHighSpeedRailFundedByHtml(rail) : '(Unfunded)') + '</div>'))
+        $row.append($('<div class="cell"><span style="display: inline-flex; align-items: center;">' + getAirportSpan(option.fromAirport) + '<img src="assets/images/icons/arrow.png" style="margin: 0 5px;">' + getAirportSpan(option.toAirport) + '</span></div>'))
+        $row.append($('<div class="cell" align="right">' + commaSeparateNumber(option.population) + '</div>'))
+        $row.append($('<div class="cell" align="right">' + option.distance + ' km</div>'))
+        $row.append($('<div class="cell" align="right">' + (rail ? getHighSpeedRailCarsText(rail.cars) : '-') + '</div>'))
+        $row.append($('<div class="cell" align="right">' + (rail ? getHighSpeedRailCapacityText(rail.capacity) : '-') + '</div>'))
+        $row.append($('<div class="cell" align="right">' + (rail ? getHighSpeedRailCapacityText(option.passenger) : '-') + '</div>'))
+        if (rail) {
+            $row.addClass('hsrBuilt')
+        }
         $table.append($row)
     })
-    if (rails.length == 0) {
-        $table.append('<div class="table-row"><div class="cell">-</div><div class="cell">-</div><div class="cell">No High Speed Rail</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div></div>')
+    if (options.length == 0) {
+        $table.append('<div class="table-row"><div class="cell">-</div><div class="cell">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div><div class="cell" align="right">-</div></div>')
     }
     $('#airportHighSpeedRailModal').fadeIn(200)
 }
