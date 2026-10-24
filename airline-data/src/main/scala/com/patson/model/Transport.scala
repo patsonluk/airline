@@ -23,7 +23,6 @@ abstract class Transport extends IdObject{
   @volatile var cancelledSeats :  LinkClassValues = LinkClassValues.getInstance()
   private val standardPrice : ConcurrentHashMap[LinkClass, Int] = new ConcurrentHashMap[LinkClass, Int]()
 
-  val cost: LinkClassValues //the cost of taking this transport, could just be the price, or with the hidden cost of taking it
 
   def computedQuality() : Int
   def getTotalCapacity : Int = {
@@ -104,7 +103,7 @@ abstract class Transport extends IdObject{
 
 object TransportType extends Enumeration {
   type TransportType = Value
-  val FLIGHT, GENERIC_TRANSIT = Value
+  val FLIGHT, GENERIC_TRANSIT, HIGH_SPEED_RAIL = Value
 }
 
 

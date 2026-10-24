@@ -25,7 +25,7 @@ abstract class FlightPreference(homeAirport : Airport) {
 
     cost = (cost * tripDurationAdjustRatio(link, linkClass)).toInt
 
-    if (loyaltySensitivity > 0) {
+    if (loyaltySensitivity > 0 && link.transportType == TransportType.FLIGHT) { //non flights (generic transit, HSR) are not seen as operated by any airline, hence no loyalty adjustment
       cost = (cost * loyaltyAdjustRatio(link)).toInt
     }
 
@@ -54,7 +54,7 @@ abstract class FlightPreference(homeAirport : Airport) {
     cost = (cost * tripDurationAdjust).toInt
 
     var loyaltyAdjust = 1.0
-    if (loyaltySensitivity > 0) {
+    if (loyaltySensitivity > 0 && link.transportType == TransportType.FLIGHT) {
       loyaltyAdjust = loyaltyAdjustRatio(link)
       cost = (cost * loyaltyAdjust).toInt
     }
@@ -102,7 +102,11 @@ abstract class FlightPreference(homeAirport : Airport) {
     val standardPrice = link.standardPrice(preferredLinkClass)
     val deltaFromStandardPrice = priceAdjustedByLinkClassDiff(link, linkClass) - standardPrice
 
-    1 + deltaFromStandardPrice * priceSensitivity / standardPrice
+    //only flights apply price sensitivity. Non flights (generic transit, HSR) have price much lower than standard price,
+    //amplifying such discount could make the ratio negative
+    val sensitivity = if (link.transportType == TransportType.FLIGHT) priceSensitivity else 1.0
+
+    1 + deltaFromStandardPrice * sensitivity / standardPrice
   }
 
   def loyaltyAdjustRatio(link : Transport) = {
@@ -151,12 +155,12 @@ abstract class FlightPreference(homeAirport : Airport) {
   }
 
   val priceAdjustedByLinkClassDiff = (link : Transport, linkClass : LinkClass) => {
-    val cost = link.cost(linkClass) //use cost here
+    val price = link.price(linkClass)
     if (linkClass.level != preferredLinkClass.level) {
       val classDiffMultiplier: Double = 1 + (preferredLinkClass.level - linkClass.level) * 0.2
-      (cost / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * classDiffMultiplier for unwillingness to downgrade
+      (price / linkClass.priceMultiplier * preferredLinkClass.priceMultiplier * classDiffMultiplier).toInt //have to normalize the price to match the preferred link class, * classDiffMultiplier for unwillingness to downgrade
     } else {
-      cost
+      price
     }
   }
 
@@ -169,20 +173,26 @@ abstract class FlightPreference(homeAirport : Airport) {
     //full penalty on 0 freq, full bonus if 2 * theshold. at threshold it's neutral
     val frequencyRatioDelta = Math.max(-1, (frequencyThreshold - link.frequencyByClass(linkClass)).toDouble / frequencyThreshold) * frequencySensitivity
 
-    val flightDurationRatioDelta =
-      if (flightDurationSensitivity == 0 || link.transportType != TransportType.FLIGHT) {
+    val durationRatioDelta =
+      if (flightDurationSensitivity == 0) {
         0
       } else {
-        val flightDurationThreshold = Computation.computeStandardFlightDuration(link.distance)
-        Math.min(flightDurationSensitivity, (link.duration - flightDurationThreshold).toFloat / flightDurationThreshold * flightDurationSensitivity)
+        //flights are compared with standard flight duration. Non flights (ground transport) are compared with generic transit duration
+        val durationThreshold =
+          if (link.transportType == TransportType.FLIGHT) {
+            Computation.computeStandardFlightDuration(link.distance)
+          } else {
+            GenericTransit.computeDuration(link.distance) //for non flight, use generic transit as a refernce point, so other faster non flight transit would have advantage
+          }
+        Math.min(flightDurationSensitivity, (link.duration - durationThreshold).toFloat / durationThreshold * flightDurationSensitivity)
       }
-    val finalDelta = Math.max(-0.75, frequencyRatioDelta + flightDurationRatioDelta) //just to play safe, can only at most 75% off
+    val finalDelta = Math.max(-0.75, frequencyRatioDelta + durationRatioDelta) //just to play safe, can only at most 75% off
 
     1 + finalDelta
   }
 
   def loungeAdjustRatio(link : Transport, loungeLevelRequired : Int, linkClass: LinkClass) = {
-    if (loungeSensitivity == 0 || linkClass.level < BUSINESS.level) {
+    if (loungeSensitivity == 0 || linkClass.level < BUSINESS.level || link.transportType != TransportType.FLIGHT) { //non flights (generic transit, HSR) do not use lounges
       1.0
     } else {
       val fromLounge = link.from.getLounge(link.airline.id, link.airline.getAllianceId, activeOnly = true)

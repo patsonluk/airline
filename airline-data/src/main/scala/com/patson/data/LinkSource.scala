@@ -74,15 +74,21 @@ object LinkSource {
       val resultSet = preparedStatement.executeQuery()
       
       val links = new ListBuffer[Transport]()
-      
+
       val linkIds : Set[Int] = new HashSet[Int]
       val airportIds : Set[Int] = new HashSet[Int]
-      
+      val highSpeedRailIds = ListBuffer[Int]()
+
       while (resultSet.next()) {
         airportIds += resultSet.getInt("from_airport")
         airportIds += resultSet.getInt("to_airport")
         linkIds += resultSet.getInt("id")
+        if (resultSet.getInt("transport_type") == TransportType.HIGH_SPEED_RAIL.id) {
+          highSpeedRailIds += resultSet.getInt("id")
+        }
       }
+
+      val highSpeedRailFundedCycles : Map[Int, Int] = loadHighSpeedRailFundedCycles(connection, highSpeedRailIds.toList)
       
       val assignedAirplaneCache : Map[Int, Map[Airplane, LinkAssignment]] = loadDetails.get(DetailType.AIRPLANE) match {
         case Some(fullLoad) => loadAssignedAirplanesByLinks(connection, linkIds.toList)
@@ -135,6 +141,16 @@ object LinkSource {
                   resultSet.getInt("distance"),
                   LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
                   resultSet.getInt("duration")
+                )
+              case HIGH_SPEED_RAIL =>
+                HighSpeedRail(
+                  fromAirport.get,
+                  toAirport.get,
+                  airline.get,
+                  resultSet.getInt("distance"),
+                  LinkClassValues.getInstance(resultSet.getInt("capacity_economy"), resultSet.getInt("capacity_business"), resultSet.getInt("capacity_first")),
+                  resultSet.getInt("frequency"),
+                  highSpeedRailFundedCycles.getOrElse(resultSet.getInt("id"), 0)
                 )
             }
 
@@ -205,6 +221,82 @@ object LinkSource {
       } finally {
         connection.close()
       }
+    }
+  }
+
+  /**
+    * Create the HSR row on build, both funded and update cycle are the build cycle (which starts the reconfigure cooldown)
+    */
+  def saveHighSpeedRailCycle(linkId : Int, cycle : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"INSERT INTO $HIGH_SPEED_RAIL_TABLE (link, update_cycle, funded_cycle) VALUES(?,?,?)")
+      preparedStatement.setInt(1, linkId)
+      preparedStatement.setInt(2, cycle)
+      preparedStatement.setInt(3, cycle)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  /**
+    * Cycle on which the HSR was last reconfigured
+    */
+  def updateHighSpeedRailCycle(linkId : Int, cycle : Int) = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"UPDATE $HIGH_SPEED_RAIL_TABLE SET update_cycle = ? WHERE link = ?")
+      preparedStatement.setInt(1, cycle)
+      preparedStatement.setInt(2, linkId)
+      preparedStatement.executeUpdate()
+      preparedStatement.close()
+    } finally {
+      connection.close()
+    }
+  }
+
+  private[this] def loadHighSpeedRailFundedCycles(connection : Connection, linkIds : List[Int]) : Map[Int, Int] = {
+    if (linkIds.isEmpty) {
+      Map.empty
+    } else {
+      val preparedStatement = connection.prepareStatement(s"SELECT link, funded_cycle FROM $HIGH_SPEED_RAIL_TABLE WHERE link IN (${linkIds.map(_ => "?").mkString(",")})")
+      try {
+        linkIds.zipWithIndex.foreach {
+          case (linkId, index) => preparedStatement.setInt(index + 1, linkId)
+        }
+        val resultSet = preparedStatement.executeQuery()
+        val result = HashMap[Int, Int]()
+        while (resultSet.next()) {
+          result.put(resultSet.getInt("link"), resultSet.getInt("funded_cycle"))
+        }
+        resultSet.close()
+        result.toMap
+      } finally {
+        preparedStatement.close()
+      }
+    }
+  }
+
+  def loadHighSpeedRailUpdateCycle(linkId : Int) : Option[Int] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement(s"SELECT update_cycle FROM $HIGH_SPEED_RAIL_TABLE WHERE link = ?")
+      preparedStatement.setInt(1, linkId)
+
+      val resultSet = preparedStatement.executeQuery()
+      val result =
+        if (resultSet.next()) {
+          Some(resultSet.getInt("update_cycle"))
+        } else {
+          None
+        }
+      resultSet.close()
+      preparedStatement.close()
+      result
+    } finally {
+      connection.close()
     }
   }
   
@@ -348,6 +440,9 @@ object LinkSource {
         case TransportType.GENERIC_TRANSIT =>
           val genericTransit = link.asInstanceOf[GenericTransit]
           (genericTransit.from.id, genericTransit.to.id, 0, genericTransit.price, genericTransit.distance, genericTransit.capacity, GenericTransit.QUALITY, genericTransit.duration, genericTransit.frequency, genericTransit.flightType, 0, Map.empty)
+        case TransportType.HIGH_SPEED_RAIL =>
+          val rail = link.asInstanceOf[HighSpeedRail]
+          (rail.from.id, rail.to.id, rail.airline.id, rail.price, rail.distance, rail.capacity, HighSpeedRail.QUALITY, rail.duration, rail.frequency, rail.flightType, 0, Map.empty)
       }
 
 
@@ -393,8 +488,10 @@ object LinkSource {
           updateAssignedPlanes(generatedId, assignedAirplanes)
           link.id = generatedId
 
-          if (link.isInstanceOf[Link]) {
-            ChangeHistorySource.saveLinkChange(buildChangeHistory(None, Some(link.asInstanceOf[Link])))
+          link match {
+            case flightLink : Link => ChangeHistorySource.saveLinkChange(buildChangeHistory(None, Some(flightLink)))
+            case rail : HighSpeedRail => saveHighSpeedRailCycle(rail.id, rail.fundedCycle)
+            case _ => //nothing extra
           }
 
           return Some(link)
@@ -936,6 +1033,8 @@ object LinkSource {
             Link(fromAirport, toAirport, airline, price, distance, capacity, 0, duration, frequency, FlightType(flightType), flightNumber, linkId)
           } else if (transportType == TransportType.GENERIC_TRANSIT.id) {
             GenericTransit(fromAirport, toAirport, distance, capacity, linkId)
+          } else if (transportType == TransportType.HIGH_SPEED_RAIL.id) {
+            HighSpeedRail(fromAirport, toAirport, airline, distance, capacity, frequency, fundedCycle = 0, linkId) //funded cycle is irrelevant for consumption history
           } else {
             println("Unknown transport type for link consumption : " + resultSet.getInt("transport_type"))
             Link(fromAirport, toAirport, airline, price, distance, capacity, 0, duration, frequency, FlightType(flightType), flightNumber, linkId)

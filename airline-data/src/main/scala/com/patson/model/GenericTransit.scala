@@ -2,15 +2,12 @@ package com.patson.model
 
 case class GenericTransit(from : Airport, to : Airport, distance : Int, var capacity: LinkClassValues, var id : Int = 0) extends Transport {
   override val transportType : TransportType.Value = TransportType.GENERIC_TRANSIT
-  override val duration = (distance.toDouble / 30 * 60).toInt
+  override val duration = GenericTransit.computeDuration(distance)
   override var frequency : Int = 24 * 7
   override def computedQuality() : Int = GenericTransit.QUALITY //constant quality
-  override val price : LinkClassValues = LinkClassValues.getInstance()
-  //override val price : LinkClassValues = LinkClassValues.getInstance() //has to have some hidden price? otherwise it will be too strong?
-
   override val flightType : FlightType.Value = FlightType.SHORT_HAUL_DOMESTIC
 
-  override val cost = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) * 0.25 //hidden cost of general transit
+  override val price : LinkClassValues = LinkClassValues.getInstance(economy = Pricing.computeStandardPrice(distance, FlightType.SHORT_HAUL_DOMESTIC, ECONOMY)) * 0.25 //ticket price pax pay for local transit
 
   val upkeep = 0
   override var minorDelayCount : Int = 0
@@ -28,6 +25,8 @@ case class GenericTransit(from : Airport, to : Airport, distance : Int, var capa
 object GenericTransit {
   val QUALITY = 35
   val TRANSIT_PROVIDER = Airline.fromId(0).copy(name = "Local Transit")
-}
+  val SPEED = 30 //km/h
 
+  def computeDuration(distance : Int) : Int = (distance.toDouble / SPEED * 60).toInt
+}
 

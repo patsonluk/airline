@@ -402,6 +402,7 @@ function populateAirportDetails(airport) {
 		    });
 		loadAirportStatistics(airport)
 		loadGenericTransits(airport)
+		loadAirportHighSpeedRails(airport)
 		updateAirportLoyalistDetails(airport)
 		showAirportAssets(airport)
 

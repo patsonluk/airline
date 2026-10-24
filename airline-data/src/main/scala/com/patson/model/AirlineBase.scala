@@ -1,6 +1,6 @@
 package com.patson.model
 
-import com.patson.data.{AirlineSource, AirportSource, CountrySource}
+import com.patson.data.{AirlineSource, AirportSource, CountrySource, LinkSource}
 import com.patson.model.AirlineBaseSpecialization.FlightTypeSpecialization
 import com.patson.util.AirportCache
 
@@ -116,6 +116,9 @@ case class AirlineBase(airline : Airline, airport : Airport, countryCode : Strin
     AirlineSource.loadLoungeByAirlineAndAirport(airline.id, airport.id).foreach { lounge =>
       AirlineSource.deleteLounge(lounge)
     }
+
+    //cascade to HSR from this base
+    LinkSource.deleteLinksByCriteria(List(("from_airport", airport.id), ("airline", airline.id), ("transport_type", TransportType.HIGH_SPEED_RAIL.id)))
 
     //remove all base spec and bonus since it has no foreign key on base
     specializations.foreach { spec =>

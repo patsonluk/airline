@@ -37,6 +37,11 @@ case class Olympics(override val startCycle : Int, override val duration : Int =
     }
 }
 
+/**
+  * A one-off event recorded when a high speed rail finishes construction. It has no duration (never active), it's only for history
+  */
+case class HighSpeedRailCompletion(override val startCycle : Int, fromAirport : Airport, toAirport : Airport, airline : Airline, var completionId : Int = 0) extends Event(EventType.HIGH_SPEED_RAIL_COMPLETION, startCycle, duration = 0, completionId)
+
 object OlympicsStatus extends Enumeration {
   type RewardCategory = Value
   val VOTING, HOST_CITY_SELECTED, PREPARATION, OLYMPICS_YEAR, IN_PROGRESS, CONCLUDED, UNKNOWN = Value
@@ -243,7 +248,7 @@ case class OlympicsVoteRound(round : Int, votes : Map[Airport, Int])
 
 object EventType extends Enumeration {
     type EventType = Value
-    val OLYMPICS = Value
+    val OLYMPICS, HIGH_SPEED_RAIL_COMPLETION = Value
 }
 
 object RewardCategory extends Enumeration {

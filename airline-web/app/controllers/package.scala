@@ -169,6 +169,42 @@ package object controllers {
   }
 
 
+  class HighSpeedRailWrites(currentCycle : Int) extends Writes[HighSpeedRail] {
+    def writes(rail: HighSpeedRail): JsValue = {
+      val carsByClass = HighSpeedRail.carsByCapacity(rail.capacity)
+      Json.obj(
+        "id" -> rail.id,
+        "fromAirportId" -> rail.from.id,
+        "toAirportId" -> rail.to.id,
+        "fromAirportCode" -> rail.from.iata,
+        "toAirportCode" -> rail.to.iata,
+        "fromAirportName" -> rail.from.name,
+        "toAirportName" -> rail.to.name,
+        "fromAirportCity" -> rail.from.city,
+        "toAirportCity" -> rail.to.city,
+        "fromCountryCode" -> rail.from.countryCode,
+        "toCountryCode" -> rail.to.countryCode,
+        "fromLatitude" -> rail.from.latitude,
+        "fromLongitude" -> rail.from.longitude,
+        "toLatitude" -> rail.to.latitude,
+        "toLongitude" -> rail.to.longitude,
+        "airlineId" -> rail.airline.id,
+        "airlineName" -> rail.airline.name,
+        "distance" -> rail.distance,
+        "duration" -> rail.duration,
+        "frequency" -> rail.frequency,
+        "quality" -> rail.computedQuality(),
+        "capacity" -> Json.toJson(rail.capacity),
+        "carCount" -> HighSpeedRail.carCount(rail.from),
+        "fundedCycle" -> rail.fundedCycle,
+        "constructionRemaining" -> rail.remainingConstructionCycles(currentCycle), //0 if completed
+        "cars" -> Json.obj(
+          "economy" -> carsByClass(ECONOMY),
+          "business" -> carsByClass(BUSINESS),
+          "first" -> carsByClass(FIRST)))
+    }
+  }
+
   object AirplaneAssignmentsRead extends Reads[Map[Airplane, Int]] {
     def reads(json : JsValue) : JsResult[Map[Airplane, Int]] = {
       JsSuccess(json.asInstanceOf[JsObject].keys.map { airplaneId =>
@@ -880,6 +916,7 @@ package object controllers {
   }
 
   val cachedAirportsByPower = AirportSource.loadAllAirports(fullLoad = false, loadFeatures = true).filter(_.population > 0).sortBy(_.power)
+  val cachedAirportsByLatitude = cachedAirportsByPower.sortBy(_.latitude).toIndexedSeq //for range lookup, see Computation.getAirportsWithinRange
 
 
   val allAirplaneModels = ModelSource.loadAllModels()
