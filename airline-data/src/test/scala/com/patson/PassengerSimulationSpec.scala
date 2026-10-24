@@ -549,7 +549,7 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
         if (result(businessPassengerGroup)(airport3).links(1).link.airline == airline1) {
           businessAirline1 += 1
         }
-        if (result(businessPassengerGroup)(airport3).links(1).link.airline == airline1) {
+        if (result(firstPassengerGroup)(airport3).links(1).link.airline == airline1) {
           firstAirline1 += 1
         }
       }
@@ -557,6 +557,86 @@ class PassengerSimulationSpec(_system: ActorSystem) extends TestKit(_system) wit
       assert(economyAirline1.toDouble / iterations > 0.7) //most pax should choose airline 1
       assert(businessAirline1.toDouble / iterations < 0.4) //most pax should choose airline 2 which has proper business class
       assert(firstAirline1.toDouble / iterations < 0.4) //most pax should choose airline 2 which has proper first class
+    }
+
+    /**
+      * Airline 1 and airline 2 operate identical direct flights from airport 1 to airport 2. Only airline 1 has the branding specialization at airport 1
+      *
+      * @return the share (0 - 1) of economy, business and first class pax that pick airline 1
+      */
+    def getAirline1ShareWithBranding(brandingSpecialization : AirlineBaseSpecialization.Value) : (Double, Double, Double) = {
+      val airport1 = Airport("", "", "Airport 1", 0, 30, "C1", "", "", 1, 0, 0, 0, id = 1)
+      val airport2 = Airport("", "", "Airport 2", 0, 60, "C1", "", "", 1, 0, 0, 0, id = 2)
+
+      val airline1 = Airline("airline 1", id = 1)
+      val airline2 = Airline("airline 2", id = 2)
+      airport1.initAirlineAppeals(Map(airline1.id -> AirlineAppeal(0), airline2.id -> AirlineAppeal(0)))
+
+      val links = List(
+        Link(airport1, airport2, airline1, price = Pricing.computeStandardPriceForAllClass(2000, SHORT_HAUL_DOMESTIC), 2000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC),
+        Link(airport1, airport2, airline2, price = Pricing.computeStandardPriceForAllClass(2000, SHORT_HAUL_DOMESTIC), 2000, capacity = LinkClassValues.getInstance(10000, 10000, 10000), 0, 600, 1, SHORT_HAUL_DOMESTIC))
+      assignLinkIds(links)
+
+      val costModifier = PassengerSimulation.ExternalCostModifier(
+        specializationCostModifiers = PassengerSimulation.getBrandingCostModifiers(List((airline1, airport1, brandingSpecialization)), scala.collection.Set(airline1.id, airline2.id)))
+
+      val economyPassengerGroup = PassengerGroup(airport1, AppealPreference(airport1, ECONOMY, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val businessPassengerGroup = PassengerGroup(airport1, AppealPreference(airport1, BUSINESS, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+      val firstPassengerGroup = PassengerGroup(airport1, AppealPreference(airport1, FIRST, loungeLevelRequired = 0, loyaltyRatio = 1, 0), PassengerType.BUSINESS)
+
+      val toAirports = Set[Airport](airport2)
+      val activeAirports = scala.collection.mutable.Set(List.range(1, 3) : _*)
+
+      var economyAirline1 = 0
+      var businessAirline1 = 0
+      var firstAirline1 = 0
+      val iterations = 10000
+
+      for (i <- 0 until iterations) {
+        val result : Map[PassengerGroup, Map[Airport, Route]] =
+          PassengerSimulation.findAllRoutes(
+            Map(economyPassengerGroup -> toAirports,
+              businessPassengerGroup -> toAirports,
+              firstPassengerGroup -> toAirports),
+            links,
+            activeAirports,
+            externalCostModifier = Some(costModifier))
+
+        if (result(economyPassengerGroup)(airport2).links(0).link.airline == airline1) {
+          economyAirline1 += 1
+        }
+        if (result(businessPassengerGroup)(airport2).links(0).link.airline == airline1) {
+          businessAirline1 += 1
+        }
+        if (result(firstPassengerGroup)(airport2).links(0).link.airline == airline1) {
+          firstAirline1 += 1
+        }
+      }
+
+      val shares = (economyAirline1.toDouble / iterations, businessAirline1.toDouble / iterations, firstAirline1.toDouble / iterations)
+      println(s"$brandingSpecialization - share of airline 1 (economy, business, first): $shares")
+      shares
+    }
+
+    "split pax evenly between identical flights if neither airline has branding specialization".in {
+      val (economyShare, businessShare, firstShare) = getAirline1ShareWithBranding(AirlineBaseSpecialization.INTERNATIONAL_HUB) //non branding specialization, no cost modifier
+      assert(economyShare > 0.45 && economyShare < 0.55)
+      assert(businessShare > 0.45 && businessShare < 0.55)
+      assert(firstShare > 0.45 && firstShare < 0.55)
+    }
+
+    "prefer flights of airline with budget branding for economy pax, but not for business and first pax".in {
+      val (economyShare, businessShare, firstShare) = getAirline1ShareWithBranding(AirlineBaseSpecialization.BRANDING_BUDGET)
+      assert(economyShare > 0.58 && economyShare < 0.68) //~0.63
+      assert(businessShare > 0.32 && businessShare < 0.42) //~0.37
+      assert(firstShare > 0.32 && firstShare < 0.42) //~0.38
+    }
+
+    "prefer flights of airline with premium branding for business and first pax, but not for economy pax".in {
+      val (economyShare, businessShare, firstShare) = getAirline1ShareWithBranding(AirlineBaseSpecialization.BRANDING_PREMIUM)
+      assert(economyShare > 0.32 && economyShare < 0.42) //~0.38
+      assert(businessShare > 0.58 && businessShare < 0.68) //~0.63
+      assert(firstShare > 0.58 && firstShare < 0.68) //~0.63
     }
   }
 
