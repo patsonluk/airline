@@ -90,7 +90,7 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
       routes.isDefinedAt(toAirportsList(2)).shouldBe(false)
     }
 
-    "have no connection cost if HSR is operated by the same airline or alliance as the connecting flight".in {
+    "have same connection cost if HSR is operated by the same airline or alliance as the connecting flight".in {
       def routeCost(hsrAirline : Airline, flightAirline : Airline, allianceIdByAirlineId : java.util.Map[Int, Int]) : Double = {
         val links = List(
           LinkConsideration.getExplicit(hsr(fromAirport, toAirportsList(0), hsrAirline, id = 1), 100, ECONOMY, false),
@@ -109,7 +109,7 @@ class HighSpeedRailSimulationSpec(_system: ActorSystem) extends TestKit(_system)
 
       val connectionCost = HighSpeedRail.CONNECTION_COST * passengerGroup.preference.connectionCostRatio * ECONOMY.priceMultiplier
       otherAirlineCost.shouldBe(200 + connectionCost)
-      sameAirlineCost.shouldBe(200)
+      sameAirlineCost.shouldBe(200 + connectionCost)
       sameAllianceCost.shouldBe(sameAirlineCost)
       differentAllianceCost.shouldBe(otherAirlineCost)
     }
