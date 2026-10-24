@@ -78,12 +78,7 @@ object PassengerSimulation {
 
     println(s"Simple Cost modifiers $airlineCostModifiers")
 
-    val specializationCostModifiers : Map[(Int, Int), SpecializationModifier] = AirportSource.loadAllAirportBaseSpecializations.filter{
-      case(airline, airport, specialization) =>
-        activeAirlineIds.contains(airline.id) && specialization == BaseSpecializationType.BRANDING
-    }.map {
-      case (airline, airport, brandingSpecialization) => ((airline.id, airport.id), SpecializationModifier(brandingSpecialization.asInstanceOf[BrandSpecialization].linkCostDeltaByClass))
-    }.toMap
+    val specializationCostModifiers : Map[(Int, Int), SpecializationModifier] = getBrandingCostModifiers(AirportSource.loadAllAirportBaseSpecializations, activeAirlineIds)
 
     //specializationCostModifiers : Map[(Int, Int), Double] = Map.empty, //(airlineId , airportId) -> modifier
 
@@ -382,6 +377,16 @@ object PassengerSimulation {
 //  }
 
 
+  /**
+    * (airlineId, airportId) -> cost modifier, from the branding (budget/premium) base specializations of active airlines
+    */
+  def getBrandingCostModifiers(baseSpecializations : List[(Airline, Airport, AirlineBaseSpecialization.Value)], activeAirlineIds : collection.Set[Int]) : Map[(Int, Int), SpecializationModifier] = {
+    baseSpecializations.collect {
+      case (airline, airport, brandingSpecialization : BrandSpecialization) if activeAirlineIds.contains(airline.id) =>
+        ((airline.id, airport.id), SpecializationModifier(brandingSpecialization.linkCostDeltaByClass))
+    }.toMap
+  }
+
   case class SpecializationModifier(deltaByLinkClass : Map[LinkClass, Double]) {
     val value = (preferredLinkClass : LinkClass) => {
       1.0 + deltaByLinkClass.getOrElse(preferredLinkClass, 0.0)
@@ -391,6 +396,10 @@ object PassengerSimulation {
   case class ExternalCostModifier(airlineCostModifiers : Map[Int, Double] = Map.empty,
                                   specializationCostModifiers : Map[(Int, Int), SpecializationModifier] = Map.empty) extends CostModifier { //(airlineId , airportId) -> modifier)
     override def value(link : Transport, linkClass : LinkClass) : Double = {
+      if (link.transportType != TransportType.FLIGHT) { //non flights (generic transit, HSR) are not seen as operated by any airline, hence no airline/branding modifier
+        return 1.0
+      }
+
       var modifier = 1.0
       if (airlineCostModifiers.contains(link.airline.id)) {
         modifier *= airlineCostModifiers(link.airline.id)
