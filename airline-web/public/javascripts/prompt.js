@@ -366,6 +366,7 @@ function showLoyalistPopup(level, description) {
 function showHighSpeedRailPopup(description) {
     var $popup = $('#highSpeedRailPopup')
     $popup.find('.description').text(description)
+    restartAnimatedImage($popup.find('img'))
     $popup.fadeIn(500)
 
     startFirework(20000, 6) //moderate, same as level up to Top International Airline II (200 reputation)
@@ -374,7 +375,17 @@ function showHighSpeedRailPopup(description) {
 function showHighSpeedRailFundedPopup(description) {
     var $popup = $('#highSpeedRailFundedPopup')
     $popup.find('.description').text(description)
+    restartAnimatedImage($popup.find('img'))
     $popup.fadeIn(500)
+}
+
+/**
+ * Animations that play once (APNG) stay on the last frame when the same popup shows again (consecutive notices).
+ * A new url (cache buster) makes the browser load and play it from the start
+ */
+function restartAnimatedImage($img) {
+    var src = $img.attr('src').split('?')[0]
+    $img.attr('src', src + '?t=' + Date.now())
 }
 
 function showTrackingNoticePopup($popup, description) {
