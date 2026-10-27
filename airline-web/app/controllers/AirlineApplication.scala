@@ -120,7 +120,7 @@ class AirlineApplication @Inject()(cc: ControllerComponents) extends AbstractCon
     val sevenDaysAgo = Calendar.getInstance();
     sevenDaysAgo.add(Calendar.DATE, -7)
     val thirtyDaysAgo = Calendar.getInstance()
-    thirtyDaysAgo.add(Calendar.DATE, -30)
+    thirtyDaysAgo.add(Calendar.DATE, -User.ACTIVE_DAYS)
 
     val users = if (hideInactive) {
       UserSource.loadUsersByLastActive(thirtyDaysAgo)

@@ -77,6 +77,27 @@ object UserSource {
     loadUsersByQuery(queryString, List(new java.sql.Timestamp(lastActive.getTimeInMillis)), airlineFullLoad)
   }
 
+  /**
+    * Lightweight lookup of airline IDs owned by users active after lastActive
+    */
+  def loadAirlineIdsByLastActive(lastActive : Calendar) : List[Int] = {
+    val connection = Meta.getConnection()
+    try {
+      val preparedStatement = connection.prepareStatement("SELECT DISTINCT ua.airline FROM " + USER_TABLE + " u JOIN " + USER_AIRLINE_TABLE + " ua ON u.user_name = ua.user_name WHERE u.last_active > ?")
+      preparedStatement.setObject(1, new java.sql.Timestamp(lastActive.getTimeInMillis))
+      val resultSet = preparedStatement.executeQuery()
+      val airlineIds = ListBuffer[Int]()
+      while (resultSet.next()) {
+        airlineIds += resultSet.getInt("airline")
+      }
+      resultSet.close()
+      preparedStatement.close()
+      airlineIds.toList
+    } finally {
+      connection.close()
+    }
+  }
+
   def loadUsersByQuery(queryString: String, parameters : List[Any], airlineFullLoad : Boolean = true) : List[User] = {
       //open the hsqldb
     val connection = Meta.getConnection()

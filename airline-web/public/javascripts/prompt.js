@@ -87,6 +87,8 @@ function queueNotice(noticeJson) {
         htmlId = "bankruptcyPopup"
     } else if (category === "HIGH_SPEED_RAIL") {
         htmlId = "highSpeedRailPopup"
+    } else if (category === "HIGH_SPEED_RAIL_FUNDED") {
+        htmlId = "highSpeedRailFundedPopup"
     } else {
         console.warn("Unhandled notice " + noticeJson)
     }
@@ -321,6 +323,12 @@ function initNotices() {
     })
     $('#highSpeedRailPopup').data('promptCloseCallback', stopFirework)
 
+    $('#highSpeedRailFundedPopup').data('function', function(json) {
+        $('#highSpeedRailFundedPopup').data('id', json.id)
+        $('#highSpeedRailFundedPopup').data('category', json.category)
+        showHighSpeedRailFundedPopup(json.description)
+    })
+
     $('.trackingNoticePopup').each(function() {
         var $this = $(this);
         $this.data('function', function(json) {
@@ -361,6 +369,12 @@ function showHighSpeedRailPopup(description) {
     $popup.fadeIn(500)
 
     startFirework(20000, 6) //moderate, same as level up to Top International Airline II (200 reputation)
+}
+
+function showHighSpeedRailFundedPopup(description) {
+    var $popup = $('#highSpeedRailFundedPopup')
+    $popup.find('.description').text(description)
+    $popup.fadeIn(500)
 }
 
 function showTrackingNoticePopup($popup, description) {

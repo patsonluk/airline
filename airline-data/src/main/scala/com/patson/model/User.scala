@@ -32,6 +32,7 @@ case class User(userName : String, email : String, creationTime : Calendar, last
 object User {
 //  val SUPER_ADMIN_LEVEL = 20
 //  val ADMIN_LEVEL = 10
+  val ACTIVE_DAYS = 30 //user is considered active if last active within this many days
 
   val fromId = (id : Int) => User("<unknown>", "", Calendar.getInstance(), Calendar.getInstance(), UserStatus.INACTIVE, 0, None, List.empty, id)
 }

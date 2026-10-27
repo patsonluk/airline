@@ -25,16 +25,29 @@ case class GameOverNotice(var trackingId : Int = 0) extends TrackingNotice(Notic
 }
 
 /**
-  * Sent to airlines with HQ/base at either end of a HSR once its construction completes. The description is generated on creation and persisted,
+  * Sent to all active airlines once a HSR completes its construction. The description is generated on creation and persisted,
   * so it remains valid even if the HSR is removed afterward
   */
-case class HighSpeedRailNotice(description : String, var trackingId : Int = 0) extends TrackingNotice(NoticeCategory.HIGH_SPEED_RAIL, trackingId) {
+case class HighSpeedRailCompletionNotice(description : String, var trackingId : Int = 0) extends TrackingNotice(NoticeCategory.HIGH_SPEED_RAIL, trackingId) {
   override val descriptions : Airline => String = _ => description
 }
 
-object HighSpeedRailNotice {
-  def apply(rail : HighSpeedRail) : HighSpeedRailNotice = {
-    HighSpeedRailNotice(s"High speed rail between ${rail.from.displayText} and ${rail.to.displayText}, funded by ${rail.airline.name}, is now open!")
+object HighSpeedRailCompletionNotice {
+  def apply(rail : HighSpeedRail) : HighSpeedRailCompletionNotice = {
+    HighSpeedRailCompletionNotice(s"High speed rail between ${rail.from.displayText} and ${rail.to.displayText}, funded by ${rail.airline.name}, is now open!")
+  }
+}
+
+/**
+  * Sent to all active airlines once a HSR is funded. Same as HighSpeedRailCompletionNotice, the description is generated on creation and persisted
+  */
+case class HighSpeedRailFundedNotice(description : String, var trackingId : Int = 0) extends TrackingNotice(NoticeCategory.HIGH_SPEED_RAIL_FUNDED, trackingId) {
+  override val descriptions : Airline => String = _ => description
+}
+
+object HighSpeedRailFundedNotice {
+  def apply(rail : HighSpeedRail, currentCycle : Int) : HighSpeedRailFundedNotice = {
+    HighSpeedRailFundedNotice(s"${rail.airline.name} has funded the construction of a high speed rail between ${rail.from.displayText} and ${rail.to.displayText}! It will take ${rail.completionCycle - currentCycle} weeks to complete.")
   }
 }
 
@@ -51,7 +64,7 @@ object LoyalistNotice {
 
 object NoticeCategory extends Enumeration {
   type NoticeCategory = Value
-  val LEVEL_UP, LOYALIST, GAME_OVER, HIGH_SPEED_RAIL = Value
+  val LEVEL_UP, LOYALIST, GAME_OVER, HIGH_SPEED_RAIL, HIGH_SPEED_RAIL_FUNDED = Value
 }
 
 object Notice {
@@ -64,7 +77,8 @@ object Notice {
       case LEVEL_UP => LevelNotice(id.toInt)
       case LOYALIST => LoyalistNotice(id.toInt)
       case GAME_OVER => GameOverNotice(id.toInt)
-      case HIGH_SPEED_RAIL => HighSpeedRailNotice(description, id.toInt)
+      case HIGH_SPEED_RAIL => HighSpeedRailCompletionNotice(description, id.toInt)
+      case HIGH_SPEED_RAIL_FUNDED => HighSpeedRailFundedNotice(description, id.toInt)
     }
   }
 
