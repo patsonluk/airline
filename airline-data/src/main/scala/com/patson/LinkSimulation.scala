@@ -11,11 +11,12 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.patson.model.airplane.{Airplane, AirplaneMaintenanceUtil, LinkAssignments}
 import com.patson.model.event.{HighSpeedRailCompletion, Olympics}
-import com.patson.model.notice.HighSpeedRailNotice
+import com.patson.model.notice.{HighSpeedRailCompletionNotice, HighSpeedRailFundedNotice, TrackingNotice}
 
 import scala.util.Random
 import com.patson.model.oil.OilPrice
 
+import java.util.Calendar
 import java.util.concurrent.ThreadLocalRandom
 
 object LinkSimulation {
@@ -37,36 +38,44 @@ object LinkSimulation {
 
 
 
-
-
   /**
-    * Notify airlines with HQ/base at either end of the HSR that completes its construction on this cycle
+    * Notify all active airlines of HSR that:
+    * 1. was funded on the previous cycle. Not checking the current cycle, as HSR could still be funded (with fundedCycle = current cycle) after the links are loaded
+    * 2. completes its construction on this cycle
+    *
+    * @param links all links including HSR under construction
     */
-  def notifyCompletedHighSpeedRails(links : List[Transport], cycle : Int) : Unit = {
-    val completedRails = links.collect {
-      case rail : HighSpeedRail if rail.completionCycle == cycle => rail
+  def notifyHighSpeedRails(links : List[Transport], cycle : Int) : Unit = {
+    val rails = links.collect {
+      case rail : HighSpeedRail => rail
     }
+    val fundedRails = rails.filter(_.fundedCycle == cycle - 1)
+    val completedRails = rails.filter(_.completionCycle == cycle)
+    //so it will show up on events on "Link"
     EventSource.saveEvents(completedRails.map(rail => HighSpeedRailCompletion(cycle, rail.from, rail.to, rail.airline))) //for link event history
-    completedRails.foreach { rail =>
-      val highSpeedRailNotice = HighSpeedRailNotice(rail)
-      val airlineIds = (AirlineSource.loadAirlineBasesByAirport(rail.from.id) ++ AirlineSource.loadAirlineBasesByAirport(rail.to.id)).map(_.airline.id).distinct
-      println(s"$rail completed, notifying ${airlineIds.size} airline(s)")
-      airlineIds.foreach { airlineId =>
-        NoticeSource.saveTrackingNotice(airlineId, highSpeedRailNotice)
-      }
+
+    //so it will notify players when they log in
+    val notices : List[TrackingNotice] = fundedRails.map(HighSpeedRailFundedNotice(_, cycle)) ++ completedRails.map(HighSpeedRailCompletionNotice(_))
+    if (notices.nonEmpty) {
+      val lastActive = Calendar.getInstance()
+      lastActive.add(Calendar.DATE, -User.ACTIVE_DAYS)
+      val activeAirlineIds = UserSource.loadAirlineIdsByLastActive(lastActive)
+      NoticeSource.saveTrackingNotices(notices.flatMap(notice => activeAirlineIds.map(airlineId => (airlineId, notice))))
+      println(s"HSR funded : $fundedRails; completed : $completedRails. Notified ${activeAirlineIds.size} active airline(s)")
     }
   }
 
   def linkSimulation(cycle: Int, srcAirports : List[Airport]) : (List[LinkConsumptionDetails], scala.collection.immutable.Map[Lounge, LoungeConsumptionDetails], immutable.Map[(PassengerGroup, Airport, Route), Int]) = {
     println("Loading all links")
-    val links = LinkSource.loadAllLinks(LinkSource.FULL_LOAD).filter {
+    val allLinks = LinkSource.loadAllLinks(LinkSource.FULL_LOAD)
+    notifyHighSpeedRails(allLinks, cycle)
+
+    val links = allLinks.filter {
       case rail : HighSpeedRail => rail.isCompleted(cycle) //HSR under construction cannot be used by pax
       case _ => true
     }
     val flightLinks = links.filter(_.transportType == TransportType.FLIGHT).map(_.asInstanceOf[Link])
     println("Finished loading all links")
-
-    notifyCompletedHighSpeedRails(links, cycle)
 
     val airports = srcAirports.filter(airport => airport.iata != "" && airport.power > 0)
 

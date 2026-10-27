@@ -3,7 +3,7 @@ package com.patson.data
 import com.patson.data.Constants._
 import com.patson.model.notice._
 
-import java.sql.Statement
+import java.sql.{PreparedStatement, Statement}
 import scala.collection.mutable.ListBuffer
 
 
@@ -19,12 +19,7 @@ object NoticeSource {
     val statement = connection.prepareStatement(s"INSERT INTO $TRACKING_NOTICE_TABLE (airline, category, description) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS)
 
     try {
-      statement.setInt(1, airlineId)
-      statement.setString(2, notice.category.toString)
-      notice match {
-        case highSpeedRailNotice : HighSpeedRailNotice => statement.setString(3, highSpeedRailNotice.description)
-        case _ => statement.setNull(3, java.sql.Types.VARCHAR)
-      }
+      setTrackingNoticeParameters(statement, airlineId, notice)
 
       val updateCount = statement.executeUpdate()
       if (updateCount > 0) {
@@ -36,6 +31,38 @@ object NoticeSource {
       }
       notice
 
+    } finally {
+      statement.close()
+      connection.close()
+    }
+  }
+
+  private[this] def setTrackingNoticeParameters(statement : PreparedStatement, airlineId : Int, notice : TrackingNotice) : Unit = {
+    statement.setInt(1, airlineId)
+    statement.setString(2, notice.category.toString)
+    notice match {
+      case highSpeedRailCompletionNotice : HighSpeedRailCompletionNotice => statement.setString(3, highSpeedRailCompletionNotice.description)
+      case highSpeedRailFundedNotice : HighSpeedRailFundedNotice => statement.setString(3, highSpeedRailFundedNotice.description)
+      case _ => statement.setNull(3, java.sql.Types.VARCHAR)
+    }
+  }
+
+  /**
+    * Batch version of saveTrackingNotice
+    * @param notices (airlineId, notice)
+    */
+  def saveTrackingNotices(notices : List[(Int, TrackingNotice)]) : Unit = {
+    val connection = Meta.getConnection()
+    val statement = connection.prepareStatement(s"INSERT INTO $TRACKING_NOTICE_TABLE (airline, category, description) VALUES(?,?,?)")
+    try {
+      connection.setAutoCommit(false)
+      notices.foreach {
+        case (airlineId, notice) =>
+          setTrackingNoticeParameters(statement, airlineId, notice)
+          statement.addBatch()
+      }
+      statement.executeBatch()
+      connection.commit()
     } finally {
       statement.close()
       connection.close()

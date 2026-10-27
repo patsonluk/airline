@@ -319,7 +319,7 @@ class AllianceApplication @Inject()(cc: ControllerComponents) extends AbstractCo
         val sevenDaysAgo = Calendar.getInstance();
         sevenDaysAgo.add(Calendar.DATE, -7)
         val thirtyDaysAgo = Calendar.getInstance()
-        thirtyDaysAgo.add(Calendar.DATE, -30)
+        thirtyDaysAgo.add(Calendar.DATE, -User.ACTIVE_DAYS)
 
         val loginStatusIdByAirlineId = userByAirlineId.map {
           case (airlineId, user) =>
