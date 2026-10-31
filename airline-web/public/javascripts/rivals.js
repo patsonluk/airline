@@ -487,5 +487,5 @@ function hideRivalMap() {
 
 function showRivalHistory() {
     var airlineId = $('#rivalDetails').data("airlineId")
-    showSearchCanvas(loadedRivalsById[airlineId])
+    showSearchCanvas("airline", airlineId)
 }

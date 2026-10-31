@@ -732,6 +732,9 @@ function applyForAlliance() {
 	});
 }
 
+function showAllianceHistory() {
+    showSearchCanvas("alliance", selectedAlliance.id)
+}
 
 function showAllianceMap() {
 	clearAllPaths()

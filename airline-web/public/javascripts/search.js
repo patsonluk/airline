@@ -1,7 +1,7 @@
 var loadedOlympicsEvents = []
 var loadedAlerts = []
 
-function showSearchCanvas(historyAirline) {
+function showSearchCanvas(historySearchType, historyId) {
     var titlesContainer = $("#searchCanvas div.titlesContainer")
     positionTitles(titlesContainer)
     setActiveDiv($("#searchCanvas"))
@@ -27,11 +27,20 @@ function showSearchCanvas(historyAirline) {
 
     initializeHistorySearch()
 
-    if (historyAirline) {
+    //historySearchType matches the input class in historySearch, e.g. "airline", "alliance"
+    if (historySearchType) {
+        var displayText
+        if (historySearchType === "airline") {
+            displayText = getAirlineTextEntry(loadedRivalsById[historyId], false)
+        } else if (historySearchType === "alliance") {
+            displayText = loadedAlliancesById[historyId].name
+        }
+
         var historyDiv = titlesContainer.find('.titleSelection[data-search-type="history"]')
         $(historyDiv).trigger('click')
-        $('#searchCanvas div.historySearch input.airline').data('selectedId',historyAirline.id)
-        $('#searchCanvas div.historySearch input.airline').val(getAirlineTextEntry(historyAirline, false))
+        var input = $('#searchCanvas div.historySearch input.' + historySearchType)
+        input.data('selectedId', historyId)
+        input.val(displayText)
         searchLinkHistory()
     }
 }
