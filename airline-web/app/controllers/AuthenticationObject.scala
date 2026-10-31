@@ -78,6 +78,16 @@ object AuthenticationObject {
 
   }
   
+  /**
+    * Whether a super admin is viewing as another user ("Switch to this user"). Such session should not consume the user's
+    * notices, tutorials and chat read position, so the user still gets them
+    */
+  def isAdminSwitched(request : RequestHeader) : Boolean = {
+    request.session.get("adminToken").flatMap(SessionUtil.getUserId).exists { adminId =>
+      request.session.get("userToken").flatMap(SessionUtil.getUserId).exists(_ != adminId)
+    }
+  }
+
   def getUserAirlineFromRequest(request : RequestHeader, airlineId : Int) = {
     getUserFromRequest(request) match {
       case Some(user) =>

@@ -11,7 +11,9 @@ import javax.inject.Inject
 class NoticeApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   def saveCompletedNotice(airlineId : Int, noticeId: String, category : String) = AuthenticatedAirline(airlineId) { request =>
     val notice = Notice.fromCategoryAndId(NoticeCategory.withName(category), noticeId)
-    if (notice.isInstanceOf[TrackingNotice]) {
+    if (AuthenticationObject.isAdminSwitched(request)) {
+      //admin viewing as this user, keep the notice for the user
+    } else if (notice.isInstanceOf[TrackingNotice]) {
       NoticeSource.deleteTrackingNotice(airlineId, noticeId.toInt)
     } else {
       NoticeSource.updateCompletedNotice(airlineId, notice)
