@@ -146,9 +146,9 @@ object HistoryUtil {
         val passengerType = key._3
         val passengerCount = value
         if (!inverted) {
-          new RelatedLink(link.id, link.from, link.to, link.airline, passengerCount)  
+          new RelatedLink(link.id, link.from, link.to, link.airline, passengerCount, link.transportType)  
         } else {
-          new RelatedLink(link.id, link.to, link.from, link.airline, passengerCount)
+          new RelatedLink(link.id, link.to, link.from, link.airline, passengerCount, link.transportType)
         }
       }
     }.toList

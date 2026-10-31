@@ -208,7 +208,9 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId, step) {
 		     link : link,
 		     thisAirlinePassengers : 0,
 		     thisAlliancePassengers : 0,
-		     otherAirlinePassengers : 0
+		     otherAirlinePassengers : 0,
+		     genericTransitPassengers : 0,
+		     highSpeedRailPassengers : 0
 		});
 
 		relatedPath.shadowPath = shadowPath
@@ -218,12 +220,25 @@ function drawLinkHistoryPath(link, inverted, watchedLinkId, step) {
 		relatedPath = historyPaths[pathKey]
 	}
 
-	if (link.airlineId == activeAirline.id) {
+	if (link.transportType === 'GENERIC_TRANSIT') { //non flights are not operated by any airline, count them separately
+		relatedPath.shadowPath.genericTransitPassengers += link.passenger
+	} else if (link.transportType === 'HIGH_SPEED_RAIL') {
+		relatedPath.shadowPath.highSpeedRailPassengers += link.passenger
+	} else if (link.airlineId == activeAirline.id) {
 		relatedPath.shadowPath.thisAirlinePassengers += link.passenger
 	} else if (currentAirlineAllianceMembers.length > 0 && $.inArray(link.airlineId, currentAirlineAllianceMembers) != -1) {
 		relatedPath.shadowPath.thisAlliancePassengers += link.passenger
 	} else {
 		relatedPath.shadowPath.otherAirlinePassengers += link.passenger
+	}
+}
+
+function setLinkHistoryPassengerRow($valueDiv, passengers, isEnabled) {
+	if (isEnabled && passengers > 0) {
+		$valueDiv.text(passengers)
+		$valueDiv.closest(".table-row").show()
+	} else {
+		$valueDiv.closest(".table-row").hide()
 	}
 }
 
@@ -400,8 +415,11 @@ function showLinkHistory() {
         if (((showForward && !historyPath.inverted) || (!showForward && historyPath.inverted))  //match direction
         && (historyPath.shadowPath.thisAirlinePassengers > 0
          || (showAlliance && historyPath.shadowPath.thisAlliancePassengers > 0)
-         || (showOther && historyPath.shadowPath.otherAirlinePassengers))) {
+         || (showOther && historyPath.shadowPath.otherAirlinePassengers)
+         || historyPath.shadowPath.genericTransitPassengers > 0
+         || historyPath.shadowPath.highSpeedRailPassengers > 0)) {
             var totalPassengers = historyPath.shadowPath.thisAirlinePassengers + historyPath.shadowPath.thisAlliancePassengers + historyPath.shadowPath.otherAirlinePassengers
+                + historyPath.shadowPath.genericTransitPassengers + historyPath.shadowPath.highSpeedRailPassengers
             if (totalPassengers < 100) {
                 var newOpacity = 0.2 + totalPassengers / 100 * (historyPath.strokeOpacity - 0.2)
                 if (!historyPath.watched) {
@@ -414,19 +432,12 @@ function showLinkHistory() {
 
                 $("#linkHistoryPopupFrom").html(getCountryFlagImg(link.fromCountryCode) + getAirportText(link.fromAirportCity, link.fromAirportCode))
                 $("#linkHistoryPopupTo").html(getCountryFlagImg(link.toCountryCode) + getAirportText(link.toAirportCity, link.toAirportCode))
-                $("#linkHistoryThisAirlinePassengers").text(this.thisAirlinePassengers)
-                if (showAlliance) {
-                    $("#linkHistoryThisAlliancePassengers").text(this.thisAlliancePassengers)
-                    $("#linkHistoryThisAlliancePassengers").closest(".table-row").show()
-                } else {
-                    $("#linkHistoryThisAlliancePassengers").closest(".table-row").hide()
-                }
-                if (showOther) {
-                    $("#linkHistoryOtherAirlinePassengers").text(this.otherAirlinePassengers)
-                    $("#linkHistoryOtherAirlinePassengers").closest(".table-row").show()
-                 } else {
-                    $("#linkHistoryOtherAirlinePassengers").closest(".table-row").hide()
-                 }
+                //only show the rows with passengers
+                setLinkHistoryPassengerRow($("#linkHistoryThisAirlinePassengers"), this.thisAirlinePassengers, true)
+                setLinkHistoryPassengerRow($("#linkHistoryThisAlliancePassengers"), this.thisAlliancePassengers, showAlliance)
+                setLinkHistoryPassengerRow($("#linkHistoryOtherAirlinePassengers"), this.otherAirlinePassengers, showOther)
+                setLinkHistoryPassengerRow($("#linkHistoryGenericTransitPassengers"), this.genericTransitPassengers, true)
+                setLinkHistoryPassengerRow($("#linkHistoryHighSpeedRailPassengers"), this.highSpeedRailPassengers, true)
 
                 infowindow = new google.maps.InfoWindow({
                      maxWidth : 400});

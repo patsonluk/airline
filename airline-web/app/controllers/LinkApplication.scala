@@ -115,7 +115,8 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
         "toLongitude" -> JsNumber(relatedLink.toAirport.longitude),
         "airlineId" -> JsNumber(relatedLink.airline.id),
         "airlineName" -> JsString(relatedLink.airline.name),
-        "passenger" -> JsNumber(relatedLink.passengers)))
+        "passenger" -> JsNumber(relatedLink.passengers),
+        "transportType" -> JsString(relatedLink.transportType.toString)))
     }
   }
 
