@@ -49,6 +49,24 @@ function loadLinkHistory(linkId) {
     historyPaths = {}
 	var linkInfo = loadedLinksById[linkId]
     var airlineNamesById = {}
+    //non-flight links (HSR/generic transit) are grouped by transport type instead of the airline that built them
+    var nonFlightTransitLabels = {
+        'HIGH_SPEED_RAIL' : 'High Speed Rail',
+        'GENERIC_TRANSIT' : 'Generic Transit'
+    }
+    var getTransitPaxKey = function(relatedLink) {
+        if (nonFlightTransitLabels[relatedLink.transportType]) {
+            return relatedLink.transportType
+        }
+        airlineNamesById[relatedLink.airlineId] = relatedLink.airlineName
+        return relatedLink.airlineId
+    }
+    var getTransitPaxLabel = function(key) {
+        if (nonFlightTransitLabels[key]) {
+            return "<span>" + nonFlightTransitLabels[key] + "</span>"
+        }
+        return getAirlineSpan(key, airlineNamesById[key])
+    }
     var cycleDelta = $('#linkHistoryControlPanel').data('cycleDelta')
     $("#linkHistoryControlPanel .transitAirlineList").empty()
 
@@ -63,19 +81,19 @@ function loadLinkHistory(linkId) {
         contentType: 'application/json; charset=utf-8',
         dataType: 'json',
         success: function(linkHistory) {
-            var forwardTransitPaxByAirlineId = {}
-            var backwardTransitPaxByAirlineId = {}
+            var forwardTransitPaxByKey = {}
+            var backwardTransitPaxByKey = {}
 
             if (!jQuery.isEmptyObject(linkHistory)) {
                 $.each(linkHistory.relatedLinks, function(step, relatedLinksOnStep) {
                     $.each(relatedLinksOnStep, function(key, relatedLink) {
                         drawLinkHistoryPath(relatedLink, false, linkId, step)
-                        if (linkInfo.fromAirportId != relatedLink.fromAirportId || linkInfo.toAirportId != relatedLink.toAirportId || linkInfo.airlineId != linkInfo.airlineId) { //transit should not count the selected link
-                            airlineNamesById[relatedLink.airlineId] = relatedLink.airlineName
-                            if (!forwardTransitPaxByAirlineId[relatedLink.airlineId]) {
-                                forwardTransitPaxByAirlineId[relatedLink.airlineId] = relatedLink.passenger
+                        if (linkInfo.fromAirportId != relatedLink.fromAirportId || linkInfo.toAirportId != relatedLink.toAirportId) { //transit should not count the selected link
+                            var transitKey = getTransitPaxKey(relatedLink)
+                            if (!forwardTransitPaxByKey[transitKey]) {
+                                forwardTransitPaxByKey[transitKey] = relatedLink.passenger
                             } else {
-                                forwardTransitPaxByAirlineId[relatedLink.airlineId] = forwardTransitPaxByAirlineId[relatedLink.airlineId] + relatedLink.passenger
+                                forwardTransitPaxByKey[transitKey] = forwardTransitPaxByKey[transitKey] + relatedLink.passenger
                             }
                         }
                     })
@@ -83,21 +101,21 @@ function loadLinkHistory(linkId) {
                 $.each(linkHistory.invertedRelatedLinks, function(step, relatedLinksOnStep) {
                     $.each(relatedLinksOnStep, function(key, relatedLink) {
                         drawLinkHistoryPath(relatedLink, true, linkId, step)
-                        if (linkInfo.fromAirportId != relatedLink.toAirportId || linkInfo.toAirportId != relatedLink.fromAirportId || linkInfo.airlineId != linkInfo.airlineId) { //transit should not count the selected link
-                            airlineNamesById[relatedLink.airlineId] = relatedLink.airlineName
-                            if (!backwardTransitPaxByAirlineId[relatedLink.airlineId]) {
-                                backwardTransitPaxByAirlineId[relatedLink.airlineId] = relatedLink.passenger
+                        if (linkInfo.fromAirportId != relatedLink.toAirportId || linkInfo.toAirportId != relatedLink.fromAirportId) { //transit should not count the selected link
+                            var transitKey = getTransitPaxKey(relatedLink)
+                            if (!backwardTransitPaxByKey[transitKey]) {
+                                backwardTransitPaxByKey[transitKey] = relatedLink.passenger
                             } else {
-                                backwardTransitPaxByAirlineId[relatedLink.airlineId] = backwardTransitPaxByAirlineId[relatedLink.airlineId] + relatedLink.passenger
+                                backwardTransitPaxByKey[transitKey] = backwardTransitPaxByKey[transitKey] + relatedLink.passenger
                             }
                         }
                     })
                 })
-                var forwardItems = Object.keys(forwardTransitPaxByAirlineId).map(function(key) {
-                  return [key, forwardTransitPaxByAirlineId[key]];
+                var forwardItems = Object.keys(forwardTransitPaxByKey).map(function(key) {
+                  return [key, forwardTransitPaxByKey[key]];
                 });
-                var backwardItems = Object.keys(backwardTransitPaxByAirlineId).map(function(key) {
-                  return [key, backwardTransitPaxByAirlineId[key]];
+                var backwardItems = Object.keys(backwardTransitPaxByKey).map(function(key) {
+                  return [key, backwardTransitPaxByKey[key]];
                 });
                 //now sort them
                 forwardItems.sort(function(a, b) {
@@ -109,20 +127,18 @@ function loadLinkHistory(linkId) {
                 //populate the top 5 transit airline table
                 forwardItems = $(forwardItems).slice(0, 5)
                 backwardItems = $(backwardItems).slice(0, 5)
-                $.each(forwardItems, function(index, entry) { //entry : airlineId, pax counts
+                $.each(forwardItems, function(index, entry) { //entry : transit key (airlineId or non-flight transport type), pax counts
                     var tableRow = $("<div class='table-row' style='display: none;'></div>")
                     tableRow.addClass("forward")
-                    var airlineId = entry[0]
-                    tableRow.append("<div class='cell' style='width: 70%'>" + getAirlineSpan(airlineId, airlineNamesById[airlineId]) + "</div>")
+                    tableRow.append("<div class='cell' style='width: 70%'>" + getTransitPaxLabel(entry[0]) + "</div>")
                     tableRow.append("<div class='cell' style='width: 30%'>" + entry[1] + "</div>")
 
                     $("#linkHistoryControlPanel .transitAirlineList").append(tableRow)
                 })
-                $.each(backwardItems, function(index, entry) { //entry : airlineId, pax counts
+                $.each(backwardItems, function(index, entry) { //entry : transit key (airlineId or non-flight transport type), pax counts
                     var tableRow = $("<div class='table-row' style='display: none;'></div>")
                     tableRow.addClass("backward")
-                    var airlineId = entry[0]
-                    tableRow.append("<div class='cell' style='width: 70%'>" + getAirlineSpan(airlineId, airlineNamesById[airlineId]) + "</div>")
+                    tableRow.append("<div class='cell' style='width: 70%'>" + getTransitPaxLabel(entry[0]) + "</div>")
                     tableRow.append("<div class='cell' style='width: 30%'>" + entry[1] + "</div>")
 
                     $("#linkHistoryControlPanel .transitAirlineList").append(tableRow)
