@@ -209,7 +209,8 @@ class SearchApplication @Inject()(cc: ControllerComponents) extends AbstractCont
                   }
 
                   linkJson = linkJson + ("features" -> Json.toJson(getLinkFeatures(detailedLink).map(_.toString)))
-                case TransportType.GENERIC_TRANSIT =>
+                case TransportType.GENERIC_TRANSIT | TransportType.HIGH_SPEED_RAIL =>
+                  //no extra details for non-flight transports
                   //linkJson = linkJson + ("features" -> Json.toJson(List(LinkFeature.SHUTTLE.toString)))
               }
               linkJson = linkJson + ("transportType" -> JsString(detailedTransport.transportType.toString))
