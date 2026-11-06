@@ -733,7 +733,7 @@ function applyForAlliance() {
 }
 
 function showAllianceHistory() {
-    showSearchCanvas("alliance", selectedAlliance.id)
+    showSearchCanvas(selectedAlliance)
 }
 
 function showAllianceMap() {

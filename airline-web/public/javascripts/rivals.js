@@ -75,7 +75,7 @@ function updateRivalsTable(sortProperty, sortOrder, selectedAirline) {
 	
 	var selectedRow
 	$.each(displayRivals, function(index, airline) {
-		var row = $("<div class='table-row clickable' data-airline-id='" + airline.id + "' onclick=\"loadRivalDetails($(this), '" + airline.id + "')\"></div>")
+		var row = $("<div class='table-row clickable' data-airline-id='" + airline.id + "' onclick=\"loadRivalDetails($(this), " + airline.id + ")\"></div>")
 //		var countryFlagImg = ""
 //		if (airline.countryCode) {
 //			countryFlagImg = getCountryFlagImg(airline.countryCode)
@@ -487,5 +487,5 @@ function hideRivalMap() {
 
 function showRivalHistory() {
     var airlineId = $('#rivalDetails').data("airlineId")
-    showSearchCanvas("airline", airlineId)
+    showSearchCanvas(loadedRivalsById[airlineId])
 }

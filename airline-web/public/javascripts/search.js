@@ -1,7 +1,8 @@
 var loadedOlympicsEvents = []
 var loadedAlerts = []
 
-function showSearchCanvas(historySearchType, historyId) {
+//historyObj (optional) : an airline (from loadedRivalsById) or an alliance (from loadedAlliancesById) to show recent activities of
+function showSearchCanvas(historyObj) {
     var titlesContainer = $("#searchCanvas div.titlesContainer")
     positionTitles(titlesContainer)
     setActiveDiv($("#searchCanvas"))
@@ -27,20 +28,16 @@ function showSearchCanvas(historySearchType, historyId) {
 
     initializeHistorySearch()
 
-    //historySearchType matches the input class in historySearch, e.g. "airline", "alliance"
-    if (historySearchType) {
-        var displayText
-        if (historySearchType === "airline") {
-            displayText = getAirlineTextEntry(loadedRivalsById[historyId], false)
-        } else if (historySearchType === "alliance") {
-            displayText = loadedAlliancesById[historyId].name
-        }
-
+    if (historyObj) {
         var historyDiv = titlesContainer.find('.titleSelection[data-search-type="history"]')
         $(historyDiv).trigger('click')
-        var input = $('#searchCanvas div.historySearch input.' + historySearchType)
-        input.data('selectedId', historyId)
-        input.val(displayText)
+        if (historyObj.members !== undefined) { //only alliance objects carry a members list
+            $('#searchCanvas div.historySearch input.alliance').data('selectedId', historyObj.id)
+            $('#searchCanvas div.historySearch input.alliance').val(historyObj.name)
+        } else {
+            $('#searchCanvas div.historySearch input.airline').data('selectedId', historyObj.id)
+            $('#searchCanvas div.historySearch input.airline').val(getAirlineTextEntry(historyObj, false))
+        }
         searchLinkHistory()
     }
 }
