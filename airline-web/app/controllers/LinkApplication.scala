@@ -33,6 +33,7 @@ import scala.util.{Failure, Success, Try}
 
 class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
   val logger = Logger(this.getClass)
+  val MAX_PRICE_MULTIPLIER = 5 //max ticket price as a multiple of the standard price
   object TestLinkReads extends Reads[Link] {
      def reads(json: JsValue): JsResult[Link] = {
       val fromAirportId = json.\("fromAirportId").as[Int]
@@ -341,6 +342,12 @@ class LinkApplication @Inject()(cc: ControllerComponents) extends AbstractContro
          incomingLink.price(BUSINESS) < 0 ||
          incomingLink.price(FIRST) < 0) {
       return BadRequest("negative ticket price not allowed")
+    }
+    //cap the price, otherwise a huge price overflows Int calculations (e.g. delay compensation, revenue)
+    LinkClass.values.foreach { linkClass =>
+      if (incomingLink.price(linkClass) > incomingLink.standardPrice(linkClass) * MAX_PRICE_MULTIPLIER) {
+        return BadRequest(s"${linkClass.label} ticket price cannot exceed $MAX_PRICE_MULTIPLIER times the standard price")
+      }
     }
 
 
