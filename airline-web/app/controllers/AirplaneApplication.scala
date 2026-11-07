@@ -615,7 +615,11 @@ class AirplaneApplication @Inject()(cc: ControllerComponents) extends AbstractCo
     if (fromAirplaneOption.isDefined && toAirplaneOption.isDefined) {
       val fromAirplane = fromAirplaneOption.get
       val toAirplane = toAirplaneOption.get
-      if (fromAirplane.owner.id == airlineId && toAirplane.owner.id == airlineId && fromAirplane.model.id == toAirplane.model.id) {
+      if (fromAirplane.isSold || toAirplane.isSold) { //a sold airplane is on the dealer market, swapping onto/from it lets the seller rewrite what is being sold
+        val airplaneText = List(fromAirplane, toAirplane).map(airplane => s"${airplane.id} (${airplane.model.name}, sold=${airplane.isSold}, value=${airplane.value})").mkString(", ")
+        println(s"WARNING: Sold airplane access - ${request.user.name} (airline ${request.user.id}, ${AuthenticationObject.clientIp(request)}) tried to swap on airplane(s) $airplaneText")
+        BadRequest("Cannot swap an airplane that has been sold")
+      } else if (fromAirplane.owner.id == airlineId && toAirplane.owner.id == airlineId && fromAirplane.model.id == toAirplane.model.id) {
         val fromConstructedCycle = fromAirplane.constructedCycle
         val fromPurchaseCycle = fromAirplane.purchasedCycle
         val fromCondition = fromAirplane.condition
