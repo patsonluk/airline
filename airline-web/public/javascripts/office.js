@@ -1121,9 +1121,8 @@ function updateResetAirlineInfo() {
 
 function resetAirline(keepAssets) {
 	$.ajax({
-		type: 'GET',
+		type: 'POST', //POST so a cross-site link cannot trigger it (session cookie is SameSite=Lax)
 		url: "airlines/" + activeAirline.id + "/reset?keepAssets=" + keepAssets,
-	    contentType: 'application/json; charset=utf-8',
 	    dataType: 'json',
 	    success: function() {
 	    	updateAllPanels(activeAirline.id)
